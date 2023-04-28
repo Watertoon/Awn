@@ -16,7 +16,7 @@ ALL_PROGRAMS_LIST := $(THIRD_PARTY_LIST) $(LIBRARY_DIR_LIST) $(TOOL_LIST) $(PROG
 # Default build environment variables to be overriden here or from the command line
 arch         ?= x86
 platform     ?= win32
-graphics_api ?= vulkan
+graphics_api ?= vk
 binary_type  ?= debug
 
 #Valid Architectures: x86, Aarch64, Arm, PowerPC, Mips

@@ -3,7 +3,7 @@
 # Set default if unset
 ARCHITECTURE ?= x86
 PLATFORM     ?= win32
-GRAPHICS_API ?= vulkan
+GRAPHICS_API ?= vk
 BINARY_TYPE  ?= develop
 
 # Pull in common config
@@ -86,15 +86,6 @@ export BUILD_RULE_DIR := $(CURDIR)/
 .PHONY: all clean release_deps shader_deps build build/resources build/resources/shaders lib lib/$(BUILD_LIBS).a build/$(BUILD_EXES).exe
 
 # Build settings to set required variables (call these for non-defaults)
-
-win32_x64_vulkan_develop:
-	@$(MAKE) all PLATFORM=win32 ARCHITECTURE=x86 GRAPHICS_API=vulkan BINARY_TYPE=develop -f $(CURDIR)/makefile
-
-win32_x64_vulkan_release:
-	@$(MAKE) all PLATFORM=win32 ARCHITECTURE=x86 GRAPHICS_API=vulkan BINARY_TYPE=release -f $(CURDIR)/makefile
-
-win32_x64_vulkan_debug:
-	@$(MAKE) all PLATFORM=win32 ARCHITECTURE=x86 GRAPHICS_API=vulkan BINARY_TYPE=debug -f $(CURDIR)/makefile
 
 sub_make:
 	@$(MAKE) all PLATFORM=$(PLATFORM) ARCHITECTURE=$(ARCHITECTURE) GRAPHICS_API=$(GRAPHICS_API) BINARY_TYPE=$(BINARY_TYPE) -f $(CURDIR)/makefile

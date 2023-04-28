@@ -82,10 +82,10 @@ endif
 endif
 
 # Pull in graphics api
-ifeq ($(GRAPHICS_API), vulkan)
-include $(dir $(lastword $(MAKEFILE_LIST)))../graphics_api/gfxapi_vulkan.mk
+ifeq ($(GRAPHICS_API), vk)
+include $(dir $(lastword $(MAKEFILE_LIST)))../graphics_api/gfxapi_vk.mk
 else
-ifeq ($(GRAPHICS_API), customgfxapi)
+ifeq ($(GRAPHICS_API), awngfx)
 # ...
 else
 $(error Invalid GRAPHICS_API (check "config/gfxapi" for valid list))
@@ -118,7 +118,7 @@ endif
 # Compile recipes
 
 # Vulkan shader build rules
-ifeq ($(GRAPHICS_API), vulkan)
+ifeq ($(GRAPHICS_API), vk)
 %.vert.spv : %.vert.sh
 	@echo $(notdir $<)
 	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.vert.d -DDD_VERTEX_SHADER                  -mfmt=bin --target-env=vulkan1.3 -fshader-stage=vert        -I$(CURDIR)/../shader/include -Werror -Os -c $< -o $(CURDIR)/../build/resource/shader/$*.vert.spv

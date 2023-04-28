@@ -3,7 +3,7 @@
 # Set default if unset
 ARCHITECTURE ?= x86
 PLATFORM     ?= win32
-GRAPHICS_API ?= vulkan
+GRAPHICS_API ?= vk
 BINARY_TYPE  ?= develop
 
 # Pull in common config
@@ -22,13 +22,13 @@ SHADER_SOURCE_DIRS=$(call GET_ALL_SOURCE_DIRS,shader/source)
 ifneq ($(BUILD_DIR),$(notdir $(CURDIR)))
 
 # User program options (edit these)
-CXX_DEFINES  := -DDD_DEBUG
+CXX_DEFINES  := -DVP_DEBUG
 CXX_FLAGS    := -std=gnu++20 -ffunction-sections -fdata-sections -fno-strict-aliasing -fwrapv -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector -fno-rtti -fno-exceptions $(CXX_DEFINES)
 CXX_WARNS    := -Wall -Wno-format-truncation -Wno-format-zero-length -Wno-stringop-truncation -Wno-invalid-offsetof -Wno-format-truncation -Wno-format-zero-length -Wno-stringop-truncation -Wextra -Werror -Wno-missing-field-initializers
 LIBRARY_DIRS := 
 
 export PROJECT_C_FLAGS      := 
-export PROJECT_CXX_FLAGS    := $(RELEASE_FLAGS) $(CXX_FLAGS) $(CXX_WARNS) -DDD_TARGET_PLATFORM=$(PLATFORM) -DDD_TARGET_ARCHITECTURE=$(ARCHITECTURE) -DDD_TARGET_GRAPHICS_API=$(GRAPHICS_API)
+export PROJECT_CXX_FLAGS    := $(RELEASE_FLAGS) $(CXX_FLAGS) $(CXX_WARNS) -DVP_TARGET_PLATFORM=$(PLATFORM) -DVP_TARGET_ARCHITECTURE=$(ARCHITECTURE) -DVP_TARGET_GRAPHICS_API=$(GRAPHICS_API)
 export PROJECT_INCLUDE_DIRS := include third_party/include
 export PROJECT_LIB_INCLUDES := $(foreach dir,$(LIBRARY_DIRS),-I$(dir)/lib)
 export PROJECT_INCLUDES     := $(foreach dir,$(PROJECT_INCLUDE_DIRS),-I$(CURDIR)/$(dir)) \
@@ -86,15 +86,6 @@ export BUILD_RULE_DIR := $(CURDIR)/
 .PHONY: all clean release_deps shader_deps build build/resources build/resources/shaders lib lib/$(BUILD_LIBS).a build/$(BUILD_EXES).exe
 
 # Build settings to set required variables (call these for non-defaults)
-
-win32_x64_vulkan_develop:
-	@$(MAKE) all PLATFORM=win32 ARCHITECTURE=x86 GRAPHICS_API=vulkan BINARY_TYPE=develop -f $(CURDIR)/makefile
-
-win32_x64_vulkan_release:
-	@$(MAKE) all PLATFORM=win32 ARCHITECTURE=x86 GRAPHICS_API=vulkan BINARY_TYPE=release -f $(CURDIR)/makefile
-
-win32_x64_vulkan_debug:
-	@$(MAKE) all PLATFORM=win32 ARCHITECTURE=x86 GRAPHICS_API=vulkan BINARY_TYPE=debug -f $(CURDIR)/makefile
 
 sub_make:
 	@$(MAKE) all PLATFORM=$(PLATFORM) ARCHITECTURE=$(ARCHITECTURE) GRAPHICS_API=$(GRAPHICS_API) BINARY_TYPE=$(BINARY_TYPE) -f $(CURDIR)/makefile

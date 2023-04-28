@@ -3,7 +3,7 @@
 namespace awn::gfx {
 
     /* TODO */
-    struct OptionalFeatureInfo {
+    struct ContextOptionalFeatureInfo {
         bool require_ray_tracing;
         bool require_optical_flow;
 
@@ -14,15 +14,15 @@ namespace awn::gfx {
     };
 
     struct ContextInfo {
-        const char          *app_name;
-        const char          *engine_name;
-        VkPhysicalDevice     preferred_physical_device;
-        OptionalFeatureInfo  optional_feature_info;
+        const char                 *app_name;
+        const char                 *engine_name;
+        VkPhysicalDevice            preferred_vk_physical_device;
+        ContextOptionalFeatureInfo  optional_feature_info;
 
         constexpr ALWAYS_INLINE void SetDefaults() {
             app_name                  = "AwnAppNameDefault";
             engine_name               = "AwnEngineNameDefault";
-            preferred_physical_device = VK_NULL_HANDLE;
+            preferred_vk_physical_device = VK_NULL_HANDLE;
             optional_feature_info.SetDefaults();
         }
     };
@@ -64,6 +64,7 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxUniformBufferSize  = 0x10000;
 
             /* Global descriptor resource limits */
+            static constexpr size_t cTargetMaxDescriptorCount                = 0x4fa0;
             static constexpr size_t cTargetMaxTextureDescriptorCount         = 0x4000;
             static constexpr size_t cTargetMaxSamplerDescriptorCount         = 0xfa0;
             static constexpr size_t cTargetMaxUniformBufferDescriptorCount   = 16;
@@ -122,6 +123,7 @@ namespace awn::gfx {
             VkPhysicalDeviceVulkan11Properties                  m_vk_physical_device_properties_11;
             VkPhysicalDeviceVulkan12Properties                  m_vk_physical_device_properties_12;
             VkPhysicalDeviceVulkan13Properties                  m_vk_physical_device_properties_13;
+            VkPhysicalDevicePushDescriptorPropertiesKHR         m_vk_physical_device_push_descriptor_properties;
             VkPhysicalDeviceExtendedDynamicState3PropertiesEXT  m_vk_physical_device_extended_dynamic_state_3_properties;
             VkPhysicalDeviceDescriptorBufferPropertiesEXT       m_vk_physical_device_descriptor_buffer_properties;
             VkPhysicalDeviceMeshShaderPropertiesEXT             m_vk_physical_device_mesh_shader_properties;
@@ -166,6 +168,10 @@ namespace awn::gfx {
             },
             m_vk_physical_device_properties_13 {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
+                .pNext = std::addressof(m_vk_physical_device_push_descriptor_properties)
+            },
+            m_vk_physical_device_push_descriptor_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR,
                 .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state_3_properties)
             },
             m_vk_physical_device_extended_dynamic_state_3_properties {
@@ -229,7 +235,7 @@ namespace awn::gfx {
             void Initialize(ContextInfo *context_info);
             void Finalize();
 
-            bool SetPhysicalDevice(VkPhysicalDevice vk_physical_device, OptionalFeatureInfo *optional_feature_info);
+            bool SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, ContextOptionalFeatureInfo *optional_feature_info);
 
             bool SetAllQueueFamilyIndices();
 

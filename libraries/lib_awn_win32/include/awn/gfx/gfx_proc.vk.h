@@ -24,7 +24,7 @@ DEFINE_EXTERN_VK_PROC(vkEnumerateInstanceLayerProperties);
 DEFINE_EXTERN_VK_PROC(vkEnumerateInstanceVersion);
 DEFINE_EXTERN_VK_PROC(vkGetInstanceProcAddr);
 
-void LoadInitialVkCProcs();
+void LoadVkCProcsInitial();
 
 /* Instance procs */
 DEFINE_EXTERN_VK_PROC(vkCreateDevice);
@@ -70,7 +70,7 @@ DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceWin32PresentationSupportKHR);
 DEFINE_EXTERN_VK_PROC(vkCreateDebugUtilsMessengerEXT);
 DEFINE_EXTERN_VK_PROC(vkDestroyDebugUtilsMessengerEXT);
 
-void LoadCProcsInstance(VkInstance instance);
+void LoadVkCProcsInstance(VkInstance instance);
 
 /* Device procs */
 DEFINE_EXTERN_VK_PROC(vkAllocateCommandBuffers);
@@ -290,4 +290,4 @@ DEFINE_EXTERN_VK_PROC(vkGetDescriptorEXT);
 DEFINE_EXTERN_VK_PROC(vkGetDescriptorSetLayoutSizeEXT);
 DEFINE_EXTERN_VK_PROC(vkGetMemoryHostPointerPropertiesEXT);
 
-void LoadCProcsDevice(VkDevice device);
+void LoadVkCProcsDevice(VkDevice vk_device);
