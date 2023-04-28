@@ -2,6 +2,8 @@
 
 namespace awn::gfx {
 
+    /* Todo; support stencil */
+
     struct RenderTargetInfo {
         u32      image_format;
         u16      image_dimension;
@@ -35,6 +37,13 @@ namespace awn::gfx {
                 m_vk_image_view = VK_NULL_HANDLE;
                 m_render_target_info.SetDefaults();
             }
+
+            constexpr u32 GetViewCount()    const { return m_render_target_info.array_layers; }
+            constexpr u32 GetViewMask()     const { return 0xffff'ffff; }
+            constexpr u32 GetRenderWidth()  const { return m_render_target_info.texture->GetWidth(); }
+            constexpr u32 GetRenderHeight() const { return m_render_target_info.texture->GetHeight(); }
+
+            constexpr VkImageView GetVkImageView() const { return m_vk_image_view; }
     };
 
     class RenderTargetColor : public RenderTargetBase {
@@ -73,9 +82,9 @@ namespace awn::gfx {
             }
     };
 
-    class RenderTargetDepth : public RenderTargetBase {
+    class RenderTargetDepthStencil : public RenderTargetBase {
         public:
-            constexpr RenderTargetDepth() : RenderTargetBase() {/*...*/}
+            constexpr RenderTargetDepthStencil() : RenderTargetBase() {/*...*/}
 
             void Initialize(RenderTargetInfo *render_target_info) {
 
@@ -107,5 +116,8 @@ namespace awn::gfx {
 
                 return;
             }
+
+            constexpr bool IsDepthFormat() { return true; }
+            constexpr bool IsStencilFormat() { return false; }
     };
 }

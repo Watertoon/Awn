@@ -7,8 +7,8 @@ namespace awn::gfx {
     using MemoryPropertyFlags = vp::res::GfxMemoryPoolFlags;
 
     /* Draw time enums */
-	using PrimitiveTopology  = vp::res::GfxPrimitiveTopology;
-	using IndexFromat        = vp::res::GfxIndexFormat;
+    using PrimitiveTopology  = vp::res::GfxPrimitiveTopology;
+    using IndexFormat        = vp::res::GfxIndexFormat;
 
     /* Texture enums */
     using ImageFormat        = vp::res::GfxImageFormat;
@@ -27,18 +27,21 @@ namespace awn::gfx {
     using BorderColor        = vp::res::GfxBorderColor;
 
     /* Blend State enums */
-	using BlendFactor        = vp::res::GfxBlendFactor;
-	using BlendEquation      = vp::res::GfxBlendEquation;
-	using LogicOperation     = vp::res::GfxLogicOperation;
+    using BlendFactor        = vp::res::GfxBlendFactor;
+    using BlendEquation      = vp::res::GfxBlendEquation;
+    using LogicOperation     = vp::res::GfxLogicOperation;
 
     /* Depth Stencil State enums */
-	using ComparisonFunction = vp::res::GfxComparisonFunction;
-	using StencilOperation   = vp::res::GfxStencilOperation;
+    using ComparisonFunction = vp::res::GfxComparisonFunction;
+    using StencilOperation   = vp::res::GfxStencilOperation;
 
     /* Rasterizer State enums */
-	using CullMode           = vp::res::GfxCullMode;
-	using FillMode           = vp::res::GfxFillMode;
-	using FrontFace          = vp::res::GfxFrontFace;
+    using CullMode           = vp::res::GfxCullMode;
+    using FillMode           = vp::res::GfxFillMode;
+    using FrontFace          = vp::res::GfxFrontFace;
+
+    /* Vertex State enums */
+    using AttributeFormat    = vp::res::GfxAttributeFormat;
 
     /* Infos */
     using BufferInfo         = vp::res::ResGfxBufferInfo;

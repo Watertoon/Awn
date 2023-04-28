@@ -7,96 +7,148 @@ namespace awn::gfx {
         VkDeviceAddress vk_device_address;
     };
 
-    using CommandList = VkCommandBuffer;
+    struct CommandList {
+        VkCommandBuffer vk_command_buffer;
+        QueueType       queue_type;
+    };
 
     class CommandPoolManager {
-        private:
-            u32 m_command_pool_tls_slot;
         public:
-            VP_SINGLETON_TRAITS(CommandPoolManager);
+            struct CommandPoolHolder {
+                VkCommandPool command_pool_array[Context::cTargetMaxQueueCount];
+
+                constexpr CommandPoolHolder() : command_pool_array{VK_NULL_HANDLE} {/*...*/}
+            };
+        public:
+            static constexpr size_t cMaxCommandBufferThreadCount = 256;
+        public:
+            using CommandPoolHolderAllocator = vp::util::FixedObjectAllocator<CommandPoolHolder, cMaxCommandBufferThreadCount>;
+        private:
+            sys::TlsSlot               m_command_pool_tls_slot;
+            CommandPoolHolderAllocator m_command_pool_holder_allocator;
+        public:
+            AWN_SINGLETON_TRAITS(CommandPoolManager);
+        private:
+            static void DestructCommandPoolHolderTls(void *arg) {
+
+                /* Check whether the thread allocated a command pool holder */
+                if (arg == nullptr) { return; }
+
+                /* Destruct all vk command pools */
+                CommandPoolHolder *holder = reinterpret_cast<CommandPoolHolder*>(arg);
+                for (u32 i = 0; i < Context::cTargetMaxQueueCount; ++i) {
+                    if (holder->command_pool_array[i] != VK_NULL_HANDLE) {
+                        ::pfn_vkDestroyCommandPool(Context::GetInstance()->GetVkDevice(), holder->command_pool_array[i], Context::GetInstance()->GetVkAllocationCallbacks());
+                        holder->command_pool_array[i] = VK_NULL_HANDLE;
+                    }
+                }
+
+                /* Free command pool holder to allocator */
+                CommandPoolManager::GetInstance()->m_command_pool_holder_allocator.Free(holder);
+
+                return;
+            }
         public:
             constexpr ALWAYS_INLINE CommandPoolManager() : m_command_pool_tls_slot(0) {/*...*/}
 
             void Initialize() {
-                m_command_pool_tls_slot = sys::AllocateTlsSlot(nullptr);
+                const bool result = sys::ThreadManager::GetInstance()->AllocateTlsSlot(std::addressof(m_command_pool_tls_slot), DestructCommandPoolHolderTls, true);
+                VP_ASSERT(result == true);
             }
 
             void Finalize() {
-                sys::FreeTlsSlot(m_tls_slot);
+                sys::ThreadManager::GetInstance()->FreeTlsSlot(m_command_pool_tls_slot);
                 m_command_pool_tls_slot = 0;
             }
 
             CommandList CreateThreadLocalCommandList(QueueType queue_type) {
 
                 /* Try to acquire existing command pool */
-                VkCommandPool vk_command_pool = reinterpret_cast<VkCommandPool>(sys::GetTlsData(m_command_pool_tls_slot));
+                CommandPoolHolder *command_pool_holder = reinterpret_cast<CommandPoolHolder*>(sys::ThreadManager::GetInstance()->GetCurrentThread()->GetTlsData(m_command_pool_tls_slot));
+
+                /* Allocate new command pool holder if one doesn't exist */
+                if (command_pool_holder == nullptr) {
+                    command_pool_holder = m_command_pool_holder_allocator.Allocate();
+                    VP_ASSERT(command_pool_holder != nullptr);
+                }
+
+                /* Get command pool */
+                VkCommandPool *sel_vk_command_pool = std::addressof(command_pool_holder->command_pool_array[static_cast<u32>(queue_type)]);
 
                 /* Allocate new commmand pool if one doesn't exist */
-                if (vk_command_pool == VK_NULL_HANDLE) {
-
-                    ::pfn_vkCreateCommandPool();
+                if (*sel_vk_command_pool == VK_NULL_HANDLE) {
+                    const VkCommandPoolCreateInfo command_pool_create_info = {
+                        .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                        .queueFamilyIndex = Context::GetInstance()->GetQueueFamilyIndex(queue_type)
+                    };
+                    const u32 result = ::pfn_vkCreateCommandPool(Context::GetInstance()->GetVkDevice(), std::addressof(command_pool_create_info), Context::GetInstance()->GetVkAllocationCallbacks(), sel_vk_command_pool);
+                    VP_ASSERT(result == VK_SUCCESS);
                 }
 
                 /* Allocate new secondary command buffer */
-                VkCommandBufferAllocateInfo {
-                    .sType       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-                    .commandPool = vk_command_pool;
+                const VkCommandBufferAllocateInfo allocate_info {
+                    .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+                    .commandPool        = *sel_vk_command_pool,
+                    .level              = VK_COMMAND_BUFFER_LEVEL_SECONDARY,
+                    .commandBufferCount = 1
                 };
 
                 VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
-                const u32 result = ::pfn_vkAllocateCommandBuffers(Context::GetInstance()->GetVkDevice(), std::addressof(), std::addressof(vk_command_buffer));
+                const u32 result = ::pfn_vkAllocateCommandBuffers(Context::GetInstance()->GetVkDevice(), std::addressof(allocate_info), std::addressof(vk_command_buffer));
 
-                return {vk_command_buffer, sys::GetCurrentThread()};
+                return {vk_command_buffer, queue_type};
             }
 
             void FinalizeThreadLocalCommandList(CommandList command_list) {
 
-                /* Try to acquire existing command pool */
-                VkCommandPool vk_command_pool = reinterpret_cast<VkCommandPool>(sys::GetTlsData(m_command_pool_tls_slot));
+                /* Acquire existing command pool */
+                CommandPoolHolder *command_pool_holder = reinterpret_cast<CommandPoolHolder*>(sys::ThreadManager::GetInstance()->GetCurrentThread()->GetTlsData(m_command_pool_tls_slot));
 
                 /* Free secondary command buffer */
-                ::pfn_vkFreeCommandBuffer();
+                ::pfn_vkFreeCommandBuffers(Context::GetInstance()->GetVkDevice(), command_pool_holder->command_pool_array[static_cast<u32>(command_list.queue_type)], 1, std::addressof(command_list.vk_command_buffer));
+
+                return;
             }
     };
 
     class CommandBufferBase {
         protected:
-            VkCommandBuffer m_command_list;
+            CommandList m_command_list;
         public:
-            constexpr ALWAYS_INLINE CommandBuffer() {/*...*/}
+            constexpr ALWAYS_INLINE CommandBufferBase() : m_command_list() {/*...*/}
 
             /* Gpu dispatch commands */
             void Draw(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count) {
-                ::pfn_vkCmdSetPrimitiveTopology(m_command_list, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
-                ::pfn_vkCmdDraw(m_command_list, vertex_count, 0, base_vertex, 0);
+                ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
+                ::pfn_vkCmdDraw(m_command_list.vk_command_buffer, vertex_count, 0, base_vertex, 0);
             }
             void DrawInstanced(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count, u32 base_instance, u32 instance_count) {
-                ::pfn_vkCmdSetPrimitiveTopology(m_command_list, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
-                ::pfn_vkCmdDraw(m_command_list, vertex_count, instance_count, base_vertex, base_instance);
+                ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
+                ::pfn_vkCmdDraw(m_command_list.vk_command_buffer, vertex_count, instance_count, base_vertex, base_instance);
             }
-            void DrawIndexed(IndexType index_type, GpuAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex) {
-                ::pfn_vkCmdSetPrimitiveTopology(m_command_list, res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
-                ::pfn_vkCmdBindIndexBuffer(m_command_list, index_buffer_address->vk_buffer, 0, res::GfxIndexTypeToVkIndexType(index_type));
-                ::pfn_vkCmdDrawIndexed(m_command_list, index_count, 0, base_index, base_vertex, 0);
+            void DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex) {
+                ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
+                ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.vk_buffer, 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
+                ::pfn_vkCmdDrawIndexed(m_command_list.vk_command_buffer, index_count, 0, base_index, base_vertex, 0);
             }
-            void DrawIndexedInstanced(IndexType index_type, GpuAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_instance, u32 instance_count) {
-                ::pfn_vkCmdSetPrimitiveTopology(m_command_list, res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
-                ::pfn_vkCmdBindIndexBuffer(m_command_list, index_buffer_address->vk_buffer, 0, res::GfxIndexTypeToVkIndexType(index_type));
-                ::pfn_vkCmdDrawIndexed(m_command_list, index_count, instance_count, base_index, base_vertex, base_instance);
+            void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count) {
+                ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
+                ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.vk_buffer, 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
+                ::pfn_vkCmdDrawIndexed(m_command_list.vk_command_buffer, index_count, instance_count, base_index, base_vertex, base_instance);
             }
             void DrawMeshTasks(u32 x, u32 y, u32 z) {
-                ::pfn_vkCmdDrawMeshTasksEXT(m_command_list, x, y, z);
+                ::pfn_vkCmdDrawMeshTasksEXT(m_command_list.vk_command_buffer, x, y, z);
             }
             void Dispatch(u32 x, u32 y, u32 z) {
-                ::pfn_vkCmdDispatch(m_command_list, x, y, z);
+                ::pfn_vkCmdDispatch(m_command_list.vk_command_buffer, x, y, z);
             }
 
             /* Resource state setter commands */
             void SetVertexBuffer(GpuAddress vertex_buffer_address, u32 binding, u32 stride, u32 size) {
-                const VkDeviceSize offset = 0;
-                const VkDeviceSize size   = size;
-                const VkDeviceSize stride = stride;
-                ::pfn_vkCmdBindVertexBuffers2(m_command_list, binding, 1, std::addressof(vertex_buffer_address->vk_buffer), std::addressof(offset), std::addressof(size), std::addressof(stride));
+                const VkDeviceSize device_offset = 0;
+                const VkDeviceSize device_size   = size;
+                const VkDeviceSize device_stride = stride;
+                ::pfn_vkCmdBindVertexBuffers2(m_command_list.vk_command_buffer, binding, 1, std::addressof(vertex_buffer_address.vk_buffer), std::addressof(device_offset), std::addressof(device_size), std::addressof(device_stride));
             }
 
             void BeginRendering(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
@@ -119,9 +171,9 @@ namespace awn::gfx {
                 }
 
                 /* Setup color target attacments */
-                VkAttachmentInfo color_attachment_info_array[Context::TargetMaxBoundRenderTargetColor] = {};
+                VkRenderingAttachmentInfo color_attachment_info_array[Context::cTargetMaxBoundRenderTargetColorCount] = {};
                 for (u32 i = 0; i < color_target_count; ++i) {
-                    color_attachment_info_array[i].sType       = VK_STRUCTURE_TYPE_ATTACHMENT_INFO;
+                    color_attachment_info_array[i].sType       = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
                     color_attachment_info_array[i].imageView   = color_target_array[i]->GetVkImageView();
                     color_attachment_info_array[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                     color_attachment_info_array[i].loadOp      = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -129,26 +181,26 @@ namespace awn::gfx {
                 }
 
                 /* Setup depth stencil attachments */
-                VkAttachmentInfo  depth_attachment_info             = {};
-                VkAttachmentInfo  stencil_attachment_info           = {};
-                VkAttachmentInfo *selected_depth_attachment_info   = nullptr;
-                VkAttachmentInfo *selected_stencil_attachment_info = nullptr;
+                VkRenderingAttachmentInfo  depth_attachment_info             = {};
+                VkRenderingAttachmentInfo  stencil_attachment_info           = {};
+                VkRenderingAttachmentInfo *selected_depth_attachment_info   = nullptr;
+                VkRenderingAttachmentInfo *selected_stencil_attachment_info = nullptr;
                 if (depth_stencil_target != nullptr) {
                     if (depth_stencil_target->IsDepthFormat() == true) {
-                        depth_attachment_info.sType       = VK_STRUCTURE_TYPE_ATTACHMENT_INFO;
+                        depth_attachment_info.sType       = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
                         depth_attachment_info.imageView   = depth_stencil_target->GetVkImageView();
                         depth_attachment_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                         depth_attachment_info.loadOp      = VK_ATTACHMENT_LOAD_OP_LOAD;
                         depth_attachment_info.storeOp     = VK_ATTACHMENT_STORE_OP_STORE;
-                        selected_depth_attachment_info    = std::addressof(selected_depth_attachment_info);
+                        selected_depth_attachment_info    = std::addressof(depth_attachment_info);
                     }
                     if (depth_stencil_target->IsStencilFormat() == true) {
-                        stencil_attachment_info.sType       = VK_STRUCTURE_TYPE_ATTACHMENT_INFO;
+                        stencil_attachment_info.sType       = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
                         stencil_attachment_info.imageView   = depth_stencil_target->GetVkImageView();
                         stencil_attachment_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                         stencil_attachment_info.loadOp      = VK_ATTACHMENT_LOAD_OP_LOAD;
                         stencil_attachment_info.storeOp     = VK_ATTACHMENT_STORE_OP_STORE;
-                        selected_stencil_attachment_info = std::addressof(selected_stencil_attachment_info);
+                        selected_stencil_attachment_info = std::addressof(stencil_attachment_info);
                     }
                 }
 
@@ -162,8 +214,8 @@ namespace awn::gfx {
                             .y = 0,
                         },
                         .extent = {
-                            .width = render_width,
-                            .width = render_height
+                            .width  = render_width,
+                            .height = render_height
                         },
                     },
                     .layerCount           = view_count,
@@ -173,17 +225,17 @@ namespace awn::gfx {
                     .pDepthAttachment     = selected_depth_attachment_info,
                     .pStencilAttachment   = selected_stencil_attachment_info,
                 };
-                ::pfn_vkCmdBeginRendering(m_command_list, std::addressof(rendering_info));
+                ::pfn_vkCmdBeginRendering(m_command_list.vk_command_buffer, std::addressof(rendering_info));
             }
 
             void EndRendering() {
-                ::pfn_vkCmdEndRendering(m_command_list);
+                ::pfn_vkCmdEndRendering(m_command_list.vk_command_buffer);
             }
 
             void SetStorageBuffer(u32 location, GpuAddress storage_buffer_address) {
 
                 /* Push 8-byte buffer address to location in push constant range 128-256 */
-                ::pfn_vkCmdPushConstants(m_command_list, Context::GetInstance()->GetVkPipelineLayout(), VK_SHADER_STAGE_ALL, location * sizeof(VkDeviceAddress), sizeof(VkDeviceAddress));
+                ::pfn_vkCmdPushConstants(m_command_list.vk_command_buffer, Context::GetInstance()->GetVkPipelineLayout(), VK_SHADER_STAGE_ALL, location * sizeof(VkDeviceAddress), sizeof(VkDeviceAddress), std::addressof(storage_buffer_address.vk_device_address));
             }
 
             void SetTextureAndSampler(u32 location, DescriptorSlot texture_slot, DescriptorSlot sampler_slot) {
@@ -198,15 +250,15 @@ namespace awn::gfx {
                 const u32 view_handle = ::pfn_vkGetImageViewHandleNVX(Context::GetInstance()->GetVkDevice(), std::addressof(image_handle_info));*/
 
                 /* Push 4-byte packed 20:12 TextureIndex:SamplerIndex to location in push constant range 0-128 */
-                const u32 view_handle = ((sampler_slot & 0xfff) << Context::cTargetTextureDescriptorIndexBits) | (texture_slot & 0xf'ffff)
-                ::pfn_vkCmdPushConstants(m_command_list, Context::GetInstance()->GetVkPipelineLayout(), VK_SHADER_STAGE_ALL, location * sizeof(u32), sizeof(u32), std::addressof(view_handle));
+                const u32 view_handle = ((sampler_slot & 0xfff) << Context::cTargetTextureDescriptorIndexBits) | (texture_slot & 0xf'ffff);
+                ::pfn_vkCmdPushConstants(m_command_list.vk_command_buffer, Context::GetInstance()->GetVkPipelineLayout(), VK_SHADER_STAGE_ALL, location * sizeof(u32), sizeof(u32), std::addressof(view_handle));
             }
 
             void SetShader(Shader *shader) {
-                VkShaderStageFlagBits flag_bit_array[Context::TargetMaxSimultaneousShaderStages] = {};
-                VkShaderEXT           shader_array[Context::TargetMaxSimultaneousShaderStages] = {};
-                shader->SetupForCommandList(flag_bit_array, shader_array);
-                ::pfn_vkCmdBindShadersEXT(m_command_list, flag_bit_array, shader_array);
+                VkShaderStageFlagBits *flag_bit_array = nullptr;
+                VkShaderEXT           *shader_array   = nullptr;
+                const u32              stage_count    = shader->SetupForCommandList(shader_array, flag_bit_array);
+                ::pfn_vkCmdBindShadersEXT(m_command_list.vk_command_buffer, stage_count, flag_bit_array, shader_array);
             }
 
             /* Fixed function state setters */
@@ -219,78 +271,78 @@ namespace awn::gfx {
             //}
             void SetBlendState(BlendState *blend_state) {
 
-                ::pfn_vkCmdSetLogicOpEnableEXT(m_command_list, true);
-                ::pfn_vkCmdSetLogicOpEXT(m_command_list, res::GfxLogicOperationToVkLogicOp(static_cast<res::GfxLogicOperation>(blend_state->logic_op));
+                ::pfn_vkCmdSetLogicOpEnableEXT(m_command_list.vk_command_buffer, true);
+                ::pfn_vkCmdSetLogicOpEXT(m_command_list.vk_command_buffer, vp::res::GfxLogicOperationToVkLogicOp(static_cast<LogicOperation>(blend_state->logic_op)));
 
                 /* Set VkColorBlendEquation array */
-                VkColorBlendEquation  blend_equation_array[Context::TargetMaxColorBlendEquations] = {};
-                VkBool32              blend_enable_array[Context::TargetMaxColorBlendEquations] = {};
-                VkColorComponentFlags channel_mask_array[Context::TargetMaxColorBlendEquations] = {};
+                VkColorBlendEquationEXT blend_equation_array[Context::cTargetMaxColorBlendEquationCount] = {};
+                VkBool32                blend_enable_array[Context::cTargetMaxColorBlendEquationCount] = {};
+                VkColorComponentFlags   channel_mask_array[Context::cTargetMaxColorBlendEquationCount] = {};
                 for (u32 i = 0; i < blend_state->blend_target_state_count; ++i) {
-                    blend_enable_array[i]                       = blend_state->blend_target_state_array[i].blend_enable;
-                    blend_equation_array[i].srcColorBlendFactor = res::GfxBlendFactorToVkBlendFactor(static_cast<res::GfxBlendFactor>(blend_state->blend_target_state_array[i].blend_factor_source_color));
-                    blend_equation_array[i].dstColorBlendFactor = res::GfxBlendFactorToVkBlendFactor(static_cast<res::GfxBlendFactor>(blend_state->blend_target_state_array[i].blend_factor_destination_color));
-                    blend_equation_array[i].colorBlendOp        = res::GfxBlendEquationToVkBlendOp(static_cast<res::GfxBlendEquation>(blend_state->blend_target_state_array[i].blend_equation_color));
-                    blend_equation_array[i].srcAlphaBlendFactor = res::GfxBlendFactorToVkBlendFactor(static_cast<res::GfxBlendFactor>(blend_state->blend_target_state_array[i].blend_factor_source_alpha));
-                    blend_equation_array[i].dstAlphaBlendFactor = res::GfxBlendFactorToVkBlendFactor(static_cast<res::GfxBlendFactor>(blend_state->blend_target_state_array[i].blend_factor_destination_alpha));
-                    blend_equation_array[i].alphaBlendOp        = res::GfxBlendEquationToVkBlendOp(static_cast<res::GfxBlendEquation>(blend_state->blend_target_state_array[i].blend_equation_alpha));
-                    channel_mask_array[i]                       = blend_state->blend_target_state_array[i].channel_mask;
+                    blend_enable_array[i]                       = blend_state->blend_target_state_info_array[i].enable_blend;
+                    blend_equation_array[i].srcColorBlendFactor = vp::res::GfxBlendFactorToVkBlendFactor(static_cast<BlendFactor>(blend_state->blend_target_state_info_array[i].blend_factor_source_color));
+                    blend_equation_array[i].dstColorBlendFactor = vp::res::GfxBlendFactorToVkBlendFactor(static_cast<BlendFactor>(blend_state->blend_target_state_info_array[i].blend_factor_destination_color));
+                    blend_equation_array[i].colorBlendOp        = vp::res::GfxBlendEquationToVkBlendOp(static_cast<BlendEquation>(blend_state->blend_target_state_info_array[i].blend_equation_color));
+                    blend_equation_array[i].srcAlphaBlendFactor = vp::res::GfxBlendFactorToVkBlendFactor(static_cast<BlendFactor>(blend_state->blend_target_state_info_array[i].blend_factor_source_alpha));
+                    blend_equation_array[i].dstAlphaBlendFactor = vp::res::GfxBlendFactorToVkBlendFactor(static_cast<BlendFactor>(blend_state->blend_target_state_info_array[i].blend_factor_destination_alpha));
+                    blend_equation_array[i].alphaBlendOp        = vp::res::GfxBlendEquationToVkBlendOp(static_cast<BlendEquation>(blend_state->blend_target_state_info_array[i].blend_equation_alpha));
+                    channel_mask_array[i]                       = blend_state->blend_target_state_info_array[i].channel_mask;
                 }
-                ::pfn_vkCmdSetColorBlendEnableEXT(m_command_list, 0, blend_state->blend_target_state_count, blend_enable_array);
-                ::pfn_vkCmdSetColorBlendEquationEXT(m_command_list, 0, blend_state->blend_target_state_count, blend_equation_array);
-                ::pfn_vkCmdSetColorWriteMaskEXT(m_command_list, 0, blend_state->blend_target_state_count, channel_mask_array);
+                ::pfn_vkCmdSetColorBlendEnableEXT(m_command_list.vk_command_buffer, 0, blend_state->blend_target_state_count, blend_enable_array);
+                ::pfn_vkCmdSetColorBlendEquationEXT(m_command_list.vk_command_buffer, 0, blend_state->blend_target_state_count, blend_equation_array);
+                ::pfn_vkCmdSetColorWriteMaskEXT(m_command_list.vk_command_buffer, 0, blend_state->blend_target_state_count, channel_mask_array);
 
-                ::pfn_vkCmdSetBlendConstants(m_command_list, blend_state->blend_constant_color);
+                ::pfn_vkCmdSetBlendConstants(m_command_list.vk_command_buffer, std::addressof(blend_state->blend_constant_color.m_r));
     
                 return;
             }
             void SetDepthStencilState(DepthStencilState *depth_stencil_state) {
 
-                ::pfn_vkCmdSetDepthTestEnable(m_command_list, depth_stencil_state->enable_depth_test);
-                ::pfn_vkCmdSetDepthWriteEnable(m_command_list, depth_stencil_state->enable_depth_write);
+                ::pfn_vkCmdSetDepthTestEnable(m_command_list.vk_command_buffer, depth_stencil_state->enable_depth_test);
+                ::pfn_vkCmdSetDepthWriteEnable(m_command_list.vk_command_buffer, depth_stencil_state->enable_depth_write);
 
-                ::pfn_vkCmdSetDepthCompareOp(m_command_list, depth_stencil_state->depth_comparison_function);
+                ::pfn_vkCmdSetDepthCompareOp(m_command_list.vk_command_buffer, static_cast<VkCompareOp>(depth_stencil_state->depth_comparison_function));
 
-                if (depth_stencil_state->disable_depth_bounds == true) {
-                    ::pfn_vkCmdSetDepthBoundsTestEnable(m_command_list, false);
+                if (depth_stencil_state->enable_depth_bounds != true) {
+                    ::pfn_vkCmdSetDepthBoundsTestEnable(m_command_list.vk_command_buffer, false);
                 } else {
-                    ::pfn_vkCmdSetDepthBoundsTestEnable(m_command_list, true);
-                    ::pfn_vkCmdSetDepthBounds(m_command_list, 0.0f, 1.0f);
+                    ::pfn_vkCmdSetDepthBoundsTestEnable(m_command_list.vk_command_buffer, true);
+                    ::pfn_vkCmdSetDepthBounds(m_command_list.vk_command_buffer, 0.0f, 1.0f);
                 }
 
-                ::pfn_vkCmdSetStencilTestEnable(m_command_list, depth_stencil_state->enable_stencil_test);
-                ::pfn_vkCmdSetStencilCompareMask(m_command_list, VK_STENCIL_FACE_FRONT_AND_BACK_BIT, depth_stencil_state->stencil_value_mask);
-                ::pfn_vkCmdSetStencilWriteMask(m_command_list, VK_STENCIL_FACE_FRONT_AND_BACK_BIT, depth_stencil_state->stencil_write_mask);
+                ::pfn_vkCmdSetStencilTestEnable(m_command_list.vk_command_buffer, depth_stencil_state->enable_stencil_test);
+                ::pfn_vkCmdSetStencilCompareMask(m_command_list.vk_command_buffer, VK_STENCIL_FACE_FRONT_AND_BACK, depth_stencil_state->stencil_value_mask);
+                ::pfn_vkCmdSetStencilWriteMask(m_command_list.vk_command_buffer, VK_STENCIL_FACE_FRONT_AND_BACK, depth_stencil_state->stencil_write_mask);
                 
-                ::pfn_vkCmdSetStencilOp(m_command_list,VK_STENCIL_FACE_FRONT_BIT, depth_stencil_state->front_face_stencil_fail_op, depth_stencil_state->front_face_stencil_depth_pass_op, depth_stencil_state->front_face_stencil_depth_fail_op, depth_stencil_state->front_face_stencil_comparison_function);
-                ::pfn_vkCmdSetStencilReference(m_command_list, VK_STENCIL_FACE_FRONT_BIT, depth_stencil_state->front_face_stencil_reference);
-                ::pfn_vkCmdSetStencilOp(m_command_list,VK_STENCIL_FACE_BACK_BIT, depth_stencil_state->back_face_stencil_fail_op, depth_stencil_state->back_face_stencil_depth_pass_op, depth_stencil_state->back_face_stencil_depth_fail_op, depth_stencil_state->back_face_stencil_comparison_function);
-                ::pfn_vkCmdSetStencilReference(m_command_list, VK_STENCIL_FACE_BACK_BIT, depth_stencil_state->back_face_stencil_reference);
+                ::pfn_vkCmdSetStencilOp(m_command_list.vk_command_buffer,VK_STENCIL_FACE_FRONT_BIT, static_cast<VkStencilOp>(depth_stencil_state->front_face_stencil_fail_op), static_cast<VkStencilOp>(depth_stencil_state->front_face_stencil_depth_pass_op), static_cast<VkStencilOp>(depth_stencil_state->front_face_stencil_depth_fail_op), static_cast<VkCompareOp>(depth_stencil_state->front_face_stencil_comparison_function));
+                ::pfn_vkCmdSetStencilReference(m_command_list.vk_command_buffer, VK_STENCIL_FACE_FRONT_BIT, depth_stencil_state->front_face_stencil_reference);
+                ::pfn_vkCmdSetStencilOp(m_command_list.vk_command_buffer,VK_STENCIL_FACE_BACK_BIT, static_cast<VkStencilOp>(depth_stencil_state->back_face_stencil_fail_op), static_cast<VkStencilOp>(depth_stencil_state->back_face_stencil_depth_pass_op), static_cast<VkStencilOp>(depth_stencil_state->back_face_stencil_depth_fail_op), static_cast<VkCompareOp>(depth_stencil_state->back_face_stencil_comparison_function));
+                ::pfn_vkCmdSetStencilReference(m_command_list.vk_command_buffer, VK_STENCIL_FACE_BACK_BIT, depth_stencil_state->back_face_stencil_reference);
             }
             void SetRasterizerState(RasterizerState *rasterizer_state) {
 
-                ::pfn_vkCmdSetRasterizerDiscardEnable(m_command_list, rasterizer_state->enable_rasterizer_discard);
+                ::pfn_vkCmdSetRasterizerDiscardEnable(m_command_list.vk_command_buffer, rasterizer_state->enable_rasterizer_discard);
 
-                ::pfn_vkCmdSetConservativeRasterizationModeEXT(m_command_list, rasterizer_state->enable_conservative_rasterizer);
-                ::pfn_vkCmdSetExtraPrimitiveOverestimationSizeEXT(m_command_list, 0.0f);
+                ::pfn_vkCmdSetConservativeRasterizationModeEXT(m_command_list.vk_command_buffer, static_cast<VkConservativeRasterizationModeEXT>(rasterizer_state->enable_conservative_rasterizer));
+                ::pfn_vkCmdSetExtraPrimitiveOverestimationSizeEXT(m_command_list.vk_command_buffer, 0.0f);
 
-                ::pfn_vkCmdSetRasterizationSamplesEXT(m_command_list, rasterizer_state->rasterization_samples);
-                ::pfn_vkCmdSetSampleMaskEXT(m_command_list, rasterizer_state->sample_mask);
+                ::pfn_vkCmdSetRasterizationSamplesEXT(m_command_list.vk_command_buffer, static_cast<VkSampleCountFlagBits>(rasterizer_state->rasterization_samples));
+                ::pfn_vkCmdSetSampleMaskEXT(m_command_list.vk_command_buffer, static_cast<VkSampleCountFlagBits>(rasterizer_state->rasterization_samples), std::addressof(rasterizer_state->sample_mask));
 
-                ::pfn_vkCmdSetAlphaToCoverageEnableEXT(m_command_list, rasterizer_state->enable_alpha_to_coverage);
-                ::pfn_vkCmdSetDepthClampEnableEXT(m_command_list, rasterizer_state->enable_depth_clamp);
+                ::pfn_vkCmdSetAlphaToCoverageEnableEXT(m_command_list.vk_command_buffer, rasterizer_state->enable_alpha_to_coverage);
+                ::pfn_vkCmdSetDepthClampEnableEXT(m_command_list.vk_command_buffer, rasterizer_state->enable_depth_clamp);
 
-                ::pfn_vkCmdSetPolygonModeEXT(m_command_list, rasterizer_state->fill_mode);
-                ::pfn_vkCmdSetCullMode(m_command_list, rasterizer_state->cull_mode);
-                ::pfn_vkCmdSetFrontFace(m_command_list, rasterizer_state->front_face);
+                ::pfn_vkCmdSetPolygonModeEXT(m_command_list.vk_command_buffer, vp::res::GfxFillModeToVkPolygonMode(static_cast<FillMode>(rasterizer_state->fill_mode)));
+                ::pfn_vkCmdSetCullMode(m_command_list.vk_command_buffer, vp::res::GfxCullModeToVkCullModeFlags(static_cast<CullMode>(rasterizer_state->cull_mode)));
+                ::pfn_vkCmdSetFrontFace(m_command_list.vk_command_buffer, vp::res::GfxFrontFaceToVkFrontFace(static_cast<FrontFace>(rasterizer_state->front_face)));
 
-                ::pfn_vkCmdSetDepthBiasEnable(m_command_list, true);
-                ::pfn_vkCmdSetDepthBias(m_command_list, rasterizer_state->polygon_offset_constant_factor, rasterizer_state->polygon_offset_clamp, rasterizer_state->polygon_offset_factor);
+                ::pfn_vkCmdSetDepthBiasEnable(m_command_list.vk_command_buffer, true);
+                ::pfn_vkCmdSetDepthBias(m_command_list.vk_command_buffer, rasterizer_state->polygon_offset_constant_factor, rasterizer_state->polygon_offset_clamp, rasterizer_state->polygon_offset_slope_factor);
             }
             void SetVertexState(VertexState *vertex_state) {
 
-                VkVertexInputBindingDescription2EXT vertex_binding_description_array[Context::TargetMaxVertexBuffers] = {};
-                VkVertexInputAttributeDescription2EXT vertex_attribute_description_array[Context::TargetMaxVertexBuffers] = {};
+                VkVertexInputBindingDescription2EXT vertex_binding_description_array[Context::cTargetMaxVertexBufferCount] = {};
+                VkVertexInputAttributeDescription2EXT vertex_attribute_description_array[Context::cTargetMaxVertexBufferCount] = {};
                 for (u32 i = 0; i < vertex_state->vertex_buffer_state_count; ++i) {
                     vertex_binding_description_array[i].sType     = VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT;
                     vertex_binding_description_array[i].binding   = vertex_state->vertex_attribute_state_array[i].binding;
@@ -302,59 +354,59 @@ namespace awn::gfx {
                     vertex_attribute_description_array[i].sType    = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT;
                     vertex_attribute_description_array[i].location = vertex_state->vertex_attribute_state_array[i].interface_slot;
                     vertex_attribute_description_array[i].binding  = vertex_state->vertex_attribute_state_array[i].binding;
-                    vertex_attribute_description_array[i].location = res::GfxAttributeFormatToVkFormat(static_cast<res::GfxAttributeFormat>(vertex_state->vertex_attribute_state_array[i].attribute_format);
+                    vertex_attribute_description_array[i].location = vp::res::GfxAttributeFormatToVkFormat(static_cast<AttributeFormat>(vertex_state->vertex_attribute_state_array[i].attribute_format));
                     vertex_attribute_description_array[i].location = vertex_state->vertex_attribute_state_array[i].offset;
                 }
-                ::pfn_vkCmdSetVertexInputEXT(m_command_list, vertex_state->vertex_buffer_state_count, vertex_binding_description_array, vertex_state->vertex_attribute_state_count, vertex_attribute_description_array);
+                ::pfn_vkCmdSetVertexInputEXT(m_command_list.vk_command_buffer, vertex_state->vertex_buffer_state_count, vertex_binding_description_array, vertex_state->vertex_attribute_state_count, vertex_attribute_description_array);
             }
             void SetViewportScissorState(ViewportScissorState *viewport_scissor_state) {
 
-                ::pfn_vkCmdSetViewportWithCount(m_command_list, viewport_scissor_state->viewport_scissor_count, reinterpret_cast<VkViewport*>(viewport_scissor_state->viewport_state_array));
+                ::pfn_vkCmdSetViewportWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->viewport_scissor_count, reinterpret_cast<VkViewport*>(viewport_scissor_state->viewport_state_array));
 
                 if (viewport_scissor_state->enable_scissors == true) {
-                    ::pfn_vkCmdSetScissorWithCount(m_command_list, viewport_scissor_state->viewport_scissor_count, reinterpret_cast<VkRect2D*>(viewport_scissor_state->scissor_state_array));
+                    ::pfn_vkCmdSetScissorWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->viewport_scissor_count, reinterpret_cast<VkRect2D*>(viewport_scissor_state->scissor_state_array));
                     return;
                 }
 
-                VkRect2D scissor_array[Context::TargetMaxViewportScissorCount] = {};
+                VkRect2D scissor_array[Context::cTargetMaxViewportScissorCount] = {};
                 for (u32 i = 0; i < viewport_scissor_state->viewport_scissor_count; ++i) {
-                    scissor_array.offset.x      = 0;
-                    scissor_array.offset.y      = 0;
-                    scissor_array.extent.width  = 0x7fff'ffff;
-                    scissor_array.extent.height = 0x7fff'ffff;
+                    scissor_array[i].offset.x      = 0;
+                    scissor_array[i].offset.y      = 0;
+                    scissor_array[i].extent.width  = 0x7fff'ffff;
+                    scissor_array[i].extent.height = 0x7fff'ffff;
                 }
-                ::pfn_vkCmdSetScissorWithCount(m_command_list, viewport_scissor_state->viewport_scissor_count, scissor_array);
+                ::pfn_vkCmdSetScissorWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->viewport_scissor_count, scissor_array);
 
                 return;
             }
             void SetLineWidth(float line_width) {
-                ::pfn_vkCmdSetLineWidth(m_command_list, line_width);
+                ::pfn_vkCmdSetLineWidth(m_command_list.vk_command_buffer, line_width);
             }
     };
 
-    class ThreadLocalCommandBuffer {
+    class ThreadLocalCommandBuffer : public CommandBufferBase {
         public:
-            constexpr ALWAYS_INLINE ThreadLocalCommandBuffer() : CommandBuffer() {/*...*/}
+            constexpr ALWAYS_INLINE ThreadLocalCommandBuffer() : CommandBufferBase() {/*...*/}
 
             /* Commmand buffer management */
-            void Begin() {
+            void Begin(QueueType queue_type) {
 
                 /* Allocate a command buffer */
-                m_command_list = CommandPoolManager::GetInstance()->CreateThreadLocalCommandList();
+                m_command_list = CommandPoolManager::GetInstance()->CreateThreadLocalCommandList(queue_type);
 
                 /* Begin command buffer */
                 const VkCommandBufferBeginInfo begin_info = {
                     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                     .flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
                 };
-                const u32 result = ::pfn_vkBeginCommandBuffer(m_command_list.vk_secondary_command_buffer, std::addressof(begin_info));
+                const u32 result = ::pfn_vkBeginCommandBuffer(m_command_list.vk_command_buffer, std::addressof(begin_info));
                 VP_ASSERT(result == VK_SUCCESS);
             }
 
             CommandList End() {
 
                 /* End command buffer */
-                const u32 result = ::pfn_vkEndCommandBuffer(m_command_list.vk_secondary_command_buffer);
+                const u32 result = ::pfn_vkEndCommandBuffer(m_command_list.vk_command_buffer);
                 VP_ASSERT(result == VK_SUCCESS);
 
                 return m_command_list;

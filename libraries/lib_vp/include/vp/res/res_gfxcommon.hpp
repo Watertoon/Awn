@@ -585,8 +585,8 @@ namespace vp::res {
         SourceAlphaSaturate      = 14,
         SourceOneColor           = 15,
         SourceOneColorMinusOne   = 16,
-        AlphaOneColor            = 17,
-        AlphaOneColorMinusOne    = 18
+        SourceOneAlpha           = 17,
+        SourceOneAlphaMinusOne   = 18
     };
 
     enum class GfxBlendEquation : u8 {
@@ -617,15 +617,15 @@ namespace vp::res {
     };
 
     enum class GfxCullMode : u8 {
-        None  = 0x0,
-        Front = 0x1,
-        Back  = 0x2
+        None         = 0x0,
+        Front        = 0x1,
+        Back         = 0x2,
     };
 
     enum class GfxFillMode : u8 {
         Point = 0,
-        Fill  = 1,
-        Line  = 2
+        Line  = 1,
+        Fill  = 2,
     };
     
     enum class GfxFrontFace : u8 {

@@ -70,7 +70,7 @@ namespace vp::res {
         return VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE;
     }
 
-    constexpr inline VkCompareOp GfxCompareOpToVkCompareOp(GfxCompareOperation compare_op) {
+    constexpr inline VkCompareOp GfxCompareOperationToVkCompareOp(GfxCompareOperation compare_op) {
         switch (compare_op) {
             case GfxCompareOperation::Never:
                 return VK_COMPARE_OP_NEVER;
@@ -92,6 +92,10 @@ namespace vp::res {
                 break;
         }
         return VK_COMPARE_OP_NEVER;
+    }
+
+    constexpr inline VkLogicOp GfxLogicOperationToVkLogicOp(GfxLogicOperation logic_op) {
+        return static_cast<VkLogicOp>(logic_op);
     }
 
     constexpr inline VkBorderColor GfxBorderColorToVkBorderColor(GfxBorderColor border_color) {
@@ -237,6 +241,46 @@ namespace vp::res {
             flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
         }
         return flags;
+    }
+
+    constexpr inline VkImageAspectFlags GfxImageFormatToVkImageAspectFlags(GfxImageFormat image_format) {
+
+        u32 flags = 0;
+        if (static_cast<GfxTypeFormat>(static_cast<u32>(image_format) & 0xff) != GfxTypeFormat::Depth) {
+            flags |= VK_IMAGE_ASPECT_COLOR_BIT;
+        } else {
+            flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
+        }
+
+        return flags;
+    }
+
+    constexpr inline VkPolygonMode GfxFillModeToVkPolygonMode(GfxFillMode fill_mode) {
+
+        if (fill_mode == GfxFillMode::Fill) {
+            return VK_POLYGON_MODE_FILL;
+        } else if (fill_mode == GfxFillMode::Point) {
+            return VK_POLYGON_MODE_POINT;
+        }
+
+        /* Line mode optimization */
+        return static_cast<VkPolygonMode>(fill_mode);
+    }
+
+    constexpr inline VkFrontFace GfxFrontFaceToVkFrontFace(GfxFrontFace front_face) {
+        return static_cast<VkFrontFace>(front_face);
+    }
+
+    constexpr inline VkCullModeFlags GfxCullModeToVkCullModeFlags(GfxCullMode cull_mode) {
+        return static_cast<VkCullModeFlags>(cull_mode);
+    }
+
+    constexpr inline VkBlendFactor GfxBlendFactorToVkBlendFactor(GfxBlendFactor blend_factor) {
+        return static_cast<VkBlendFactor>(blend_factor);
+    }
+
+    constexpr inline VkBlendOp GfxBlendEquationToVkBlendOp(GfxBlendEquation blend_equation) {
+        return static_cast<VkBlendOp>(blend_equation);
     }
 
     constexpr inline VkFormat GfxAttributeFormatToVkFormat(GfxAttributeFormat attribute_format) {

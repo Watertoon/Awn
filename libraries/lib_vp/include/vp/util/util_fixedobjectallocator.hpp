@@ -41,6 +41,7 @@ namespace vp::util {
                     m_free_node_array[i].next = m_free_node_array + i + 1;
                 }
             }
+            constexpr ALWAYS_INLINE ~FixedObjectAllocator() {/*...*/}
 
             ALWAYS_INLINE T *Allocate() {
 

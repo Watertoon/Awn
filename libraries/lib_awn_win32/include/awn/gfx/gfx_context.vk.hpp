@@ -27,10 +27,30 @@ namespace awn::gfx {
         }
     };
 
+    enum class QueueType {
+		Graphics    = 0x0,
+		Compute     = 0x1,
+		Transfer    = 0x2,
+		VideoDecode = 0x3,
+		VideoEncode = 0x4,
+		OpticalFlow = 0x5,
+	};
+
     class Context {
         public:
             /* Support Vulkan 1.3 */
             static constexpr u32    cTargetMinimumApiVersion = VK_MAKE_API_VERSION(0, 1, 3, 0);
+
+            /* Max simulataneous queues (1 for each QueueType) */
+            static constexpr size_t cTargetMaxQueueCount = 0x6;
+            
+            /* Vertex buffer limits */
+            static constexpr size_t cTargetMaxVertexBufferCount = 0x8;
+
+            /* Render Target limits */
+            static constexpr size_t cTargetMaxBoundRenderTargetColorCount = 0x8;
+            static constexpr size_t cTargetMaxColorBlendEquationCount     = 0x8;
+            static constexpr size_t cTargetMaxViewportScissorCount        = 0x8;
 
             /* Memory pools must always be page aligned */
             static constexpr size_t cTargetMemoryPoolAlignment = 0x1000;
@@ -44,10 +64,10 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxUniformBufferSize  = 0x10000;
 
             /* Global descriptor resource limits */
-            static constexpr size_t cTargetMaxTextureDescriptors             = 0x4000;
-            static constexpr size_t cTargetMaxSamplerDescriptors             = 0xfa0;
-            static constexpr size_t cTargetMaxUniformBufferDescriptors       = 16;
-            static constexpr size_t cTargetMaxPushDescriptors                = cTargetMaxUniformBufferDescriptors;
+            static constexpr size_t cTargetMaxTextureDescriptorCount         = 0x4000;
+            static constexpr size_t cTargetMaxSamplerDescriptorCount         = 0xfa0;
+            static constexpr size_t cTargetMaxUniformBufferDescriptorCount   = 16;
+            static constexpr size_t cTargetMaxPushDescriptorCount            = cTargetMaxUniformBufferDescriptorCount;
             static constexpr size_t cTargetDescriptorSetLayoutCount          = 3;
             static constexpr size_t cTargetTextureSamplerDescriptorIndexSize = sizeof(u32);
             static constexpr size_t cTargetTextureDescriptorIndexBits        = 20;
@@ -60,24 +80,20 @@ namespace awn::gfx {
             static constexpr size_t cTargetStorageBufferDescriptorBinding = 0;
             
             /* Push constant ranges */
-            static constexpr size_t cTargetAllStagePushConstantRangeCount        = 8;
-            static constexpr size_t cTargetMeshShaderPushConstantRangeCount      = 3;
-            static constexpr size_t cTargetPrimitiveShaderPushConstantRangeCount = 5;
-            static constexpr size_t cTargetComputeShaderPushConstantRangeCount   = 1;
-
-            static constexpr size_t cTargetPushConstantOffset                    = 0;
-            static constexpr size_t cTargetPushConstantSize                      = 256;
+            static constexpr size_t cTargetAllStagePushConstantRangeCount = 1;
+            static constexpr size_t cTargetPushConstantOffset             = 0;
+            static constexpr size_t cTargetPushConstantSize               = 256;
 
             /* Per Shader stage resource limits */
-            static constexpr size_t cTargetMaxSimultaneousShaderStages   = 5;
-            static constexpr size_t cTargetMaxMeshShaderStages           = 3;
-            static constexpr size_t cTargetMaxPrimitiveShaderStages      = 5;
-            static constexpr size_t cTargetMaxComputeShaderStages        = 1;
-            static constexpr size_t cTargetMaxPerStageUniformBufferCount = 14;
-            static constexpr size_t cTargetMaxPerStageStorageBufferCount = 16;
-            static constexpr size_t cTargetMaxPerStageTextureCount       = 32;
-            static constexpr size_t cTargetMaxPerStageSamplerCount       = 32;
-            static constexpr size_t cTargetMaxPerStageStorageImageCount  = 8;
+            static constexpr size_t cTargetMaxSimultaneousShaderStageCount = 5;
+            static constexpr size_t cTargetMaxMeshShaderStageCount         = 3;
+            static constexpr size_t cTargetMaxPrimitiveShaderStageCount    = 5;
+            static constexpr size_t cTargetMaxComputeShaderStageCount      = 1;
+            static constexpr size_t cTargetMaxPerStageUniformBufferCount   = 14;
+            static constexpr size_t cTargetMaxPerStageStorageBufferCount   = 16;
+            static constexpr size_t cTargetMaxPerStageTextureCount         = 32;
+            static constexpr size_t cTargetMaxPerStageSamplerCount         = 32;
+            static constexpr size_t cTargetMaxPerStageStorageImageCount    = 8;
         private:
             /* Vulkan current physical device objects */
             VkInstance                                          m_vk_instance;
@@ -99,6 +115,7 @@ namespace awn::gfx {
             VkDescriptorSetLayout                               m_vk_sampler_descriptor_set_layout;
             VkDescriptorSetLayout                               m_vk_uniform_buffer_descriptor_set_layout;
             VkPipelineLayout                                    m_vk_pipeline_layout;
+            VkPushConstantRange                                 m_vk_push_constant_range;
 
             /* Vulkan all physical device properties and features */
             VkPhysicalDeviceProperties2                         m_vk_physical_device_properties;
@@ -123,13 +140,18 @@ namespace awn::gfx {
 
             VkPhysicalDeviceMemoryProperties                    m_vk_physical_device_memory_properties;
 
-            #if defined(DD_DEBUG)                               
+            #if defined(VP_DEBUG)                               
                 VkDebugUtilsMessengerEXT                        m_debug_messenger;
             #endif
         public:
             AWN_SINGLETON_TRAITS(Context);
         public:
-            constexpr ALWAYS_INLINE Context() : 
+            constexpr ALWAYS_INLINE Context() :
+            m_vk_push_constant_range {
+                .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT | VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT,
+                .offset     = cTargetPushConstantOffset,
+                .size       = cTargetPushConstantSize
+            },
             m_vk_physical_device_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
                 .pNext = std::addressof(m_vk_physical_device_properties_11)
@@ -211,12 +233,12 @@ namespace awn::gfx {
 
             bool SetAllQueueFamilyIndices();
 
-            constexpr ALWAYS_INLINE u32 CalculateValidMemoryTypeMask(u32 memory_properties) const {
+            constexpr ALWAYS_INLINE u32 CalculateValidMemoryTypeMask(u32 vk_memory_properties) const {
 
                 u32 memory_type_mask = 0;
                 const u32 memory_type_count = m_vk_physical_device_memory_properties.memoryTypeCount;
                 for (u32 i = 0; i < memory_type_count; ++i) {
-                    if ((m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags & memory_properties) != memory_properties) { continue; }
+                    if ((m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags & vk_memory_properties) != vk_memory_properties) { continue; }
 
                     memory_type_mask |= (1 << i);
                 }
@@ -237,16 +259,19 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE VkQueue               GetVkQueueVideoEncode() const { return m_vk_video_encode_queue; }
             constexpr ALWAYS_INLINE VkQueue               GetVkQueueOpticalFlow() const { return m_vk_optical_flow_queue; }
 
-            constexpr ALWAYS_INLINE u32                   GetGraphicsQueueFamilyIndex()    const { return m_graphics_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetComputeQueueFamilyIndex()     const { return m_compute_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetTrasnferQueueFamilyIndex()    const { return m_transfer_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetVideoDecodeQueueFamilyIndex() const { return m_video_decode_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetVideoEncodeQueueFamilyIndex() const { return m_video_encode_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetOpticalFlowQueueFamilyIndex() const { return m_optical_flow_queue_family_index; }
+            constexpr ALWAYS_INLINE u32                   GetQueueFamilyIndex(QueueType queue_type) const { return std::addressof(m_graphics_queue_family_index)[static_cast<u32>(queue_type)]; }
+            constexpr ALWAYS_INLINE u32                   GetGraphicsQueueFamilyIndex()             const { return m_graphics_queue_family_index; }
+            constexpr ALWAYS_INLINE u32                   GetComputeQueueFamilyIndex()              const { return m_compute_queue_family_index; }
+            constexpr ALWAYS_INLINE u32                   GetTrasnferQueueFamilyIndex()             const { return m_transfer_queue_family_index; }
+            constexpr ALWAYS_INLINE u32                   GetVideoDecodeQueueFamilyIndex()          const { return m_video_decode_queue_family_index; }
+            constexpr ALWAYS_INLINE u32                   GetVideoEncodeQueueFamilyIndex()          const { return m_video_encode_queue_family_index; }
+            constexpr ALWAYS_INLINE u32                   GetOpticalFlowQueueFamilyIndex()          const { return m_optical_flow_queue_family_index; }
 
-            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetTextureVkDescriptorSetLayout() const { return m_vk_texture_descriptor_set_layout; }
-            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetSamplerVkDescriptorSetLayout() const { return m_vk_sampler_descriptor_set_layout; }
-            constexpr ALWAYS_INLINE VkPipelineLayout      GetVkPipelineLayout()             const { return m_vk_pipeline_layout; }
+            constexpr ALWAYS_INLINE const VkPushConstantRange   *GetVkPushConstantRangeArray()     const { return std::addressof(m_vk_push_constant_range); }
+            constexpr ALWAYS_INLINE const VkDescriptorSetLayout *GetVkDescriptorSetLayoutArray()   const { return std::addressof(m_vk_texture_descriptor_set_layout); }
+            constexpr ALWAYS_INLINE       VkDescriptorSetLayout  GetTextureVkDescriptorSetLayout() const { return m_vk_texture_descriptor_set_layout; }
+            constexpr ALWAYS_INLINE       VkDescriptorSetLayout  GetSamplerVkDescriptorSetLayout() const { return m_vk_sampler_descriptor_set_layout; }
+            constexpr ALWAYS_INLINE       VkPipelineLayout       GetVkPipelineLayout()             const { return m_vk_pipeline_layout; }
 
             constexpr ALWAYS_INLINE const VkPhysicalDeviceProperties2 *GetPhysicalDeviceProperties() const { return std::addressof(m_vk_physical_device_properties); }
     };

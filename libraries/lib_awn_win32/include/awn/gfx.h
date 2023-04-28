@@ -15,7 +15,9 @@
 #include <awn/gfx/gfx_textureview.vk.hpp>
 #include <awn/gfx/gfx_sampler.vk.hpp>
 #include <awn/gfx/gfx_rendertarget.vk.hpp>
+#include <awn/gfx/gfx_shader.vk.hpp>
 
-#include <awn/gfx/gfx_texturemanager.vk.hpp>
+#include <awn/gfx/gfx_texturesamplermanager.vk.hpp>
+#include <awn/gfx/gfx_texturesamplerbinder.vk.hpp>
 #include <awn/gfx/gfx_pipelinestate.vk.h>
 #include <awn/gfx/gfx_commandbuffer.vk.hpp>

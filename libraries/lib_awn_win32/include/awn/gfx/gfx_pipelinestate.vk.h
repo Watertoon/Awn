@@ -23,12 +23,12 @@ namespace awn::gfx {
         
         constexpr void SetDefaults() {
             enable_blend                   = 0;
-            blend_factor_source_color      = res::GfxBlendFunction::One;
-            blend_factor_destination_color = res::GfxBlendFunction::Zero;
-            blend_equation_color           = res::GfxBlendEquation::Add;
-            blend_factor_source_alpha      = res::GfxBlendFunction::One;
-            blend_factor_destination_alpha = res::GfxBlendFunction::Zero;
-            blend_equation_alpha           = res::GfxBlendEquation::Add;
+            blend_factor_source_color      = static_cast<u8>(BlendFactor::One);
+            blend_factor_destination_color = static_cast<u8>(BlendFactor::Zero);
+            blend_equation_color           = static_cast<u8>(BlendEquation::Add);
+            blend_factor_source_alpha      = static_cast<u8>(BlendFactor::One);
+            blend_factor_destination_alpha = static_cast<u8>(BlendFactor::Zero);
+            blend_equation_alpha           = static_cast<u8>(BlendEquation::Add);
             channel_mask                   = 0xf;
         }
     };
@@ -42,9 +42,9 @@ namespace awn::gfx {
 
         constexpr void SetDefaults() {
             blend_target_state_count      = 0;
-            logic_op                      = res::GfxLogicOperation::NoOp;
+            logic_op                      = static_cast<u8>(LogicOperation::NoOp);
             enable_multi_blend            = 0;
-            blend_constant_color          = vp:util::cWhite;
+            blend_constant_color          = vp::util::cWhite;
             blend_target_state_info_array = nullptr;
         }
     };
@@ -76,18 +76,18 @@ namespace awn::gfx {
 
         constexpr void SetDefaults() {
             enable_mask                            = 0;
-            depth_comparison_function              = res::GfxComparisonFunction::Less;
+            depth_comparison_function              = static_cast<u8>(ComparisonFunction::Less);
             stencil_value_mask                     = 0xff;
             stencil_write_mask                     = 0xff;
-            front_face_stencil_fail_op             = res::GfxStencilOperation::Keep;
-            front_face_stencil_depth_fail_op       = res::GfxStencilOperation::Keep;
-            front_face_stencil_depth_pass_op       = res::GfxStencilOperation::Keep;
-            front_face_stencil_comparison_function = res::GfxComparisonFunction::Less;
+            front_face_stencil_fail_op             = static_cast<u8>(StencilOperation::Keep);
+            front_face_stencil_depth_fail_op       = static_cast<u8>(StencilOperation::Keep);
+            front_face_stencil_depth_pass_op       = static_cast<u8>(StencilOperation::Keep);
+            front_face_stencil_comparison_function = static_cast<u8>(ComparisonFunction::Less);
             front_face_stencil_reference           = 0;
-            back_face_stencil_fail_op              = res::GfxStencilOperation::Keep;
-            back_face_stencil_depth_fail_op        = res::GfxStencilOperation::Keep;
-            back_face_stencil_depth_pass_op        = res::GfxStencilOperation::Keep;
-            back_face_stencil_comparison_function  = res::GfxComparisonFunction::Less;
+            back_face_stencil_fail_op              = static_cast<u8>(StencilOperation::Keep);
+            back_face_stencil_depth_fail_op        = static_cast<u8>(StencilOperation::Keep);
+            back_face_stencil_depth_pass_op        = static_cast<u8>(StencilOperation::Keep);
+            back_face_stencil_comparison_function  = static_cast<u8>(ComparisonFunction::Less);
             back_face_stencil_reference            = 0;
         }
     };
@@ -105,19 +105,19 @@ namespace awn::gfx {
                 u32 reserve0                       : 27;
             };
         };
-        u8 fill_mode;
-        u8 front_face;
-        u8 cull_mode;
-        u8 rasterization_samples;
-        float sample_mask;
+        u8    fill_mode;
+        u8    front_face;
+        u8    cull_mode;
+        u8    rasterization_samples;
+        u32   sample_mask;
         float polygon_offset_clamp;
         float polygon_offset_constant_factor;
         float polygon_offset_slope_factor;
         
         constexpr void SetDefaults() {
-            fill_mode                       = res::GfxFillMode::;
-            front_face                      = res::GfxFrontFace::;
-            cull_mode                       = res::GfxCullMode::;
+            fill_mode                       = static_cast<u8>(FillMode::Line);
+            front_face                      = static_cast<u8>(FrontFace::CounterClockWise);
+            cull_mode                       = static_cast<u8>(CullMode::Back);
             enable_mask                     = (1 << 2);
             sample_mask                     = 0xffff'ffff;
             polygon_offset_clamp            = 0.0f;
@@ -155,7 +155,7 @@ namespace awn::gfx {
         vp::util::Vector2f position;
         vp::util::Vector2f extents;
     };
-    static_assert(sizeof(ViewportState) == sizeof(VkRect2d));
+    static_assert(sizeof(ScissorState) == sizeof(VkRect2D));
     struct ViewportScissorState {
         u16            enable_scissors;
         u16            viewport_scissor_count;

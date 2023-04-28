@@ -119,7 +119,7 @@ namespace awn::mem {
             }
 
             virtual size_t GetMaximumAllocatableSize(s32 alignment) override final {
-                
+                return 0;
             }
     };
 }

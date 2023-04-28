@@ -6,10 +6,15 @@ namespace awn::sys {
         ThreadRunMode_WaitForMessage,
         ThreadRunMode_Looping,
     };
-    
+
+    using TlsDestructor = void (*)(void*);
+    using TlsSlot       = u32;
+
     class ThreadManager;
 
     class ThreadBase {
+        public:
+            static constexpr size_t cMaxThreadTlsSlotCount = 32;
         public:
             friend class sys::ThreadManager;
         protected:
@@ -22,6 +27,7 @@ namespace awn::sys {
             s32                          m_priority;
             size_t                       m_core_mask;
             ThreadRunMode                m_run_mode;
+            void                        *m_tls_slot_array[cMaxThreadTlsSlotCount];
             vp::util::IntrusiveListNode  m_thread_manager_list_node;
         protected:
             static void InternalThreadMain(void *arg) {
@@ -93,5 +99,14 @@ namespace awn::sys {
 
             constexpr ALWAYS_INLINE       mem::Heap *GetLookupHeap()       { return m_lookup_heap; }
             constexpr ALWAYS_INLINE const mem::Heap *GetLookupHeap() const { return m_lookup_heap; }
+
+            constexpr ALWAYS_INLINE void SetTlsData(TlsSlot slot, void *object) {
+                VP_ASSERT(slot < cMaxThreadTlsSlotCount);
+                m_tls_slot_array[slot] = object;
+            }
+            constexpr ALWAYS_INLINE void *GetTlsData(TlsSlot slot) {
+                VP_ASSERT(slot < cMaxThreadTlsSlotCount);
+               return m_tls_slot_array[slot];
+            }
     };
 }
