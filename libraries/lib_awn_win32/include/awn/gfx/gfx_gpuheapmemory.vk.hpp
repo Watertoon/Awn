@@ -3,14 +3,16 @@
 namespace awn::gfx {
 
     class GpuHeap;
+    class GpuHeapManager;
 
     class GpuHeapMemory {
         public:
             friend class GpuHeap;
+            friend class GpuHeapManager;
         private:
             using GpuMemoryAllocationList = vp::util::IntrusiveListTraits<GpuMemoryAllocation, &GpuMemoryAllocation::m_gpu_heap_memory_list_node>::List;
         protected:
-            GpuHeap                     *m_parent_heap;
+            GpuHeap                     *m_parent_gpu_heap;
             VkDeviceMemory               m_vk_device_memory;
             size_t                       m_memory_size;
             u32                          m_memory_property_flags;
@@ -22,7 +24,7 @@ namespace awn::gfx {
 
             static GpuHeapMemory *Create(GpuHeap *parent_heap, mem::Heap *heap, size_t size, s32 alignment, MemoryPropertyFlags memory_properties);
             
-            Result TryAllocateGpuMemory(GpuMemoryAllocation *out_allocation, size_t size, s32 alignment, u32 memory_property_flags);
+            Result TryAllocateGpuMemory(GpuMemoryAllocation *out_allocation, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags);
             bool   FreeGpuMemoryAllocation(GpuMemoryAllocation *allocation);
 
             constexpr ALWAYS_INLINE VkDeviceMemory GetVkDeviceMemory() const { return m_vk_device_memory; }

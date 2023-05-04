@@ -49,29 +49,45 @@ namespace vp::res {
             bool TryGetKeyByData(const char **out_key, ByamlData data) {
                 if (data.IsKeyIndexValid() == false) { return false; }
 
-                ByamlStringTableIterator table_iterator(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(m_byaml) +  m_byaml->key_table_offset));
+                const ResByamlContainer        *key_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) +  m_byaml->key_table_offset);
+                const ByamlStringTableIterator  table_iterator(key_container);
 
-                *out_key = table_iterator.GetStringByIndex(data.key_index);
+                u64 key_pool_offset = 0;
+                if (static_cast<ByamlDataType>(key_container->data_type) == ByamlDataType::RelocatedKeyTable) {
+                    const u32 offset_offset = *reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(key_container) +  sizeof(ResByamlContainer));
+                    key_pool_offset         = *reinterpret_cast<const u64*>(reinterpret_cast<uintptr_t>(key_container) +  offset_offset);
+                }
+
+                *out_key = table_iterator.GetStringByIndex(data.key_index, key_pool_offset);
                 return true;
             }
 
-            bool TryGetIndexByKey(u32 *out_index, const char *key) {
+            bool TryGetKeyIndexByKey(u32 *out_key_index, const char *key) {
 
-                ByamlStringTableIterator table_iterator(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(m_byaml) +  m_byaml->key_table_offset));
-                const u32 index = table_iterator.FindIndexByString(key);
+                ByamlStringTableIterator table_iterator(reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) +  m_byaml->key_table_offset));
+                const u32 index = table_iterator.FindKeyIndexByKey(key);
                 if (index == 0xffff'ffff) { return false; }
 
-                *out_index = index;
+                *out_key_index = index;
                 return true;
             }
 
             bool TryGetByamlDataByKey(ByamlData *out_data, const char *key) const {
 
                 /* Integrity checks */
-                if (m_data_container == nullptr || static_cast<ByamlDataType>(m_data_container->data_type) != ByamlDataType::Dictionary || m_byaml == nullptr || m_byaml->key_table_offset == 0) { return false; }
+                if (m_data_container == nullptr || m_byaml == nullptr || m_byaml->key_table_offset == 0 || (static_cast<ByamlDataType>(m_data_container->data_type) != ByamlDataType::Dictionary && static_cast<ByamlDataType>(m_data_container->data_type) != ByamlDataType::DictionaryWithRemap)) { return false; }
 
-                ByamlStringTableIterator table_iterator(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(m_byaml) +  m_byaml->key_table_offset));
-                ByamlDictionaryIterator dic_iter(reinterpret_cast<const unsigned char*>(m_data_container));
+                /* Setup container and iterators */
+                const ResByamlContainer        *key_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) +  m_byaml->key_table_offset);
+                const ByamlStringTableIterator  table_iterator(key_container);
+                const ByamlDictionaryIterator   dic_iter(m_data_container);
+
+                /* Handle key table relocation */
+                u64 key_pool_offset = 0;
+                if (static_cast<ByamlDataType>(key_container->data_type) == ByamlDataType::RelocatedKeyTable) {
+                    const u32 offset_offset = *reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(key_container) +  sizeof(ResByamlContainer));
+                    key_pool_offset         = *reinterpret_cast<const u64*>(reinterpret_cast<uintptr_t>(key_container) +  offset_offset);
+                }
 
                 /* Binary search pattern as the string table is always sorted */
                 u32 size = dic_iter.GetSize();
@@ -81,7 +97,7 @@ namespace vp::res {
                     index = i + size;
                     index = index >> 1;
                     const ResByamlDictionaryPair *res_pair = dic_iter.GetDictionaryPairByIndex(index);
-                    const char *pair_key = table_iterator.GetStringByIndex(res_pair->key_index);
+                    const char *pair_key = table_iterator.GetStringByIndex(res_pair->key_index, key_pool_offset);
                     const s32 result = ::strcmp(key, pair_key);
                     
                     if (result == 0) {
@@ -98,17 +114,28 @@ namespace vp::res {
                 return false;
             }
 
+            bool TryGetByamlDataByHash(ByamlData *out_byaml_data, u32 hash);
+            bool TryGetByamlDataByHash(ByamlData *out_byaml_data, u64 hash);
+
+            bool TryGetByamlIterByHash(ByamlIterator *out_byaml_iter, u32 hash);
+            bool TryGetByamlIterByHash(ByamlIterator *out_byaml_iter, u64 hash);
+
             bool TryGetByamlDataByIndex(ByamlData *out_data, u32 index) const {
+                
                 if (m_data_container == nullptr) { return false; }
 
-                ByamlDataType data_type = static_cast<ByamlDataType>(m_data_container->data_type);
-                if (data_type == ByamlDataType::Dictionary) {
-                    const ByamlDictionaryIterator dic_iter(reinterpret_cast<const unsigned char*>(m_data_container));
+                u32 data_type = static_cast<u32>(m_data_container->data_type);
+                if (static_cast<ByamlDataType>(data_type) == ByamlDataType::Dictionary || static_cast<ByamlDataType>(data_type) == ByamlDataType::DictionaryWithRemap) {
+                    const ByamlDictionaryIterator dic_iter(m_data_container);
                     return dic_iter.TryGetDataByIndex(out_data, index);
                 }
-                if (data_type == ByamlDataType::Array) {
-                    const ByamlArrayIterator array_iter(reinterpret_cast<const unsigned char*>(m_data_container));
+                if (static_cast<ByamlDataType>(data_type) == ByamlDataType::Array || static_cast<ByamlDataType>(data_type) == ByamlDataType::MonoTypedArray) {
+                    const ByamlArrayIterator array_iter(m_data_container);
                     return array_iter.TryGetDataByIndex(out_data, index);
+                }
+                if (static_cast<ByamlDataType>(data_type & 0xe0) == ByamlDataType::HashArray) {
+                    const ByamlHashArrayIterator hash_array_iter(m_data_container);
+                    return hash_array_iter.TryGetDataByIndex(out_data, index);
                 }
                 return false;
             }
@@ -399,57 +426,63 @@ namespace vp::res {
                 return true;
             }
 
-            bool TryGetBinaryDataByKey(void **out_binary, u32 *out_size, const char *key) {
+            bool TryGetBinaryDataByKey(void **out_binary, u32 *out_size, u32 *out_alignment, const char *key) {
                 ByamlData data = {};
                 const bool result = this->TryGetByamlDataByKey(std::addressof(data), key);
                 if (result == false) { return false; }
 
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
                 if (data_type == ByamlDataType::BinaryData) {
-                    *out_size   = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
-                    *out_binary = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
+                    *out_size      = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
+                    *out_alignment = 0;
+                    *out_binary    = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
                     return true;
                 }
-                if (data_type == ByamlDataType::BinaryDataPlus) {
-                    *out_size   = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
-                    *out_binary = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32) + sizeof(u32));
+                if (data_type == ByamlDataType::BinaryDataWithAlignment) {
+                    *out_size      = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
+                    *out_alignment = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
+                    *out_binary    = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32) + sizeof(u32));
                     return true;
                 }
 
                 return false;
             }
 
-            bool TryGetBinaryDataByIndex(void **out_binary, u32 *out_size, u32 index) {
+            bool TryGetBinaryDataByIndex(void **out_binary, u32 *out_size, u32 *out_alignment, u32 index) {
                 ByamlData data = {};
                 const bool result = this->TryGetByamlDataByIndex(std::addressof(data), index);
                 if (result == false) { return false; }
 
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
                 if (data_type == ByamlDataType::BinaryData) {
-                    *out_size   = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
-                    *out_binary = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
+                    *out_size      = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
+                    *out_alignment = 0;
+                    *out_binary    = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
                     return true;
                 }
-                if (data_type == ByamlDataType::BinaryDataPlus) {
-                    *out_size   = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
-                    *out_binary = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32) + sizeof(u32));
+                if (data_type == ByamlDataType::BinaryDataWithAlignment) {
+                    *out_size      = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
+                    *out_alignment = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
+                    *out_binary    = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32) + sizeof(u32));
                     return true;
                 }
 
                 return false;
             }
 
-            bool TryGetBinaryDataByData(void **out_binary, u32 *out_size, ByamlData data) {
+            bool TryGetBinaryDataByData(void **out_binary, u32 *out_size, u32 *out_alignment, ByamlData data) {
 
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
                 if (data_type == ByamlDataType::BinaryData) {
-                    *out_size   = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
-                    *out_binary = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
+                    *out_size      = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
+                    *out_alignment = 0;
+                    *out_binary    = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
                     return true;
                 }
-                if (data_type == ByamlDataType::BinaryDataPlus) {
-                    *out_size   = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
-                    *out_binary = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32) + sizeof(u32));
+                if (data_type == ByamlDataType::BinaryDataWithAlignment) {
+                    *out_size      = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
+                    *out_alignment = *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32));
+                    *out_binary    = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value + sizeof(u32) + sizeof(u32));
                     return true;
                 }
 
@@ -464,8 +497,16 @@ namespace vp::res {
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
                 if (data_type != ByamlDataType::StringIndex) { return false; }
 
-                const ByamlStringTableIterator table_iter(reinterpret_cast<unsigned char*>(reinterpret_cast<uintptr_t>(m_byaml) + m_byaml->string_table_offset));
-                *out_string = table_iter.GetStringByIndex(data.u32_value);
+                const ResByamlContainer *key_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) + m_byaml->string_table_offset);
+                const ByamlStringTableIterator table_iter(key_container);
+
+                u64 key_pool_offset = 0;
+                if (static_cast<ByamlDataType>(key_container->data_type) == ByamlDataType::RelocatedKeyTable) {
+                    const u32 offset_offset = *reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(key_container) +  sizeof(ResByamlContainer));
+                    key_pool_offset         = *reinterpret_cast<const u64*>(reinterpret_cast<uintptr_t>(key_container) +  offset_offset);
+                }
+
+                *out_string = table_iter.GetStringByIndex(data.u32_value, key_pool_offset);
                 return true;
             }
 
@@ -477,8 +518,16 @@ namespace vp::res {
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
                 if (data_type != ByamlDataType::StringIndex) { return false; }
 
-                const ByamlStringTableIterator table_iter(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(m_byaml) + m_byaml->string_table_offset));
-                *out_string = table_iter.GetStringByIndex(data.u32_value);
+                const ResByamlContainer *key_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) + m_byaml->string_table_offset);
+                const ByamlStringTableIterator table_iter(key_container);
+
+                u64 key_pool_offset = 0;
+                if (static_cast<ByamlDataType>(key_container->data_type) == ByamlDataType::RelocatedKeyTable) {
+                    const u32 offset_offset = *reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(key_container) +  sizeof(ResByamlContainer));
+                    key_pool_offset         = *reinterpret_cast<const u64*>(reinterpret_cast<uintptr_t>(key_container) +  offset_offset);
+                }
+
+                *out_string = table_iter.GetStringByIndex(data.u32_value, key_pool_offset);
                 return true;
             }
 
@@ -487,8 +536,16 @@ namespace vp::res {
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
                 if (data_type != ByamlDataType::StringIndex) { return false; }
 
-                const ByamlStringTableIterator table_iter(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(m_byaml) + m_byaml->string_table_offset));
-                *out_string = table_iter.GetStringByIndex(data.u32_value);
+                const ResByamlContainer *key_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) + m_byaml->string_table_offset);
+                const ByamlStringTableIterator table_iter(key_container);
+
+                u64 key_pool_offset = 0;
+                if (static_cast<ByamlDataType>(key_container->data_type) == ByamlDataType::RelocatedKeyTable) {
+                    const u32 offset_offset = *reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(key_container) +  sizeof(ResByamlContainer));
+                    key_pool_offset         = *reinterpret_cast<const u64*>(reinterpret_cast<uintptr_t>(key_container) +  offset_offset);
+                }
+
+                *out_string = table_iter.GetStringByIndex(data.u32_value, key_pool_offset);
                 return true;
             }
 

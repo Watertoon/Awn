@@ -11,6 +11,8 @@ namespace awn::mem {
     class SeparateHeap final : public Heap {
         public:
             using SeparateMemoryBlockList = vp::util::IntrusiveListTraits<SeparateMemoryBlock, &SeparateMemoryBlock::used_list_node>::List;
+        public:
+            static constexpr size_t cOffsetBase = 0x10000;
         private:
             struct SeparateFreeListHelper {
                 SeparateFreeListHelper *next;
@@ -42,7 +44,7 @@ namespace awn::mem {
 
                 /* Construct new seperate heap */
                 SeparateHeap *heap = reinterpret_cast<SeparateHeap*>(heap_and_management_area);
-                std::construct_at(heap, name, reinterpret_cast<void*>(0x10000), heap_size, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(heap_and_management_area) + sizeof(SeparateHeap)), heap_and_management_size - sizeof(SeparateHeap), is_thread_safe);
+                std::construct_at(heap, name, reinterpret_cast<void*>(cOffsetBase), heap_size, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(heap_and_management_area) + sizeof(SeparateHeap)), heap_and_management_size - sizeof(SeparateHeap), is_thread_safe);
 
                 return heap;
             }

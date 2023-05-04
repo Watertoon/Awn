@@ -56,9 +56,10 @@ namespace awn::gfx {
             static constexpr size_t cTargetMemoryPoolAlignment = 0x1000;
 
             /* Buffer alignments */
-            static constexpr size_t cTargetConstantBufferAlignment = 0x100;
-            static constexpr size_t cTargetStorageBufferAlignment  = 0x100;
-            static constexpr size_t cTargetTexelBufferAlignment    = 0x100;
+            static constexpr size_t cTargetConstantBufferAlignment  = 0x100;
+            static constexpr size_t cTargetStorageBufferAlignment   = 0x100;
+            static constexpr size_t cTargetTexelBufferAlignment     = 0x100;
+            static constexpr size_t cTargetDescriptorBufferAlignment = 0x100;
 
             /* Max resource sizes */
             static constexpr size_t cTargetMaxUniformBufferSize  = 0x10000;
@@ -100,6 +101,7 @@ namespace awn::gfx {
             VkInstance                                          m_vk_instance;
             VkPhysicalDevice                                    m_vk_physical_device;
             VkDevice                                            m_vk_device;
+            u32                                                 m_queue_family_count;
             u32                                                 m_graphics_queue_family_index;
             u32                                                 m_compute_queue_family_index;
             u32                                                 m_transfer_queue_family_index;
@@ -239,9 +241,25 @@ namespace awn::gfx {
 
             bool SetAllQueueFamilyIndices();
 
-            constexpr ALWAYS_INLINE u32 CalculateValidMemoryTypeMask(u32 vk_memory_properties) const {
+            constexpr ALWAYS_INLINE u32 GetVkMemoryTypeMask(u32 vk_memory_properties) const {
 
                 u32 memory_type_mask = 0;
+                const u32 memory_type_count = m_vk_physical_device_memory_properties.memoryTypeCount;
+                for (u32 i = 0; i < memory_type_count; ++i) {
+                    if ((m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags & vk_memory_properties) != vk_memory_properties) { continue; }
+
+                    memory_type_mask |= (1 << i);
+                }
+
+                return memory_type_mask;
+            }
+            static_assert(VK_MAX_MEMORY_TYPES == 32);
+            
+            
+            constexpr ALWAYS_INLINE u32 GetVkMemoryTypeIndex(MemoryPropertyFlags memory_property_flags) const {
+
+                u32 memory_type_mask = 0;
+                u32 vk_memory_properties = vp::res::GfxMemoryPoolFlagsToVkMemoryPropertyFlags(memory_property_flags);
                 const u32 memory_type_count = m_vk_physical_device_memory_properties.memoryTypeCount;
                 for (u32 i = 0; i < memory_type_count; ++i) {
                     if ((m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags & vk_memory_properties) != vk_memory_properties) { continue; }
@@ -258,20 +276,25 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE VkDevice               GetVkDevice()              const { return m_vk_device; }
             constexpr ALWAYS_INLINE VkAllocationCallbacks *GetVkAllocationCallbacks() const { return nullptr; }
 
-            constexpr ALWAYS_INLINE VkQueue               GetVkQueueGraphics()    const { return m_vk_graphics_queue; }
-            constexpr ALWAYS_INLINE VkQueue               GetVkQueueCompute()     const { return m_vk_compute_queue; }
-            constexpr ALWAYS_INLINE VkQueue               GetVkQueueTransfer()    const { return m_vk_transfer_queue; }
-            constexpr ALWAYS_INLINE VkQueue               GetVkQueueVideoDecode() const { return m_vk_video_decode_queue; }
-            constexpr ALWAYS_INLINE VkQueue               GetVkQueueVideoEncode() const { return m_vk_video_encode_queue; }
-            constexpr ALWAYS_INLINE VkQueue               GetVkQueueOpticalFlow() const { return m_vk_optical_flow_queue; }
+            constexpr ALWAYS_INLINE VkQueue                GetVkQueueGraphics()    const { return m_vk_graphics_queue; }
+            constexpr ALWAYS_INLINE VkQueue                GetVkQueueCompute()     const { return m_vk_compute_queue; }
+            constexpr ALWAYS_INLINE VkQueue                GetVkQueueTransfer()    const { return m_vk_transfer_queue; }
+            constexpr ALWAYS_INLINE VkQueue                GetVkQueueVideoDecode() const { return m_vk_video_decode_queue; }
+            constexpr ALWAYS_INLINE VkQueue                GetVkQueueVideoEncode() const { return m_vk_video_encode_queue; }
+            constexpr ALWAYS_INLINE VkQueue                GetVkQueueOpticalFlow() const { return m_vk_optical_flow_queue; }
 
-            constexpr ALWAYS_INLINE u32                   GetQueueFamilyIndex(QueueType queue_type) const { return std::addressof(m_graphics_queue_family_index)[static_cast<u32>(queue_type)]; }
-            constexpr ALWAYS_INLINE u32                   GetGraphicsQueueFamilyIndex()             const { return m_graphics_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetComputeQueueFamilyIndex()              const { return m_compute_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetTrasnferQueueFamilyIndex()             const { return m_transfer_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetVideoDecodeQueueFamilyIndex()          const { return m_video_decode_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetVideoEncodeQueueFamilyIndex()          const { return m_video_encode_queue_family_index; }
-            constexpr ALWAYS_INLINE u32                   GetOpticalFlowQueueFamilyIndex()          const { return m_optical_flow_queue_family_index; }
+            constexpr ALWAYS_INLINE const u32             *GetQueueFamilyIndiceArray()               const { return std::addressof(m_graphics_queue_family_index); }
+            constexpr ALWAYS_INLINE       u32              GetQueueFamilyCount()                     const { return m_queue_family_count; }
+
+            constexpr ALWAYS_INLINE       u32              GetQueueFamilyIndex(QueueType queue_type) const { return std::addressof(m_graphics_queue_family_index)[static_cast<u32>(queue_type)]; }
+            constexpr ALWAYS_INLINE       u32              GetGraphicsQueueFamilyIndex()             const { return m_graphics_queue_family_index; }
+            constexpr ALWAYS_INLINE       u32              GetComputeQueueFamilyIndex()              const { return m_compute_queue_family_index; }
+            constexpr ALWAYS_INLINE       u32              GetTrasnferQueueFamilyIndex()             const { return m_transfer_queue_family_index; }
+            constexpr ALWAYS_INLINE       u32              GetVideoDecodeQueueFamilyIndex()          const { return m_video_decode_queue_family_index; }
+            constexpr ALWAYS_INLINE       u32              GetVideoEncodeQueueFamilyIndex()          const { return m_video_encode_queue_family_index; }
+            constexpr ALWAYS_INLINE       u32              GetOpticalFlowQueueFamilyIndex()          const { return m_optical_flow_queue_family_index; }
+
+            
 
             constexpr ALWAYS_INLINE const VkPushConstantRange   *GetVkPushConstantRangeArray()     const { return std::addressof(m_vk_push_constant_range); }
             constexpr ALWAYS_INLINE const VkDescriptorSetLayout *GetVkDescriptorSetLayoutArray()   const { return std::addressof(m_vk_texture_descriptor_set_layout); }

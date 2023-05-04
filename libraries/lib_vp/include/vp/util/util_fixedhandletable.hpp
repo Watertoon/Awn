@@ -91,7 +91,7 @@ namespace vp::util {
 
                 /* Get the handle index and integrity check that the handle is currently valid */
                 const u32 index = (handle & 0x7fff);
-                if (cMaxHandles < index || m_object_array[index] == nullptr || (handle >> cCounterBitOffset) != m_counter_array[index]) { return false; }
+                if (cMaxHandles < index || m_object_array[index] == nullptr || (handle >> cCounterBitOffset) != static_cast<u32>(m_counter_array[index])) { return false; }
 
                 /* Clear and free the handle state */
                 m_object_array[index] = nullptr;
@@ -112,7 +112,7 @@ namespace vp::util {
 
                 /* Get the handle index and integrity check that the handle is currently valid */
                 const u32 index = (handle & 0x7fff);
-                if ((cMaxHandles < index) || ((handle >> cCounterBitOffset) != m_counter_array[index])) { return nullptr; }
+                if ((cMaxHandles < index) || ((handle >> cCounterBitOffset) != static_cast<u32>(m_counter_array[index]))) { return nullptr; }
 
                 /* Get object */
                 return m_object_array[index];

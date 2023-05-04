@@ -2,19 +2,19 @@
 
 namespace awn::gfx {
 
-    void TextureSamplerManager::Initialize(TextureSamplerManagerInfo *manager_info) {
+    void TextureSamplerManager::Initialize(mem::Heap *heap) {
 
         /* Allocate descriptor memory */
         const size_t texture_descriptor_memory_size = vp::util::AlignUp(CalculateTextureDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
-        const size_t sampler_descriptor_memory_size   = vp:util::AlignUp(CalculateSamplerDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
-        m_descriptor_gpu_memory_allocation.TryAllocate(texture_descriptor_memory_size + sampler_descriptor_memory_size, Context::cTargetDescriptorBufferAlignment, MemoryPropertyFlags::CpuUncached | MemoryPropertyFlags::GpuUncached);
+        const size_t sampler_descriptor_memory_size   = vp::util::AlignUp(CalculateSamplerDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
+        m_descriptor_gpu_memory_allocation.TryAllocateGpuMemory(heap, texture_descriptor_memory_size + sampler_descriptor_memory_size, Context::cTargetDescriptorBufferAlignment, static_cast<MemoryPropertyFlags>(static_cast<u32>(MemoryPropertyFlags::CpuUncached) | static_cast<u32>(MemoryPropertyFlags::GpuUncached)));
 
         /* Get Gpu memory addresses */
         m_texture_descriptor_gpu_address = m_descriptor_gpu_memory_allocation.GetGpuMemoryAddress(0);
         m_sampler_descriptor_gpu_address = m_descriptor_gpu_memory_allocation.GetGpuMemoryAddress(texture_descriptor_memory_size);
 
         /* Create descriptor buffers */
-        m_texture_descriptor_buffer = m_texture_descriptor_gpu_address.CreateBuffer(VK_BUFFER_USAGE_TEXTURE_DESCRIPTOR_BUFFER_BIT_EXT, texture_descriptor_memory_size);
+        m_texture_descriptor_buffer = m_texture_descriptor_gpu_address.CreateBuffer(VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, texture_descriptor_memory_size);
         m_sampler_descriptor_buffer = m_sampler_descriptor_gpu_address.CreateBuffer(VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT, sampler_descriptor_memory_size);
         
         /* Map descriptor buffers */
@@ -216,7 +216,7 @@ namespace awn::gfx {
     void TextureSamplerManager::BindDescriptorBuffers(CommandBuffer *command_buffer) {
 
         /* Set descriptor buffers */
-        const VkDescriptorBufferBindingInfo binding_info_array = {
+        const VkDescriptorBufferBindingInfoEXT binding_info_array = {
             {
                 .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT,
                 .address = m_texture_descriptor_gpu_address.GetVkDeviceAddress(),
@@ -228,7 +228,7 @@ namespace awn::gfx {
                 .usage   = VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT 
             },
         }
-        ::pfn_vkCmdBindDescriptorBuffers(command_buffer->GetVkCommandBuffer(), sizeof(binding_info_array) / sizeof(VkDescriptorBufferBindingInfo), std::addressof(m_texture_descriptor_buffer));
+        ::pfn_vkCmdBindDescriptorBuffersEXT(command_buffer->GetVkCommandBuffer(), sizeof(binding_info_array) / sizeof(VkDescriptorBufferBindingInfoEXT), std::addressof(m_texture_descriptor_buffer));
 
         return;
     }
@@ -238,20 +238,20 @@ namespace awn::gfx {
 
         /* Lookup by handle table */
         TextureNode *texture_node = reinterpret_cast<TextureNode*>(m_texture_handle_table.GetObjectByHandle(texture_slot));
-        return (texture_node != nullptr) ? texture_node->texture : nullptr;
+        return (texture_node != nullptr) ? std::addressof(texture_node->texture) : nullptr;
     }
 
     TextureView *TextureSamplerManager::TryGetTextureViewByHandle(DescriptorSlot texture_slot) {
 
         /* Lookup by handle table */
         TextureNode *texture_node = reinterpret_cast<TextureNode*>(m_texture_handle_table.GetObjectByHandle(texture_slot));
-        return (texture_node != nullptr) ? texture_node->texture_view : nullptr;
+        return (texture_node != nullptr) ? std::addressof(texture_node->texture_view) : nullptr;
     }
 
     Sampler *TextureSamplerManager::TryGetSamplerByHandle(DescriptorSlot sampler_slot) {
 
         /* Lookup by handle table */
         SamplerNode *sampler_node = reinterpret_cast<SamplerNode*>(m_sampler_handle_table.GetObjectByHandle(sampler_slot));
-        return (sampler_node != nullptr) ? sampler_node->sampler : nullptr;
+        return (sampler_node != nullptr) ? std::addressof(sampler_node->sampler) : nullptr;
     }
 }

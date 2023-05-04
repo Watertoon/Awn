@@ -3,22 +3,25 @@
 namespace vp::res {
 
     enum class ByamlDataType : u8 {
-        StringIndex    = 0xA0,
-        BinaryData     = 0xA1,
-        BinaryDataPlus = 0xA2,
-        Array          = 0xC0,
-        Dictionary     = 0xC1,
-        KeyTable       = 0xC2,
-        BinaryTable    = 0xC2,
-        Unknown        = 0xC4,
-        Bool           = 0xD0,
-        S32            = 0xD1,
-        F32            = 0xD2,
-        U32            = 0xD3,
-        S64            = 0xD4,
-        U64            = 0xD5,
-        F64            = 0xD6,
-        Null           = 0xFF,
+        HashArray               = 0x20,
+        HashArrayWithRemap      = 0x30,
+        StringIndex             = 0xA0,
+        BinaryData              = 0xA1,
+        BinaryDataWithAlignment = 0xA2,
+        Array                   = 0xC0,
+        Dictionary              = 0xC1,
+        KeyTable                = 0xC2,
+        DictionaryWithRemap     = 0xC4,
+        RelocatedKeyTable       = 0xC5,
+        MonoTypedArray          = 0xC8,
+        Bool                    = 0xD0,
+        S32                     = 0xD1,
+        F32                     = 0xD2,
+        U32                     = 0xD3,
+        S64                     = 0xD4,
+        U64                     = 0xD5,
+        F64                     = 0xD6,
+        Null                    = 0xFF,
     };
 
     struct ResByamlContainer {
@@ -117,18 +120,18 @@ namespace vp::res {
     static_assert(sizeof(ResByaml) == 0x10);
 
     struct ByamlData {
+        u32 key_index : 24;
+        u32 data_type : 8;
         union {
             s32   s32_value;
             u32   u32_value;
             float f32_value;
         };
-        u32 data_type : 8;
-        u32 key_index : 24;
 
         constexpr ALWAYS_INLINE void SetPair(const ResByamlDictionaryPair *pair) {
-            u32_value = pair->u32_value;
-            data_type = pair->data_type;
             key_index = pair->key_index;
+            data_type = pair->data_type;
+            u32_value = pair->u32_value;
         }
         
         constexpr ALWAYS_INLINE bool IsKeyIndexValid() {
@@ -142,14 +145,20 @@ namespace vp::res {
                 return "String";
             case ByamlDataType::BinaryData:
                 return "BinaryData";
-            case ByamlDataType::BinaryDataPlus:
-                return "BinaryDataPlus";
+            case ByamlDataType::BinaryDataWithAlignment:
+                return "BinaryDataWithAlignment";
             case ByamlDataType::Array:
                 return "Array";
+            case ByamlDataType::MonoTypedArray:
+                return "MonoTypedArray";
             case ByamlDataType::Dictionary:
                 return "Dictionary";
+            case ByamlDataType::DictionaryWithRemap:
+                return "DictionaryWithRemap";
             case ByamlDataType::KeyTable:
                 return "KeyTable";
+            case ByamlDataType::RelocatedKeyTable:
+                return "RelocatedKeyTable";
             case ByamlDataType::Bool:
                 return "Bool";
             case ByamlDataType::S32:
@@ -164,9 +173,16 @@ namespace vp::res {
                 return "U64";
             case ByamlDataType::F64:
                 return "F64";
-            case ByamlDataType::Unknown:
-                return "Unknown";
             default:
+            {
+                if (static_cast<ByamlDataType>(static_cast<u32>(data_type) & 0xE0) == ByamlDataType::HashArray) {
+                    return "HashArray";
+                }
+                if (static_cast<ByamlDataType>(static_cast<u32>(data_type) & 0xF0) == ByamlDataType::HashArrayWithRemap) {
+                    return "HashArrayWithRemap";
+                }
+            }
+                break;
             case ByamlDataType::Null:
             break;
         };

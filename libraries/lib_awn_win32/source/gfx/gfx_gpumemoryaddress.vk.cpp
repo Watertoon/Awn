@@ -1,4 +1,4 @@
-#pragma once
+#include <awn.hpp>
 
 namespace awn::gfx {
 
@@ -7,14 +7,14 @@ namespace awn::gfx {
     }
 
     VkBuffer GpuMemoryAddress::CreateBuffer(BufferInfo *buffer_info) {
-        return m_parent_gpu_allocation->CreateBuffer(res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<>(buffer_info->gpu_access_flags)), buffer_info->size, m_offset);
+        return m_parent_gpu_allocation->CreateBuffer(static_cast<VkBufferUsageFlagBits>(vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<GpuAccessFlags>(buffer_info->gpu_access_flags))), buffer_info->size, m_offset);
     }
 
-    VkImage GpuMemoryAddress::CreateImage(TextureInfo texture_info) {
-        return m_parent_gpu_allocation->CreateImage(texture_info, res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), m_offset);
+    VkImage GpuMemoryAddress::CreateImage(TextureInfo *texture_info) {
+        return m_parent_gpu_allocation->CreateImage(texture_info, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<GpuAccessFlags>(texture_info->gpu_access_flags)), m_offset);
     }
 
-    VkImage GpuMemoryAddress::CreateImage(TextureInfo texture_info, VkImageUsageFlags manual_usage_flags) {
+    VkImage GpuMemoryAddress::CreateImage(TextureInfo *texture_info, VkImageUsageFlags manual_usage_flags) {
         return m_parent_gpu_allocation->CreateImage(texture_info, manual_usage_flags, m_offset);
     }
 

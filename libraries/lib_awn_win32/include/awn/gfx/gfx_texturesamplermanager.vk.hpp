@@ -79,7 +79,7 @@ namespace awn::gfx {
         public:
             constexpr TextureSamplerManager() {/*...*/}
 
-            void Initialize();
+            void Initialize(mem::Heap *heap);
             void Finalize();
 
             DescriptorSlot RegisterTextureView(GpuMemoryAddress gpu_texture_memory, TextureInfo *texture_info, TextureViewInfo *texture_view);

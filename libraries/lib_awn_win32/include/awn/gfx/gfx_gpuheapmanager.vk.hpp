@@ -24,7 +24,7 @@ namespace awn::gfx {
                 m_minimum_block_size = minimum_block_size;
             }
 
-            Result TryAllocateGpuMemory(GpuMemoryAllocation *out_allocation, mem::Heap *heap, size_t size, s32 alignment, u32 memory_type);
+            Result TryAllocateGpuMemory(GpuMemoryAllocation *out_allocation, mem::Heap *heap, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags);
             void   FreeGpuMemoryAllocation(GpuMemoryAllocation *allocation);
     };
 }

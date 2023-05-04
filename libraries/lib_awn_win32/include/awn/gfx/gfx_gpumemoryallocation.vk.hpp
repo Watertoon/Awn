@@ -3,10 +3,14 @@
 namespace awn::gfx {
 
     class GpuHeapMemory;
+    class GpuHeap;
+    class GpuHeapManager;
 
     class GpuMemoryAllocation {
         public:
             friend GpuHeapMemory;
+            friend GpuHeap;
+            friend GpuHeapManager;
         protected:
             size_t                       m_offset;
             u32                          m_size;
@@ -17,7 +21,7 @@ namespace awn::gfx {
         public:
             constexpr GpuMemoryAllocation() {/*...*/}
 
-            Result TryAllocateGpuMemory(mem::Heap *meta_data_heap, size_t size, s32 alignment, u32 memory_type);
+            Result TryAllocateGpuMemory(mem::Heap *meta_data_heap, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags);
             void   FreeGpuMemory();
 
             VkBuffer CreateBuffer(VkBufferUsageFlagBits usage_flags, u32 size = 0, size_t offset = 0);

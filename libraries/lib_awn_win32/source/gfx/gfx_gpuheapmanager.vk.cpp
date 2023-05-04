@@ -4,7 +4,7 @@ namespace awn::gfx {
 
     AWN_SINGLETON_TRAITS_IMPL(GpuHeapManager);
 
-    Result GpuHeapManager::TryAllocateGpuMemory(GpuMemoryAllocation *out_allocation, mem::Heap *heap, size_t size, s32 alignment, u32 memory_type) {
+    Result GpuHeapManager::TryAllocateGpuMemory(GpuMemoryAllocation *out_allocation, mem::Heap *heap, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags) {
 
         /* Use a previous GpuHeap if our current Heap corresponds to one */
         GpuHeap *gpu_heap = nullptr;
@@ -29,7 +29,7 @@ namespace awn::gfx {
         }
 
         /* Allocate from gpu heap */
-        return gpu_heap->TryAllocateGpuMemory(out_allocation, heap, size, alignment, memory_type, m_minimum_block_size, vk::Context::MaximumUniformBufferSize);
+        return gpu_heap->TryAllocateGpuMemory(out_allocation, heap, size, alignment, memory_property_flags, m_minimum_block_size, 0xffff'ffff);
     }
 
     void GpuHeapManager::FreeGpuMemoryAllocation(GpuMemoryAllocation *allocation) {

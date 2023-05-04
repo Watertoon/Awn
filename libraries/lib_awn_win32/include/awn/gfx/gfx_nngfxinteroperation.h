@@ -11,7 +11,8 @@ namespace awn::gfx {
     using IndexFormat        = vp::res::GfxIndexFormat;
 
     /* Texture enums */
-    using ImageFormat        = vp::res::GfxImageFormat;
+    using ImageFormat           = vp::res::GfxImageFormat;
+    using ImageStorageDimension = vp::res::GfxImageStorageDimension;
 
     /* TextureView enums */
     using TextureSwizzle     = vp::res::GfxTextureSwizzle;
