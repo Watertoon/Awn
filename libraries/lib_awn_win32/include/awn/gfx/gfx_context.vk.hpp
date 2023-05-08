@@ -62,7 +62,9 @@ namespace awn::gfx {
             static constexpr size_t cTargetDescriptorBufferAlignment = 0x100;
 
             /* Max resource sizes */
-            static constexpr size_t cTargetMaxUniformBufferSize  = 0x10000;
+            static constexpr size_t cTargetMaxUniformBufferSize     = 0x10000;
+            static constexpr size_t cTargetMaxTextureDescriptorSize = 0x20;
+            static constexpr size_t cTargetMaxSamplerDescriptorSize = 0x20;
 
             /* Global descriptor resource limits */
             static constexpr size_t cTargetMaxDescriptorCount                = 0x4fa0;
@@ -303,5 +305,9 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE       VkPipelineLayout       GetVkPipelineLayout()             const { return m_vk_pipeline_layout; }
 
             constexpr ALWAYS_INLINE const VkPhysicalDeviceProperties2 *GetPhysicalDeviceProperties() const { return std::addressof(m_vk_physical_device_properties); }
+
+            constexpr ALWAYS_INLINE const size_t GetTextureDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.sampledImageDescriptorSize; }
+            constexpr ALWAYS_INLINE const size_t GetSamplerDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.samplerDescriptorSize; }
+            constexpr ALWAYS_INLINE const size_t GetDescriptorAlignment()   const { return m_vk_physical_device_descriptor_buffer_properties.descriptorBufferOffsetAlignment; }
     };
 }

@@ -63,7 +63,7 @@ namespace vp::util {
                 constexpr ALWAYS_INLINE Impl() : c{} {};
                 constexpr ALWAYS_INLINE ~Impl() {};
             };
-            constexpr ALWAYS_INLINE static Impl impl{};
+            constexpr inline static Impl impl{};
         };
 
         template <typename Parent, typename Member>

@@ -26,7 +26,7 @@ namespace awn::gfx {
     using DescriptorSlot = u64;
     constexpr inline DescriptorSlot cInvalidDescriptorSlot = 0;
     
-    class CommandBuffer;
+    class CommandBufferBase;
 
     class TextureSamplerManager {
         public:
@@ -59,8 +59,10 @@ namespace awn::gfx {
             GpuMemoryAllocation          m_descriptor_gpu_memory_allocation;
             GpuMemoryAddress             m_texture_descriptor_gpu_address;
             GpuMemoryAddress             m_sampler_descriptor_gpu_address;
-            VkBuffer                     m_texture_descriptor_buffer;
-            VkBuffer                     m_sampler_descriptor_buffer;
+            VkBuffer                     m_texture_descriptor_vk_buffer;
+            VkBuffer                     m_sampler_descriptor_vk_buffer;
+            VkDeviceAddress              m_texture_vk_device_address;
+            VkDeviceAddress              m_sampler_vk_device_address;
             void                        *m_texture_descriptor_buffer_address;
             void                        *m_sampler_descriptor_buffer_address;
             u16                          m_texture_descriptor_size;
@@ -71,9 +73,9 @@ namespace awn::gfx {
             SamplerHandleTable           m_sampler_handle_table;
             SamplerMap                   m_sampler_map;
             TextureAllocator             m_texture_allocator;
-            SamplerAllocator             m_sample_allocator;
-            sys::ServiceCriticalSection  m_texture_critical_section;
-            sys::ServiceCriticalSection  m_sampler_critical_section;
+            SamplerAllocator             m_sampler_allocator;
+            sys::ServiceCriticalSection  m_texture_allocator_critical_section;
+            sys::ServiceCriticalSection  m_sampler_allocator_critical_section;
         public:
             AWN_SINGLETON_TRAITS(TextureSamplerManager);
         public:
@@ -90,7 +92,7 @@ namespace awn::gfx {
             void           UnregisterTextureView(DescriptorSlot texture_slot);
             void           UnregisterSampler(DescriptorSlot sampler_slot);
 
-            void BindDescriptorBuffers(CommandBuffer *command_buffer);
+            void BindDescriptorBuffers(CommandBufferBase *command_buffer);
 
             Texture     *TryGetTextureByHandle(DescriptorSlot texture_slot);
             TextureView *TryGetTextureViewByHandle(DescriptorSlot texture_slot);

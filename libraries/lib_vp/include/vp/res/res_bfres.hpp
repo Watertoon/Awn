@@ -51,7 +51,15 @@ namespace vp::res {
         u16                         shape_anim_count;
         u16                         scene_anim_count;
         u16                         embed_file_count;
-        u16                         reserve8;
+        union {
+            u8                      external_options;
+            struct {
+                u8                  reserve8         : 3;
+                u8                  is_external_data : 1;
+                u8                  reserve9         : 4;
+            };
+        };
+        u8                          reserve10;
 
         static constexpr u64 cMagic = util::TCharCode64("FRES    ");
 

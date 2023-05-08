@@ -14,7 +14,7 @@ namespace awn::gfx {
         GpuHeapManager::GetInstance()->FreeGpuMemoryAllocation(this);
     }
 
-    VkBuffer GpuMemoryAllocation::CreateBuffer(VkBufferUsageFlagBits usage_flags, u32 size, size_t offset) {
+    VkBuffer GpuMemoryAllocation::CreateBuffer(VkBufferUsageFlagBits usage_flags, size_t size, size_t offset) {
 
         /* Create VkBuffer */
         VkBuffer buffer = 0;
@@ -67,7 +67,19 @@ namespace awn::gfx {
         return image;
     }
 
-    //void GpuMemoryAllocation::FlushCache(size_t size, size_t offset) {
-    //    m_parent_gpu_heap_memory->FlushCache(size, offset + m_offset);
-    //}
+    void GpuMemoryAllocation::FlushCpuCache() {
+        m_parent_gpu_heap_memory->FlushCpuCache(m_size, m_offset);
+    }
+    void GpuMemoryAllocation::FlushCpuCache(size_t size, size_t offset) {
+        VP_ASSERT((offset + size) < m_size);
+        m_parent_gpu_heap_memory->FlushCpuCache(size, m_offset + offset);
+    }
+
+    void GpuMemoryAllocation::InvalidateCpuCache() {
+        m_parent_gpu_heap_memory->InvalidateCpuCache(m_size, m_offset);
+    }
+    void GpuMemoryAllocation::InvalidateCpuCache(size_t size, size_t offset) {
+        VP_ASSERT((offset + size) < m_size);
+        m_parent_gpu_heap_memory->InvalidateCpuCache(size, m_offset + offset);
+    }
 }

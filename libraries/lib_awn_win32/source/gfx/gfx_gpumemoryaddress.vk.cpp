@@ -18,7 +18,10 @@ namespace awn::gfx {
         return m_parent_gpu_allocation->CreateImage(texture_info, manual_usage_flags, m_offset);
     }
 
-    void GpuMemoryAddress::FlushCache() {
-        m_parent_gpu_allocation->FlushCache(m_offset);
+    void GpuMemoryAddress::FlushCpuCache(size_t size) {
+        m_parent_gpu_allocation->FlushCpuCache(size, m_offset);
+    }
+    void GpuMemoryAddress::InvalidateCpuCache(size_t size) {
+        m_parent_gpu_allocation->InvalidateCpuCache(size, m_offset);
     }
 }

@@ -85,6 +85,6 @@ namespace vp::util {
         return *this;
     }
 
-    constexpr ALWAYS_INLINE Color4f cBlack = {0.0f, 0.0f, 0.0f, 1.0f};
-    constexpr ALWAYS_INLINE Color4f cWhite = {1.0f, 1.0f, 1.0f, 1.0f};
+    constexpr inline Color4f cBlack = {0.0f, 0.0f, 0.0f, 1.0f};
+    constexpr inline Color4f cWhite = {1.0f, 1.0f, 1.0f, 1.0f};
 }

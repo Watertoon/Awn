@@ -382,6 +382,8 @@ namespace awn::gfx {
             void SetLineWidth(float line_width) {
                 ::pfn_vkCmdSetLineWidth(m_command_list.vk_command_buffer, line_width);
             }
+        public:
+            constexpr ALWAYS_INLINE VkCommandBuffer GetVkCommandBuffer() const { return m_command_list.vk_command_buffer; }
     };
 
     class ThreadLocalCommandBuffer : public CommandBufferBase {

@@ -48,9 +48,9 @@ namespace awn::gfx {
                 }
                 m_vk_image_view = VK_NULL_HANDLE;
             }
-            
-            constexpr ALWAYS_INLINE u32 GetLayerCount() const {
-                return m_image_view_info.array_layers;
-            }
+
+            constexpr ALWAYS_INLINE u32 GetLayerCount() const { return m_image_view_info.array_layers; }
+
+            constexpr ALWAYS_INLINE VkImageView GetVkImageView() const { return m_vk_image_view; }
     };
 }

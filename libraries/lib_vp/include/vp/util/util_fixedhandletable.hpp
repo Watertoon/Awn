@@ -17,7 +17,7 @@
 
 namespace vp::util {
 
-    static constexpr u32 GetHandleIndex(u32 handle) {
+    constexpr ALWAYS_INLINE u32 GetHandleIndex(u32 handle) {
         return handle & 0x7fff;
     }
 

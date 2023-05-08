@@ -11,6 +11,7 @@ namespace awn::gfx {
         public:
             constexpr ALWAYS_INLINE GpuMemoryAddress() : m_parent_gpu_allocation(nullptr), m_offset(0) {/*...*/}
             constexpr ALWAYS_INLINE GpuMemoryAddress(GpuMemoryAllocation *allocation, size_t offset) : m_parent_gpu_allocation(allocation), m_offset(offset) {/*...*/}
+            constexpr ALWAYS_INLINE GpuMemoryAddress(const GpuMemoryAddress &rhs) : m_parent_gpu_allocation(rhs.m_parent_gpu_allocation), m_offset(rhs.m_offset) {/*...*/}
 
             constexpr ALWAYS_INLINE ~GpuMemoryAddress() {/*...*/}
 
@@ -26,6 +27,11 @@ namespace awn::gfx {
             VkImage CreateImage(TextureInfo *texture_info);
             VkImage CreateImage(TextureInfo *texture_info, VkImageUsageFlags manual_usage_flags);
 
-            void FlushCache();
+            void FlushCpuCache(size_t size);
+            void InvalidateCpuCache(size_t size);
+
+            /* Note; defined in gfx_gpumemoryallocation.hpp for inlining reasons */
+            constexpr ALWAYS_INLINE VkDeviceAddress  GetVkDeviceAddress() const;
+                      ALWAYS_INLINE void            *Map() const;
     };
 }

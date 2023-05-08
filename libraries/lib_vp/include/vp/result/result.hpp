@@ -21,9 +21,9 @@ namespace vp {
 
     namespace result {
 
-        constexpr ALWAYS_INLINE u32 ModuleBits      = 9;
-        constexpr ALWAYS_INLINE u32 DescriptionBits = 13;
-        constexpr ALWAYS_INLINE u32 ReserveBits     = 9;
+        constexpr inline u32 ModuleBits      = 9;
+        constexpr inline u32 DescriptionBits = 13;
+        constexpr inline u32 ReserveBits     = 9;
 
         constexpr ALWAYS_INLINE GetModule(Result result) {
             return result & ModuleBits;
@@ -46,7 +46,7 @@ namespace vp {
         }*/
     }
 
-    constexpr ALWAYS_INLINE Result ResultSuccess = 0;
+    constexpr inline Result ResultSuccess = 0;
 
     #define RESULT_RETURN_IF(expression, return_result) \
     { \
@@ -78,12 +78,12 @@ namespace vp {
         }
 
     #define DECLARE_RESULT_MODULE(module_num) \
-        constexpr ALWAYS_INLINE u32 ResultModule = module_num;
+        constexpr inline u32 ResultModule = module_num;
 
     #define DECLARE_RESULT(result_name, description) \
-        constexpr ALWAYS_INLINE u32 Result##result_name =  ((description & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits);
+        constexpr inline u32 Result##result_name =  ((description & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits);
 
     #define DECLARE_RESULT_RANGE(result_name, description_start, description_end) \
-        constexpr ALWAYS_INLINE u32 Result##result_name##Start =  ((description_start & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits); \
-        constexpr ALWAYS_INLINE u32 Result##result_name##End   =  ((description_end & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits);
+        constexpr inline u32 Result##result_name##Start =  ((description_start & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits); \
+        constexpr inline u32 Result##result_name##End   =  ((description_end & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits);
 }

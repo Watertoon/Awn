@@ -14,6 +14,7 @@ namespace awn::gfx {
         protected:
             GpuHeap                     *m_parent_gpu_heap;
             VkDeviceMemory               m_vk_device_memory;
+            void                        *m_mapped_memory;
             size_t                       m_memory_size;
             u32                          m_memory_property_flags;
             mem::SeparateHeap           *m_gpu_separate_heap;
@@ -26,7 +27,11 @@ namespace awn::gfx {
             
             Result TryAllocateGpuMemory(GpuMemoryAllocation *out_allocation, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags);
             bool   FreeGpuMemoryAllocation(GpuMemoryAllocation *allocation);
+            
+            void FlushCpuCache(size_t size = VK_WHOLE_SIZE, size_t offset = 0);
+            void InvalidateCpuCache(size_t size = VK_WHOLE_SIZE, size_t offset = 0);
 
-            constexpr ALWAYS_INLINE VkDeviceMemory GetVkDeviceMemory() const { return m_vk_device_memory; }
+            constexpr ALWAYS_INLINE VkDeviceMemory  GetVkDeviceMemory() const { return m_vk_device_memory; }
+            constexpr ALWAYS_INLINE void           *Map()               const { return m_mapped_memory; }
     };
 }

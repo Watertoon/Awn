@@ -5,8 +5,8 @@ namespace vp::res {
     namespace {
 
         ALWAYS_INLINE u32 RemapIndex(void *remap_table, u32 data_count, u32 index) {
-            if (data_count < 0x100)   { *reinterpret_cast<u8*>(reinterpret_cast<uintptr_t>(remap_table) + index * sizeof(u8)); }
-            if (data_count < 0x10000) { *reinterpret_cast<u16*>(reinterpret_cast<uintptr_t>(remap_table) + index * sizeof(u16)); }
+            if (data_count < 0x100)   { return *reinterpret_cast<u8*>(reinterpret_cast<uintptr_t>(remap_table) + index * sizeof(u8)); }
+            if (data_count < 0x10000) { return *reinterpret_cast<u16*>(reinterpret_cast<uintptr_t>(remap_table) + index * sizeof(u16)); }
             return *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(remap_table) + index * sizeof(u32));
         }
     }
@@ -106,7 +106,7 @@ namespace vp::res {
             const ResByamlContainer *m_byaml_container;
             u32                      m_stride;
         public:
-            constexpr ALWAYS_INLINE ByamlHashArrayIterator(const ResByamlContainer *container) : m_byaml_container(container), m_stride(container->data_type & 0xf * sizeof(u32) + sizeof(ResByamlContainer)) {/*...*/}
+            constexpr ALWAYS_INLINE ByamlHashArrayIterator(const ResByamlContainer *container) : m_byaml_container(container), m_stride((container->data_type & 0xf) * sizeof(u32) + sizeof(ResByamlContainer)) {/*...*/}
 
             constexpr ALWAYS_INLINE ~ByamlHashArrayIterator() {/*...*/}
 

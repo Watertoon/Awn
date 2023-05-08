@@ -328,7 +328,7 @@ namespace vp::util {
             static void InsertImpl(node_type **root, node_type *insert) {
 
                 /* Find parent */
-                node_type *iter   = root;
+                node_type *iter   = *root;
                 node_type *parent = nullptr;
 
                 s32 side = 0;
@@ -351,7 +351,7 @@ namespace vp::util {
                 insert->m_color  = Color_Red;
 
                 /* Place node at respective parent node */
-                node_type **child = std::addressof(root);
+                node_type **child = root;
                 if (parent != nullptr) {
                     child = reinterpret_cast<node_type**>(std::addressof(parent->m_left));
                     if (-1 < side) {
@@ -361,7 +361,7 @@ namespace vp::util {
                 *child = insert;
 
                 /* Fixup tree */
-                InsertFixup(root, insert);
+                InsertFixup(reinterpret_cast<IntrusiveRedBlackTreeNodeBase**>(root), insert);
 
                 return;
             }
@@ -412,24 +412,29 @@ namespace vp::util {
             using pointer          = T*;
             using const_pointer    = const T*;
             using node_type        = IntrusiveRedBlackTreeNode<K>;
+            using node_base        = IntrusiveRedBlackTreeNodeBase;
             using key_type         = K;
         public:
             node_type *m_root;
 		public:
 			constexpr ALWAYS_INLINE IntrusiveRedBlackTree() : m_root(nullptr) {/*...*/}
 
-            constexpr void Insert(node_type *node) {
-                node_type::InsertImpl(m_root, node);
+            void Insert(node_type *node) {
+                node_type::InsertImpl(std::addressof(m_root), node);
+            }
+            void Insert(pointer node) {
+                node_type::InsertImpl(std::addressof(m_root), Traits::GetTreeNode(node));
             }
 
-            constexpr void Remove(node_type *node) {
-                node_type::RemoveImpl(m_root, node);
-            }            
+            void Remove(node_base *node) {
+                node_base::RemoveImpl(reinterpret_cast<node_base**>(std::addressof(m_root)), node);
+            }
 
-            constexpr void Remove(key_type hash) {
+            void Remove(key_type hash) {
                 node_type *node = node_type::FindImpl(m_root, hash);
-                VP_ASSERT(node != nullptr && node->hash == hash);
-                node_type::RemoveImpl(m_root, node);
+                VP_ASSERT(node->hash == hash);
+                if (node == nullptr) { return; }
+                node_base::RemoveImpl(reinterpret_cast<node_base**>(std::addressof(m_root)), node);
             }
 
             pointer Find(key_type hash) {

@@ -46,5 +46,7 @@ namespace awn::gfx {
                 }
                 m_vk_sampler = VK_NULL_HANDLE;
             }
+
+            constexpr ALWAYS_INLINE VkSampler GetVkSampler() const { return m_vk_sampler; }
     };
 }
