@@ -17,6 +17,15 @@
 
 namespace vp::res {
 
+    struct ResBntx;
+
+    struct GfxBindTextureReturn {
+        u64   texture_view_decriptor_slot;
+        void *texture_view;
+    };
+
+    using GfxBindTextureCallback = GfxBindTextureReturn (*) (ResBntx*, const char *);
+
     enum class GfxMemoryPoolFlags : u32 {
         CpuNoAccess  = (1 << 0),
         CpuUncached  = (1 << 1),
@@ -183,15 +192,15 @@ namespace vp::res {
     }
 
     enum class GfxTypeFormat : u8 {
-        Unorm   = 1,
-        Snorm   = 2,
-        UInt    = 3,
-        SInt    = 4,
-        Float   = 5,
-        SRGB    = 6,
-        Depth   = 7, /* (Unorm) */
-        UScaled = 8,
-        SScaled = 9,
+        Unorm   = 0x1,
+        Snorm   = 0x2,
+        UInt    = 0x3,
+        SInt    = 0x4,
+        Float   = 0x5,
+        SRGB    = 0x6,
+        Depth   = 0x7, /* (Unorm) */
+        UScaled = 0x8,
+        SScaled = 0x9,
         UFloat  = 0xa
     };
 
@@ -652,7 +661,7 @@ namespace vp::res {
         void       *user_data;
         s32         data_entries;
         u8          data_type;
-        u8          reserve0[43];
+        u8          reserve0[0x2b];
     };
     static_assert(sizeof(ResGfxUserData) == 0x40);
 }

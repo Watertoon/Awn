@@ -181,15 +181,15 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FMAT");
 
-        //void BindTexture(ResBfres::BindTextureCallback bind_callback, ResBntx *res_bntx) {
-        //    for (u32 i = 0; i < sampler_count; ++i) {
-        //        if (user_texture_view_array[i] != nullptr && user_texture_descriptor_slot_array[i] == 0xffff'ffff'ffff'ffff) { continue; }
-        //
-        //        ResBfres::BindTextureReturn ret       = (BindTextureCallback)(texture_name_array[i] + 2, res_bntx);
-        //        user_texture_view_array[i]            = ret->texture_view;
-        //        user_texture_descriptor_slot_array[i] = ret->texture_descriptor_slot;
-        //    }
-        //}
+        void BindTexture(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
+            for (u32 i = 0; i < sampler_count; ++i) {
+                if (user_texture_view_array[i] != nullptr && user_texture_descriptor_slot_array[i] == 0xffff'ffff'ffff'ffff) { continue; }
+        
+                GfxBindTextureReturn ret              = (bind_callback)(res_bntx, texture_name_array[i] + 2);
+                user_texture_descriptor_slot_array[i] = ret.texture_view_decriptor_slot;
+                user_texture_view_array[i]            = ret.texture_view;
+            }
+        }
 
         ALWAYS_INLINE u32 GetStaticShaderOptionIndex(const char *option_name) {
             const u32 dic_index = material_shader_data->shader_reflection->static_shader_option_dictionary->FindEntryIndex(option_name);

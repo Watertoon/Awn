@@ -149,7 +149,7 @@ namespace vp::util {
                 return node;
             }
 
-            static constexpr node_base *RemoveFixupLeftImpl(node_base **root, node_base *fixup_parent, node_base *fixup) {
+            static constexpr node_base *RemoveFixupLeftImpl(node_base **root, node_base *fixup_parent) {
 
                 node_base *f_r = fixup_parent->m_right;
                 
@@ -180,7 +180,7 @@ namespace vp::util {
                 return *root;
             }
 
-            static constexpr node_base *RemoveFixupRightImpl(node_base **root, node_base *fixup_parent, node_base *fixup) {
+            static constexpr node_base *RemoveFixupRightImpl(node_base **root, node_base *fixup_parent) {
 
                 node_base *f_l = fixup_parent->m_left;
                 
@@ -215,9 +215,9 @@ namespace vp::util {
 
                 while (fixup != nullptr && fixup->m_color == Color_Black && fixup != *root) {
                     if (fixup_parent->m_left == fixup) {
-                        fixup = RemoveFixupLeftImpl(root, fixup_parent, fixup);
+                        fixup = RemoveFixupLeftImpl(root, fixup_parent);
                     } else {
-                        fixup = RemoveFixupRightImpl(root, fixup_parent, fixup);
+                        fixup = RemoveFixupRightImpl(root, fixup_parent);
                     }
                     fixup_parent = fixup->m_parent;
                 }

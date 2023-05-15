@@ -42,11 +42,12 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FMDL");
         
-        //void BindTexture(ResBfres::BindTextureCallback bind_callback, ResBntx *res_bntx) {
-        //    for (u32 i = 0; i < material_count; ++i) {
-        //        material_array[i].BindTexture(bind_callback, res_bntx);
-        //    }
-        //}
+        void BindTexture(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
+            const u32 mat_count = material_count;
+            for (u32 i = 0; i < mat_count; ++i) {
+                material_array[i].BindTexture(bind_callback, res_bntx);
+            }
+        }
     };
     static_assert(sizeof(ResBfresModel) == 0x78);
 }

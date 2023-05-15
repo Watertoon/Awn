@@ -26,7 +26,7 @@ namespace awn::res {
             virtual Result LoadFileImpl(FileLoadContext *file_load_context) {
 
                 /* Integrity checks */
-                RESULT_RETURN_UNLESS(file_load_context->out_file != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
+                RESULT_RETURN_UNLESS(file_load_context->out_file != nullptr && file_load_context->out_file_size == 0, ResultInvalidFileBufferSize);
                 RESULT_RETURN_UNLESS((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
 
                 /* Open file handle */
@@ -41,11 +41,11 @@ namespace awn::res {
 
                 /* Handle file buffer */
                 if (file_load_context->out_file == nullptr) {
-                    file_load_context->out_file  = ::operator new(file_size, file_load_context->heap, file_load_context->alignment);
-                    file_load_context->file_size = file_size;
-                    file_load_context->is_heap_allocated = true;
+                    file_load_context->out_file              = ::operator new(file_size, file_load_context->heap, file_load_context->alignment);
+                    file_load_context->out_file_size         = file_size;
+                    file_load_context->out_is_heap_allocated = true;
                 } else {
-                    RESULT_RETURN_UNLESS(file_size <= file_load_context->file_size, ResultInvalidFileBufferSize);
+                    RESULT_RETURN_UNLESS(file_size <= file_load_context->out_file_size, ResultInvalidFileBufferSize);
                 }
 
                 /* Read loop */

@@ -13,9 +13,11 @@ namespace vp::res {
         u16 endianess;
         u32 file_size;
         u32 file_array_offset;
-        u32 alignment;
+        u16 version;
+        u16 reserve0;
 
-        static constexpr u32 cMagic = util::TCharCode32("SARC");
+        static constexpr u32 cMagic         = util::TCharCode32("SARC");
+        static constexpr u32 cTargetVersion = 0x100;
     };
     static_assert(sizeof(ResSarc) == 0x14);
 
@@ -68,14 +70,15 @@ namespace vp::res {
                 m_sarc = reinterpret_cast<ResSarc*>(sarc_file);
 
                 /* ResSarc integrity checks */
-                if (m_sarc->magic       != ResSarc::cMagic)        { return false; }
-                if (m_sarc->endianess   != ByteOrder_Little)  { return false; }
-                if (m_sarc->header_size != sizeof(ResSarc)) { return false; }
+                if (m_sarc->magic       != ResSarc::cMagic)         { return false; }
+                if (m_sarc->endianess   != ByteOrder_Little)        { return false; }
+                if (m_sarc->header_size != sizeof(ResSarc))         { return false; }
+                if (m_sarc->version     != ResSarc::cTargetVersion) { return false; }
 
                 m_sfat = reinterpret_cast<ResSfat*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc));
 
                 /* ResSfat integrity checks */
-                if (m_sfat->magic != ResSfat::cMagic)        { return false; }
+                if (m_sfat->magic != ResSfat::cMagic)       { return false; }
                 if (m_sfat->header_size != sizeof(ResSfat)) { return false; }
                 if ((m_sfat->file_count >> 14) != 0)        { return false; }
 
@@ -84,7 +87,7 @@ namespace vp::res {
                 ResSfnt *sfnt = reinterpret_cast<ResSfnt*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc) + sizeof(ResSfat) + sizeof(ResSfatEntry) * m_sfat->file_count);
 
                 /* ResSfnt integrity checks*/
-                if (sfnt->magic != ResSfnt::cMagic)        { return false; }
+                if (sfnt->magic != ResSfnt::cMagic)       { return false; }
                 if (sfnt->header_size != sizeof(ResSfnt)) { return false; }
 
                 m_path_table = reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(sfnt) + sfnt->header_size);

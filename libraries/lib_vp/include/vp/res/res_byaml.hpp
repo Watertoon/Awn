@@ -5,23 +5,23 @@ namespace vp::res {
     enum class ByamlDataType : u8 {
         HashArray               = 0x20,
         HashArrayWithRemap      = 0x30,
-        StringIndex             = 0xA0,
-        BinaryData              = 0xA1,
-        BinaryDataWithAlignment = 0xA2,
-        Array                   = 0xC0,
-        Dictionary              = 0xC1,
-        KeyTable                = 0xC2,
-        DictionaryWithRemap     = 0xC4,
-        RelocatedKeyTable       = 0xC5,
-        MonoTypedArray          = 0xC8,
-        Bool                    = 0xD0,
-        S32                     = 0xD1,
-        F32                     = 0xD2,
-        U32                     = 0xD3,
-        S64                     = 0xD4,
-        U64                     = 0xD5,
-        F64                     = 0xD6,
-        Null                    = 0xFF,
+        StringIndex             = 0xa0,
+        BinaryData              = 0xa1,
+        BinaryDataWithAlignment = 0xa2,
+        Array                   = 0xc0,
+        Dictionary              = 0xc1,
+        KeyTable                = 0xc2,
+        DictionaryWithRemap     = 0xc4,
+        RelocatedKeyTable       = 0xc5,
+        MonoTypedArray          = 0xc8,
+        Bool                    = 0xd0,
+        S32                     = 0xd1,
+        F32                     = 0xd2,
+        U32                     = 0xd3,
+        S64                     = 0xd4,
+        U64                     = 0xd5,
+        F64                     = 0xd6,
+        Null                    = 0xff,
     };
 
     struct ResByamlContainer {
@@ -86,6 +86,8 @@ namespace vp::res {
         }
 
         static bool VerifyStringTable(const unsigned char *table) {
+
+            /* Cast table and check container type */
             const ResByamlContainer *header = reinterpret_cast<const ResByamlContainer*>(table);
             if (static_cast<ByamlDataType>(header->data_type) != ByamlDataType::KeyTable) { return false; }
 
@@ -102,7 +104,7 @@ namespace vp::res {
                 /* Verify all sucessive string indices point to after a null terminator */
                 if (*reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(header) + offset_end - 1) != '\0') { return false; }
 
-                /* Verify the offsets increase */
+                /* Verify the sucessive offsets increase */
                 if (offset_start > offset_end) { return false; }
 
                 /* Verify the string table is sorted */

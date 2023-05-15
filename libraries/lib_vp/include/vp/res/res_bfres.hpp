@@ -54,9 +54,11 @@ namespace vp::res {
         union {
             u8                      external_options;
             struct {
-                u8                  reserve8         : 3;
-                u8                  is_external_data : 1;
-                u8                  reserve9         : 4;
+                u8                  is_external_model_uninitalized : 1;
+                u8                  has_external_strings           : 1;
+                u8                  holds_external_strings         : 1;
+                u8                  is_external_gpu_region         : 1;
+                u8                  reserve9                       : 4;
             };
         };
         u8                          reserve10;
@@ -75,14 +77,14 @@ namespace vp::res {
             return fres->ResNintendoWareFileHeader::IsValid(cMagic, 10, 0, 0);
         }
         
-        //void BindTexture(BindTextureCallback bind_callback, ResBntx *res_bntx) {
-        //    for (u32 i = 0; i < model_count; ++i) {
-        //        model_array[i].BindTexture(bind_callback, res_bntx);
-        //    }
-        //    for (u32 i = 0; i < material_anim_count; ++i) {
-        //        material_anim_array[i].BindTexture(bind_callback, res_bntx);
-        //    }
-        //}
+        void BindTextures(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
+            for (u32 i = 0; i < model_count; ++i) {
+                model_array[i].BindTexture(bind_callback, res_bntx);
+            }
+            for (u32 i = 0; i < material_anim_count; ++i) {
+                material_anim_array[i].BindTexture(bind_callback, res_bntx);
+            }
+        }
 
         constexpr ALWAYS_INLINE u64 GetGpuMemorySize() {
             return (memory_pool_info == nullptr) ? 0xffff'ffff'ffff'ffff : memory_pool_info->size;

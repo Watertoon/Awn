@@ -76,7 +76,7 @@ namespace vp::res {
                 u32 data_type_index    = index;
                 u32 value_array_offset = util::AlignUp(m_byaml_container->count, 4);
                 if (static_cast<ByamlDataType>(m_byaml_container->data_type) == ByamlDataType::MonoTypedArray) {
-                    data_type_index    = 1;
+                    data_type_index    = 0;
                     value_array_offset = sizeof(u32);
                 }
 
@@ -123,13 +123,13 @@ namespace vp::res {
 
                 /* Remap index if necessary */
                 if (static_cast<ByamlDataType>(m_byaml_container->data_type & 0xf0) == ByamlDataType::HashArrayWithRemap) {
-                    const u32 remap_table_offset = util::AlignUp((m_stride + sizeof(u32) + sizeof(u8)) * data_count, sizeof(u32));
+                    const u32 remap_table_offset = util::AlignUp((m_stride + sizeof(ResByamlContainer) + sizeof(u8)) * data_count, sizeof(u32));
                     index = RemapIndex(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml_container) + remap_table_offset), data_count, index);
                 }
 
                 /* Calculate data offsets */
                 const u32 data_type_offset = (m_stride + sizeof(u32)) * data_count + index * sizeof(u8);
-                const u32 value_offset     = (m_stride + sizeof(u32)) * index + m_stride + sizeof(u32);
+                const u32 value_offset     = (m_stride + sizeof(u32)) * index + m_stride + sizeof(ResByamlContainer);
 
                 /* Set data */
                 out_data->key_index = index;

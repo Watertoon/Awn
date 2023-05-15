@@ -43,7 +43,7 @@ namespace awn::ukern {
                     }
 
                     /* If we fail, lock the thread */
-                    RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateLockImpl(other_waiter & (~FiberLocalStorage::HasChildWaitersBit), std::addressof(m_handle), tag), ResultSuccess);
+                    RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateLockImpl(other_waiter & (~FiberLocalStorage::HasChildWaitersBit), std::addressof(m_handle), tag));
                     if ((m_handle & (~FiberLocalStorage::HasChildWaitersBit)) == tag) {
                         return;
                     }
@@ -60,7 +60,7 @@ namespace awn::ukern {
             void Leave() {
 
                 /* Unlock waiters */
-                if (((m_handle >> 0x1e) & 1) == 1) { RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateUnlockImpl(std::addressof(m_handle)), ResultSuccess); }
+                if (((m_handle >> 0x1e) & 1) == 1) { RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateUnlockImpl(std::addressof(m_handle))); }
                 else { ::InterlockedExchange(std::addressof(m_handle), 0); }
             }
 

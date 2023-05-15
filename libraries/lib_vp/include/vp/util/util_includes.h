@@ -37,7 +37,7 @@
 #endif
 
 /* Vulkan */
-#if GRAPHICS_API == vk
+#ifdef VP_TARGET_GRAPHICS_API_vk
     #define VK_USE_PLATFORM_WIN32_KHR
     #define VK_ENABLE_BETA_EXTENSIONS
     #include <vulkan/vulkan.h>

@@ -34,13 +34,13 @@ namespace awn::res {
     class FileDeviceBase;
 
     struct FileLoadContext {
-        void        *out_file;
-        mem::Heap   *heap;
+        void       *out_file;
+        size_t      out_file_size;
+        bool        out_is_heap_allocated;
+        mem::Heap  *heap;
         const char *file_path;
-        size_t      file_size;
         u32         read_div;
         s32         alignment;
-        bool        is_heap_allocated;
     };
 
     class FileDeviceBase {

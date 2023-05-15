@@ -34,7 +34,7 @@ namespace awn::res {
         private:
             friend class ResourceFactoryManager;
         private:
-            const char              *m_file_extension;
+            const char                  *m_file_extension;
             vp::util::IntrusiveListNode  m_manager_list_node;
         public:
             VP_RTTI_BASE(ResourceFactoryBase);
@@ -63,7 +63,7 @@ namespace awn::res {
                 }
 
                 /* Initialize resource */
-                res->InitializeResource(load_arg->file_load_context.heap, load_arg->file_load_context.out_file, load_arg->file_load_context.file_size);
+                res->InitializeResource(load_arg->file_load_context.heap, load_arg->file_load_context.out_file, load_arg->file_load_context.out_file_size);
 
                 return ResultSuccess;
             }
@@ -78,7 +78,7 @@ namespace awn::res {
             sys::ServiceCriticalSection m_list_cs;
             ResourceFactoryList         m_resource_factory_list;
         public:
-            DD_SINGLETON_TRAITS(ResourceFactoryManager);
+            AWN_SINGLETON_TRAITS(ResourceFactoryManager);
         public:
             constexpr ALWAYS_INLINE ResourceFactoryManager() {/*...*/}
 
@@ -114,7 +114,7 @@ namespace awn::res {
                 }
 
                 /* Load file with factory */
-                RESULT_ABORT_UNLESS(factory->TryLoad(nullptr, load_arg), ResultSuccess);
+                RESULT_ABORT_UNLESS(factory->TryLoad(nullptr, load_arg));
             }
     };
 }

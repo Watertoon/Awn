@@ -23,12 +23,12 @@ ifneq ($(BUILD_DIR),$(notdir $(CURDIR)))
 
 # User program options (edit these)
 CXX_DEFINES  := -DVP_DEBUG
-CXX_FLAGS    := -std=gnu++20 -ffunction-sections -fdata-sections -fno-strict-aliasing -fwrapv -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector -fno-rtti -fno-exceptions $(CXX_DEFINES)
+CXX_FLAGS    := -static-libgcc -static-libstdc++ -std=gnu++20 -ffunction-sections -fdata-sections -fno-strict-aliasing -fwrapv -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector -fno-rtti -fno-exceptions $(CXX_DEFINES)
 CXX_WARNS    := -Wall -Wno-format-truncation -Wno-format-zero-length -Wno-stringop-truncation -Wno-invalid-offsetof -Wno-format-truncation -Wno-format-zero-length -Wno-stringop-truncation -Wextra -Werror -Wno-missing-field-initializers
 LIBRARY_DIRS := $(CURDIR)/../lib_vp
 
 export PROJECT_C_FLAGS      := 
-export PROJECT_CXX_FLAGS    := $(RELEASE_FLAGS) $(CXX_FLAGS) $(CXX_WARNS) -DDD_TARGET_PLATFORM=$(PLATFORM) -DDD_TARGET_ARCHITECTURE=$(ARCHITECTURE) -DDD_TARGET_GRAPHICS_API=$(GRAPHICS_API)
+export PROJECT_CXX_FLAGS    := $(RELEASE_FLAGS) $(CXX_FLAGS) $(CXX_WARNS) -DVP_TARGET_PLATFORM_$(PLATFORM) -DVP_TARGET_ARCHITECTURE_$(ARCHITECTURE) -DVP_TARGET_GRAPHICS_API_$(GRAPHICS_API)
 export PROJECT_INCLUDE_DIRS := include third_party/include
 export PROJECT_LIB_INCLUDES := $(foreach dir,$(LIBRARY_DIRS),-I$(dir)/lib)
 export PROJECT_INCLUDES     := $(foreach dir,$(PROJECT_INCLUDE_DIRS),-I$(CURDIR)/$(dir)) \

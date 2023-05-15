@@ -5,14 +5,14 @@ namespace vp::res {
 	struct ResNintendoWareDictionary {
         struct ResDicNode {
             union {
-                s32 ref_bit;
+                u32     ref_bit;
                 struct {
                     u32 ref_bit_rshift : 3;
                     u32 ref_bit_length : 29;
                 };
             };
-            s16   left_node;
-            s16   right_node;
+            s16         left_node;
+            s16         right_node;
             const char *key; /* string starts at pos 2, 0-1 is a u16 of the string size */
         };
         static_assert(sizeof(ResDicNode) == 0x10);
@@ -31,8 +31,9 @@ namespace vp::res {
 
             /* Find if we have an odd amount of nodes */
             s32 odd_bit = (node_count + 1) & 1;
-            ResDicNode *root_node    = std::addressof(this->root_node);
-            ResDicNode *current_node = root_node;
+            ResDicNode *root_node_array = std::addressof(this->root_node);
+            ResDicNode *current_node    = root_node_array;
+
             /* Default initialize our dictionary nodes in a double pattern */
             for (s32 i = 0; i < (node_count + 1) - odd_bit; i = i + 2) {
                 current_node[i + 0].ref_bit = NPos;
@@ -52,33 +53,33 @@ namespace vp::res {
             /* Main build loop */
             for (s32 i = 1; i < node_count; ++i) {
 
-                const char *i_key = root_node[i].key;
+                const char *i_key = root_node_array[i].key;
                 const u16 i_key_len = *reinterpret_cast<const u16*>(i_key);
 
                 /* Traverse tree to insert location */
                 u16 insert_index = this->root_node.left_node;
-                u32 current_ref_bit = root_node[insert_index].ref_bit;
+                u32 current_ref_bit = root_node_array[insert_index].ref_bit;
                 u32 last_ref_bit = this->root_node.ref_bit;
                 while (last_ref_bit < current_ref_bit) {
-                    last_ref_bit = root_node[insert_index].ref_bit;
+                    last_ref_bit = root_node_array[insert_index].ref_bit;
 
-                    u32 ref_len = root_node[insert_index].ref_bit_length;
+                    u32 ref_len = root_node_array[insert_index].ref_bit_length;
                     bool is_right_node = false;
                     if (ref_len < i_key_len) {
-                        is_right_node = (i_key[i_key_len + ~ref_len + 2] >> root_node[insert_index].ref_bit_rshift) & 1;
+                        is_right_node = (i_key[i_key_len + ~ref_len + 2] >> root_node_array[insert_index].ref_bit_rshift) & 1;
                     }
-                    insert_index = is_right_node ? root_node[insert_index].right_node : root_node[insert_index].left_node;
+                    insert_index = is_right_node ? root_node_array[insert_index].right_node : root_node_array[insert_index].left_node;
 
-                    current_ref_bit = root_node[insert_index].ref_bit;
+                    current_ref_bit = root_node_array[insert_index].ref_bit;
                 }
 
                 /* Pick out longer string */
-                const s16 insert_len = *reinterpret_cast<const u16*>(root_node[insert_index].key);
+                const s16 insert_len = *reinterpret_cast<const u16*>(root_node_array[insert_index].key);
                 const s32 longer_len = (insert_len <= i_key_len) ? i_key_len : insert_len;
 
                 /* Null string is invalid */
                 if (longer_len == 0) {
-                    root_node[i].ref_bit = NPos;
+                    root_node_array[i].ref_bit = NPos;
                     return false;
                 }
 
@@ -96,7 +97,7 @@ namespace vp::res {
                     }
 
                     if (new_ref_len < insert_len) {
-                        insert_bit = (root_node[insert_index].key[(insert_len - new_ref_len) + 2] >> (new_ref & 7)) & 1;
+                        insert_bit = (root_node_array[insert_index].key[(insert_len - new_ref_len) + 2] >> (new_ref & 7)) & 1;
                     } else {
                         insert_bit = false;
                     }
@@ -104,22 +105,22 @@ namespace vp::res {
                     new_ref = new_ref + 1;
                     /* Two identical keys are invalid */
                     if ((longer_len << 3) - new_ref < 0) {
-                        root_node[i].ref_bit = NPos;
+                        root_node_array[i].ref_bit = NPos;
                         return false;
                     }
                 }
 
                 /* Set current nodes ref_bit to the new ref */
-                root_node[i].ref_bit = new_ref;
+                root_node_array[i].ref_bit = new_ref;
                 if (new_ref == NPos) {
                     return false;
                 }
 
                 /* Get final node index */
-                u16 last_index    = this->root_node.left_node;
+                u16 last_index    = root_node.left_node;
                 u16 interim_index = last_index;
-                u32 last_ref      = this->root_node.ref_bit;
-                while (last_ref < root_node[last_index].ref_bit) {
+                u32 last_ref      = root_node.ref_bit;
+                while (last_ref < root_node_array[last_index].ref_bit) {
                     const u32 new_ref_len = (last_ref >> 3);
                     interim_index = last_index;
 
@@ -129,27 +130,27 @@ namespace vp::res {
                         i_bit = false;
                     }
 
-                    last_ref = root_node[last_index].ref_bit;
-                    last_index = (i_bit == true) ? root_node[last_index].right_node : root_node[last_index].left_node;
+                    last_ref = root_node_array[last_index].ref_bit;
+                    last_index = (i_bit == true) ? root_node_array[last_index].right_node : root_node_array[last_index].left_node;
                 }
 
-                u32 parent_len = root_node[interim_index].ref_bit_length;
+                u32 parent_len = root_node_array[interim_index].ref_bit_length;
                 bool parent_rbit = false;
                 if (parent_len < i_key_len) {
-                    parent_rbit = (i_key[(i_key_len - parent_len) + 2] >> (root_node[interim_index].ref_bit_rshift)) & 1;
+                    parent_rbit = (i_key[(i_key_len - parent_len) + 2] >> (root_node_array[interim_index].ref_bit_rshift)) & 1;
                 } else {
                     parent_rbit = false;
                 }
-                std::addressof(root_node[interim_index].left_node)[parent_rbit] = static_cast<u16>((reinterpret_cast<uintptr_t>(std::addressof(root_node[i])) - reinterpret_cast<uintptr_t>(std::addressof(this->root_node))) >> 4);
+                std::addressof(root_node_array[interim_index].left_node)[parent_rbit] = static_cast<u16>((reinterpret_cast<uintptr_t>(std::addressof(root_node_array[i])) - reinterpret_cast<uintptr_t>(std::addressof(this->root_node))) >> 4);
 
-                u32 i_ref_len = root_node[i].ref_bit_length;
+                u32 i_ref_len = root_node_array[i].ref_bit_length;
                 bool i_rbit = false;
                 if (i_ref_len < i_key_len) {
-                    i_rbit = (i_key[(i_key_len - i_ref_len) + 2] >> (root_node[i].ref_bit_rshift)) & 1;
+                    i_rbit = (i_key[(i_key_len - i_ref_len) + 2] >> (root_node_array[i].ref_bit_rshift)) & 1;
                 } else {
                     i_rbit = false;
                 }
-                std::addressof(root_node[i].left_node)[i_rbit] = static_cast<u16>((reinterpret_cast<uintptr_t>(std::addressof(root_node[last_index])) - reinterpret_cast<uintptr_t>(std::addressof(this->root_node))) >> 4);
+                std::addressof(root_node_array[i].left_node)[i_rbit] = static_cast<u16>((reinterpret_cast<uintptr_t>(std::addressof(root_node_array[last_index])) - reinterpret_cast<uintptr_t>(std::addressof(this->root_node))) >> 4);
             }
 
             return true;
