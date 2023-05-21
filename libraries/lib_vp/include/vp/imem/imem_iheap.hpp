@@ -48,6 +48,7 @@ namespace vp::imem {
             virtual void Finalize();
 
             virtual MemoryRange AdjustHeap();
+
             virtual size_t AdjustAllocation(void *address, size_t new_size);
 
             virtual void *TryAllocate(size_t size, s32 alignment);
@@ -73,6 +74,10 @@ namespace vp::imem {
 
             virtual bool IsAddressInHeap(void *address) { return (m_start_address <= address && address < m_end_address); }
 
+            virtual bool IsAddressAllocation(void *address);
+
+            virtual size_t ResizeHeapBack(size_t new_size);
+
             virtual size_t GetTotalSize() const { 
                 return reinterpret_cast<uintptr_t>(m_end_address) - reinterpret_cast<uintptr_t>(m_start_address);
             }
@@ -81,5 +86,7 @@ namespace vp::imem {
 
             constexpr ALWAYS_INLINE const char *GetName() const { return m_name; }
             constexpr ALWAYS_INLINE bool HasChildren() const { return m_child_list.IsEmpty(); }
+            
+            constexpr ALWAYS_INLINE void *GetEndAddress() { return m_end_address; }
     };
 }

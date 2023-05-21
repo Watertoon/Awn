@@ -21,6 +21,8 @@ namespace awn::mem {
             friend class  IDisposer;
             friend class  ScopedHeapLock;
             friend Heap  *FindHeapByNameImpl(Heap *parent_heap, const char *heap_name);
+        public:
+            static constexpr size_t cWholeSize = 0;
         private:
             using DisposerList = vp::util::IntrusiveListTraits<IDisposer, &IDisposer::m_disposer_list_node>::List;
         private:
@@ -39,6 +41,14 @@ namespace awn::mem {
                 ScopedHeapLock lock(this);
                 m_disposer_list.Remove(disposer);
             }
+
+        protected:
+            constexpr ALWAYS_INLINE void LockHeapIfSafe() {
+                if (this->IsThreadSafe() == true) { m_heap_cs.Enter(); }
+            }
+            constexpr ALWAYS_INLINE void UnlockHeapIfSafe() {
+                if (this->IsThreadSafe() == true) { m_heap_cs.Leave(); }
+            }
         public:
             void PushBackChild(Heap *child) {
                 ScopedHeapLock lock(this);
@@ -46,13 +56,16 @@ namespace awn::mem {
             }
         public:
             explicit Heap(const char *name, IHeap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : IHeap(name, parent_heap, start_address, size), m_disposer_list(), m_heap_cs(), m_is_thread_safe(is_thread_safe) {/*...*/}
+
+            constexpr ALWAYS_INLINE bool IsThreadSafe() { return m_is_thread_safe; }
     };
 
     constexpr ScopedHeapLock::ScopedHeapLock(Heap *heap) : m_heap(heap) {
         VP_ASSERT(heap != nullptr);
-        if (m_heap->m_is_thread_safe == true) { m_heap->m_heap_cs.Enter(); }
+        m_heap->LockHeapIfSafe();
+        
     }
     constexpr ScopedHeapLock::~ScopedHeapLock() {
-        if (m_heap->m_is_thread_safe == true) { m_heap->m_heap_cs.Leave(); }
+        m_heap->UnlockHeapIfSafe();
     }
 }

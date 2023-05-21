@@ -18,7 +18,7 @@ namespace awn::sys {
 
     SystemManager *GetSystemManager();
 
-    u32 GetProcessProcessorCount();
+    u32 GetProcessCoreCount();
     u32 GetCurrentThreadCoreNumber();
     
     SYSTEM_INFO *GetSystemInfo();

@@ -9,6 +9,8 @@ namespace awn::gfx {
         public:
             friend class GpuHeap;
             friend class GpuHeapManager;
+        public:
+            static constexpr size_t cMaxBlockCount = 0x800;
         private:
             using GpuMemoryAllocationList = vp::util::IntrusiveListTraits<GpuMemoryAllocation, &GpuMemoryAllocation::m_gpu_heap_memory_list_node>::List;
         protected:

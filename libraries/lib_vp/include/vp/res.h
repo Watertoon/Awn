@@ -30,6 +30,10 @@
 #include <vp/res/res_bfressceneanim.hpp>
 #include <vp/res/res_bfres.hpp>
 
+/* Reverse engineered NintendoWare font formats */
+#include <vp/res/res_ui2dcommon.hpp>
+#include <vp/res/res_bffnt.hpp>
+
 /* Reverse engineered NintendoWare ui2d formats */
 #include <vp/res/res_sarc.hpp>
 

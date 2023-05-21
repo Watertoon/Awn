@@ -2,5 +2,5 @@
 
 namespace awn::sys {
 
-    DECLARE_RESULT_MODULE(1);
+    DECLARE_RESULT_MODULE(2);
 }

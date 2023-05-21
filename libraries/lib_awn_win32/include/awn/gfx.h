@@ -9,6 +9,7 @@
 #include <awn/gfx/gfx_gpuheap.vk.hpp>
 #include <awn/gfx/gfx_gpuheapmanager.vk.hpp>
 
+#include <awn/gfx/gfx_sync.vk.h>
 #include <awn/gfx/gfx_context.vk.hpp>
 #include <awn/gfx/gfx_buffer.vk.hpp>
 #include <awn/gfx/gfx_texture.vk.hpp>

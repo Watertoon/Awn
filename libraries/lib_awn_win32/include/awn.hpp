@@ -16,3 +16,4 @@ namespace awn {
 #include <awn/res.h>
 #include <awn/gfx.h>
 #include <awn/hid.h>
+#include <awn/frm.h>

@@ -2,6 +2,12 @@
 
 namespace awn::sys {
 
+    constexpr inline s32 cLowPriority         = THREAD_PRIORITY_LOWEST;
+    constexpr inline s32 cBelowNormalPriority = THREAD_PRIORITY_BELOW_NORMAL;
+    constexpr inline s32 cNormalPriority      = THREAD_PRIORITY_NORMAL;
+    constexpr inline s32 cAboveNormalPriority = THREAD_PRIORITY_ABOVE_NORMAL;
+    constexpr inline s32 cHighPriority        = THREAD_PRIORITY_HIGHEST;
+
     class ThreadManager {
         public:
             using ThreadList = vp::util::IntrusiveListTraits<ThreadBase, &ThreadBase::m_thread_manager_list_node>::List;
@@ -118,6 +124,11 @@ namespace awn::sys {
                 } else {
                     return reinterpret_cast<ThreadBase*>(thread->user_arg);
                 }
+            }
+
+            ALWAYS_INLINE bool IsServiceThreadCurrent() {
+                const ukern::ThreadType *thread = ukern::GetCurrentThread();
+                return thread == nullptr;
             }
 
             ALWAYS_INLINE void SetCurrentServiceThread(ThreadBase *thread) {

@@ -20,7 +20,7 @@ namespace awn::gfx {
                 constexpr CommandPoolHolder() : command_pool_array{VK_NULL_HANDLE} {/*...*/}
             };
         public:
-            static constexpr size_t cMaxCommandBufferThreadCount = 256;
+            static constexpr size_t cMaxCommandBufferThreadCount = 128;
         public:
             using CommandPoolHolderAllocator = vp::util::FixedObjectAllocator<CommandPoolHolder, cMaxCommandBufferThreadCount>;
         private:
@@ -61,7 +61,7 @@ namespace awn::gfx {
                 m_command_pool_tls_slot = 0;
             }
 
-            CommandList CreateThreadLocalCommandList(QueueType queue_type) {
+            CommandList CreateThreadLocalCommandList(QueueType queue_type, bool is_primary = false) {
 
                 /* Try to acquire existing command pool */
                 CommandPoolHolder *command_pool_holder = reinterpret_cast<CommandPoolHolder*>(sys::ThreadManager::GetInstance()->GetCurrentThread()->GetTlsData(m_command_pool_tls_slot));
@@ -89,7 +89,7 @@ namespace awn::gfx {
                 const VkCommandBufferAllocateInfo allocate_info {
                     .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
                     .commandPool        = *sel_vk_command_pool,
-                    .level              = VK_COMMAND_BUFFER_LEVEL_SECONDARY,
+                    .level              = (is_primary == true) ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY,
                     .commandBufferCount = 1
                 };
 
@@ -114,6 +114,61 @@ namespace awn::gfx {
     class CommandBufferBase {
         protected:
             CommandList m_command_list;
+        private:
+            struct SyncScopeInfo {
+                u32 vk_src_stage_mask;
+                u32 vk_src_access_mask;
+                u32 vk_dst_stage_mask;
+                u32 vk_dst_access_mask;
+            };
+        private:
+            void TransitionRenderTargetsImpl(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target, SyncScopeInfo *sync_scope, VkImageLayout image_layout) {
+                
+                VkImageMemoryBarrier2 barrier_array[Context::cTargetMaxBoundRenderTargetColorCount + 1] = {};
+
+                /* Setup color target barriers */
+                for (u32 i = 0; i < color_target_count; ++i) {
+                    barrier_array[i].sType                        = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+                    barrier_array[i].srcStageMask                 = sync_scope->vk_src_stage_mask;
+                    barrier_array[i].srcAccessMask                = sync_scope->vk_src_access_mask;
+                    barrier_array[i].dstStageMask                 = sync_scope->vk_dst_stage_mask;
+                    barrier_array[i].dstAccessMask                = sync_scope->vk_dst_access_mask;
+                    barrier_array[i].oldLayout                    = color_target_array[i]->GetVkImageLayout();
+                    barrier_array[i].newLayout                    = image_layout;
+                    barrier_array[i].image                        = color_target_array[i]->GetVkImage();
+                    barrier_array[i].subresourceRange.aspectMask  = color_target_array[i]->GetVkAspectMask();
+                    barrier_array[i].subresourceRange.levelCount  = 1;
+                    barrier_array[i].subresourceRange.layerCount  = color_target_array[i]->GetViewCount();
+
+                    color_target_array[i]->SetVkImageLayout(image_layout);
+                }
+
+                if (depth_stencil_target != nullptr && image_layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+                    barrier_array[color_target_count].sType                        = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+                    barrier_array[color_target_count].srcStageMask                 = (sync_scope->vk_src_stage_mask == VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT) ? VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT : sync_scope->vk_src_stage_mask;
+                    barrier_array[color_target_count].srcAccessMask                = (sync_scope->vk_src_access_mask == VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT) ? VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT : sync_scope->vk_src_access_mask;
+                    barrier_array[color_target_count].dstStageMask                 = sync_scope->vk_dst_stage_mask;
+                    barrier_array[color_target_count].dstAccessMask                = sync_scope->vk_dst_access_mask;
+                    barrier_array[color_target_count].oldLayout                    = depth_stencil_target->GetVkImageLayout();
+                    barrier_array[color_target_count].newLayout                    = (image_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : image_layout;
+                    barrier_array[color_target_count].image                        = depth_stencil_target->GetVkImage();
+                    barrier_array[color_target_count].subresourceRange.aspectMask  = depth_stencil_target->GetVkAspectMask();
+                    barrier_array[color_target_count].subresourceRange.levelCount  = 1;
+                    barrier_array[color_target_count].subresourceRange.layerCount  = depth_stencil_target->GetViewCount();
+
+                    depth_stencil_target->SetVkImageLayout(image_layout);
+                    color_target_count = color_target_count + 1;
+                }
+
+                const VkDependencyInfo dep_info = {
+                    .sType                   = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+                    .imageMemoryBarrierCount = color_target_count,
+                    .pImageMemoryBarriers    = barrier_array
+                }; 
+                ::pfn_vkCmdPipelineBarrier2(m_command_list.vk_command_buffer, std::addressof(dep_info));
+
+                return;
+            }
         public:
             constexpr ALWAYS_INLINE CommandBufferBase() : m_command_list() {/*...*/}
 
@@ -149,6 +204,25 @@ namespace awn::gfx {
                 const VkDeviceSize device_size   = size;
                 const VkDeviceSize device_stride = stride;
                 ::pfn_vkCmdBindVertexBuffers2(m_command_list.vk_command_buffer, binding, 1, std::addressof(vertex_buffer_address.vk_buffer), std::addressof(device_offset), std::addressof(device_size), std::addressof(device_stride));
+            }
+
+            void TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
+
+                SyncScopeInfo scope_info = {
+                    .vk_dst_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    .vk_dst_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+                };
+                TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                return;
+            }
+            void TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
+
+                SyncScopeInfo scope_info = {
+                    .vk_src_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    .vk_src_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+                };
+                TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+                return;
             }
 
             void BeginRendering(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
@@ -391,7 +465,7 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE ThreadLocalCommandBuffer() : CommandBufferBase() {/*...*/}
 
             /* Commmand buffer management */
-            void Begin(QueueType queue_type) {
+            void Begin(QueueType queue_type = QueueType::Graphics, bool is_primary = false) {
 
                 /* Allocate a command buffer */
                 m_command_list = CommandPoolManager::GetInstance()->CreateThreadLocalCommandList(queue_type);

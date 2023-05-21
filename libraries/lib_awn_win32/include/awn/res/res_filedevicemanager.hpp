@@ -33,7 +33,7 @@ namespace awn::res {
 
                 /* Lookup device by name */
                 for (FileDeviceBase &device : m_mounted_file_device_list) {
-                    const u32 cmp_result = ::strncmp(device.GetDeviceName(), device_name, vp::util::MaxDrive);
+                    const u32 cmp_result = ::strncmp(device.GetDeviceName(), device_name, vp::util::cMaxDrive);
                     if (cmp_result == 0) { return std::addressof(device); }
                 }
                 return nullptr;
@@ -42,14 +42,14 @@ namespace awn::res {
             Result TryLoadFile(FileLoadContext *file_context) {
 
                 /* Get drive */
-                vp::util::FixedString<vp::util::MaxDrive> drive;
+                vp::util::FixedString<vp::util::cMaxDrive> drive;
                 vp::util::GetDriveFromPath(std::addressof(drive), file_context->file_path);
 
                 /* Find file device */
                 FileDeviceBase *device = this->GetFileDeviceByName(drive.GetString());
 
                 /* Get path without drive */
-                vp::util::FixedString<vp::util::MaxPath> path;
+                vp::util::FixedString<vp::util::cMaxPath> path;
                 vp::util::GetPathWithoutDrive(std::addressof(path), file_context->file_path);
 
                 /* Load */

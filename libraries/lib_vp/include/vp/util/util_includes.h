@@ -25,8 +25,11 @@
 #include <array>
 
 /* Windows */
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#ifdef VP_TARGET_PLATFORM_win32
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+    #include <shellapi.h>
+#endif
 
 /* Undef erroneous near and far from windef.h */
 #ifdef near

@@ -45,6 +45,7 @@ namespace awn::mem {
         //sRootHeap = ExpHeap::TryCreate(heap_mgr->memory, heap_mgr->memory_size, "HeapManager::sRootHeap", false);
 
         /* Set state */
+        heap_mgr->out_of_memory_resize_alignment    = heap_manager_info->out_of_memory_resize_alignment;
         heap_mgr->out_of_memory_delegate.m_function = heap_manager_info->out_of_memory_callback;
         sIsHeapManagerInitialized                   = true;
 
@@ -64,6 +65,14 @@ namespace awn::mem {
 
         /* Destruct heap manager */
         vp::util::DestructAt(sHeapManagerStorage);
+    }
+
+    bool OutOfMemoryImpl(OutOfMemoryInfo *out_of_memory_info) {
+        return vp::util::GetReference(sHeapManagerStorage).out_of_memory_delegate.Invoke(out_of_memory_info);
+    }
+
+    size_t GetOutOfMemoryResizeAlignment() {
+        return vp::util::GetReference(sHeapManagerStorage).out_of_memory_resize_alignment;
     }
 
     Heap *FindHeapFromAddress(void *address) {

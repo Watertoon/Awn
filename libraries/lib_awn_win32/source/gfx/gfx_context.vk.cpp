@@ -46,7 +46,7 @@ namespace awn::gfx {
         }
     }
 
-    bool Context::SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, [[maybe_unused]] ContextOptionalFeatureInfo *optional_feature_info) {
+    bool Context::SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, [[maybe_unused]]const ContextOptionalFeatureInfo *optional_feature_info) {
 
         /* Query Physical Device */
         ::pfn_vkGetPhysicalDeviceProperties2(vk_physical_device, std::addressof(m_vk_physical_device_properties));
@@ -218,7 +218,7 @@ namespace awn::gfx {
         /* Find queue families */
         return this->SetAllQueueFamilyIndices();
     }
-    
+
     bool Context::SetAllQueueFamilyIndices() {
         
         /* Query queue family properties count */
@@ -304,7 +304,7 @@ namespace awn::gfx {
         return (m_graphics_queue_family_index != 0xffff'ffff) & (m_compute_queue_family_index != 0xffff'ffff) & (m_transfer_queue_family_index != 0xffff'ffff) & (m_video_decode_queue_family_index != 0xffff'ffff) & (m_video_encode_queue_family_index != 0xffff'ffff) & (m_optical_flow_queue_family_index != 0xffff'ffff);
     }
 
-	void Context::Initialize(ContextInfo *context_info) {
+	void Context::Initialize(const ContextInfo *context_info) {
 
         /* Load initial vulkan procs */
         ::LoadVkCProcsInitial();
@@ -745,6 +745,95 @@ namespace awn::gfx {
         #endif
 
         ::pfn_vkDestroyInstance(m_vk_instance, nullptr);
+
+        return;
+    }
+    
+    void Context::SubmitCommandList(CommandList command_list, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count) {
+
+        /* Integrity checks */
+        VP_ASSERT(wait_sync_count < cMaxQueueWaitSyncCount && signal_sync_count < cMaxQueueSignalSyncCount);
+
+        /* Setup command buffer submit info, wait and signal semaphore infos */
+        VkCommandBufferSubmitInfo command_buffer_submit_info = {
+            .sType         = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+            .commandBuffer = command_list.vk_command_buffer,
+            .deviceMask    = 0,
+        };
+        VkSemaphoreSubmitInfo wait_semaphore_array[cMaxQueueWaitSyncCount] = {};
+        for (u32 i = 0; i < wait_sync_count; ++i) {
+            wait_semaphore_array[i].sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            wait_semaphore_array[i].semaphore   = wait_sync_array[i]->GetVkSemaphore();
+            wait_semaphore_array[i].value       = wait_sync_array[i]->GetExpectedValue();
+            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+            wait_semaphore_array[i].deviceIndex = 0;
+        }
+        VkSemaphoreSubmitInfo signal_semaphore_array[cMaxQueueSignalSyncCount] = {};
+        for (u32 i = 0; i < signal_sync_count; ++i) {
+            wait_semaphore_array[i].sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            wait_semaphore_array[i].semaphore   = signal_sync_array[i]->GetVkSemaphore();
+            wait_semaphore_array[i].value       = signal_sync_array[i]->GetExpectedValue();
+            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+            wait_semaphore_array[i].deviceIndex = 0;
+        }
+
+        const VkSubmitInfo2 graphics_submit_info = {
+            .sType                    = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+            .waitSemaphoreInfoCount   = wait_sync_count,
+            .pWaitSemaphoreInfos      = wait_semaphore_array,
+            .commandBufferInfoCount   = 1,
+            .pCommandBufferInfos      = std::addressof(command_buffer_submit_info),
+            .signalSemaphoreInfoCount = signal_sync_count,
+            .pSignalSemaphoreInfos    = signal_semaphore_array,
+        };
+        const u32 result0 = ::pfn_vkQueueSubmit2(this->GetVkQueue(command_list.queue_type), 1, std::addressof(graphics_submit_info), VK_NULL_HANDLE);
+        VP_ASSERT(result0 == VK_SUCCESS);
+
+        return;
+    }
+
+    void Context::SubmitCommandLists(CommandList **command_list_array, u32 command_list_count, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count) {
+
+        /* Integrity checks */
+        VP_ASSERT(command_list_count < cMaxQueueCommandListCount && wait_sync_count < cMaxQueueWaitSyncCount && signal_sync_count < cMaxQueueSignalSyncCount);
+
+        /* Setup command buffer submit info, wait and signal semaphore infos */
+        VkCommandBufferSubmitInfo command_buffer_submit_info_array[cMaxQueueCommandListCount] = {};
+        u32 queue_type = static_cast<u32>(command_list_array[0]->queue_type);
+        for (u32 i = 0; i < command_list_count; ++i) {
+            VP_ASSERT(queue_type == static_cast<u32>(command_list_array[i]->queue_type));
+            command_buffer_submit_info_array[i].sType         = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+            command_buffer_submit_info_array[i].commandBuffer = command_list_array[i]->vk_command_buffer;
+            command_buffer_submit_info_array[i].deviceMask    = 0;
+        }
+        VkSemaphoreSubmitInfo wait_semaphore_array[cMaxQueueWaitSyncCount] = {};
+        for (u32 i = 0; i < wait_sync_count; ++i) {
+            wait_semaphore_array[i].sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            wait_semaphore_array[i].semaphore   = wait_sync_array[i]->GetVkSemaphore();
+            wait_semaphore_array[i].value       = wait_sync_array[i]->GetExpectedValue();
+            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+            wait_semaphore_array[i].deviceIndex = 0;
+        }
+        VkSemaphoreSubmitInfo signal_semaphore_array[cMaxQueueSignalSyncCount] = {};
+        for (u32 i = 0; i < signal_sync_count; ++i) {
+            wait_semaphore_array[i].sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            wait_semaphore_array[i].semaphore   = signal_sync_array[i]->GetVkSemaphore();
+            wait_semaphore_array[i].value       = signal_sync_array[i]->GetExpectedValue();
+            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+            wait_semaphore_array[i].deviceIndex = 0;
+        }
+
+        const VkSubmitInfo2 graphics_submit_info = {
+            .sType                    = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+            .waitSemaphoreInfoCount   = wait_sync_count,
+            .pWaitSemaphoreInfos      = wait_semaphore_array,
+            .commandBufferInfoCount   = command_list_count,
+            .pCommandBufferInfos      = command_buffer_submit_info_array,
+            .signalSemaphoreInfoCount = signal_sync_count,
+            .pSignalSemaphoreInfos    = signal_semaphore_array,
+        };
+        const u32 result0 = ::pfn_vkQueueSubmit2(this->GetVkQueue(static_cast<QueueType>(queue_type)), 1, std::addressof(graphics_submit_info), VK_NULL_HANDLE);
+        VP_ASSERT(result0 == VK_SUCCESS);
 
         return;
     }

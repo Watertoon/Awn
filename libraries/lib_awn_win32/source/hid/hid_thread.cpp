@@ -53,7 +53,7 @@ namespace awn::hid {
 
         class HidThread : public sys::ServiceThread {
             public:
-                ALWAYS_INLINE HidThread() : ServiceThread("awn::hid::HidThread", nullptr, sys::ThreadRunMode_Looping, 0, 1, 0x1000, THREAD_PRIORITY_ABOVE_NORMAL) {/*...*/}
+                ALWAYS_INLINE HidThread() : ServiceThread("awn::hid::HidThread", nullptr, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cAboveNormalPriority) {/*...*/}
 
                 virtual void ThreadCalc([[maybe_unused]] size_t message) override {
 
@@ -64,12 +64,12 @@ namespace awn::hid {
                         .lpfnWndProc = HidWndProc,
                         .hInstance = process_handle,
                         .hbrBackground = (HBRUSH)(COLOR_BACKGROUND),
-                        .lpszClassName = "HidDDWindow"
+                        .lpszClassName = "HidAwnWindow"
                     };
                     const u32 result0 = ::RegisterClass(std::addressof(wc));
                     VP_ASSERT(result0 != 0);
 
-                    hid_hwnd = ::CreateWindowEx(0 ,"HidDDWindow", "InputWindow", 0, 0, 0, 1280, 720, HWND_MESSAGE, 0, ::GetModuleHandle(nullptr), 0);
+                    hid_hwnd = ::CreateWindowEx(0 ,"HidAwnWindow", "InputWindow", 0, 0, 0, 1280, 720, HWND_MESSAGE, 0, ::GetModuleHandle(nullptr), 0);
                     VP_ASSERT(hid_hwnd != nullptr);
                     
                     //::EnableWindow(parent_hwnd, true);

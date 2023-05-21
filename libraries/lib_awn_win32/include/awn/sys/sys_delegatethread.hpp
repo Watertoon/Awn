@@ -21,9 +21,10 @@ namespace awn::sys {
             }
     };
 
+    template<typename Parent>
     class DelegateServiceThread : public ServiceThread {
         public:
-            using ThreadDelegate = vp::util::Delegate<DelegateServiceThread, size_t>;
+            using ThreadDelegate = vp::util::Delegate<Parent, size_t>;
         private:
             ThreadDelegate *m_delegate;
         private:
@@ -35,7 +36,6 @@ namespace awn::sys {
             explicit DelegateServiceThread(ThreadDelegate *delegate, const char *name, mem::Heap *heap, ThreadRunMode run_mode, u32 stack_size, size_t exit_code, u32 max_messages, u32 priority) : ServiceThread(name, heap, run_mode, exit_code, max_messages, stack_size, priority) {
                 VP_ASSERT(delegate != nullptr);
 
-                delegate->m_parent = this;
                 m_delegate         = delegate;
             }
     };

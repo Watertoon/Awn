@@ -108,7 +108,7 @@ namespace awn::res {
                 /* Find factory */
                 ResourceFactoryBase *factory = load_arg->resource_factory;
                 if (factory == nullptr) {
-                    vp::util::FixedString<vp::util::MaxPath> extension;
+                    vp::util::FixedString<vp::util::cMaxPath> extension;
                     vp::util::GetExtensionFromPath(std::addressof(extension), load_arg->file_load_context.file_path);
                     factory = this->FindResourceFactory(extension.GetString());
                 }

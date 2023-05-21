@@ -12,8 +12,8 @@ namespace vp::util {
         public:
             constexpr ALWAYS_INLINE Delegate() : m_function(nullptr), m_parent(nullptr) {/*...*/}
             constexpr ALWAYS_INLINE Delegate(FunctionType function) : m_function(function), m_parent(nullptr) {/*...*/}
-            constexpr ALWAYS_INLINE Delegate(ParentType parent) : m_function(nullptr), m_parent(parent) {/*...*/}
-            constexpr ALWAYS_INLINE Delegate(FunctionType function, ParentType parent) : m_function(function), m_parent(parent) {/*...*/}
+            constexpr ALWAYS_INLINE Delegate(ParentType *parent) : m_function(nullptr), m_parent(parent) {/*...*/}
+            constexpr ALWAYS_INLINE Delegate(ParentType *parent, FunctionType function) : m_function(function), m_parent(parent) {/*...*/}
 
             constexpr ALWAYS_INLINE void Invoke(Args... args) {
                 VP_ASSERT(m_parent != nullptr && m_function != nullptr);
@@ -36,8 +36,8 @@ namespace vp::util {
         public:
             constexpr ALWAYS_INLINE DelegateReturn() : m_function(nullptr), m_parent(nullptr) {/*...*/}
             constexpr ALWAYS_INLINE DelegateReturn(FunctionType function) : m_function(function), m_parent(nullptr) {/*...*/}
-            constexpr ALWAYS_INLINE DelegateReturn(ParentType parent) : m_function(nullptr), m_parent(parent) {/*...*/}
-            constexpr ALWAYS_INLINE DelegateReturn(FunctionType function, ParentType parent) : m_function(function), m_parent(parent) {/*...*/}
+            constexpr ALWAYS_INLINE DelegateReturn(ParentType *parent) : m_function(nullptr), m_parent(parent) {/*...*/}
+            constexpr ALWAYS_INLINE DelegateReturn(ParentType *parent, FunctionType function) : m_function(function), m_parent(parent) {/*...*/}
 
             constexpr ALWAYS_INLINE ReturnType Invoke(Args... args) {
                 VP_ASSERT(m_parent != nullptr && m_function != nullptr);

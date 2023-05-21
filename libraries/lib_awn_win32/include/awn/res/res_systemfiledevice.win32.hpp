@@ -73,7 +73,7 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS((open_mode & OpenMode_ReadWriteAppend) != 0, ResultInvalidOpenMode);
 
                 /* Format path */
-                vp::util::FixedString<vp::util::MaxPath> formatted_path;
+                vp::util::FixedString<vp::util::cMaxPath> formatted_path;
                 const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
                 RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
 
@@ -183,7 +183,7 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
 
                 /* Format path */
-                vp::util::FixedString<vp::util::MaxPath> formatted_path;
+                vp::util::FixedString<vp::util::cMaxPath> formatted_path;
                 const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
                 RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
 
@@ -208,7 +208,7 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
 
                 /* Format path */
-                vp::util::FixedString<vp::util::MaxPath> formatted_path;
+                vp::util::FixedString<vp::util::cMaxPath> formatted_path;
                 const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
                 RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
 
@@ -226,10 +226,10 @@ namespace awn::res {
 
     class ContentFileDevice : public SystemFileDevice {
         protected:
-            virtual Result FormatPath(vp::util::FixedString<vp::util::MaxPath> *out_formatted_path, const char *path) override {
-                vp::util::FixedString<vp::util::MaxPath> path_no_drive;
+            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) override {
+                vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
                 vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
-                RESULT_RETURN_UNLESS(out_formatted_path->Format("content/%s", path_no_drive) != vp::util::MaxPath, ResultPathTooLong);
+                RESULT_RETURN_UNLESS(out_formatted_path->Format("content/%s", path_no_drive) != vp::util::cMaxPath, ResultPathTooLong);
                 return ResultSuccess;
             }
         public:
@@ -238,10 +238,10 @@ namespace awn::res {
 
     class SaveFileDevice : public SystemFileDevice {
         protected:
-            virtual Result FormatPath(vp::util::FixedString<vp::util::MaxPath> *out_formatted_path, const char *path) override {
-                vp::util::FixedString<vp::util::MaxPath> path_no_drive;
+            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) override {
+                vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
                 vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
-                RESULT_RETURN_UNLESS(out_formatted_path->Format("save/%s", path_no_drive) != vp::util::MaxPath, ResultPathTooLong);
+                RESULT_RETURN_UNLESS(out_formatted_path->Format("save/%s", path_no_drive) != vp::util::cMaxPath, ResultPathTooLong);
                 return ResultSuccess;
             }
         public:

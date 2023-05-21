@@ -10,7 +10,7 @@ namespace awn::gfx {
             CommandList RecordBntxTransferToGpu(GpuMemoryAllocation *staging_memory) {
 
                 /* Begin a command buffer for transfers */
-                CommandBuffer transfer_cmd_buffer;
+                ThreadLocalCommandBuffer transfer_cmd_buffer;
                 transfer_cmd_buffer.Begin();
 
                 /* Linearly find and transfer textures to the Gpu */
@@ -35,8 +35,8 @@ namespace awn::gfx {
                     };
 
                     /* Create a texture object */
-                    const DescriptorSlot texture_slot = TextureSamplerManager::GetInstance()->RegisterTexture(m_device_memory.GetGpuAddress(texture_offset), std::addressof(bntx->texture_container.texture_info_array[i]->texture_info), std::addressof(texture_view_info));
-                    Texture *texture                  = TextureSamplerManager::GetInstance()->GetTexture(texture_slot);
+                    const DescriptorSlot  texture_slot = TextureSamplerManager::GetInstance()->RegisterTexture(m_device_memory.GetGpuAddress(texture_offset), std::addressof(bntx->texture_container.texture_info_array[i]->texture_info), std::addressof(texture_view_info));
+                    Texture              *texture      = TextureSamplerManager::GetInstance()->GetTexture(texture_slot);
 
                     /* Set bntx descriptor slot */
                     m_bntx->texture_container.texture_info_array[i]->user_descriptor_slot = texture_slot;
@@ -93,31 +93,32 @@ namespace awn::gfx {
                 return transfer_cmd_buffer.End();
             }
         public:
-            
+            constexpr TextureArchiveMemoryRelocator() {/*...*/}
+
             bool Initialize(vp::res::ResBntx *bntx) {
 
                 /* Allocate staging and device memory */
-                GpuMemoryAllocation  staging_memory;
-                staging_memory.Allocate(bntx->texture_container.texture_data->GetGpuMemoryRegionSize(), MemoryType::HostUncached);
-                m_device_memory.Allocate(bntx->texture_container.texture_data->GetGpuMemoryRegionSize(), MemoryType::GpuCached);
+                GpuMemoryAllocation staging_memory;
+                const size_t gpu_memory_size = bntx->texture_container.texture_data->GetGpuMemoryRegionSize();
+                staging_memory.Allocate(gpu_memory_size, MemoryPropertyFlags::HostUncached);
+                m_device_memory.Allocate(gpu_memory_size, MemoryPropertyFlags::GpuCached);
 
                 /* Copy gpu region to host memory */
                 void *memory = staging_memory.Map();
-                ::memcpy(memory, , );
+                ::memcpy(memory, bntx->texture_container.texture_data->GetGpuMemoryRegion(), gpu_memory_size);
 
                 /* Records transfer command list */
                 CommandList command_list = this->RecordBntxTransferToGpu();
 
                 /* Transfer the memory */
-                gfx::QueueTransfer(command_list);
-                gfx::SubmitTransferQueue();
+                gfx::SubmitTransferQueue(command_list);
                 gfx::WaitForTransferQueue();
 
                 /* Free command list and staging memory */
                 CommandPoolManager::GetInstance()->FreeThreadLocalCommandList(command_list);
                 staging_memory.FreeGpuMemory();
             }
-            
+
             void Finalize() {
 
                 /* Zero out bntx descriptor slots */

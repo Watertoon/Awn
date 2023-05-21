@@ -4,8 +4,9 @@ namespace awn::gfx {
 
     GpuHeapMemory *GpuHeapMemory::Create(GpuHeap *parent_heap, mem::Heap *heap, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags) {
 
-        /* Find block count */
-        const u32 block_count = 32;
+        /* Calculate block count */
+        const u32 page_count  = size >> 0x6;
+        const u32 block_count = (page_count <= 0) ? ((cMaxBlockCount < page_count) ? page_count : cMaxBlockCount) : 1;
 
         /* Allocate new GpuHeapMemory and Separate Heap */
         GpuHeapMemory *gpu_heap_memory = reinterpret_cast<GpuHeapMemory*>(::operator new(sizeof(GpuHeapMemory) + sizeof(mem::SeparateHeap) + mem::SeparateHeap::GetManagementAreaSize(block_count), heap, 8));

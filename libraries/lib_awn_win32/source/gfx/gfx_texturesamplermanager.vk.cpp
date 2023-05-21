@@ -9,6 +9,8 @@ namespace awn::gfx {
         }
     }
 
+    AWN_SINGLETON_TRAITS_IMPL(TextureSamplerManager);
+
     void TextureSamplerManager::Initialize(mem::Heap *heap) {
 
         /* Allocate descriptor memory */

@@ -64,5 +64,7 @@ namespace vp::util {
                 VP_ASSERT(m_array_count > index);
                 return std::addressof(m_object_array[index]);
             }
+
+            constexpr ALWAYS_INLINE u32 GetCount() const { return m_array_count; }
     };
 }

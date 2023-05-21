@@ -41,8 +41,8 @@ namespace vp::res {
         ResBfresVertexAttribute     *vertex_attribute_array;
         ResNintendoWareDictionary   *vertex_attribute_dictionary;
         void                        *user_memory_pool_pointer;
-        void                        *user_vertex_buffer_array;
-        void                       **user_vertex_buffer_ptr_array;
+        void                        *runtime_vertex_buffer_array;
+        void                       **user_vertex_buffer_array;
         ResGfxBufferInfo            *vertex_buffer_info_array;
         ResBfresVertexBufferStride  *vertex_buffer_stride_info_array;
         void                        *user_pointer;
@@ -87,7 +87,7 @@ namespace vp::res {
 
     struct ResBfresBounding {
         util::Vector3f center_position;
-        util::Vector3f extents;
+        util::Vector3f extent;
     };
     static_assert(sizeof(ResBfresBounding) == 0x18);
 
@@ -100,7 +100,7 @@ namespace vp::res {
         const char                *shape_name;
         ResBfresVertex            *vertex;
         ResBfresMesh              *mesh_array;
-        u16                       *skin_bone_indice_array;
+        u16                       *skin_bone_index_array;
         ResBfresKeyShape          *key_shape_array;
         ResNintendoWareDictionary *key_shape_dictionary;
         ResBfresBounding          *bounding_box_array;
@@ -110,7 +110,7 @@ namespace vp::res {
         u16                        material_index;
         u16                        bone_index;
         u16                        vertex_index;
-        u16                        skin_bone_indice_count;
+        u16                        skin_bone_index_count;
         u8                         max_bone_influences_per_vertex;
         u8                         mesh_count;
         u8                         key_shape_count;

@@ -90,7 +90,7 @@ namespace vp::res {
 
         void BindTexture(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
             for (u32 i = 0; i < texture_count; ++i) {
-                if (user_texture_view_array[i] != nullptr && user_texture_descriptor_slot_array[i] == 0xffff'ffff'ffff'ffff) { continue; }
+                if (user_texture_view_array[i] != nullptr && user_texture_descriptor_slot_array[i] != 0xffff'ffff'ffff'ffff) { continue; }
         
                 GfxBindTextureReturn ret       = (bind_callback)(res_bntx, texture_name_array[i] + 2);
                 user_texture_view_array[i]            = ret.texture_view;

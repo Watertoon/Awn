@@ -48,7 +48,7 @@ namespace awn::res {
             friend class FileDeviceManager;
         protected:
             vp::util::IntrusiveListNode             m_manager_list_node;
-            vp::util::FixedString<vp::util::MaxDrive> m_device_name;
+            vp::util::FixedString<vp::util::cMaxDrive> m_device_name;
         protected:
             virtual Result LoadFileImpl(FileLoadContext *file_load_context);
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode);
@@ -62,7 +62,7 @@ namespace awn::res {
             
             virtual Result CheckFileExistsImpl(const char *path) { return CheckFileExistsImpl(path); }
             
-            virtual Result FormatPath(vp::util::FixedString<vp::util::MaxPath> *out_formatted_path, const char *path);
+            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path);
         public:
             explicit constexpr ALWAYS_INLINE FileDeviceBase() {/*...*/}
             explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *device_name) : m_device_name(device_name) {/*...*/}

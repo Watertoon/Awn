@@ -20,15 +20,15 @@ namespace awn::mem {
             using FreeList      = vp::util::IntrusiveListTraits<ExpHeapMemoryBlock, &ExpHeapMemoryBlock::exp_list_node>::List;
             using AllocatedList = vp::util::IntrusiveListTraits<ExpHeapMemoryBlock, &ExpHeapMemoryBlock::exp_list_node>::List;
         public:
-            static constexpr s32 MinimumAlignment             = 4;
+            static constexpr s32    MinimumAlignment             = 4;
             static constexpr size_t MinimumAllocationGranularity = 4;
-        private:
+        protected:
             FreeList       m_free_block_list;
             AllocatedList  m_allocated_block_list;
             AllocationMode m_allocation_mode;
         public:
             VP_RTTI_DERIVED(ExpHeap, Heap);
-        private:
+        protected:
             bool AddFreeBlock(AddressRange range) {
 
                 void *new_start = range.start;
@@ -132,6 +132,8 @@ namespace awn::mem {
                 
                 m_allocated_block_list.PushBack(*used_block);
             }
+
+            bool IsAddressAllocationUnsafe(void *address);
         public:
             static ExpHeap *TryCreate(void *address, size_t size, const char *name, bool is_thread_safe) {
 
@@ -155,8 +157,9 @@ namespace awn::mem {
             }
         public:
             explicit ExpHeap(const char *name, Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : Heap(name, parent_heap, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(start_address) + sizeof(ExpHeap)), size, is_thread_safe), m_free_block_list(), m_allocated_block_list(), m_allocation_mode(AllocationMode::BestFit) {/*...*/}
+            ~ExpHeap() {/*...*/}
 
-            static ExpHeap *TryCreate(size_t size, s32 alignment, const char *name, Heap *parent_heap, bool is_thread_safe);
+            static ExpHeap *TryCreate(const char *name, Heap *parent_heap, size_t size, s32 alignment, bool is_thread_safe);
 
             virtual void Finalize() override;
 
@@ -171,6 +174,10 @@ namespace awn::mem {
             virtual size_t GetTotalFreeSize() override;
 
             virtual size_t GetMaximumAllocatableSize(s32 alignment) override;
+
+            virtual bool IsAddressAllocation(void *address) override;
+
+            virtual size_t ResizeHeapBack(size_t new_size) override;
 
             static size_t GetAllocationSize(void *address);
     };

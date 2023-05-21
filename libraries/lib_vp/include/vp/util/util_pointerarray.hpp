@@ -73,5 +73,8 @@ namespace vp::util {
                 }
                 m_used_pointers -= number_of_elements;
             }
+
+            constexpr u32 GetUsedCount() const { return m_used_pointers; }
+            constexpr u32 GetMaxCount()  const { return m_max_pointers; }
     };
 }
