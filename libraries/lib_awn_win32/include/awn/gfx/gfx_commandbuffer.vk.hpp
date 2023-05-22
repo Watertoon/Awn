@@ -95,6 +95,7 @@ namespace awn::gfx {
 
                 VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
                 const u32 result = ::pfn_vkAllocateCommandBuffers(Context::GetInstance()->GetVkDevice(), std::addressof(allocate_info), std::addressof(vk_command_buffer));
+                VP_ASSERT(result == VK_SUCCESS);
 
                 return {vk_command_buffer, queue_type};
             }
@@ -329,10 +330,10 @@ namespace awn::gfx {
             }
 
             void SetShader(Shader *shader) {
-                VkShaderStageFlagBits *flag_bit_array = nullptr;
-                VkShaderEXT           *shader_array   = nullptr;
-                const u32              stage_count    = shader->SetupForCommandList(shader_array, flag_bit_array);
-                ::pfn_vkCmdBindShadersEXT(m_command_list.vk_command_buffer, stage_count, flag_bit_array, shader_array);
+                VkShaderStageFlagBits **flag_bit_array = nullptr;
+                VkShaderEXT           **shader_array   = nullptr;
+                const u32               stage_count    = shader->SetupForCommandList(shader_array, flag_bit_array);
+                ::pfn_vkCmdBindShadersEXT(m_command_list.vk_command_buffer, stage_count, *flag_bit_array, *shader_array);
             }
 
             /* Fixed function state setters */
@@ -468,7 +469,7 @@ namespace awn::gfx {
             void Begin(QueueType queue_type = QueueType::Graphics, bool is_primary = false) {
 
                 /* Allocate a command buffer */
-                m_command_list = CommandPoolManager::GetInstance()->CreateThreadLocalCommandList(queue_type);
+                m_command_list = CommandPoolManager::GetInstance()->CreateThreadLocalCommandList(queue_type, is_primary);
 
                 /* Begin command buffer */
                 const VkCommandBufferBeginInfo begin_info = {

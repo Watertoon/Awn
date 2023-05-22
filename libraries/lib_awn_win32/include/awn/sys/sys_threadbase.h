@@ -61,7 +61,7 @@ namespace awn::sys {
                 }
             }
 
-            virtual void ThreadCalc(size_t message) {/*...*/}
+            virtual void ThreadCalc([[maybe_unused]] size_t message) {/*...*/}
         public:
             ALWAYS_INLINE ThreadBase(mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages , u32 stack_size, s32 priority) : m_thread_heap(thread_heap), m_lookup_heap(nullptr), m_exit_message(exit_code), m_stack_size(stack_size), m_priority(priority), m_run_mode(static_cast<u32>(run_mode)) {
                 m_message_queue.Initialize(thread_heap, max_messages);
@@ -74,13 +74,13 @@ namespace awn::sys {
                 m_message_queue.Finalize();
             }
 
-            virtual void StartThread();
-            virtual void WaitForThreadExit();
-            virtual void ResumeThread();
-            virtual void SuspendThread();
+            virtual void StartThread()       {/*...*/};
+            virtual void WaitForThreadExit() {/*...*/};
+            virtual void ResumeThread()      {/*...*/};
+            virtual void SuspendThread()     {/*...*/};
 
-            virtual void SetPriority(s32 priority);
-            virtual void SetCoreMask(u64 core_mask);
+            virtual void SetPriority([[maybe_unused]] s32 priority)  {/*...*/}
+            virtual void SetCoreMask([[maybe_unused]] u64 core_mask) {/*...*/}
 
             constexpr ALWAYS_INLINE s32 GetPriority() const {
                 return m_priority;

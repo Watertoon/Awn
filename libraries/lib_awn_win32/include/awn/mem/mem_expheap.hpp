@@ -6,6 +6,7 @@ namespace awn::mem {
         u16                         alloc_magic;
         u8                          alignment;
         u8                          reserve0;
+        u32                         reserve1;
         size_t                      block_size;
         vp::util::IntrusiveListNode exp_list_node;
 
@@ -14,6 +15,7 @@ namespace awn::mem {
 
         constexpr ExpHeapMemoryBlock() : alloc_magic(0), alignment(0), reserve0(0), block_size(0), exp_list_node() {/*...*/}
     };
+    static_assert(sizeof(ExpHeapMemoryBlock) == 0x20);
 
     class ExpHeap final : public Heap {
         public:
@@ -78,14 +80,14 @@ namespace awn::mem {
                 return true;
             }
             
-            ALWAYS_INLINE void AddUsedBlock(ExpHeapMemoryBlock *free_block, uintptr_t allocation_address, size_t size) {
+            void AddUsedBlock(ExpHeapMemoryBlock *free_block, uintptr_t allocation_address, size_t size) {
                 
                 /* Unlink old free block */
                 free_block->exp_list_node.Unlink();
                 
                 /* Calculate new free block addresses and sizes */
                 uintptr_t new_free_address     = allocation_address + size;
-                uintptr_t new_free_end_address = reinterpret_cast<uintptr_t>(free_block) + free_block->block_size;
+                uintptr_t new_free_end_address = reinterpret_cast<uintptr_t>(free_block) + free_block->block_size + sizeof(ExpHeapMemoryBlock);
                 uintptr_t new_free_total_size  = new_free_end_address - new_free_address;
                 
                 uintptr_t orig_start_address   = reinterpret_cast<uintptr_t>(free_block) - free_block->alignment;
@@ -110,7 +112,7 @@ namespace awn::mem {
                 /* Create new free block at back if leftover space is great enough */
                 if (sizeof(ExpHeapMemoryBlock) + MinimumAllocationGranularity < new_free_total_size) {
 
-                    ExpHeapMemoryBlock *back_free_block = reinterpret_cast<ExpHeapMemoryBlock*>(orig_start_address);
+                    ExpHeapMemoryBlock *back_free_block = reinterpret_cast<ExpHeapMemoryBlock*>(new_free_address);
                     
                     std::construct_at(back_free_block);
                     back_free_block->alloc_magic = ExpHeapMemoryBlock::FreeMagic;
@@ -131,6 +133,8 @@ namespace awn::mem {
                 used_block->block_size  = size + new_free_total_size;
                 
                 m_allocated_block_list.PushBack(*used_block);
+                
+                return;
             }
 
             bool IsAddressAllocationUnsafe(void *address);
@@ -149,7 +153,7 @@ namespace awn::mem {
                 std::construct_at(first_block);
 
                 first_block->alloc_magic = ExpHeapMemoryBlock::FreeMagic;
-                first_block->block_size  = size - sizeof(ExpHeap) - sizeof(ExpHeapMemoryBlock);
+                first_block->block_size  = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
 
                 new_heap->m_free_block_list.PushBack(*first_block);
 
@@ -181,4 +185,5 @@ namespace awn::mem {
 
             static size_t GetAllocationSize(void *address);
     };
+    static_assert(sizeof(ExpHeap) == 0x98);
 }

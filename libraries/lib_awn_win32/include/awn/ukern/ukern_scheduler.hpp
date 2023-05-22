@@ -173,7 +173,7 @@ namespace awn::ukern::impl {
                 if (fiber_local->user_function == nullptr) { ::strncpy(fiber_local->fiber_name_storage, "MainThread", MaxFiberNameLength); return; }
 
                 /* Otherwise use fiber's initial function address */
-                ::snprintf(fiber_local->fiber_name_storage, MaxFiberNameLength, "Thread0x%08x", reinterpret_cast<size_t>(fiber_local->user_function));
+                ::snprintf(fiber_local->fiber_name_storage, MaxFiberNameLength, "Thread0x%08llx", reinterpret_cast<size_t>(fiber_local->user_function));
             }
 
             constexpr ALWAYS_INLINE void *GetSchedulerFiber(FiberLocalStorage *fiber_local) {
@@ -197,10 +197,10 @@ namespace awn::ukern::impl {
                 }
             }
 
-            void OutputBackTraceImpl(HANDLE file) {
+            void OutputBackTraceImpl([[maybe_unused]] HANDLE file) {
 
                 /* Print backtrace for this fiber */
-                FiberLocalStorage *current_fiber = this->GetCurrentThreadImpl();
+                //FiberLocalStorage *current_fiber = this->GetCurrentThreadImpl();
 
                 /* Iterate through all other fibers for backtrace */
                 ::puts("Backtrace was called. But it's not yet implemented.");

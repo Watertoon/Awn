@@ -52,7 +52,7 @@ namespace awn::mem {
             virtual void Finalize() override final {/*...*/}
     
             virtual MemoryRange AdjustHeap() override final { return MemoryRange{m_start_address, reinterpret_cast<size_t>(m_end_address) - reinterpret_cast<size_t>(m_start_address)}; }
-            virtual size_t AdjustAllocation(void *byte_offset_of_allocation, size_t new_size) override final { return 0; }
+            virtual size_t AdjustAllocation([[maybe_unused]] void *byte_offset_of_allocation, [[maybe_unused]] size_t new_size) override final { return 0; }
     
             virtual void *TryAllocate(size_t size, s32 alignment) override final {
 
@@ -120,7 +120,7 @@ namespace awn::mem {
                 return reinterpret_cast<size_t>(m_end_address) - used_size;
             }
 
-            virtual size_t GetMaximumAllocatableSize(s32 alignment) override final {
+            virtual size_t GetMaximumAllocatableSize([[maybe_unused]] s32 alignment) override final {
                 return 0;
             }
     };

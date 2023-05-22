@@ -270,16 +270,24 @@ namespace awn::gfx {
             
             constexpr ALWAYS_INLINE u32 GetVkMemoryTypeIndex(MemoryPropertyFlags memory_property_flags) const {
 
-                u32 memory_type_mask = 0;
-                u32 vk_memory_properties = vp::res::GfxMemoryPoolFlagsToVkMemoryPropertyFlags(memory_property_flags);
+                u32 vk_memory_properties    = vp::res::GfxMemoryPoolFlagsToVkMemoryPropertyFlags(memory_property_flags);
+                u32 closest_type            = 0xffff'ffff;
+                u32 closest_extra_props     = 0xffff'ffff;
                 const u32 memory_type_count = m_vk_physical_device_memory_properties.memoryTypeCount;
                 for (u32 i = 0; i < memory_type_count; ++i) {
-                    if ((m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags & vk_memory_properties) != vk_memory_properties) { continue; }
 
-                    memory_type_mask |= (1 << i);
+                    /* Exact match */
+                    if (m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags == vk_memory_properties) { return i; }
+
+                    /* Narrow properties as much as possible */
+                    const u32 masked_properties    = (m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags & vk_memory_properties);
+                    const u32 extra_property_count = vp::util::CountOneBits32(m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags & (~vk_memory_properties));
+                    if (masked_properties != vk_memory_properties || closest_extra_props < extra_property_count) { continue; }
+                    closest_type        = i;
+                    closest_extra_props = extra_property_count;
                 }
 
-                return memory_type_mask;
+                return closest_type;
             }
             static_assert(VK_MAX_MEMORY_TYPES == 32);
 
@@ -315,8 +323,8 @@ namespace awn::gfx {
 
             constexpr ALWAYS_INLINE const VkPhysicalDeviceProperties2 *GetPhysicalDeviceProperties() const { return std::addressof(m_vk_physical_device_properties); }
 
-            constexpr ALWAYS_INLINE const size_t GetTextureDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.sampledImageDescriptorSize; }
-            constexpr ALWAYS_INLINE const size_t GetSamplerDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.samplerDescriptorSize; }
-            constexpr ALWAYS_INLINE const size_t GetDescriptorAlignment()   const { return m_vk_physical_device_descriptor_buffer_properties.descriptorBufferOffsetAlignment; }
+            constexpr ALWAYS_INLINE size_t GetTextureDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.sampledImageDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetSamplerDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.samplerDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetDescriptorAlignment()   const { return m_vk_physical_device_descriptor_buffer_properties.descriptorBufferOffsetAlignment; }
     };
 }

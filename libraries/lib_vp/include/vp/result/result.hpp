@@ -66,14 +66,14 @@ namespace vp {
 
     #define RESULT_ABORT_UNLESS(expression)  \
     { \
-        const Result result = expression; \
+        const vp::Result result = (expression); \
         if (VP_UNLIKELY(result != vp::ResultSuccess)) { \
             vp::trace::impl::AbortImpl(TOSTRING(expected_result), __PRETTY_FUNCTION__, __FILE__, __LINE__, result, "Failed: %s\n  Module: %d\n  Description %d\n", TOSTRING(expression), vp::result::GetModule(result), vp::result::GetDescription(result)); \
         } \
     }
     #define RESULT_ABORT_UNLESS_EXPECTED(expression, expected_result)  \
     { \
-        const Result result = expression; \
+        const vp::Result result = (expression); \
         if (VP_UNLIKELY(result != expected_result)) { \
             vp::trace::impl::AbortImpl(TOSTRING(expected_result), __PRETTY_FUNCTION__, __FILE__, __LINE__, result, "Failed: %s\n  Module: %d\n  Description %d\n", TOSTRING(expression), vp::result::GetModule(result), vp::result::GetDescription(result)); \
         } \
@@ -81,7 +81,7 @@ namespace vp {
 
     #define RESULT_RANGE_ABORT_UNLESS_EXPECTED(expression, expected_result_range) \
         { \
-            const Result result = (expression); \
+            const vp::Result result = (expression); \
             if (result < Result##expected_result_range##Start || Result##expected_result_range##End < result) { \
                 vp::trace::impl::AbortImpl(TOSTRING(expected_result), __PRETTY_FUNCTION__, __FILE__, __LINE__, result, "Failed: %s\n  Module: %d\n  Description %d\n", TOSTRING(expression), vp::result::GetModule(result), vp::result::GetDescription(result)); \
             } \

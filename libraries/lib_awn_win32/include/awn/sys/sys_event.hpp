@@ -51,8 +51,8 @@ namespace awn::sys {
                 return;
             }
 
-            void TimedWait(TimeSpan timeout) {
-                
+            void TimedWait([[maybe_unused]] TimeSpan timeout) {
+                VP_ASSERT(false);
             }
     };
 }

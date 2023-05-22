@@ -46,7 +46,7 @@ namespace awn::ukern::impl {
                 EndFiberWaitImpl(wait_fiber, wait_result);
             }
 
-            virtual void CancelWait(FiberLocalStorage *wait_fiber, Result wait_result) override {
+            virtual void CancelWait(FiberLocalStorage *wait_fiber, [[maybe_unused]] Result wait_result) override {
                 VP_ASSERT(false);
                 /* Remove from child list */
                 wait_fiber->ReleaseLockWaitListUnsafe();

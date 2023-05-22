@@ -1,3 +1,3 @@
 #
 
-export BINTYPE_CXX_FLAGS := -g -Og -flto -gdwarf-4 -ftrivial-auto-var-init=zero
+export BINTYPE_CXX_FLAGS := -g -Og -gdwarf-4

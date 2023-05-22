@@ -3,8 +3,8 @@
 
 namespace awn::mem::impl {
 
-    constexpr ALWAYS_INLINE size_t DefaultNewAlignment = 8;
-    constexpr ALWAYS_INLINE bool   ForceUseHeapAllocator  = false;
+    constexpr inline size_t DefaultNewAlignment = 8;
+    constexpr inline bool   ForceUseHeapAllocator  = false;
 
     ALWAYS_INLINE void *NewImpl(size_t size, u32 alignment) {
 

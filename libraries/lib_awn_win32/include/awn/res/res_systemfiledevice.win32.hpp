@@ -62,7 +62,7 @@ namespace awn::res {
                 const Result close_result = this->TryCloseFile(std::addressof(handle));
                 RESULT_RETURN_UNLESS(close_result == ResultSuccess, close_result);
 
-                return ResultSuccess;
+                RESULT_RETURN_SUCCESS;
             }
 
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) override {
@@ -86,7 +86,7 @@ namespace awn::res {
                 /* Get file size */
                 RESULT_RETURN_IF(::GetFileSizeEx(out_file_handle->win32_handle, reinterpret_cast<LARGE_INTEGER*>(std::addressof(out_file_handle->file_size))), ResultFileSizeRetrievalFailed);
 
-                return ResultSuccess;
+                RESULT_RETURN_SUCCESS;
             }
 
             virtual Result CloseFileImpl(FileHandle *file_handle) override {
@@ -106,7 +106,7 @@ namespace awn::res {
                 file_handle->file_offset  = 0;
                 file_handle->file_size    = 0;
 
-                return ResultSuccess;
+                RESULT_RETURN_SUCCESS;
             }
 
             virtual Result ReadFileImpl(void *out_read_buffer, FileHandle *file_handle, u32 read_size) override {
@@ -117,7 +117,7 @@ namespace awn::res {
 
                 /* Set file location */
                 LARGE_INTEGER offset = {
-                    .QuadPart = file_handle->file_offset
+                    .QuadPart = static_cast<s64>(file_handle->file_offset)
                 };
                 u32 set_result = ::SetFilePointerEx(file_handle->win32_handle, offset, nullptr, FILE_BEGIN);
                 if (set_result != 0) {
@@ -131,7 +131,7 @@ namespace awn::res {
                     return ConvertWin32ErrorToResult();
                 }
 
-                return ResultSuccess;
+                RESULT_RETURN_SUCCESS;
             }
             
             virtual Result WriteFileImpl(FileHandle *file_handle, void *write_buffer, u32 write_size) override {
@@ -144,11 +144,13 @@ namespace awn::res {
 
                 /* Write file */
                 u32 out_write_size = 0;
-                const bool write_result = ::WriteFile(file_handle->win32_handle, write_buffer, write_size, reinterpret_cast<long unsigned int*>(std::addressof(out_write_size)), nullptr);
+                [[maybe_unused]] const bool write_result = ::WriteFile(file_handle->win32_handle, write_buffer, write_size, reinterpret_cast<long unsigned int*>(std::addressof(out_write_size)), nullptr);
                 //if () {
                     
                 //}
                 //RESULT_RETURN_IF()
+                    
+                RESULT_RETURN_SUCCESS;
             }
 
             virtual Result FlushFileImpl(FileHandle *file_handle) override {
@@ -163,7 +165,7 @@ namespace awn::res {
                     return ConvertWin32ErrorToResult();
                 }
 
-                return ResultSuccess;
+                RESULT_RETURN_SUCCESS;
             }
 
             virtual Result GetFileSizeImpl(size_t *out_size, FileHandle *file_handle) override {
@@ -174,7 +176,7 @@ namespace awn::res {
 
                 *out_size = file_handle->file_size;
 
-                return ResultSuccess;
+                RESULT_RETURN_SUCCESS;
             }
             
             virtual Result GetFileSizeImpl(size_t *out_size, const char *path) override {
@@ -199,7 +201,7 @@ namespace awn::res {
                 const Result close_result = this->TryCloseFile(std::addressof(handle));
                 RESULT_RETURN_UNLESS(close_result == ResultSuccess, close_result);
 
-                return ResultSuccess;
+                RESULT_RETURN_SUCCESS;
             }
 
             virtual Result CheckFileExistsImpl(const char *path) override {
@@ -218,7 +220,7 @@ namespace awn::res {
                     return ConvertWin32ErrorToResult();
                 }
 
-                return ResultSuccess;
+                RESULT_RETURN_SUCCESS;
             }
         public:
             explicit constexpr ALWAYS_INLINE SystemFileDevice(const char *device_name) : FileDeviceBase(device_name) {/*...*/}
@@ -227,22 +229,30 @@ namespace awn::res {
     class ContentFileDevice : public SystemFileDevice {
         protected:
             virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) override {
+
                 vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
+
                 vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
+
                 RESULT_RETURN_UNLESS(out_formatted_path->Format("content/%s", path_no_drive) != vp::util::cMaxPath, ResultPathTooLong);
-                return ResultSuccess;
+
+                RESULT_RETURN_SUCCESS;
             }
         public:
-            constexpr ALWAYS_INLINE ContentFileDevice() : SystemFileDevice("resource") {/*...*/};
+            constexpr ALWAYS_INLINE ContentFileDevice() : SystemFileDevice("content") {/*...*/};
     };
 
     class SaveFileDevice : public SystemFileDevice {
         protected:
             virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) override {
+
                 vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
+
                 vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
+
                 RESULT_RETURN_UNLESS(out_formatted_path->Format("save/%s", path_no_drive) != vp::util::cMaxPath, ResultPathTooLong);
-                return ResultSuccess;
+
+                RESULT_RETURN_SUCCESS;
             }
         public:
             constexpr ALWAYS_INLINE SaveFileDevice() : SystemFileDevice("save") {/*...*/};

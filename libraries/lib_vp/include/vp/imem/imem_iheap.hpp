@@ -45,15 +45,15 @@ namespace vp::imem {
         public:
             explicit IHeap(const char *name, IHeap *parent_heap, void *start_address, size_t size) : m_start_address(start_address), m_end_address(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(start_address) +  size)), m_parent_heap(parent_heap), m_name(name) {/*...*/}
 
-            virtual void Finalize();
+            virtual void Finalize() {/*...*/}
 
-            virtual MemoryRange AdjustHeap();
+            virtual MemoryRange AdjustHeap() { return { nullptr, 0 }; }
 
-            virtual size_t AdjustAllocation(void *address, size_t new_size);
+            virtual size_t AdjustAllocation([[maybe_unused]] void *address, [[maybe_unused]] size_t new_size) { return 0; }
 
-            virtual void *TryAllocate(size_t size, s32 alignment);
+            virtual void *TryAllocate([[maybe_unused]] size_t size, [[maybe_unused]] s32 alignment) { return nullptr; }
 
-            virtual void Free(void *address);
+            virtual void Free([[maybe_unused]] void *address) {/*...*/}
 
             virtual IHeap *FindHeapFromAddress(void *address) {
 
@@ -74,15 +74,15 @@ namespace vp::imem {
 
             virtual bool IsAddressInHeap(void *address) { return (m_start_address <= address && address < m_end_address); }
 
-            virtual bool IsAddressAllocation(void *address);
+            virtual bool IsAddressAllocation([[maybe_unused]] void *address) { return false; }
 
-            virtual size_t ResizeHeapBack(size_t new_size);
+            virtual size_t ResizeHeapBack([[maybe_unused]] size_t new_size) { return 0; }
 
             virtual size_t GetTotalSize() const { 
                 return reinterpret_cast<uintptr_t>(m_end_address) - reinterpret_cast<uintptr_t>(m_start_address);
             }
-            virtual size_t GetTotalFreeSize();
-            virtual size_t GetMaximumAllocatableSize(s32 alignment);
+            virtual size_t GetTotalFreeSize() { return 0; }
+            virtual size_t GetMaximumAllocatableSize([[maybe_unused]] s32 alignment) { return 0; }
 
             constexpr ALWAYS_INLINE const char *GetName() const { return m_name; }
             constexpr ALWAYS_INLINE bool HasChildren() const { return m_child_list.IsEmpty(); }

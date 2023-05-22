@@ -178,6 +178,14 @@ namespace awn::mem {
         return nullptr;
     }
 
+    bool IsHeapManagerInitialized() { return sIsHeapManagerInitialized; }
+
+    ALWAYS_INLINE HeapManager *GetHeapManager() { return vp::util::GetPointer(sHeapManagerStorage); }
+
+    mem::Heap *GetRootHeap(u32 index) { return vp::util::GetPointer(sHeapManagerStorage)->root_heap_array[index]; }
+
+    // constexpr ALWAYS_INLINE sys::Mutex *GetHeapManagerLock() { return std::addressof(sHeapManagerMutex); }
+
     Heap *GetCurrentThreadHeap() {
         sys::ThreadBase *thread = sys::ThreadManager::GetInstance()->GetCurrentThread();
         if (thread != nullptr) {
@@ -185,14 +193,6 @@ namespace awn::mem {
         }
         return vp::util::GetPointer(sHeapManagerStorage)->root_heap_array[0];
     }
-
-    bool IsHeapManagerInitialized() { return sIsHeapManagerInitialized; }
-
-    ALWAYS_INLINE HeapManager *GetHeapManager() { return vp::util::GetPointer(sHeapManagerStorage); }
-
-    mem::Heap *GetRootHeap(u32 index) { return vp::util::GetPointer(sHeapManagerStorage)->root_heap_array[index]; }
-
-   // constexpr ALWAYS_INLINE sys::Mutex *GetHeapManagerLock() { return std::addressof(sHeapManagerMutex); }
 
     void SetCurrentThreadHeap(Heap *heap) {
 

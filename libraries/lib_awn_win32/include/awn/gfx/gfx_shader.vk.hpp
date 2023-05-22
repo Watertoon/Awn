@@ -57,13 +57,14 @@ namespace awn::gfx {
             void Initialize(MeshShaderInfo *shader_info, const bool is_binary = false) {
 
                 /* Integrity checks */
-                VP_ASSERT(shader_info->mesh_code != nullptr & shader_info->fragment_code != nullptr);
+                VP_ASSERT((shader_info->mesh_code != nullptr) & (shader_info->fragment_code != nullptr));
 
                 /* Setup mesh, fragment, and the optional task shader info */
+                VkShaderCreateFlagsEXT create_flags = static_cast<VkShaderCreateFlagsEXT>(VK_SHADER_CREATE_LINK_STAGE_BIT_EXT | ((shader_info->task_code == nullptr) ? VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT : 0));
                 const VkShaderCreateInfoEXT vk_shader_create_info_array[Context::cTargetMaxMeshShaderStageCount] = {
                     {
                         .sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
-                        .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT | ((shader_info->task_code == nullptr) ? VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT : 0),
+                        .flags                  = create_flags,
                         .stage                  = VK_SHADER_STAGE_MESH_BIT_EXT,
                         .nextStage              = VK_SHADER_STAGE_FRAGMENT_BIT,
                         .codeType               = (is_binary == false) ? VK_SHADER_CODE_TYPE_SPIRV_EXT : VK_SHADER_CODE_TYPE_BINARY_EXT,
@@ -78,7 +79,7 @@ namespace awn::gfx {
                     },
                     {
                         .sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
-                        .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT | ((shader_info->task_code == nullptr) ? VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT : 0),
+                        .flags                  = create_flags,
                         .stage                  = VK_SHADER_STAGE_FRAGMENT_BIT,
                         .nextStage              = 0,
                         .codeType               = (is_binary == false) ? VK_SHADER_CODE_TYPE_SPIRV_EXT : VK_SHADER_CODE_TYPE_BINARY_EXT,
@@ -93,7 +94,7 @@ namespace awn::gfx {
                     },
                     {
                         .sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
-                        .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT | ((shader_info->task_code == nullptr) ? VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT : 0),
+                        .flags                  = create_flags,
                         .stage                  = VK_SHADER_STAGE_TASK_BIT_EXT,
                         .nextStage              = VK_SHADER_STAGE_MESH_BIT_EXT,
                         .codeType               = (is_binary == false) ? VK_SHADER_CODE_TYPE_SPIRV_EXT : VK_SHADER_CODE_TYPE_BINARY_EXT,
@@ -126,7 +127,7 @@ namespace awn::gfx {
             void Initialize(PrimitiveShaderInfo *shader_info, const bool is_binary = true) {
 
                 /* Integrity checks */
-                VP_ASSERT(shader_info->vertex_code != nullptr & shader_info->fragment_code != nullptr);
+                VP_ASSERT((shader_info->vertex_code != nullptr) & (shader_info->fragment_code != nullptr));
 
                 /* Calculate shader stages */
                 VkShaderStageFlags next_stage_array[Context::cTargetMaxPrimitiveShaderStageCount] = {
@@ -329,9 +330,9 @@ namespace awn::gfx {
                 m_shader_stage_mask  = 0;
             }
 
-            u32 SetupForCommandList(VkShaderEXT *out_shader_array, VkShaderStageFlagBits *out_shader_stage_array) {
-                out_shader_array       = m_vk_shader_array;
-                out_shader_stage_array = m_vk_shader_stage_flag_array;
+            u32 SetupForCommandList(VkShaderEXT **out_shader_array, VkShaderStageFlagBits **out_shader_stage_array) {
+                *out_shader_array       = m_vk_shader_array;
+                *out_shader_stage_array = m_vk_shader_stage_flag_array;
                 return m_shader_count;
             }
     };

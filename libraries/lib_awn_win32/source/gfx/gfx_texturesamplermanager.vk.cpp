@@ -7,6 +7,24 @@ namespace awn::gfx {
         ALWAYS_INLINE u32 HashSampler(SamplerInfo *sampler_info) {
             return vp::util::HashDataCrc32b(sampler_info, sizeof(SamplerInfo));
         }
+
+        ALWAYS_INLINE size_t CalculateTextureDescriptorSetLayoutGpuSize() {
+
+            /* Get size of each descriptor set layout */
+            size_t texture_layout_size = 0;
+            ::pfn_vkGetDescriptorSetLayoutSizeEXT(Context::GetInstance()->GetVkDevice(), Context::GetInstance()->GetTextureVkDescriptorSetLayout(), std::addressof(texture_layout_size));
+
+            return texture_layout_size;
+        }
+
+        ALWAYS_INLINE size_t CalculateSamplerDescriptorSetLayoutGpuSize() {
+
+            /* Get size of each descriptor set layout */
+            size_t sampler_layout_size = 0;
+            ::pfn_vkGetDescriptorSetLayoutSizeEXT(Context::GetInstance()->GetVkDevice(), Context::GetInstance()->GetSamplerVkDescriptorSetLayout(), std::addressof(sampler_layout_size));
+
+            return sampler_layout_size;
+        }
     }
 
     AWN_SINGLETON_TRAITS_IMPL(TextureSamplerManager);
@@ -15,8 +33,9 @@ namespace awn::gfx {
 
         /* Allocate descriptor memory */
         const size_t texture_descriptor_memory_size = vp::util::AlignUp(CalculateTextureDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
-        const size_t sampler_descriptor_memory_size   = vp::util::AlignUp(CalculateSamplerDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
-        m_descriptor_gpu_memory_allocation.TryAllocateGpuMemory(heap, texture_descriptor_memory_size + sampler_descriptor_memory_size, Context::cTargetDescriptorBufferAlignment, static_cast<MemoryPropertyFlags>(static_cast<u32>(MemoryPropertyFlags::CpuUncached) | static_cast<u32>(MemoryPropertyFlags::GpuUncached)));
+        const size_t sampler_descriptor_memory_size = vp::util::AlignUp(CalculateSamplerDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
+        const size_t total_gpu_memory_size          = texture_descriptor_memory_size + sampler_descriptor_memory_size;
+        RESULT_ABORT_UNLESS(m_descriptor_gpu_memory_allocation.TryAllocateGpuMemory(heap, total_gpu_memory_size, Context::cTargetDescriptorBufferAlignment, static_cast<MemoryPropertyFlags>(static_cast<u32>(MemoryPropertyFlags::CpuUncached) | static_cast<u32>(MemoryPropertyFlags::GpuUncached))));
 
         /* Get Gpu memory addresses */
         m_texture_descriptor_gpu_address = m_descriptor_gpu_memory_allocation.GetGpuMemoryAddress(0);
@@ -39,8 +58,8 @@ namespace awn::gfx {
             .sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
             .buffer = m_sampler_descriptor_vk_buffer
         };
-        m_texture_vk_device_address = ::vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(texture_device_address_info));
-        m_sampler_vk_device_address = ::vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(sampler_device_address_info));
+        m_texture_vk_device_address = ::pfn_vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(texture_device_address_info));
+        m_sampler_vk_device_address = ::pfn_vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(sampler_device_address_info));
 
         return;
     }

@@ -50,6 +50,7 @@ namespace awn::gfx {
 
         /* Query Physical Device */
         ::pfn_vkGetPhysicalDeviceProperties2(vk_physical_device, std::addressof(m_vk_physical_device_properties));
+        ::pfn_vkGetPhysicalDeviceMemoryProperties(vk_physical_device, std::addressof(m_vk_physical_device_memory_properties));
         ::pfn_vkGetPhysicalDeviceFeatures2(vk_physical_device, std::addressof(m_vk_physical_device_supported_features));
 
         /*  Ensure Vulkan 1.3 support */
@@ -143,7 +144,7 @@ namespace awn::gfx {
         if (m_vk_physical_device_properties_12.maxDescriptorSetUpdateAfterBindSampledImages  < cTargetMaxTextureDescriptorCount) { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_properties_12.maxDescriptorSetUpdateAfterBindSamplers       < cTargetMaxSamplerDescriptorCount) { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_push_descriptor_properties.maxPushDescriptors               < cTargetMaxPushDescriptorCount)    { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_extended_dynamic_state_3_properties.dynamicPrimitiveTopologyUnrestricted == VK_TRUE)            { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_extended_dynamic_state_3_properties.dynamicPrimitiveTopologyUnrestricted == false)              { VP_ASSERT(false); return false; }
 
         /* Base feature checks */
         if (m_vk_physical_device_supported_features.features.independentBlend == false)                        { VP_ASSERT(false); return false; }
@@ -171,16 +172,32 @@ namespace awn::gfx {
         if (m_vk_physical_device_supported_features_11.variablePointers == false)                              { VP_ASSERT(false); return false; }
 
         /* 1.2 feature checks */
-        if (m_vk_physical_device_supported_features_12.descriptorIndexing == false)                            { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderUniformBufferArrayNonUniformIndexing == false)    { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderSampledImageArrayNonUniformIndexing == false)     { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingSampledImageUpdateAfterBind == false)  { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingPartiallyBound == false)               { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingVariableDescriptorCount == false)      { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.runtimeDescriptorArray == false)                        { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.scalarBlockLayout == false)                             { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.bufferDeviceAddress == false)                           { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.bufferDeviceAddressCaptureReplay == false)              { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorIndexing == false)                                 { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderInputAttachmentArrayDynamicIndexing == false)          { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderUniformTexelBufferArrayDynamicIndexing == false)       { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderStorageTexelBufferArrayDynamicIndexing == false)       { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderUniformBufferArrayNonUniformIndexing == false)         { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderSampledImageArrayNonUniformIndexing == false)          { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderStorageBufferArrayNonUniformIndexing == false)         { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderStorageImageArrayNonUniformIndexing == false)          { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderInputAttachmentArrayNonUniformIndexing == false)       { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderUniformTexelBufferArrayNonUniformIndexing == false)    { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.shaderStorageTexelBufferArrayNonUniformIndexing == false)    { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingUniformBufferUpdateAfterBind == false)      { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingSampledImageUpdateAfterBind == false)       { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingStorageImageUpdateAfterBind == false)       { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingStorageBufferUpdateAfterBind == false)      { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingUniformTexelBufferUpdateAfterBind == false) { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingStorageTexelBufferUpdateAfterBind == false) { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingUpdateUnusedWhilePending == false)          { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingPartiallyBound == false)                    { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.descriptorBindingVariableDescriptorCount == false)           { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.runtimeDescriptorArray == false)                             { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.scalarBlockLayout == false)                                  { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.uniformBufferStandardLayout  == false)                       { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.timelineSemaphore  == false)                                 { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.bufferDeviceAddress == false)                                { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features_12.bufferDeviceAddressCaptureReplay == false)                   { VP_ASSERT(false); return false; }
 
         /* 1.3 feature checks */
         if (m_vk_physical_device_supported_features_13.synchronization2 == false)                              { VP_ASSERT(false); return false; }
@@ -456,7 +473,7 @@ namespace awn::gfx {
                 .extendedDynamicState3LogicOpEnable      = VK_TRUE,
                 .extendedDynamicState3ColorBlendEnable   = VK_TRUE,
                 .extendedDynamicState3ColorBlendEquation = VK_TRUE,
-                .extendedDynamicState3ColorWriteMask     = VK_TRUE
+                .extendedDynamicState3ColorWriteMask     = VK_TRUE,
             };
             VkPhysicalDeviceExtendedDynamicState2FeaturesEXT target_extended_dynamic_state_2_features = {
                 .sType                        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
@@ -476,18 +493,34 @@ namespace awn::gfx {
                 .maintenance4     = VK_TRUE,
             };
             VkPhysicalDeviceVulkan12Features target_1_2_features = {
-                .sType                                        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-                .pNext                                        = std::addressof(target_1_3_features),
-                .descriptorIndexing                           = VK_TRUE,
-                .shaderUniformBufferArrayNonUniformIndexing   = VK_TRUE,
-                .shaderSampledImageArrayNonUniformIndexing    = VK_TRUE,
-                .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
-                .descriptorBindingPartiallyBound              = VK_TRUE,
-                .descriptorBindingVariableDescriptorCount     = VK_TRUE,
-                .runtimeDescriptorArray                       = VK_TRUE,
-                .scalarBlockLayout                            = VK_TRUE,
-                .bufferDeviceAddress                          = VK_TRUE,
-                .bufferDeviceAddressCaptureReplay             = VK_TRUE,
+                .sType                                              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+                .pNext                                              = std::addressof(target_1_3_features),
+                .descriptorIndexing                                 = VK_TRUE,
+                .shaderInputAttachmentArrayDynamicIndexing          = VK_TRUE,
+                .shaderUniformTexelBufferArrayDynamicIndexing       = VK_TRUE,
+                .shaderStorageTexelBufferArrayDynamicIndexing       = VK_TRUE,
+                .shaderUniformBufferArrayNonUniformIndexing         = VK_TRUE,
+                .shaderSampledImageArrayNonUniformIndexing          = VK_TRUE,
+                .shaderStorageBufferArrayNonUniformIndexing         = VK_TRUE,
+                .shaderStorageImageArrayNonUniformIndexing          = VK_TRUE,
+                .shaderInputAttachmentArrayNonUniformIndexing       = VK_TRUE,
+                .shaderUniformTexelBufferArrayNonUniformIndexing    = VK_TRUE,
+                .shaderStorageTexelBufferArrayNonUniformIndexing    = VK_TRUE,
+                .descriptorBindingUniformBufferUpdateAfterBind      = VK_TRUE,
+                .descriptorBindingSampledImageUpdateAfterBind       = VK_TRUE,
+                .descriptorBindingStorageImageUpdateAfterBind       = VK_TRUE,
+                .descriptorBindingStorageBufferUpdateAfterBind      = VK_TRUE,
+                .descriptorBindingUniformTexelBufferUpdateAfterBind = VK_TRUE,
+                .descriptorBindingStorageTexelBufferUpdateAfterBind = VK_TRUE,
+                .descriptorBindingUpdateUnusedWhilePending          = VK_TRUE,
+                .descriptorBindingPartiallyBound                    = VK_TRUE,
+                .descriptorBindingVariableDescriptorCount           = VK_TRUE,
+                .runtimeDescriptorArray                             = VK_TRUE,
+                .scalarBlockLayout                                  = VK_TRUE,
+                .uniformBufferStandardLayout                        = VK_TRUE,
+                .timelineSemaphore                                  = VK_TRUE,
+                .bufferDeviceAddress                                = VK_TRUE,
+                .bufferDeviceAddressCaptureReplay                   = VK_TRUE,
             };
             VkPhysicalDeviceVulkan11Features target_1_1_features = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
@@ -523,6 +556,7 @@ namespace awn::gfx {
 
             const char *device_extension_array[] = {
                 VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                VK_KHR_MAP_MEMORY_2_EXTENSION_NAME,
                 VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME,
                 VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME,
                 VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME,
@@ -601,7 +635,7 @@ namespace awn::gfx {
 		/* Initialize texture descriptor layout */
         {
             const VkDescriptorBindingFlags  texture_set_binding_flag_array[] = {
-                VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
             };
             const VkDescriptorSetLayoutBindingFlagsCreateInfo texture_set_binding_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
@@ -621,7 +655,7 @@ namespace awn::gfx {
             const VkDescriptorSetLayoutCreateInfo texture_set_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
                 .pNext = std::addressof(texture_set_binding_info),
-                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
+                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
                 .bindingCount = sizeof(texture_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
                 .pBindings = texture_set_binding_array
             };
@@ -632,7 +666,7 @@ namespace awn::gfx {
         /* Initialize sampler descriptor layout */
         {
             const VkDescriptorBindingFlags  sampler_set_binding_flag_array[] = {
-                VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
             };
             const VkDescriptorSetLayoutBindingFlagsCreateInfo sampler_set_binding_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
@@ -652,7 +686,7 @@ namespace awn::gfx {
             const VkDescriptorSetLayoutCreateInfo sampler_set_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
                 .pNext = std::addressof(sampler_set_binding_info),
-                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
+                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
                 .bindingCount = sizeof(sampler_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
                 .pBindings = sampler_set_binding_array
             };
@@ -663,7 +697,7 @@ namespace awn::gfx {
         /* Initialize uniform buffer descriptor layout */
         {
             const VkDescriptorBindingFlags  uniform_buffer_set_binding_flag_array[] = {
-                VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
             };
             const VkDescriptorSetLayoutBindingFlagsCreateInfo uniform_buffer_set_binding_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
@@ -683,7 +717,7 @@ namespace awn::gfx {
             const VkDescriptorSetLayoutCreateInfo uniform_buffer_set_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
                 .pNext = std::addressof(uniform_buffer_set_binding_info),
-                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
+                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
                 .bindingCount = sizeof(uniform_buffer_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
                 .pBindings = uniform_buffer_set_binding_array
             };

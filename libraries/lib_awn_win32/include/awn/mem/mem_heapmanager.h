@@ -38,7 +38,7 @@ namespace awn::mem {
     void FinalizeHeapManager();
 
     HeapManager *GetHeapManager();
-    Heap        *GetRootHeap();
+    Heap        *GetRootHeap(u32 index);
 
     bool IsHeapManagerInitialized();
 
@@ -46,10 +46,18 @@ namespace awn::mem {
     
     size_t GetOutOfMemoryResizeAlignment();
 
-    mem::Heap *GetCurrentThreadHeap();
-    void       SetCurrentThreadHeap(mem::Heap *heap);
-
     mem::Heap *FindHeapByName(const char *heap_name);
     mem::Heap *FindHeapFromAddress(void *address);
     bool       IsAddressFromAnyHeap(void *address);
+
+    mem::Heap *GetCurrentThreadHeap();
+    void       SetCurrentThreadHeap(mem::Heap *heap);
+
+    class ScopedCurrentThreadHeap {
+        private:
+            mem::Heap *m_last_heap;
+        public:
+            explicit ALWAYS_INLINE ScopedCurrentThreadHeap(mem::Heap *current_heap) : m_last_heap(GetCurrentThreadHeap()) { VP_ASSERT(current_heap != nullptr); SetCurrentThreadHeap(current_heap); }
+            ALWAYS_INLINE ~ScopedCurrentThreadHeap() { SetCurrentThreadHeap(m_last_heap); }
+    };
 }

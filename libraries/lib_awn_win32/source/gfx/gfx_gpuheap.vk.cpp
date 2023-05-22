@@ -5,7 +5,7 @@ namespace awn::gfx {
     Result GpuHeap::TryAllocateGpuMemory(GpuMemoryAllocation *out_allocation, mem::Heap *heap, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags, size_t minimum_size, [[maybe_unused]] size_t maximum_size) {
 
         /* Adjust size */
-        if (minimum_size < size) {
+        if (size < minimum_size) {
             size = minimum_size;
         }
 

@@ -17,7 +17,7 @@
 
 namespace awn::hid {
 
-    void InitializeRawInputThread();
+    void InitializeRawInputThread(mem::Heap *heap);
 
     void FinalizeRawInputThread();
 }

@@ -52,7 +52,7 @@ namespace vp::res {
             return sizeof(ResNintendoWareRelocationTable) + section_count * sizeof(ResSection);
         }
 
-        ALWAYS_INLINE ResNintendoWareFileHeader *GetFileHeader();
+        ResNintendoWareFileHeader *GetFileHeader();
 
         ResSection *GetSection(s32 section_index) { 
             return reinterpret_cast<ResSection*>(reinterpret_cast<uintptr_t>(this) + sizeof(ResNintendoWareRelocationTable) + section_index * sizeof(ResSection)); 

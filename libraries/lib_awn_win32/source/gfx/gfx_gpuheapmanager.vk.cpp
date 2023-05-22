@@ -22,7 +22,7 @@ namespace awn::gfx {
             if (gpu_heap == nullptr) {
 
                 gpu_heap = m_gpu_heap_allocator.Allocate();
-                RESULT_RETURN_UNLESS(gpu_heap == nullptr, ResultMaximumGpuHeaps);
+                RESULT_RETURN_UNLESS(gpu_heap != nullptr, ResultMaximumGpuHeaps);
 
                 m_gpu_heap_list.PushBack(*gpu_heap);
             }

@@ -97,7 +97,7 @@ namespace awn::frm {
                     /* Initialize window */
                     const u32 drag_drop_style = (0 < m_drag_drop_array.GetCount()) ? WS_EX_ACCEPTFILES : 0;
                     const u32 window_style = WS_OVERLAPPEDWINDOW | drag_drop_style;
-                    m_hwnd = ::CreateWindowA(m_window_info.class_name, m_window_info.window_name, WS_OVERLAPPEDWINDOW, m_window_info.x, m_window_info.y, m_window_info.width, m_window_info.height, nullptr, nullptr, nullptr, this);
+                    m_hwnd = ::CreateWindowA(m_window_info.class_name, m_window_info.window_name, window_style, m_window_info.x, m_window_info.y, m_window_info.width, m_window_info.height, nullptr, nullptr, nullptr, this);
                     VP_ASSERT(m_hwnd != nullptr);
 
                     /* Initialize surface */
@@ -118,8 +118,8 @@ namespace awn::frm {
                         .imageFormat          = VK_FORMAT_R8G8B8A8_UNORM,
                         .imageColorSpace      = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
                         .imageExtent          = {
-                            .width  = m_window_info.width,
-                            .height = m_window_info.height
+                            .width  = static_cast<u32>(m_window_info.width),
+                            .height = static_cast<u32>(m_window_info.height)
                         },
                         .imageArrayLayers      = m_window_info.view_count,
                         .imageUsage            = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
@@ -201,8 +201,8 @@ namespace awn::frm {
                     .imageFormat          = VK_FORMAT_R8G8B8A8_UNORM,
                     .imageColorSpace      = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
                     .imageExtent          = {
-                        .width  = m_window_info.width,
-                        .height = m_window_info.height
+                        .width  = static_cast<u32>(m_window_info.width),
+                        .height = static_cast<u32>(m_window_info.height)
                     },
                     .imageArrayLayers      = m_window_info.view_count,
                     .imageUsage            = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,

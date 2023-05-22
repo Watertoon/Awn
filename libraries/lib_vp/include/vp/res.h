@@ -5,7 +5,6 @@
 #include <vp/res/res_nintendowarerelocationtable.h>
 #include <vp/res/res_nintendowarestringpool.hpp>
 #include <vp/res/res_nintendowarefileheader.hpp>
-#include <vp/res/res_nintendowarerelocationtable.hpp>
 
 /* Reverse engineered NintendoWare gfx file formats */
 #include <vp/res/res_gfxcommon.hpp>

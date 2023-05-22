@@ -26,7 +26,7 @@ namespace awn::gfx {
                     .addressModeW     = vp::res::GfxWrapModeToVkSamplerAddressMode(static_cast<WrapMode>(sampler_info->wrap_mode_w)),
                     .mipLodBias       = sampler_info->lod_bias,
                     .anisotropyEnable = sampler_info->enable_anisotropy,
-                    .maxAnisotropy    = sampler_info->max_anisotropy,
+                    .maxAnisotropy    = static_cast<float>(sampler_info->max_anisotropy),
                     .compareEnable    = sampler_info->enable_compare_op,
                     .compareOp        = vp::res::GfxCompareOperationToVkCompareOp(static_cast<CompareOperation>(sampler_info->compare_op)),
                     .minLod           = sampler_info->lod_clamp_min,

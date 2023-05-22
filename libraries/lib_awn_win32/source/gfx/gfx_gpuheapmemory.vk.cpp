@@ -5,21 +5,26 @@ namespace awn::gfx {
     GpuHeapMemory *GpuHeapMemory::Create(GpuHeap *parent_heap, mem::Heap *heap, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags) {
 
         /* Calculate block count */
-        const u32 page_count  = size >> 0x6;
-        const u32 block_count = (page_count <= 0) ? ((cMaxBlockCount < page_count) ? page_count : cMaxBlockCount) : 1;
+        const size_t aligned_size = vp::util::AlignUp(size, alignment);
+        const u32 page_count  = aligned_size >> 0x6;
+        const u32 block_count = (page_count <= 0) ? 1 : ((cMaxBlockCount < page_count) ? page_count : cMaxBlockCount);
 
         /* Allocate new GpuHeapMemory and Separate Heap */
         GpuHeapMemory *gpu_heap_memory = reinterpret_cast<GpuHeapMemory*>(::operator new(sizeof(GpuHeapMemory) + sizeof(mem::SeparateHeap) + mem::SeparateHeap::GetManagementAreaSize(block_count), heap, 8));
         std::construct_at(gpu_heap_memory);
 
         /* Create separate heap */
-        const size_t aligned_size = vp::util::AlignUp(size, alignment);
         void *management_area     = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(gpu_heap_memory) + sizeof(GpuHeapMemory));
         gpu_heap_memory->m_gpu_separate_heap = mem::SeparateHeap::Create("AwnGpuHeap", management_area, aligned_size, mem::SeparateHeap::GetManagementAreaSize(block_count), false);
 
         /* Allocate device memory */
+        const VkMemoryAllocateFlagsInfo flags_info = {
+            .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
+            .flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT,
+        };
         const VkMemoryAllocateInfo allocate_info = {
             .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+            .pNext           = std::addressof(flags_info),
             .allocationSize  = aligned_size,
             .memoryTypeIndex = Context::GetInstance()->GetVkMemoryTypeIndex(memory_property_flags)
         };

@@ -9,16 +9,28 @@ namespace vp::util {
             char m_string_array[Size];
             u32  m_length;
         public:
-            explicit constexpr ALWAYS_INLINE FixedString() : m_string_array{'\0'} {/*...*/}
-            explicit constexpr FixedString(const char *string) : m_string_array{'\0'} { 
-                if (std::is_constant_evaluated()) {
+            explicit constexpr ALWAYS_INLINE FixedString() : m_string_array{'\0'}, m_length(0) {/*...*/}
+            explicit constexpr ALWAYS_INLINE FixedString(const char *string) : m_string_array{'\0'}, m_length(0) { 
+                if (std::is_constant_evaluated() == true) {
                     m_length = TStringCopy(m_string_array, string, TStringLength(string, Size - 1));
                 } else {
-                    const size_t len = ::strnlen(string, Size);
-                    ::strncpy(m_string_array, string, len + 1);
+                    const size_t len = ::strlen(string);
+                    ::memcpy(m_string_array, string, len);
+                    m_string_array[len + 1] = '\0';
                     m_length = len; 
                 }
 
+                this->AssureTermination();
+            }
+            explicit constexpr FixedString(const FixedString<Size> &rhs) : m_string_array{'\0'} { 
+                if (std::is_constant_evaluated()) {
+                    m_length = TStringCopy(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
+                } else {
+                    const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
+                    ::memcpy(m_string_array, rhs.m_string_array, len);
+                    m_string_array[len + 1] = '\0';
+                    m_length = len;
+                }
                 this->AssureTermination();
             }
 
@@ -27,7 +39,8 @@ namespace vp::util {
                     m_length = TStringCopy(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
                 } else {
                     const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
-                    ::strncpy(m_string_array, rhs.m_string_array, len);
+                    ::memcpy(m_string_array, rhs.m_string_array, len);
+                    m_string_array[len + 1] = '\0';
                     m_length = len;
                 }
                 this->AssureTermination();
@@ -39,8 +52,9 @@ namespace vp::util {
                 if (std::is_constant_evaluated()) {
                     m_length = TStringCopy(m_string_array, rhs, TStringLength(rhs, Size - 1));
                 } else {
-                    const size_t len = ::strnlen(rhs, Size - 1);
-                    ::strncpy(m_string_array, rhs, len);
+                    const size_t len = ::strlen(rhs);
+                    ::memcpy(m_string_array, rhs, len);
+                    m_string_array[len + 1] = '\0';
                     m_length = len;
                     this->AssureTermination();
                 }

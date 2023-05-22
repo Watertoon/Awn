@@ -53,7 +53,7 @@ namespace awn::hid {
 
         class HidThread : public sys::ServiceThread {
             public:
-                ALWAYS_INLINE HidThread() : ServiceThread("awn::hid::HidThread", nullptr, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cAboveNormalPriority) {/*...*/}
+                ALWAYS_INLINE HidThread(mem::Heap *heap) : ServiceThread("awn::hid::HidThread", heap, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cAboveNormalPriority) {/*...*/}
 
                 virtual void ThreadCalc([[maybe_unused]] size_t message) override {
 
@@ -138,8 +138,8 @@ namespace awn::hid {
         vp::util::TypeStorage<HidThread> HidThreadInstance = {};
     }
 
-    void InitializeRawInputThread() {
-        vp::util::ConstructAt(HidThreadInstance);
+    void InitializeRawInputThread(mem::Heap *heap) {
+        vp::util::ConstructAt(HidThreadInstance, heap);
     }
 
     void FinalizeRawInputThread() {

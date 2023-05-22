@@ -45,7 +45,7 @@ namespace awn::res {
                 return new (heap, alignment) ResourceBase();
             }
             
-            virtual Result TryLoad(ResourceBase *out_resource, ResourceLoadContext *load_arg) {
+            virtual Result TryLoad(ResourceBase **out_resource, ResourceLoadContext *load_arg) {
 
                 /* Allocate resource */
                 ResourceBase *res = this->AllocateResource(load_arg->file_load_context.heap, this->GetResourceAlignment());
@@ -65,7 +65,10 @@ namespace awn::res {
                 /* Initialize resource */
                 res->InitializeResource(load_arg->file_load_context.heap, load_arg->file_load_context.out_file, load_arg->file_load_context.out_file_size);
 
-                return ResultSuccess;
+                /* Set output */
+                *out_resource = res;
+
+                RESULT_RETURN_SUCCESS;
             }
             
             constexpr ALWAYS_INLINE virtual u32 GetResourceAlignment() { return alignof(u32); }

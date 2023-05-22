@@ -2,27 +2,6 @@
 
 namespace awn::gfx {
 
-    namespace {
-
-        static ALWAYS_INLINE size_t CalculateTextureDescriptorSetLayoutGpuSize() {
-
-            /* Get size of each descriptor set layout */
-            size_t texture_layout_size = 0;
-            ::pfn_vkGetDescriptorSetLayoutSizeEXT(Context::GetInstance()->GetVkDevice(), Context::GetInstance()->GetTextureVkDescriptorSetLayout(), std::addressof(texture_layout_size));
-
-            return texture_layout_size;
-        }
-
-        static ALWAYS_INLINE size_t CalculateSamplerDescriptorSetLayoutGpuSize() {
-
-            /* Get size of each descriptor set layout */
-            size_t sampler_layout_size = 0;
-            ::pfn_vkGetDescriptorSetLayoutSizeEXT(Context::GetInstance()->GetVkDevice(), Context::GetInstance()->GetSamplerVkDescriptorSetLayout(), std::addressof(sampler_layout_size));
-
-            return sampler_layout_size;
-        }
-    }
-
     using DescriptorSlot = u64;
     constexpr inline DescriptorSlot cInvalidDescriptorSlot = 0;
     

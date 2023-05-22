@@ -45,7 +45,7 @@ namespace awn::frm {
                 const size_t new_size = vp::util::AlignUp(out_of_mem_info->out_of_memory_heap->GetTotalSize() + out_of_mem_info->aligned_allocation_size, mem::GetOutOfMemoryResizeAlignment());
 
                 /* Allocate more system memory if it's the root heap */
-                if (out_of_mem_info->out_of_memory_heap == mem::GetRootHeap()) {
+                if (out_of_mem_info->out_of_memory_heap == mem::GetRootHeap(0)) {
                     const void *new_address = ::VirtualAlloc(reinterpret_cast<void*>(out_of_mem_info->out_of_memory_heap), new_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
                     VP_ASSERT(new_address != nullptr);
                 }
@@ -66,6 +66,9 @@ namespace awn::frm {
 
                 /* Integrity check */
                 VP_ASSERT(framework_lib_info != nullptr);
+
+                /* Initialize time */
+                vp::util::InitializeTimeStamp();
 
                 /* Initialize System Manager */
                 sys::InitializeSystemManager();
@@ -92,8 +95,11 @@ namespace awn::frm {
                 RESULT_RETURN_UNLESS(result1 == true, ResultFailedToInitializeMemHeapManager);
 
                 /* Get root heap */
-                mem::Heap *root_heap = mem::GetRootHeap();
+                mem::Heap *root_heap = mem::GetRootHeap(0);
                 mem::Heap *awn_library_heap = mem::ExpHeap::TryCreate("awn::frm::Framework Libs", root_heap, mem::Heap::cWholeSize, 8, false);
+
+                /* Set current heap */
+                mem::ScopedCurrentThreadHeap heap_scope(awn_library_heap);
 
                 /* Initialize thread mgr */
                 sys::ThreadManager *thread_mgr = sys::ThreadManager::CreateInstance(awn_library_heap);
@@ -106,6 +112,9 @@ namespace awn::frm {
                 /* Initialize resource factory mgr */
                 res::ResourceFactoryManager::CreateInstance(awn_library_heap);
 
+                /* Initialize input */
+                hid::InitializeRawInputThread(awn_library_heap);
+
                 /* Initialize graphics context */
                 gfx::Context *context = gfx::Context::CreateInstance(awn_library_heap);
 
@@ -113,6 +122,18 @@ namespace awn::frm {
                 context_info.SetDefaults();
 
                 context->Initialize(std::addressof(context_info));
+
+                /* Initialize gpu heap mgr */
+                gfx::GpuHeapManager *gpu_heap_mgr = gfx::GpuHeapManager::CreateInstance(awn_library_heap);
+                gpu_heap_mgr->Initialize(0x1'0000);
+
+                /* Initialize command pool mgr */
+                gfx::CommandPoolManager *cmd_pool_mgr = gfx::CommandPoolManager::CreateInstance(awn_library_heap);
+                cmd_pool_mgr->Initialize();
+
+                /* Initialize texture sampler mgr */
+                gfx::TextureSamplerManager *tex_samp_mgr = gfx::TextureSamplerManager::CreateInstance(awn_library_heap);
+                tex_samp_mgr->Initialize(awn_library_heap);
 
                 /* Register framework window class */
                 const WNDCLASSEX wnd_class = {
@@ -123,7 +144,7 @@ namespace awn::frm {
                     .lpszClassName = "AwnFramework"
                 };
                 u32 result7 = ::RegisterClassExA(std::addressof(wnd_class));
-                RESULT_RETURN_UNLESS(result7 == 0, ResultFailedToInitializeWindow);
+                RESULT_RETURN_UNLESS(result7 != 0, ResultFailedToInitializeWindow);
 
                 /* Adjust library heap size */
                 awn_library_heap->AdjustHeap();
@@ -167,8 +188,8 @@ namespace awn::frm {
 
             constexpr WindowThread *GetWindowThread(u32 window_index) { return m_window_thread_array[window_index]; }
 
-            constexpr void ShowWindow(u32 window_index) const { m_window_thread_array[window_index]->ShowWindow(); }
-            constexpr void HideWindow(u32 window_index) const { m_window_thread_array[window_index]->HideWindow(); }
+            void ShowWindow(u32 window_index) const { m_window_thread_array[window_index]->ShowWindow(); }
+            void HideWindow(u32 window_index) const { m_window_thread_array[window_index]->HideWindow(); }
 	};
 
     class ListNodeJob : public vp::util::Job {
@@ -201,7 +222,7 @@ namespace awn::frm {
         public:
             AWN_SINGLETON_TRAITS(JobListFramework);
         protected:
-            void PresentAsync(size_t message) {
+            void PresentAsync([[maybe_unused]] size_t message) {
 
                 if (m_is_pause_draw != 0) {
                     m_present_event.Signal();
@@ -245,7 +266,8 @@ namespace awn::frm {
                     .pImageIndices      = present_image_indice_array,
                     .pResults           = vk_result_array,
                 };
-                const u32 result = ::vkQueuePresentKHR(gfx::Context::GetInstance()->GetVkQueue(m_last_primary_graphics_command_list.queue_type), std::addressof(present_info));
+                const u32 result = ::pfn_vkQueuePresentKHR(gfx::Context::GetInstance()->GetVkQueue(m_last_primary_graphics_command_list.queue_type), std::addressof(present_info));
+                VP_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
 
                 /* Acquire next swapchain image for each window, recreate the swapchain if necessary */
                 for (u32 i = 0; i < m_window_thread_array.GetUsedCount(); ++i) {
@@ -268,7 +290,7 @@ namespace awn::frm {
                 return;
             }
         public:
-            constexpr ALWAYS_INLINE JobListFramework() : Framework(), m_calc_job_list(), m_draw_job_list(), m_graphics_queue_sync(), m_primary_graphics_command_buffer(), m_last_primary_graphics_command_list(), m_present_delegate(this, PresentAsync), m_present_thread(std::addressof(m_present_delegate), "AwnFramework Present Thread", nullptr, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cHighPriority), m_present_event(), m_is_pause_calc(true), m_is_pause_draw(true), m_is_ready_to_exit(false) {/*...*/}
+            ALWAYS_INLINE JobListFramework() : Framework(), m_calc_job_list(), m_draw_job_list(), m_graphics_queue_sync(), m_primary_graphics_command_buffer(), m_last_primary_graphics_command_list(), m_present_delegate(this, PresentAsync), m_present_thread(std::addressof(m_present_delegate), "AwnFramework Present Thread", nullptr, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cHighPriority), m_present_event(), m_is_pause_calc(true), m_is_pause_draw(true), m_is_ready_to_exit(false) {/*...*/}
 
             virtual void MainLoop() override {
 

@@ -34,7 +34,7 @@ namespace awn::ukern {
             constexpr ALWAYS_INLINE void Initialize() {
                 m_active_handles = 0;
                 m_counter_value  = 1;
-                for (s32 i = 0; i < MaxHandles; ++i) {
+                for (u32 i = 0; i < MaxHandles; ++i) {
                     m_objects[i]  = nullptr;
                     m_counters[i] = i - 1;
                     m_indice_iter = i;
@@ -72,7 +72,7 @@ namespace awn::ukern {
                 if ((handle == 0) || ((handle >> CounterBitOffset) == 0)) { return false; }
 
                 const u32 index = (handle & 0x7fff);
-                if (MaxHandles < index || m_objects[index] == nullptr || (handle >> CounterBitOffset) != m_counters[index]) { return false; }
+                if (MaxHandles < index || m_objects[index] == nullptr || static_cast<s16>(handle >> CounterBitOffset) != m_counters[index]) { return false; }
 
                 m_objects[index] = nullptr;
                 m_counters[index] = m_indice_iter;
@@ -88,7 +88,7 @@ namespace awn::ukern {
                 if (((handle >> 0x1e) != 0) || (handle == 0) || ((handle >> 0xf) == 0)) { return nullptr; }
 
                 const u32 index = (handle & 0x7fff);
-                if ((MaxHandles < index) || (handle >> 0xf != m_counters[index])) { return nullptr; }
+                if ((MaxHandles < index) || (static_cast<s16>(handle >> 0xf) != m_counters[index])) { return nullptr; }
 
                 return m_objects[index];
             }

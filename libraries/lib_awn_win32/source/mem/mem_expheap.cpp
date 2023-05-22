@@ -9,9 +9,9 @@ namespace awn::mem {
             parent_heap = mem::GetCurrentThreadHeap();
         }
 
-        /* Consume largest parent heap free node if size is not provided */
-        if (size == 0) {
-            size = parent_heap->GetMaximumAllocatableSize(MinimumAllocationGranularity);
+        /* Respect whole size */
+        if (size == mem::Heap::cWholeSize) {
+            size = parent_heap->GetMaximumAllocatableSize(alignment);
         }
 
         /* Enforce minimum size */
@@ -57,7 +57,8 @@ namespace awn::mem {
         }
 
         /* Ensure the last block encompasses our end address */
-        if (reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(last_block) + last_block->block_size + sizeof(ExpHeapMemoryBlock)) != m_end_address) {
+        const size_t trimed_size = sizeof(ExpHeapMemoryBlock) + last_block->block_size;
+        if (reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(last_block) + trimed_size) != m_end_address) {
             return { m_end_address, 0 };
         }
 
@@ -65,13 +66,12 @@ namespace awn::mem {
         m_free_block_list.Remove(*last_block);
 
         /* Adjust end address */
-        const size_t trimed_size = sizeof(ExpHeapMemoryBlock) + last_block->block_size;
         void *new_end_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_end_address) - trimed_size);
         m_end_address = new_end_address;
 
         /* Resize parent heap memory block */
         if (m_parent_heap != nullptr) {
-            m_parent_heap->AdjustAllocation(m_start_address, trimed_size);
+            m_parent_heap->AdjustAllocation(m_start_address, this->GetTotalSize() - trimed_size);
         }
 
         return { new_end_address, trimed_size };
@@ -128,7 +128,7 @@ namespace awn::mem {
         void *new_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_start_address) + new_size);
 
         /* If we are not the root heap the memory must come from a parent heap (not implicit) */
-        if (this != mem::GetRootHeap()) {
+        if (this != mem::GetRootHeap(0)) {
 
             /* Check we have a parent heap */
             if (m_parent_heap == nullptr) { return heap_size; }
@@ -282,45 +282,47 @@ namespace awn::mem {
             /* Walk the free list */
             while (free_block != m_free_block_list.end()) {
 
+                /* Get block */
+                ExpHeapMemoryBlock *block = std::addressof(*free_block);
+
                 /* Find the starting address for the allocation */
-                allocation_address = vp::util::AlignUp(reinterpret_cast<uintptr_t>(std::addressof((*free_block))) + sizeof(ExpHeapMemoryBlock), alignment);
+                allocation_address = vp::util::AlignUp(reinterpret_cast<uintptr_t>(block) + sizeof(ExpHeapMemoryBlock), alignment);
 
                 /* Find the total size of the allocation with alignment */
-                const uintptr_t aligned_allocation_size = allocation_address + aligned_size - reinterpret_cast<uintptr_t>(std::addressof((*free_block)));
+                const uintptr_t aligned_allocation_size = (allocation_address + aligned_size) - reinterpret_cast<uintptr_t>(block);
 
                 /* Complete if the allocated size is within our free block's range */
-                if (aligned_allocation_size <= (*free_block).block_size) {
-                    break;
-                }
+                if (aligned_allocation_size <= block->block_size) { break; }
 
                 free_block = ++free_block;
             }
         } else {
 
             /* Best fit mode */
-            size_t    smaller_size = SIZE_MAX;
+            size_t    smaller_size    = 0xffff'ffff'ffff'ffff;
             uintptr_t smaller_address = 0;
-            ExpHeapMemoryBlock *smaller_block = std::addressof((*m_free_block_list.end()));
+            ExpHeapMemoryBlock *smaller_block = std::addressof(*m_free_block_list.end());
 
             /* Walk the free list */
             while (free_block != m_free_block_list.end()) {
 
+                /* Get block */
+                ExpHeapMemoryBlock *block = std::addressof(*free_block);
+
                 /* Find the starting address for the allocation */
-                allocation_address = vp::util::AlignUp(reinterpret_cast<uintptr_t>(std::addressof((*free_block))) + sizeof(ExpHeapMemoryBlock), alignment);
+                allocation_address = vp::util::AlignUp(reinterpret_cast<uintptr_t>(block) + sizeof(ExpHeapMemoryBlock), alignment);
 
                 /* Find the total size of the allocation with alignment */
-                const uintptr_t aligned_allocation_size = allocation_address + aligned_size - reinterpret_cast<uintptr_t>(std::addressof((*free_block)));
+                const uintptr_t aligned_allocation_size = (aligned_size - sizeof(ExpHeapMemoryBlock)) - reinterpret_cast<uintptr_t>(block) + allocation_address;
 
                 /* Check if we've found a smaller block that fits */
-                if ((*free_block).block_size < smaller_size && aligned_allocation_size <= (*free_block).block_size) {
-                    smaller_size    = (*free_block).block_size;
-                    smaller_block   = std::addressof((*free_block));
+                if (block->block_size < smaller_size && aligned_allocation_size <= block->block_size) {
+                    smaller_size    = block->block_size;
+                    smaller_block   = block;
                     smaller_address = allocation_address;
 
                     /* Break if our size requirements are exact */
-                    if ((*free_block).block_size == aligned_size) {
-                        break;
-                    }
+                    if (block->block_size == aligned_size) { break; }
                 }
 
                 free_block = ++free_block;
@@ -331,7 +333,7 @@ namespace awn::mem {
         }
 
         /* Ensure we found a block */
-        if (free_block != m_free_block_list.end()) { 
+        if ((free_block != m_free_block_list.end()) == false) {
 
             /* Attempt out of memory callback */
             OutOfMemoryInfo out_of_memory = {
@@ -347,7 +349,7 @@ namespace awn::mem {
         }
 
         /* Convert our new allocation to a used block */
-        this->AddUsedBlock(std::addressof((*free_block)), allocation_address, aligned_size);
+        this->AddUsedBlock(std::addressof(*free_block), allocation_address, aligned_size);
 
         return reinterpret_cast<void*>(allocation_address);
     }
@@ -382,14 +384,18 @@ namespace awn::mem {
         /* Lock the heap */
         ScopedHeapLock lock(this);
 
-        /* Find largest contiguous free block */
+        /* Find largest contiguous free block while respecting alignment */
         size_t max_free_size = 0;
         for (const ExpHeapMemoryBlock &block : m_free_block_list) {
-            const uintptr_t start_address = reinterpret_cast<uintptr_t>(std::addressof(block)) + sizeof(ExpHeapMemoryBlock);
-            const uintptr_t end_address   = start_address + block.block_size;
-            const size_t    block_size    = end_address - vp::util::AlignUp(start_address, alignment);
-            if (max_free_size < block_size) {
-                max_free_size = block_size;
+
+            const uintptr_t block_start = reinterpret_cast<uintptr_t>(std::addressof(block)) + sizeof(ExpHeapMemoryBlock);
+            const uintptr_t block_end   = block_start + block.block_size;
+            const uintptr_t align_start = vp::util::AlignUp(block_start, alignment);
+            const size_t    size        = block_end - align_start;
+
+            /* Select greater size if valid address range */
+            if (align_start <= block_end && max_free_size < size) {
+                max_free_size = size;
             }
         }
 

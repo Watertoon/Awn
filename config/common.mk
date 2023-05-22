@@ -32,6 +32,7 @@ endif
 endif
 endif
 endif
+endif
 
 # Pull in platform
 ifeq ($(PLATFORM), win32)
@@ -79,7 +80,6 @@ endif
 endif
 endif
 endif
-endif
 
 # Pull in graphics api
 ifeq ($(GRAPHICS_API), vk)
@@ -107,9 +107,9 @@ endif
 endif
 endif
 
-ALL_COMPILER_FLAGS := $(ARCH_CXX_FLAGS) $(PLATFORM_C_FLAGS) $(PLATFORM_CXX_FLAGS) $(PLATFORM_INCLUDES) $(PLATFORM_LIB_INCLUDES) $(GFXAPI_INCLUDES) $(GFXAPI_LIB_INCLUDES) $(BINTYPE_CXX_FLAGS) $(PROJECT_C_FLAGS) $(PROJECT_CXX_FLAGS) $(PROJECT_INCLUDES) $(PROJECT_LIB_INCLUDES) -Os
+export ALL_COMPILER_FLAGS := $(ARCH_CXX_FLAGS) $(PLATFORM_C_FLAGS) $(PLATFORM_CXX_FLAGS) $(PLATFORM_INCLUDES) $(PLATFORM_LIB_INCLUDES) $(GFXAPI_INCLUDES) $(GFXAPI_LIB_INCLUDES) $(BINTYPE_CXX_FLAGS) $(PROJECT_C_FLAGS) $(PROJECT_CXX_FLAGS) $(PROJECT_INCLUDES) $(PROJECT_LIB_INCLUDES)
 
-ALL_LIBS := $(PLATFORM_LIBS) $(PROJECT_LIBS)
+export ALL_LIBS := $(PLATFORM_LIBS) $(PROJECT_LIBS)
 
 ifneq ($(strip $(VULKAN_SDK)),)
 GLSLC ?= $(VULKAN_SDK)/bin/glslc.exe
@@ -148,12 +148,12 @@ endif
 ifeq ($(PLATFORM), win32)
 %.exe:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(EXE_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(EXE_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 ifeq ($(PLATFORM), winnt)
 %.exe:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(EXE_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(EXE_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo Switch build rules
@@ -161,7 +161,7 @@ ifeq ($(PLATFORM), nx)
 ifeq ($(ARCHITECTURE), aarch64)
 %.nro:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 endif
 
@@ -169,7 +169,7 @@ endif
 ifeq ($(PLATFORM), cafe)
 %.rpx:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo 3ds build rules
@@ -183,7 +183,7 @@ ifeq ($(PLATFORM), ctr)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
 	
 endif
 
@@ -194,7 +194,7 @@ ifeq ($(PLATFORM), ntr)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo Wii and GameCube build rules
@@ -205,7 +205,7 @@ ifeq ($(PLATFORM), dol)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo GameBoy Advance build rules
@@ -214,7 +214,7 @@ ifeq ($(PLATFORM), agb)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo 64 build rules
@@ -230,13 +230,13 @@ ifeq ($(PLATFORM), nus)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(Z64_FLAGS) -o $@ $^ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(Z64_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Common build rules
 %.o : %.cpp
 	@echo $(notdir $<)
-	@$(COMPILER_PREFIX)$(CXX) -MMD -MP -MF $(DEPSDIR)/$*.d $(ALL_COMPILER_FLAGS) -c $< -o $@ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	@$(COMPILER_PREFIX)$(CXX) -MMD -MP -MF $(DEPSDIR)/$*.d $(ALL_COMPILER_FLAGS) -c $< -o $@ $(ALL_LIBS)
 
 %.a :
 	@rm -f $@
@@ -244,5 +244,5 @@ endif
 
 %.hpp.gch: %.hpp
 	@echo Precompiling $(notdir $<)
-	$(COMPILER_PREFIX)$(CXX) -w -x c++-header -MMD -MP -MQ$@ -MF $(DEPSDIR)/$(notdir $*).d $(ALL_COMPILER_FLAGS) -c $< -o $@ $(ALL_LIBS) -static-libgcc -static-libstdc++
+	$(COMPILER_PREFIX)$(CXX) -w -x c++-header -MMD -MP -MQ$@ -MF $(DEPSDIR)/$(notdir $*).d $(ALL_COMPILER_FLAGS) -c $< -o $@ $(ALL_LIBS)
 
