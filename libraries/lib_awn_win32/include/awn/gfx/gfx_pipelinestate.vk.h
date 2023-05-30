@@ -44,7 +44,7 @@ namespace awn::gfx {
             blend_target_state_count      = 0;
             logic_op                      = static_cast<u8>(LogicOperation::NoOp);
             enable_multi_blend            = 0;
-            blend_constant_color          = vp::util::cWhite;
+            blend_constant_color          = vp::util::cWhite4f;
             blend_target_state_info_array = nullptr;
         }
     };

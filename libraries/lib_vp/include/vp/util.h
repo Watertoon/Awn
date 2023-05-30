@@ -34,6 +34,7 @@
 #include <vp/util/util_runtimetypeinfo.hpp>
 #include <vp/util/util_fixedobjectallocator.hpp>
 #include <vp/util/util_fixedhandletable.hpp>
+#include <vp/util/util_fixedringbuffer.hpp>
 #include <vp/util/util_heapobjectallocator.hpp>
 #include <vp/util/util_pointerarray.hpp>
 #include <vp/util/util_heaparray.hpp>

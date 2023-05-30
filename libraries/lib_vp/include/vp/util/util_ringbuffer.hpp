@@ -1,20 +1,49 @@
 #pragma once
 
-namespace dd::util {
+namespace vp::util {
 
-	template<typename T, size_t Size>
-	class FixedRingBuffer {
+	template<typename T>
+	class RingBuffer {
 		private:
-			u32  m_current_offset;
-			u32  m_count;
-			T   *m_array[Size];
+			u32   m_current_offset;
+			u32   m_count;
+            u32   m_max_count;
+			T   **m_array;
         public:
-            constexpr ALWAYS_INLINE FixedRingBuffer() : m_current_offset(0), m_count(0), m_array{} {/*...*/}
+            constexpr ALWAYS_INLINE RingBuffer() : m_current_offset(0), m_count(0), m_max_count(0), m_array{} {/*...*/}
+            constexpr ALWAYS_INLINE ~RingBuffer() {/*...*/}
+
+            void Initialize(imem::IHeap *heap, u32 pointer_count, s32 alignment = 8) {
+                
+                /* Integrity checks */
+                VP_ASSERT(pointer_count != 0);
+
+                /* Allocate pointer array */
+                m_array = new (heap, alignment) T*[pointer_count];
+                VP_ASSERT(m_array != nullptr);
+
+                /* Set state */
+                m_max_count      = pointer_count;
+                m_current_offset = 0;
+                m_count          = 0;
+
+                return;
+            }
+
+            void Finalize() {
+
+                if (m_array != nullptr) {
+                    delete [] m_array;
+                }
+                m_current_offset = 0;
+                m_count          = 0;
+                m_max_count      = 0;
+            }
 
             constexpr ALWAYS_INLINE void PushBack(T *pointer) {
 
                 /* Check count */
-                VP_ASSERT(Size > m_count);
+                VP_ASSERT(m_max_count > m_count);
 
                 /* Increment count */
                 u32 count = m_count;
@@ -25,8 +54,8 @@ namespace dd::util {
 
                 /* Find size offset */
                 u32 size_offset = 0;
-                if (Size <= offset) {
-                    size_offset = Size;
+                if (m_max_count <= offset) {
+                    size_offset = m_max_count;
                 }
 
                 /* Placeback pointer */
@@ -40,8 +69,8 @@ namespace dd::util {
 
                 /* Set size offset for wraparound */
                 u32 size_offset = 0;
-                if (Size <= m_current_offset) {
-                    size_offset = Size;
+                if (m_max_count <= m_current_offset) {
+                    size_offset = m_max_count;
                 }
 
                 /* Get pointer */
@@ -49,7 +78,7 @@ namespace dd::util {
 
                 /* Adjust offset */
                 if (0 < m_count) {
-                    m_current_offset = (m_current_offset + 1 < Size) ? (m_current_offset + 1) : 0;
+                    m_current_offset = (m_current_offset + 1 < m_max_count) ? (m_current_offset + 1) : 0;
                     m_count          = m_count - 1;
                 }
 

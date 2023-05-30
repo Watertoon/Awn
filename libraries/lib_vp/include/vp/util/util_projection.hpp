@@ -20,19 +20,19 @@ namespace vp::util {
     class Projection {
         protected:
             Matrix44f m_projection_matrix;
-            bool            m_need_update;
+            bool      m_requires_update;
         public:
             VP_RTTI_BASE(Projection);
         public:
-            constexpr Projection() : m_need_update(true) {/*...*/}
+            constexpr Projection() : m_requires_update(true) {/*...*/}
 
             constexpr void UpdateProjectionMatrixSelf() {
                 this->UpdateMatrix(std::addressof(m_projection_matrix));
-                m_need_update = false;
+                m_requires_update = false;
             }
 
             constexpr Matrix44f *GetProjectionMatrix() {
-                if (m_need_update == true) {
+                if (m_requires_update == true) {
                     this->UpdateProjectionMatrixSelf();
                 }
                 return std::addressof(m_projection_matrix);
@@ -135,12 +135,12 @@ namespace vp::util {
 
             void SetAspect(float new_aspect) {
                 m_fov_x = new_aspect;
-                m_need_update = true;
+                m_requires_update = true;
             }
 
             void SetFovX(float new_fov_x) {
                 m_fov_x = ::tanf(new_fov_x * 0.5f) / m_right;
-                m_need_update = true;
+                m_requires_update = true;
             }
     };
 }
