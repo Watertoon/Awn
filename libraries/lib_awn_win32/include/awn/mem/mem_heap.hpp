@@ -30,7 +30,7 @@ namespace awn::mem {
             sys::ServiceCriticalSection m_heap_cs;
             bool                        m_is_thread_safe;
         public:
-            VP_RTTI_DERIVED(Heap, IHeap);
+            VP_RTTI_DERIVED(Heap, vp::imem::IHeap);
         private:
             void AppendDisposer(IDisposer &disposer) {
                 ScopedHeapLock lock(this);

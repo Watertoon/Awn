@@ -88,12 +88,20 @@ namespace vp::util {
                         return Traits::GetParentReference(m_next->prev());
                     }
 
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator<IsConst> &rhs) const {
+                        return !(m_next != rhs.m_next);
+                    }
+
                     constexpr ALWAYS_INLINE bool operator!=(const Iterator<IsConst> &rhs) const {
                         return m_next != rhs.m_next;
                     }
 
                     constexpr ALWAYS_INLINE Iterator<IsConst> &operator++() {
                         m_next = m_next->next();
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator<IsConst> &operator--() {
+                        m_next = m_next->prev();
                         return *this;
                     }
             };
@@ -178,6 +186,13 @@ namespace vp::util {
                 IntrusiveListNode *back = m_list.m_prev;
                 back->Unlink();
                 return Traits::GetParentReference(back);
+            }
+
+            constexpr ALWAYS_INLINE size_t GetCount() const {
+                size_t             count = 0;
+                IntrusiveListNode *node  = m_list.next();
+                while (node != std::addressof(m_list)) { node = node->next(); ++count; }
+                return count;
             }
 
             static ALWAYS_INLINE void Remove(reference obj) {

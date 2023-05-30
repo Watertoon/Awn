@@ -13,7 +13,8 @@ namespace awn::mem {
         static constexpr u16 FreeMagic  = vp::util::TCharCode16("FR");
         static constexpr u16 AllocMagic = vp::util::TCharCode16("UD");
 
-        constexpr ExpHeapMemoryBlock() : alloc_magic(0), alignment(0), reserve0(0), block_size(0), exp_list_node() {/*...*/}
+        constexpr  ExpHeapMemoryBlock() : alloc_magic(0), alignment(0), reserve0(0), block_size(0), exp_list_node() {/*...*/}
+        constexpr ~ExpHeapMemoryBlock() {/*...*/}
     };
     static_assert(sizeof(ExpHeapMemoryBlock) == 0x20);
 

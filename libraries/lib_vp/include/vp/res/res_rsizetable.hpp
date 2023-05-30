@@ -14,7 +14,7 @@ namespace vp::res {
         u32                resource_size_collision_count;
         ResRsizetableCrc32 resource_size_crc32_array[];
 
-        static constexpr inline u32 cMagic = util::TCharCode32("RSTB");
+        static constexpr inline u32 cMagic         = util::TCharCode32("RSTB");
 
         ALWAYS_INLINE void *GetCollisionArray() {
             return (resource_size_collision_count != 0) ? reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + sizeof(ResRsizetableOld) + resource_size_crc32_count * sizeof(ResRsizetableCrc32)) : nullptr;
@@ -34,6 +34,7 @@ namespace vp::res {
 
         static constexpr inline u32 cMagic0 = util::TCharCode32("REST");
         static constexpr inline u32 cMagic1 = util::TCharCode16("BL");
+        static constexpr inline u32 cTargetVersion = 1;
 
         ALWAYS_INLINE void *GetCollisionArray() {
             return (resource_size_collision_count != 0) ? reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + sizeof(ResRsizetable) + resource_size_crc32_count * sizeof(ResRsizetableCrc32)) : nullptr;

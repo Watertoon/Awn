@@ -34,6 +34,35 @@ namespace vp::util {
                 this->AssureTermination();
             }
 
+            constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) {
+                if (std::is_constant_evaluated()) {
+                    return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
+                }
+
+                return ::strcmp(m_string_array, rhs.m_string_array) == 0;
+            }
+            constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) const {
+                if (std::is_constant_evaluated()) {
+                    return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
+                }
+
+                return ::strcmp(m_string_array, rhs.m_string_array) == 0;
+            }
+            constexpr ALWAYS_INLINE bool operator!=(const FixedString& rhs) {
+                if (std::is_constant_evaluated()) {
+                    return (TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1)) != 0);
+                }
+
+                return ::strcmp(m_string_array, rhs.m_string_array) != 0;
+            }
+            constexpr ALWAYS_INLINE bool operator!=(const FixedString& rhs) const {
+                if (std::is_constant_evaluated()) {
+                    return (TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1)) != 0);
+                }
+
+                return ::strcmp(m_string_array, rhs.m_string_array) != 0;
+            }
+
             constexpr ALWAYS_INLINE FixedString &operator=(const FixedString& rhs) {
                 if (std::is_constant_evaluated()) {
                     m_length = TStringCopy(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
@@ -108,6 +137,9 @@ namespace vp::util {
 
             constexpr ALWAYS_INLINE void AssureTermination() {
                 m_string_array[Size - 1] = '\0';
+            }
+            constexpr ALWAYS_INLINE bool IsNullString() {
+                return m_string_array[0] == '\0';
             }
 
             constexpr ALWAYS_INLINE size_t      GetLength() const { return m_length; }

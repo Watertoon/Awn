@@ -9,3 +9,4 @@
 #include <vp/util.h>
 #include <vp/imem.h>
 #include <vp/res.h>
+#include <vp/resbui.h>

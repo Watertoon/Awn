@@ -23,30 +23,43 @@ namespace vp::util {
 
             ALWAYS_INLINE void Initialize(imem::IHeap *heap, u32 pointer_count, s32 alignment = 8) {
 
+                /* Integrity checks */
                 VP_ASSERT(pointer_count != 0);
 
+                /* Allocate pointer array */
                 m_pointer_array = new (heap, alignment) T*[pointer_count];
                 VP_ASSERT(m_pointer_array != nullptr);
 
+                /* Set state */
                 m_used_pointers = 0;
                 m_max_pointers  = pointer_count;
+
+                return;
             }
 
             ALWAYS_INLINE void Finalize() {
+
                 if (m_pointer_array != nullptr) {
                     delete[] m_pointer_array;
-                    m_used_pointers = 0;
-                    m_max_pointers  = 0;
-                    m_pointer_array = nullptr;
                 }
+                m_used_pointers = 0;
+                m_max_pointers  = 0;
+                m_pointer_array = nullptr;
+
+                return;
             }
 
             constexpr ALWAYS_INLINE void SetBuffer(void *pointer_buffer, u32 pointer_count) {
+
+                /* Integrity checks */
                 VP_ASSERT(pointer_buffer != nullptr && pointer_count != 0);
-                
+
+                /* Set state */
                 m_pointer_array = pointer_buffer;
                 m_used_pointers = 0;
                 m_max_pointers  = pointer_count;
+            
+                return;
             }
             
             constexpr ALWAYS_INLINE void PushPointer(T *pointer) {
