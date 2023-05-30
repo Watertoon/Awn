@@ -42,11 +42,11 @@ namespace awn::font {
                 if (bffnt->IsValid() == false) { return false; }
 
                 /* Relocate texture */
-                vp::res::ResBntx *bntx = ;
+                vp::res::ResBntx *bntx = m_bffnt->GetBntx();
                 m_font_texture_relocator.Initialize(bntx);
 
                 /* Get font texture */
-                m_font_texture = ;
+                m_font_texture = bntx->;
 
                 return true;
             }
