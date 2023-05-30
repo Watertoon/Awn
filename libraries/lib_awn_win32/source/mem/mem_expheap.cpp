@@ -183,9 +183,7 @@ namespace awn::mem {
         ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
 
         /* Nothing to do if the size doesn't change */
-        if (block->block_size == new_size) {
-            return new_size;
-        }
+        if (block->block_size == new_size) { return new_size; }
 
         /* Reduce range if new size is lesser */
         if (new_size < block->block_size) {
@@ -194,7 +192,7 @@ namespace awn::mem {
             return new_size;
         }
 
-        /* Find end of block */
+        /* Calculate end of block */
         const uintptr_t end_address = reinterpret_cast<uintptr_t>(address) + block->block_size;
 
         /* Walk free list for the free block directly after this allocation */
@@ -202,17 +200,15 @@ namespace awn::mem {
         while (free_block != m_free_block_list.end()) {
 
             /* Complete if the block is directly after our current free block */
-            if (reinterpret_cast<uintptr_t>(std::addressof((*free_block))) == end_address) {
-                break;
-            }
+            if (reinterpret_cast<uintptr_t>(std::addressof(*free_block)) == end_address) { break; }
 
             free_block = ++free_block;
         }
 
         /* Ensure we found the block after and it is large enough */
-        ExpHeapMemoryBlock *block_after = std::addressof((*free_block));
+        ExpHeapMemoryBlock *block_after = std::addressof(*free_block);
         const size_t after_size = block_after->block_size + sizeof(ExpHeapMemoryBlock);
-        if (free_block != m_free_block_list.end() && after_size + block->block_size > new_size) { return block->block_size; }
+        if ((free_block != m_free_block_list.end()) == false || after_size + block->block_size > new_size) { return block->block_size; }
 
         /* Remove after block from free list */
         block_after->exp_list_node.Unlink();

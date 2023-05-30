@@ -46,7 +46,8 @@ namespace awn::frm {
 
                 /* Allocate more system memory if it's the root heap */
                 if (out_of_mem_info->out_of_memory_heap == mem::GetRootHeap(0)) {
-                    const void *new_address = ::VirtualAlloc(reinterpret_cast<void*>(out_of_mem_info->out_of_memory_heap), new_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+                    const size_t size = out_of_mem_info->out_of_memory_heap->GetTotalSize();
+                    const void *new_address = ::VirtualAlloc(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(out_of_mem_info->out_of_memory_heap) + size), new_size - size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
                     VP_ASSERT(new_address != nullptr);
                 }
 

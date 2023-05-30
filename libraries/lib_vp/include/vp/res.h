@@ -44,3 +44,6 @@
 #include <vp/res/res_byamlstringtableiterator.hpp>
 #include <vp/res/res_byamldictionaryiterator.hpp>
 #include <vp/res/res_byamliterator.hpp>
+
+/* Reverse engineered Nintendo EPD resource size table format */
+#include <vp/res/res_rsizetable.hpp>

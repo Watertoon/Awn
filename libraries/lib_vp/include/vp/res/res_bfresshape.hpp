@@ -40,7 +40,7 @@ namespace vp::res {
         u32                          reserve0;
         ResBfresVertexAttribute     *vertex_attribute_array;
         ResNintendoWareDictionary   *vertex_attribute_dictionary;
-        void                        *user_memory_pool_pointer;
+        void                        *runtime_memory_pool_pointer;
         void                        *runtime_vertex_buffer_array;
         void                       **user_vertex_buffer_array;
         ResGfxBufferInfo            *vertex_buffer_info_array;
@@ -66,8 +66,8 @@ namespace vp::res {
 
     struct ResBfresMesh {
         ResBfresSubMeshRange *sub_mesh_range_array;
-        void                 *user_memory_pool_pointer;
-        void                 *user_index_buffer;
+        void                 *runtime_memory_pool_pointer;
+        void                 *runtime_index_buffer;
         ResGfxBufferInfo     *index_buffer_info;
         u32                   index_buffer_memory_offset;
         u32                   primitive_topology;

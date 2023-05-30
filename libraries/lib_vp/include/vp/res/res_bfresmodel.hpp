@@ -41,7 +41,7 @@ namespace vp::res {
         u32                        reserve3;
 
         static constexpr u32 cMagic = util::TCharCode32("FMDL");
-        
+
         void BindTexture(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
             const u32 mat_count = material_count;
             for (u32 i = 0; i < mat_count; ++i) {

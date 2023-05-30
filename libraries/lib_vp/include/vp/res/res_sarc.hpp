@@ -18,46 +18,70 @@ namespace vp::res {
 
         static constexpr u32 cMagic         = util::TCharCode32("SARC");
         static constexpr u32 cTargetVersion = 0x100;
+
+        constexpr bool IsValid() const {
+
+            if (magic       != cMagic)           { return false; }
+            if (header_size != sizeof(ResSarc))  { return false; }
+            if (endianess   != ByteOrder_Little) { return false; }
+            if (version     != cTargetVersion)   { return false; }
+            return true;
+        }
     };
     static_assert(sizeof(ResSarc) == 0x14);
 
-    struct ResSfat {
+    struct ResSarcSfat {
         u32 magic;
         u16 header_size;
         u16 file_count;
         u32 hash_seed;
 
         static constexpr u32 cMagic = util::TCharCode32("SFAT");
-    };
-    static_assert(sizeof(ResSfat) == 0xC);
 
-    struct ResSfatEntry {
+        constexpr bool IsValid() const {
+
+            if (magic       != cMagic)          { return false; }
+            if (header_size != sizeof(ResSarcSfat)) { return false; }
+            if ((file_count >> 14) != 0)        { return false; }
+            return true;
+        }
+    };
+    static_assert(sizeof(ResSarcSfat) == 0xc);
+
+    struct ResSarcSfatEntry {
         u32 file_name_hash;
         u32 file_name_offset     : 24;
         u32 hash_collision_count : 8;
         u32 file_array_start_offset;
         u32 file_array_end_offset;
     };
-    static_assert(sizeof(ResSfatEntry) == 0x10);
+    static_assert(sizeof(ResSarcSfatEntry) == 0x10);
 
-    struct ResSfnt {
+    struct ResSarcSfnt {
         u32 magic;
         u16 header_size;
         u16 padding;
 
         static constexpr u32 cMagic = util::TCharCode32("SFNT");
+
+        constexpr bool IsValid() const {
+
+            if (magic       != cMagic)              { return false; }
+            if (header_size != sizeof(ResSarcSfnt)) { return false; }
+            return true;
+        }
     };
-    static_assert(sizeof(ResSfnt) == 0x8);
+    static_assert(sizeof(ResSarcSfnt) == 0x8);
 
     class SarcExtractor {
         public:
             static constexpr u32 cInvalidEntryId = 0xFFFF'FFFF;
         private:
-            ResSarc      *m_sarc;
-            ResSfat      *m_sfat;
-            ResSfatEntry *m_sfat_entry_array;
-            void         *m_file_array;
-            char         *m_path_table;
+            ResSarc          *m_sarc;
+            ResSarcSfat      *m_sfat;
+            ResSarcSfatEntry *m_sfat_entry_array;
+            void             *m_file_region;
+            char             *m_path_table;
         public:
             constexpr SarcExtractor() {/*...*/}
             SarcExtractor(void *sarc_file) {
@@ -65,50 +89,52 @@ namespace vp::res {
             }
 
             bool Initialize(void *sarc_file) {
+
+                /* Integrity check pointer */
                 if (sarc_file == nullptr) { return false; }
 
+                /* Cast sarc */
                 m_sarc = reinterpret_cast<ResSarc*>(sarc_file);
 
-                /* ResSarc integrity checks */
-                if (m_sarc->magic       != ResSarc::cMagic)         { return false; }
-                if (m_sarc->endianess   != ByteOrder_Little)        { return false; }
-                if (m_sarc->header_size != sizeof(ResSarc))         { return false; }
-                if (m_sarc->version     != ResSarc::cTargetVersion) { return false; }
+                /* Validate sarc */
+                if (m_sarc->IsValid() == false) { return false; }
 
-                m_sfat = reinterpret_cast<ResSfat*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc));
+                /* Get sfat */
+                m_sfat = reinterpret_cast<ResSarcSfat*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc));
 
-                /* ResSfat integrity checks */
-                if (m_sfat->magic != ResSfat::cMagic)       { return false; }
-                if (m_sfat->header_size != sizeof(ResSfat)) { return false; }
-                if ((m_sfat->file_count >> 14) != 0)        { return false; }
+                /* Validate sfat */
+                if (m_sfat->IsValid() == false) { return false; }
 
-                m_sfat_entry_array = reinterpret_cast<ResSfatEntry*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc) + sizeof(ResSfat));
+                /* Get sfat file entry array */
+                m_sfat_entry_array = reinterpret_cast<ResSarcSfatEntry*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc) + sizeof(ResSarcSfat));
 
-                ResSfnt *sfnt = reinterpret_cast<ResSfnt*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc) + sizeof(ResSfat) + sizeof(ResSfatEntry) * m_sfat->file_count);
+                /* Get sfnt */
+                ResSarcSfnt *sfnt = reinterpret_cast<ResSarcSfnt*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc) + sizeof(ResSarcSfat) + sizeof(ResSarcSfatEntry) * m_sfat->file_count);
 
-                /* ResSfnt integrity checks*/
-                if (sfnt->magic != ResSfnt::cMagic)       { return false; }
-                if (sfnt->header_size != sizeof(ResSfnt)) { return false; }
+                /* Validate sfnt */
+                if (sfnt->IsValid() == false) { return false; }
 
+                /* Get file path table */
                 m_path_table = reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(sfnt) + sfnt->header_size);
 
-                m_file_array = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(sarc_file) + m_sarc->file_array_offset);
+                /* Get file region */
+                m_file_region = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(sarc_file) + m_sarc->file_array_offset);
                 
                 return true;
             }
 
-            const char *ConvertEntryIdToPath(u32 entry_id) const {
+            constexpr const char *ConvertIndexToPath(u32 entry_id) const {
                 return m_path_table + (m_sfat_entry_array[entry_id].file_name_offset * 4);
             }
 
-            u32 ConvertPathToEntryId(const char *string) const {
+            constexpr u32 ConvertPathToIndex(const char *path) const {
 
-                /* Calculate hash */
+                /* Calculate file path hash */
                 const u32 hash_seed = m_sfat->hash_seed;
                 u32 hash = 0;
-                while (*string != '\0') {
-                    hash = hash * hash_seed + static_cast<int>(*string);
-                    string = string + 1;
+                while (*path != '\0') {
+                    hash = hash * hash_seed + static_cast<int>(*path);
+                    path = path + 1;
                 }
 
                 /* Binary search for file by hash */
@@ -146,16 +172,30 @@ namespace vp::res {
                 return entry_id;
             }
 
-            void *GetFileFast(u32 *out_file_size, u32 entry_id) {
+            void *GetFileByIndex(u32 *out_file_size, u32 entry_id) {
+
+                /* Integrity check bounds */
                 if (m_sfat->file_count < entry_id) { return nullptr; }
 
+                /* Get offset into file region */
                 const u32 start_offset = m_sfat_entry_array[entry_id].file_array_start_offset;
 
+                /* Return file size if necessary */
                 if (out_file_size != nullptr) { *out_file_size = m_sfat_entry_array[entry_id].file_array_end_offset - start_offset; }
 
-                return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_file_array) + start_offset);
+                /* Return file pointer */
+                return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_file_region) + start_offset);
+            }
+
+            void *GetFileByPath(u32 *out_file_size, const char *path) {
+
+                /* Get entry index */
+                const u32 entry_index = this->ConvertPathToIndex(path);
+
+                /* Try get file and file size */
+                return this->GetFileByIndex(out_file_size, entry_index);
             }
             
-            constexpr u32 GetFileCount() const { return m_sfat->file_count; }
+            constexpr ALWAYS_INLINE u32 GetFileCount() const { return m_sfat->file_count; }
     };
 }
