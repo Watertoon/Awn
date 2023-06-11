@@ -102,7 +102,8 @@ namespace awn::mem {
                         used_block.used_list_node.Unlink();
                         reinterpret_cast<SeparateFreeListHelper&>(used_block).next = m_management_free_list_start;
                         m_management_free_list_start = reinterpret_cast<SeparateFreeListHelper*>(std::addressof(used_block));
-                    }
+                        break;
+                   }
                 }
 
                 return;

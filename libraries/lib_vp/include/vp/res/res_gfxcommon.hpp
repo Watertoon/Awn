@@ -38,6 +38,7 @@ namespace vp::res {
         Physical     = (1 << 8),
         Virtual      = (1 << 9),
     };
+    VP_ENUM_FLAG_TRAITS(GfxMemoryPoolFlags);
 
     enum class GfxGpuAccessFlags : u32 {
         VertexBuffer        = (1 << 2),
@@ -51,6 +52,7 @@ namespace vp::res {
         DisplayTexture      = (1 << 10),
         Counter             = (1 << 11),
     };
+    VP_ENUM_FLAG_TRAITS(GfxGpuAccessFlags);
 
     struct ResGfxMemoryPoolInfo {
         u32   memory_pool_flags;
@@ -532,6 +534,25 @@ namespace vp::res {
         u32   reserve1;
         u32   reserve2;
         u32   reserve3;
+        
+        constexpr void SetDefaults() {
+            wrap_mode_u       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
+            wrap_mode_v       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
+            wrap_mode_w       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
+            compare_op        =  static_cast<u8>(GfxCompareOperation::Never);
+            border_color      =  static_cast<u8>(GfxBorderColor::White);
+            max_anisotropy    =  1;
+            mip_map_filter    =  static_cast<u8>(GfxMipMapFilter::Linear);
+            mag_filter        =  static_cast<u8>(GfxMagFilter::Linear);
+            min_filter        =  static_cast<u8>(GfxMinFilter::Linear);
+            enable_anisotropy =  false;
+            enable_compare_op =  false;
+            reduction_filter  =  static_cast<u8>(GfxReductionFilter::Average);
+            reserve0          =  0;
+            lod_clamp_min     = -1000.0;
+            lod_clamp_max     =  1000.0;
+            lod_bias          =  0.0;
+        }
     };
     static_assert(sizeof(ResGfxSamplerInfo) == 0x20);
 
@@ -626,9 +647,9 @@ namespace vp::res {
     };
 
     enum class GfxCullMode : u8 {
-        None         = 0x0,
-        Front        = 0x1,
-        Back         = 0x2,
+        None  = 0,
+        Front = 1,
+        Back  = 2,
     };
 
     enum class GfxFillMode : u8 {
@@ -638,8 +659,8 @@ namespace vp::res {
     };
     
     enum class GfxFrontFace : u8 {
-        CounterClockWise = 0x0,
-        ClockWise        = 0x1,
+        CounterClockWise = 0,
+        ClockWise        = 1,
     };
 
     struct ResGfxEmbedFile {
@@ -653,7 +674,7 @@ namespace vp::res {
         S32    = 0,
         Float  = 1,
         String = 2,
-        Byte   = 3
+        Byte   = 3,
     };
 
     struct ResGfxUserData {

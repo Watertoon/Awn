@@ -35,7 +35,6 @@ namespace vp::util {
                 return m_prev;
             }
             
-            
             constexpr ALWAYS_INLINE bool IsLinked() const {
                 return this != m_next;
             }
@@ -89,16 +88,25 @@ namespace vp::util {
                     }
 
                     constexpr ALWAYS_INLINE bool operator==(const Iterator<IsConst> &rhs) const {
-                        return !(m_next != rhs.m_next);
+                        IntrusiveListNode *r_next = rhs.m_next;
+                        IntrusiveListNode *l_next = m_next;
+                        return !(l_next != r_next);
                     }
 
                     constexpr ALWAYS_INLINE bool operator!=(const Iterator<IsConst> &rhs) const {
-                        return m_next != rhs.m_next;
+                        IntrusiveListNode *r_next = rhs.m_next;
+                        IntrusiveListNode *l_next = m_next;
+                        return l_next != r_next;
                     }
 
                     constexpr ALWAYS_INLINE Iterator<IsConst> &operator++() {
                         m_next = m_next->next();
                         return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator<IsConst> &operator++([[maybe_unused]]int) {
+                        Iterator<IsConst> prev(m_next);
+                        m_next = m_next->next();
+                        return prev;
                     }
                     constexpr ALWAYS_INLINE Iterator<IsConst> &operator--() {
                         m_next = m_next->prev();

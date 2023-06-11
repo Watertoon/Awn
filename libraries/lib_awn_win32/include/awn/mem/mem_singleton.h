@@ -39,7 +39,7 @@
             vp::util::ConstructAt(sInstance->m_singleton_disposer, allocate_heap); \
             return sInstance; \
         } \
-        static ALWAYS_INLINE void FinalizeInstance() { \
+        static ALWAYS_INLINE void DeleteInstance() { \
             SingletonDisposer *disposer = sDisposer; \
             if (sDisposer == nullptr) { \
                 return; \

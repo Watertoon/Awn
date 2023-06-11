@@ -224,6 +224,7 @@ namespace awn::res {
             }
         public:
             explicit constexpr ALWAYS_INLINE SystemFileDevice(const char *device_name) : FileDeviceBase(device_name) {/*...*/}
+            constexpr virtual ALWAYS_INLINE ~SystemFileDevice() override {/*...*/}
     };
 
     class ContentFileDevice : public SystemFileDevice {
@@ -239,7 +240,8 @@ namespace awn::res {
                 RESULT_RETURN_SUCCESS;
             }
         public:
-            constexpr ALWAYS_INLINE ContentFileDevice() : SystemFileDevice("content") {/*...*/};
+            constexpr ALWAYS_INLINE ContentFileDevice() : SystemFileDevice("content") {/*...*/}
+            constexpr virtual ALWAYS_INLINE ~ContentFileDevice() override {/*...*/}
     };
 
     class SaveFileDevice : public SystemFileDevice {
@@ -256,5 +258,6 @@ namespace awn::res {
             }
         public:
             constexpr ALWAYS_INLINE SaveFileDevice() : SystemFileDevice("save") {/*...*/};
+            constexpr virtual ALWAYS_INLINE ~SaveFileDevice() override {/*...*/}
     };
 }

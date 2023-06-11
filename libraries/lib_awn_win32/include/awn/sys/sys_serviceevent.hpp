@@ -24,7 +24,7 @@ namespace awn::sys {
                 if (m_signal_state == 1) { return; }
 
                 /* Respective waits */
-                if (ukern::GetCurrentThread() != nullptr) {
+                if (::IsThreadAFiber() == true) {
                     ukern::WaitOnAddress(reinterpret_cast<uintptr_t>(std::addressof(m_signal_state)), ukern::ArbitrationType_WaitIfLessThan, 1, -1);
                 } else {
                     ::WaitForSingleObject(m_win32_event_handle, INFINITE);

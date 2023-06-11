@@ -50,23 +50,24 @@ namespace awn::res {
             vp::util::IntrusiveListNode             m_manager_list_node;
             vp::util::FixedString<vp::util::cMaxDrive> m_device_name;
         protected:
-            virtual Result LoadFileImpl(FileLoadContext *file_load_context);
-            virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode);
-            virtual Result CloseFileImpl(FileHandle *file_handle);
-            virtual Result ReadFileImpl(void *out_read_buffer, FileHandle *file_handle, u32 read_size);
-            virtual Result WriteFileImpl(FileHandle *file_handle, void *write_buffer, u32 write_size);
-            virtual Result FlushFileImpl(FileHandle *file_handle);
-            
-            virtual Result GetFileSizeImpl(size_t *out_size, FileHandle *file_handle);
-            virtual Result GetFileSizeImpl(size_t *out_size, const char *path);
-            
+            virtual Result LoadFileImpl(FileLoadContext *file_load_context) { VP_ASSERT(false); VP_UNUSED(file_load_context); }
+            virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) { VP_ASSERT(false); VP_UNUSED(out_file_handle, path, open_mode); }
+            virtual Result CloseFileImpl(FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(file_handle); }
+            virtual Result ReadFileImpl(void *out_read_buffer, FileHandle *file_handle, u32 read_size) { VP_ASSERT(false); VP_UNUSED(out_read_buffer, file_handle, read_size); }
+            virtual Result WriteFileImpl(FileHandle *file_handle, void *write_buffer, u32 write_size) { VP_ASSERT(false); VP_UNUSED(file_handle, write_buffer, write_size); }
+            virtual Result FlushFileImpl(FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(file_handle); }
+
+            virtual Result GetFileSizeImpl(size_t *out_size, FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(out_size, file_handle); }
+            virtual Result GetFileSizeImpl(size_t *out_size, const char *path) { VP_ASSERT(false); VP_UNUSED(out_size, path); }
+
             virtual Result CheckFileExistsImpl(const char *path) { return CheckFileExistsImpl(path); }
-            
-            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path);
+
+            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { VP_ASSERT(false); VP_UNUSED(out_formatted_path, path); }
         public:
             explicit constexpr ALWAYS_INLINE FileDeviceBase() {/*...*/}
             explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *device_name) : m_device_name(device_name) {/*...*/}
-            
+            constexpr virtual ALWAYS_INLINE ~FileDeviceBase() {/*...*/}
+
             ALWAYS_INLINE Result TryLoadFile(FileLoadContext *file_load_context)                                { return this->LoadFileImpl(file_load_context); }
             ALWAYS_INLINE Result TryOpenFile(FileHandle *out_file_handle, const char *path, OpenMode open_mode) { return this->OpenFileImpl(out_file_handle, path, open_mode); }
             ALWAYS_INLINE Result TryCloseFile(FileHandle *file_handle)                                          { return this->CloseFileImpl(file_handle); }
@@ -87,7 +88,7 @@ namespace awn::res {
 
             constexpr ALWAYS_INLINE const char *GetDeviceName() const { return m_device_name.GetString(); }
     };
-    
+
     //class SarcFileDevice : public FileDeviceBase {
     //    private:
     //        SarcExtractor m_sarc_extractor;

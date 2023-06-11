@@ -9,9 +9,12 @@ namespace vp::res {
         u32 next_block_offset;
         u32 block_size;
         u32 reserve;
-        
+
         ALWAYS_INLINE ResNintendoWareSubHeader *GetNextBlock() {
             return (this->next_block_offset == 0) ? nullptr : reinterpret_cast<ResNintendoWareSubHeader*>(reinterpret_cast<uintptr_t>(this) + this->next_block_offset);
+        }
+        constexpr ALWAYS_INLINE u32 GetBlockSize() const {
+            return block_size;
         }
     };
     static_assert(sizeof(ResNintendoWareSubHeader) == 0x10);

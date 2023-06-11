@@ -29,6 +29,7 @@ namespace vp::res {
         TranslateY  = (1 << 8),
         TranslateZ  = (1 << 9),
     };
+    VP_ENUM_FLAG_TRAITS(BfresBoneAnimCurveType);
 
     struct ResBfresBoneAnimResultDefault {
         util::Vector3f translate;

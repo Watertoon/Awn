@@ -11,7 +11,7 @@ namespace awn::sys {
 
             void Enter() {
 
-                if (ukern::GetCurrentThread() == nullptr) {
+                if (::IsThreadAFiber() == false) {
                     ::AcquireSRWLockExclusive(std::addressof(m_win32_lock));
                     return;
                 }
@@ -21,9 +21,7 @@ namespace awn::sys {
                     const bool result0 = ::TryAcquireSRWLockExclusive(std::addressof(m_win32_lock));
 
                     /* Success */
-                    if (result0 == false) {
-                        return;
-                    }
+                    if (result0 == true) { return; }
 
                     /* Fallback wait */
                     ukern::WaitOnAddress(reinterpret_cast<uintptr_t>(std::addressof(m_wait_value)), ukern::ArbitrationType_WaitIfEqual, 0, -1);

@@ -50,6 +50,7 @@ namespace awn::gfx {
             }
         public:
             constexpr ALWAYS_INLINE CommandPoolManager() : m_command_pool_tls_slot(0) {/*...*/}
+            constexpr ALWAYS_INLINE ~CommandPoolManager() {/*...*/}
 
             void Initialize() {
                 const bool result = sys::ThreadManager::GetInstance()->AllocateTlsSlot(std::addressof(m_command_pool_tls_slot), DestructCommandPoolHolderTls, true);
@@ -89,7 +90,7 @@ namespace awn::gfx {
                 const VkCommandBufferAllocateInfo allocate_info {
                     .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
                     .commandPool        = *sel_vk_command_pool,
-                    .level              = (is_primary == true) ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY,
+                    .level              = (is_primary == true) ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY,
                     .commandBufferCount = 1
                 };
 
@@ -472,9 +473,13 @@ namespace awn::gfx {
                 m_command_list = CommandPoolManager::GetInstance()->CreateThreadLocalCommandList(queue_type, is_primary);
 
                 /* Begin command buffer */
+                const VkCommandBufferInheritanceInfo inheritance_info = {
+                    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
+                };
                 const VkCommandBufferBeginInfo begin_info = {
-                    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-                    .flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
+                    .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                    .flags            = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+                    .pInheritanceInfo = (is_primary == true) ? nullptr : std::addressof(inheritance_info),
                 };
                 const u32 result = ::pfn_vkBeginCommandBuffer(m_command_list.vk_command_buffer, std::addressof(begin_info));
                 VP_ASSERT(result == VK_SUCCESS);

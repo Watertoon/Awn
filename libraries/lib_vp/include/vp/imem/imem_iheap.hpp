@@ -44,6 +44,7 @@ namespace vp::imem {
             VP_RTTI_BASE(IHeap);
         public:
             explicit IHeap(const char *name, IHeap *parent_heap, void *start_address, size_t size) : m_start_address(start_address), m_end_address(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(start_address) +  size)), m_parent_heap(parent_heap), m_name(name) {/*...*/}
+            constexpr ~IHeap() {/*...*/}
 
             virtual void Finalize() {/*...*/}
 

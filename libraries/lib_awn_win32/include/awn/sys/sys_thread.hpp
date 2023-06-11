@@ -14,6 +14,7 @@ namespace awn::sys {
 
                 ukern::SetThreadName(m_thread_handle, name);
             }
+            virtual ~Thread() override {/*...*/}
 
             virtual void StartThread() {
                 const Result result0 = ukern::StartThread(m_thread_handle);

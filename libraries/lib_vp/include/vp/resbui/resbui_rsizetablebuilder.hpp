@@ -13,7 +13,7 @@ namespace vp::resbui {
                     vp::util::FixedString<vp::util::cMaxPath> path;
                     vp::util::IntrusiveListNode               node;
                 public:
-                    explicit constexpr  EntryNode(u32 path_crc32, u32 resource_size) : path_crc32(path_crc32), size(resource_size), path(0), node() {/*...*/}
+                    explicit constexpr  EntryNode(u32 path_crc32, u32 resource_size) : path_crc32(path_crc32), size(resource_size), path(nullptr), node() {/*...*/}
                     explicit constexpr  EntryNode(const char *file_path, u32 resource_size) : path_crc32(0), size(resource_size), path(file_path), node() {
 
                         /* Integrity checks */
@@ -33,7 +33,7 @@ namespace vp::resbui {
             EntryList m_collision_entry_list;
         private:
             bool LinkEntryPath(EntryNode *link_node) {
-                
+
                 /* Find neighboring nodes by path */
                 EntryList::iterator next_iter0 = m_crc32_entry_list.begin();
                 while (next_iter0 != m_crc32_entry_list.end() && ::strcmp((*next_iter0).path.GetString(), link_node->path.GetString()) < 0) { ++next_iter0; }
@@ -44,6 +44,8 @@ namespace vp::resbui {
                 /* Link nodes */
                 (*next_iter0).node.prev()->LinkNext(std::addressof(link_node->node));
                 (*next_iter0).node.LinkPrev(std::addressof(link_node->node));
+
+                return true;
             }
             
             EntryNode *SearchEntry(const char *path) {
@@ -79,12 +81,11 @@ namespace vp::resbui {
                 while (next_iter0 != m_collision_entry_list.end() && ::strcmp((*next_iter0).path.GetString(), new_entry->path.GetString()) < 0) { ++next_iter0; }
 
                 /* Link nodes if there was a collision */
-                if (next_iter0 == m_collision_entry_list.end()) {
+                if (next_iter0 != m_collision_entry_list.end()) {
 
                     /* Fail if the path is identical to the next node */
                     if ((*next_iter0).path == new_entry->path) { return false; }
 
-                    (*next_iter0).node.prev()->LinkNext(std::addressof(new_entry->node));
                     (*next_iter0).node.LinkPrev(std::addressof(new_entry->node));
                     return true;
                 }
@@ -92,23 +93,28 @@ namespace vp::resbui {
                 /* Find neighboring nodes by crc32 */
                 EntryList::iterator next_iter1 = m_crc32_entry_list.begin();
                 while (next_iter1 != m_crc32_entry_list.end() && (*next_iter1).path_crc32 < new_entry->path_crc32) { ++next_iter1; }
+                if (next_iter1 == m_crc32_entry_list.end()) {
+                    next_iter1 = m_crc32_entry_list.begin();
+                }
 
                 /* Link nodes unless a collision occured */
-                if (next_iter1 == m_crc32_entry_list.end() || (*next_iter1).path_crc32 != new_entry->path_crc32) {
-                    (*next_iter1).node.prev()->LinkNext(std::addressof(new_entry->node));
-                    (*next_iter1).node.LinkPrev(std::addressof(new_entry->node));
+                EntryNode &next_entry = (*next_iter1);
+                if (next_entry.path_crc32 != new_entry->path_crc32) {
+                    next_entry.node.LinkPrev(std::addressof(new_entry->node));
                     return true;
                 }
 
                 /* Fail if the node has no path or collides */
-                if ((*next_iter1).path.IsNullString() == true || (*next_iter1).path == new_entry->path) { return false; }
+                if (next_entry.path.IsNullString() == true || next_entry.path == new_entry->path) { return false; }
 
                 /* Unlink newly colliding node */
-                (*next_iter1).node.Unlink();
+                next_entry.node.Unlink();
 
                 /* Link new node and colliding node to path table */
-                const bool result0 = this->LinkEntryPath(std::addressof(*next_iter1));
+                const bool result0 = this->LinkEntryPath(std::addressof(next_entry));
+                VP_ASSERT(result0 != false);
                 const bool result1 = this->LinkEntryPath(new_entry);
+                VP_ASSERT(result1 != false);
 
                 return true;
             }
@@ -138,7 +144,7 @@ namespace vp::resbui {
             void Serialize(void *file, size_t file_size, u32 max_path_length = 0x80) {
 
                 /* Integrity checks */
-                VP_ASSERT(file != nullptr && this->CalculateSerializedSize(max_path_length) < file_size);
+                VP_ASSERT(file != nullptr && this->CalculateSerializedSize(max_path_length) <= file_size);
 
                 /* Clear memory */
                 ::memset(file, 0, file_size);
@@ -173,7 +179,7 @@ namespace vp::resbui {
                 return;
             }
 
-            constexpr size_t CalculateSerializedSize(u32 max_path_length) {
+            constexpr size_t CalculateSerializedSize(u32 max_path_length = 0x80) {
                 return sizeof(res::ResRsizetable) + sizeof(res::ResRsizetableCrc32) * m_crc32_entry_list.GetCount() + (sizeof(u32) + max_path_length) * m_collision_entry_list.GetCount();
             }
     };

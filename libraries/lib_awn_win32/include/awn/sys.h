@@ -4,6 +4,7 @@
 #include <awn/sys/sys_mutex.hpp>
 #include <awn/sys/sys_event.hpp>
 #include <awn/sys/sys_messagequeue.hpp>
+#include <awn/sys/sys_servicemessagequeue.hpp>
 #include <awn/sys/sys_threadbase.h>
 #include <awn/sys/sys_mainthread.hpp>
 #include <awn/sys/sys_threadmanager.hpp>

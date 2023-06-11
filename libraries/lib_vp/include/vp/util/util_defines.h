@@ -24,3 +24,13 @@
 #define VP_LIKELY(expression)   __builtin_expect((expression), 1)
 
 #define TOSTRING(var) #var
+
+namespace vp::impl {
+    
+    template<typename... ArgTypes>
+    constexpr ALWAYS_INLINE void UnusedImpl(ArgTypes &&... args) {
+        (static_cast<void>(args), ...);
+    }
+}
+
+#define VP_UNUSED(...) ::vp::impl::UnusedImpl(__VA_ARGS__)

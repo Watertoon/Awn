@@ -131,6 +131,8 @@ namespace awn::ukern::impl {
 
                 /* Wake a sleeping core */
                 ::WakeByAddressSingle(std::addressof(m_runnable_fibers));
+
+                return;
             }
 
             void Dispatch(FiberLocalStorage *fiber_local, u32 core_number);

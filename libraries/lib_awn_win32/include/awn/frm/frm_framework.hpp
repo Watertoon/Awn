@@ -152,6 +152,43 @@ namespace awn::frm {
 
                 RESULT_RETURN_SUCCESS;
             }
+
+            static void FinalizeLibraries() {
+
+                gfx::TextureSamplerManager::GetInstance()->Finalize();
+                gfx::TextureSamplerManager::DeleteInstance();
+
+                gfx::CommandPoolManager::GetInstance()->Finalize();
+                gfx::CommandPoolManager::DeleteInstance();
+
+               //gfx::GpuHeapManager::GetInstance()->Finalize();
+                gfx::GpuHeapManager::DeleteInstance();
+
+                gfx::Context::GetInstance()->Finalize();
+                gfx::Context::DeleteInstance();
+
+                hid::FinalizeRawInputThread();
+
+                res::ResourceFactoryManager::DeleteInstance();
+
+                res::FileDeviceManager::GetInstance()->Finalize();
+                res::FileDeviceManager::DeleteInstance();
+
+                sys::ThreadManager::DeleteInstance();
+                
+                /* Unregister framework window class */
+                const bool result0 = ::UnregisterClassA("AwnFramework", ::GetModuleHandle(nullptr));
+                VP_ASSERT(result0 == true);
+
+                mem::Heap *root_heap       = mem::GetRootHeap(0);
+                size_t     total_heap_size = mem::GetRootHeapTotalSize(0);
+                mem::FinalizeHeapManager();
+
+                const bool result1 = ::VirtualFree(root_heap, 0, MEM_RELEASE);
+                VP_ASSERT(result1 == true);
+
+                return;
+            }
         protected:
             void InitializeRun(FrameworkRunInfo *framework_run_info) {
 
@@ -166,15 +203,31 @@ namespace awn::frm {
                 for (u32 i = 0; i < framework_run_info->window_count; ++i) {
                     WindowThread *wnd_thread = new (framework_run_info->heap, 8) WindowThread(framework_run_info->heap, std::addressof(framework_run_info->window_info_array[i]), framework_run_info->drag_drop_count);
                     VP_ASSERT(wnd_thread != nullptr);
+                    wnd_thread->StartThread();
                     m_window_thread_array.PushPointer(wnd_thread);
                 }
 
                 return;
             }
+            void FinalizeRun() {
+
+                /* Free windows */
+                for (u32 i = 0; i < m_window_thread_array.GetUsedCount(); ++i) {
+                    if (m_window_thread_array[i] != nullptr) {
+                        m_window_thread_array[i]->SendMessage(0);
+                        m_window_thread_array[i]->WaitForThreadExit();
+                        delete m_window_thread_array[i];
+                    }
+                }
+                m_window_thread_array.Finalize();
+
+                return;
+            }
         public:
             constexpr ALWAYS_INLINE Framework() {/*...*/}
+            virtual ~Framework() {/*...*/}
 
-            virtual void MainLoop();
+            virtual void MainLoop()  {/*...*/}
 
             virtual void Run(FrameworkRunInfo *framework_run_info) {
 
@@ -183,6 +236,9 @@ namespace awn::frm {
                 
                 /* Use the application's main loop */
                 this->MainLoop();
+
+                /* Finalize run state */
+                this->FinalizeRun();
 
                 return;
             }
@@ -218,6 +274,7 @@ namespace awn::frm {
             u8                            m_is_pause_calc;
             u8                            m_is_pause_draw;
             u8                            m_is_ready_to_exit;
+            u8                            m_is_present;
         public:
             VP_RTTI_DERIVED(JobListFramework, Framework);
         public:
@@ -286,19 +343,20 @@ namespace awn::frm {
                 }
 
                 /* Signal main loop */
+                m_is_present = false;
                 m_present_event.Signal();
 
                 return;
             }
         public:
             ALWAYS_INLINE JobListFramework() : Framework(), m_calc_job_list(), m_draw_job_list(), m_graphics_queue_sync(), m_primary_graphics_command_buffer(), m_last_primary_graphics_command_list(), m_present_delegate(this, PresentAsync), m_present_thread(std::addressof(m_present_delegate), "AwnFramework Present Thread", nullptr, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cHighPriority), m_present_event(), m_is_pause_calc(true), m_is_pause_draw(true), m_is_ready_to_exit(false) {/*...*/}
+            virtual ~JobListFramework() override {/*...*/}
 
             virtual void MainLoop() override {
 
                 /* Mainloop */
                 m_is_ready_to_exit = false;
                 m_is_pause_calc    = false;
-                m_is_pause_draw    = false;
                 while (m_is_ready_to_exit == false) {
                     this->Draw();
                     this->Calc();
@@ -350,6 +408,7 @@ namespace awn::frm {
                 m_last_primary_graphics_command_list = m_primary_graphics_command_buffer.End();
 
                 /* Signal present thread */
+                m_is_present = true;
                 m_present_thread.SendMessage(1);
 
                 return;
@@ -357,8 +416,11 @@ namespace awn::frm {
 
             void WaitForGpu() {
 
+
                 /* Wait for window presentation to occur */
-                m_present_event.Wait();
+                if (m_is_present == true) {
+                    m_present_event.Wait();   
+                }
 
                 return;
             }

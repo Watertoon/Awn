@@ -72,7 +72,7 @@ namespace vp::res {
                 return true;
             }
 
-            bool TryGetByamlDataByKey(ByamlData *out_data, const char *key) const {
+            bool TryGetByamlDataByKey(ByamlData *out_byaml_data, const char *key) const {
 
                 /* Integrity checks */
                 if (m_data_container == nullptr || m_byaml == nullptr || m_byaml->key_table_offset == 0 || (static_cast<ByamlDataType>(m_data_container->data_type) != ByamlDataType::Dictionary && static_cast<ByamlDataType>(m_data_container->data_type) != ByamlDataType::DictionaryWithRemap)) { return false; }
@@ -90,7 +90,7 @@ namespace vp::res {
                 }
 
                 /* Binary search pattern as the string table is always sorted */
-                u32 size = dic_iter.GetSize();
+                u32 size = dic_iter.GetCount();
                 u32 i = 0;
                 u32 index = 0;
                 while (i < size) {
@@ -101,7 +101,7 @@ namespace vp::res {
                     const s32 result = ::strcmp(key, pair_key);
                     
                     if (result == 0) {
-                        out_data->SetPair(res_pair);
+                        out_byaml_data->SetPair(res_pair);
                         return true;
                     }
                     if (0 < result) {
@@ -111,32 +111,100 @@ namespace vp::res {
                     size = index;
                 }
 
+                *out_byaml_data = ByamlData{};
                 return false;
             }
 
-            bool TryGetByamlDataByHash(ByamlData *out_byaml_data, u32 hash);
-            bool TryGetByamlDataByHash(ByamlData *out_byaml_data, u64 hash);
+            bool TryGetByamlDataByHash(ByamlData *out_byaml_data, u32 hash) const {
 
-            bool TryGetByamlIterByHash(ByamlIterator *out_byaml_iter, u32 hash);
-            bool TryGetByamlIterByHash(ByamlIterator *out_byaml_iter, u64 hash);
+                /* Integrity checks */
+                if (m_data_container == nullptr || m_byaml == nullptr || m_byaml->key_table_offset == 0 || (static_cast<ByamlDataType>(m_data_container->data_type & 0xe0) != ByamlDataType::HashArrayU32_1)) { return false; }
 
-            bool TryGetByamlDataByIndex(ByamlData *out_data, u32 index) const {
+                /* Setup container and iterators */
+                const u32 stride = (m_data_container->data_type & 0xf) * sizeof(u32) + sizeof(ResByamlContainer);
+                const ByamlHashArrayIterator hash_array_iter(m_data_container, stride);
+
+                /* Binary search pattern as the string table is always sorted */
+                u32 size = hash_array_iter.GetCount();
+                u32 i = 0;
+                u32 index = 0;
+                while (i < size) {
+                    index = i + size;
+                    index = index >> 1;
+                    
+                    const ByamlHashAccessor hash_accessor(m_data_container, stride, index);
+                    const u32 cur_hash = hash_accessor.GetHash();
+                    
+                    if (hash == cur_hash) {
+                        out_byaml_data->data_type = hash_array_iter.GetDataType(index);
+                        out_byaml_data->u32_value = hash_accessor.GetValue();
+                        return true;
+                    }
+                    if (cur_hash < hash) {
+                        i = index + 1;
+                        index = size;
+                    }
+                    size = index;
+                }
+
+                *out_byaml_data = ByamlData{};
+                return false;
+            }
+            bool TryGetByamlDataByHash(ByamlData *out_byaml_data, u64 hash) const {
+
+                /* Integrity checks */
+                if (m_data_container == nullptr || m_byaml == nullptr || m_byaml->key_table_offset == 0 || (static_cast<ByamlDataType>(m_data_container->data_type & 0xe0) != ByamlDataType::HashArrayU32_1)) { return false; }
+
+                /* Setup container and iterators */
+                const u32 stride = (m_data_container->data_type & 0xf) * sizeof(u32) + sizeof(ResByamlContainer);
+                const ByamlHashArrayIterator hash_array_iter(m_data_container, stride);
+
+                /* Binary search pattern as the string table is always sorted */
+                u32 size = hash_array_iter.GetCount();
+                u32 i = 0;
+                u32 index = 0;
+                while (i < size) {
+                    index = i + size;
+                    index = index >> 1;
+                    
+                    const ByamlHashAccessor hash_accessor(m_data_container, stride, index);
+                    const u64 cur_hash = hash_accessor.GetHash();
+                    
+                    if (hash == cur_hash) {
+                        out_byaml_data->data_type = hash_array_iter.GetDataType(index);
+                        out_byaml_data->u32_value = hash_accessor.GetValue();
+                        return true;
+                    }
+                    if (cur_hash < hash) {
+                        i = index + 1;
+                        index = size;
+                    }
+                    size = index;
+                }
+
+                *out_byaml_data = ByamlData{};
+                return false;
+            }
+
+            bool TryGetByamlDataByIndex(ByamlData *out_byaml_data, u32 index) const {
                 
                 if (m_data_container == nullptr) { return false; }
 
                 u32 data_type = static_cast<u32>(m_data_container->data_type);
                 if (static_cast<ByamlDataType>(data_type) == ByamlDataType::Dictionary || static_cast<ByamlDataType>(data_type) == ByamlDataType::DictionaryWithRemap) {
                     const ByamlDictionaryIterator dic_iter(m_data_container);
-                    return dic_iter.TryGetDataByIndex(out_data, index);
+                    return dic_iter.TryGetDataByIndex(out_byaml_data, index);
                 }
                 if (static_cast<ByamlDataType>(data_type) == ByamlDataType::Array || static_cast<ByamlDataType>(data_type) == ByamlDataType::MonoTypedArray) {
                     const ByamlArrayIterator array_iter(m_data_container);
-                    return array_iter.TryGetDataByIndex(out_data, index);
+                    return array_iter.TryGetDataByIndex(out_byaml_data, index);
                 }
-                if (static_cast<ByamlDataType>(data_type & 0xe0) == ByamlDataType::HashArray) {
+                if (static_cast<ByamlDataType>(data_type & 0xe0) == ByamlDataType::HashArrayU32_1) {
                     const ByamlHashArrayIterator hash_array_iter(m_data_container);
-                    return hash_array_iter.TryGetDataByIndex(out_data, index);
+                    return hash_array_iter.TryGetDataByIndex(out_byaml_data, index);
                 }
+
+                *out_byaml_data = ByamlData{};
                 return false;
             }
 
@@ -555,7 +623,9 @@ namespace vp::res {
                 if (result == false) { return false; }
 
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
-                if (data_type == ByamlDataType::Array || data_type == ByamlDataType::Dictionary) { 
+                const ByamlDataType arr_type  = static_cast<ByamlDataType>(data.data_type & 0xf7);
+                const ByamlDataType hash_type = static_cast<ByamlDataType>(data.data_type & 0xe0);
+                if (arr_type == ByamlDataType::Array || data_type == ByamlDataType::Dictionary || data_type == ByamlDataType::DictionaryWithRemap || hash_type == ByamlDataType::HashArrayU32_1) {
                     out_iterator->m_byaml          = m_byaml;
                     out_iterator->m_data_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
                     return true;
@@ -578,7 +648,59 @@ namespace vp::res {
                 if (result == false) { return false; }
 
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
-                if (data_type == ByamlDataType::Array || data_type == ByamlDataType::Dictionary) { 
+                const ByamlDataType arr_type  = static_cast<ByamlDataType>(data.data_type & 0xf7);
+                const ByamlDataType hash_type = static_cast<ByamlDataType>(data.data_type & 0xe0);
+                if (arr_type == ByamlDataType::Array || data_type == ByamlDataType::Dictionary || data_type == ByamlDataType::DictionaryWithRemap || hash_type == ByamlDataType::HashArrayU32_1) { 
+                    out_iterator->m_byaml          = m_byaml;
+                    out_iterator->m_data_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
+                    return true;
+                }
+
+                if (data_type == ByamlDataType::Null) { 
+                    out_iterator->m_byaml          = m_byaml;
+                    out_iterator->m_data_container = nullptr;
+                    return true;
+                }
+
+                out_iterator->m_byaml          = nullptr;
+                out_iterator->m_data_container = nullptr;
+                return false;
+            }
+
+            bool TryGetIteratorByHash(ByamlIterator *out_iterator, u32 hash) const {
+                ByamlData data = {};
+                const bool result = this->TryGetByamlDataByHash(std::addressof(data), hash);
+                if (result == false) { return false; }
+
+                const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
+                const ByamlDataType arr_type  = static_cast<ByamlDataType>(data.data_type & 0xf7);
+                const ByamlDataType hash_type = static_cast<ByamlDataType>(data.data_type & 0xe0);
+                if (arr_type == ByamlDataType::Array || data_type == ByamlDataType::Dictionary || data_type == ByamlDataType::DictionaryWithRemap || hash_type == ByamlDataType::HashArrayU32_1) { 
+                    out_iterator->m_byaml          = m_byaml;
+                    out_iterator->m_data_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
+                    return true;
+                }
+
+                if (data_type == ByamlDataType::Null) { 
+                    out_iterator->m_byaml          = m_byaml;
+                    out_iterator->m_data_container = nullptr;
+                    return true;
+                }
+
+                out_iterator->m_byaml          = nullptr;
+                out_iterator->m_data_container = nullptr;
+                return false;
+            }
+
+            bool TryGetIteratorByHash(ByamlIterator *out_iterator, u64 hash) const {
+                ByamlData data = {};
+                const bool result = this->TryGetByamlDataByHash(std::addressof(data), hash);
+                if (result == false) { return false; }
+
+                const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
+                const ByamlDataType arr_type  = static_cast<ByamlDataType>(data.data_type & 0xf7);
+                const ByamlDataType hash_type = static_cast<ByamlDataType>(data.data_type & 0xe0);
+                if (arr_type == ByamlDataType::Array || data_type == ByamlDataType::Dictionary || data_type == ByamlDataType::DictionaryWithRemap || hash_type == ByamlDataType::HashArrayU32_1) { 
                     out_iterator->m_byaml          = m_byaml;
                     out_iterator->m_data_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
                     return true;
@@ -598,7 +720,9 @@ namespace vp::res {
             bool TryGetIteratorByData(ByamlIterator *out_iterator, ByamlData data) const {
 
                 const ByamlDataType data_type = static_cast<ByamlDataType>(data.data_type);
-                if (data_type == ByamlDataType::Array || data_type == ByamlDataType::Dictionary) { 
+                const ByamlDataType arr_type  = static_cast<ByamlDataType>(data.data_type & 0xf7);
+                const ByamlDataType hash_type = static_cast<ByamlDataType>(data.data_type & 0xe0);
+                if (arr_type == ByamlDataType::Array || data_type == ByamlDataType::Dictionary || data_type == ByamlDataType::DictionaryWithRemap || hash_type == ByamlDataType::HashArrayU32_1) {
                     out_iterator->m_byaml          = m_byaml;
                     out_iterator->m_data_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(m_byaml) + data.u32_value);
                     return true;

@@ -39,6 +39,7 @@ namespace awn::mem {
 
     HeapManager *GetHeapManager();
     Heap        *GetRootHeap(u32 index);
+    size_t       GetRootHeapTotalSize(u32 index);
 
     bool IsHeapManagerInitialized();
 

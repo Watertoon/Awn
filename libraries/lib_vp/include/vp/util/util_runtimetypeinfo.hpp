@@ -63,6 +63,15 @@ namespace vp::util {
                 } while (class_info != nullptr); \
                 return false; \
             } \
+            static constexpr bool CheckRuntimeTypeInfo(vp::util::RuntimeTypeInfo *other_obj) { \
+                const vp::util::RuntimeTypeInfo *class_info = other_obj; \
+                const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
+                do { \
+                    if (target->IsSameType(class_info) == true) { return true; } \
+                    class_info = class_info->m_next; \
+                } while (class_info != nullptr); \
+                return false; \
+            } \
             static constexpr ALWAYS_INLINE bool IsSameType(RootType *other_obj) { \
                 return GetRuntimeTypeInfoStatic() == other_obj->GetRuntimeTypeInfo(); \
             }

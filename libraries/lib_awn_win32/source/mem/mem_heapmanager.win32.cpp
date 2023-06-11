@@ -184,6 +184,10 @@ namespace awn::mem {
 
     mem::Heap *GetRootHeap(u32 index) { return vp::util::GetPointer(sHeapManagerStorage)->root_heap_array[index]; }
 
+    size_t GetRootHeapTotalSize(u32 index) {
+        return GetRootHeap(index)->GetTotalSize() + sizeof(mem::ExpHeap);
+    }
+
     // constexpr ALWAYS_INLINE sys::Mutex *GetHeapManagerLock() { return std::addressof(sHeapManagerMutex); }
 
     Heap *GetCurrentThreadHeap() {

@@ -50,6 +50,13 @@ namespace awn::ukern {
                 /* Increment release */
                 ++m_release_count;
             }
+
+            ALWAYS_INLINE void lock() {
+                this->Enter();
+            }
+            ALWAYS_INLINE void unlock() {
+                this->Leave();
+            }
     };
 
     class ScopedBusyMutex {

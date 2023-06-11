@@ -51,6 +51,7 @@
 #include <vp/util/util_ringbuffer.hpp>
 #include <vp/util/util_color4.hpp>
 #include <vp/util/util_job.hpp>
+#include <vp/util/util_enumtraits.h>
 
 #include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/sse4/util_int128.sse4.hpp>

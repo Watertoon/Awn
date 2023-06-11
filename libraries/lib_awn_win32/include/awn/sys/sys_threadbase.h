@@ -20,7 +20,7 @@ namespace awn::sys {
         protected:
             mem::Heap                   *m_thread_heap;
             mem::Heap                   *m_lookup_heap;
-            sys::MessageQueue            m_message_queue;
+            sys::ServiceMessageQueue     m_message_queue;
             size_t                      *m_message_queue_buffer;
             size_t                       m_exit_message;
             u32                          m_stack_size;
@@ -69,7 +69,7 @@ namespace awn::sys {
             ALWAYS_INLINE ThreadBase(mem::Heap *thread_heap) : m_thread_heap(thread_heap), m_lookup_heap(nullptr) {
             }
 
-            ~ThreadBase() {
+            virtual ~ThreadBase() {
                 this->WaitForThreadExit();
                 m_message_queue.Finalize();
             }

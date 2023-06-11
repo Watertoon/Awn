@@ -39,7 +39,7 @@ namespace vp::res {
         ResGfxMemoryPoolInfo       *memory_pool_info;
         ResGfxEmbedFile            *embed_file_array;
         ResNintendoWareDictionary  *embed_file_dictionary;
-        void                       *user_pointer;
+        void                       *transform_tree;
         const char                 *reserve4;
         u32                         reserve5;
         u16                         model_count;

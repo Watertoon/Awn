@@ -70,6 +70,7 @@ namespace awn::frm {
             gfx::RenderTargetColor      m_render_target_color_array[cMaxRenderTargetCount];
             u32                         m_image_index;
             sys::ServiceCriticalSection m_window_cs;
+            sys::ServiceEvent           m_window_event;
             WindowInfo                  m_window_info;
             DragDropArray               m_drag_drop_array;
             u32                         m_drag_drop_count;
@@ -154,11 +155,14 @@ namespace awn::frm {
                         import_info.vk_image = m_vk_image_array[i];
                         m_render_target_color_array[i].Initialize(std::addressof(import_info));
                     }
+
+                    /* Signal setup has complete */
+                    m_window_event.Signal();
                 }
 
                 /* Special thread mainloop for Window thread */
                 WindowMessage window_message = {};
-                while (::GetMessage(std::addressof(window_message.win32_msg), m_hwnd, 0, 0) > 0  && (m_message_queue.TryReceiveMessage(std::addressof(window_message.awn_message)) == true && window_message.awn_message != m_exit_message)) {
+                while (::GetMessage(std::addressof(window_message.win32_msg), m_hwnd, 0, 0) > 0  && (m_message_queue.TryReceiveMessage(std::addressof(window_message.awn_message)) == false || window_message.awn_message != m_exit_message)) {
                     this->ThreadCalc(reinterpret_cast<size_t>(std::addressof(window_message)));
                 }
 
@@ -170,6 +174,8 @@ namespace awn::frm {
 
                 /* Destroy surface */
                 ::pfn_vkDestroySurfaceKHR(gfx::Context::GetInstance()->GetVkInstance(), m_vk_surface, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
+
+                return;
             }
 
             virtual void ThreadCalc(size_t arg) override {

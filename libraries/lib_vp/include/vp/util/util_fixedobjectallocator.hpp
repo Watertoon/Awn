@@ -61,7 +61,7 @@ namespace vp::util {
             ALWAYS_INLINE void Free(T *allocated_object) {
 
                 /* Integrity check parameter */
-                VP_ASSERT(m_object_array < allocated_object && allocated_object < m_object_array + Count);
+                VP_ASSERT(m_object_array <= allocated_object && allocated_object < m_object_array + Count);
 
                 /* Destruct the object */
                 std::destroy_at(allocated_object);

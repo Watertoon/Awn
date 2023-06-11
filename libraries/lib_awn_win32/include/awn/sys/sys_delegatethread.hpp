@@ -19,6 +19,7 @@ namespace awn::sys {
                 delegate->m_parent = this;
                 m_delegate         = delegate;
             }
+            virtual ~DelegateThread() override {/*...*/}
     };
 
     template<typename Parent>

@@ -116,19 +116,17 @@ namespace awn::sys {
             }
 
             ALWAYS_INLINE ThreadBase *GetCurrentThread() {
-                ukern::ThreadType *thread = ukern::GetCurrentThread();
                 
                 /* If we are not a ukern thread we are a service thread */
-                if (thread == nullptr) {
+                if (::IsThreadAFiber() == false) {
                     return reinterpret_cast<ThreadBase*>(::TlsGetValue(m_current_service_thread_tls_slot));
                 } else {
-                    return reinterpret_cast<ThreadBase*>(thread->user_arg);
+                    return reinterpret_cast<ThreadBase*>(ukern::GetCurrentThread()->user_arg);
                 }
             }
 
             ALWAYS_INLINE bool IsServiceThreadCurrent() {
-                const ukern::ThreadType *thread = ukern::GetCurrentThread();
-                return thread == nullptr;
+                return ::IsThreadAFiber();
             }
 
             ALWAYS_INLINE void SetCurrentServiceThread(ThreadBase *thread) {
@@ -143,23 +141,18 @@ namespace awn::sys {
                 /* Lock tls manager */
                 std::scoped_lock l(m_tls_cs);
 
-                /* Integrity checks */
-                if (m_tls_slot_count == ThreadBase::cMaxThreadTlsSlotCount) { return false; }
+                /* Allocate new slot */
+                TlsSlot new_slot = SearchUnusedTlsSlotUnsafe(is_internal);
 
                 /* Set tls destructor */
-                m_tls_destructor_array[m_tls_slot_count] = DefaultTlsDestructor;
+                m_tls_destructor_array[new_slot] = DefaultTlsDestructor;
                 if(destructor != nullptr) {
-                    m_tls_destructor_array[m_tls_slot_count] = destructor;
+                    m_tls_destructor_array[new_slot] = destructor;
                 }
 
-                /* Allocate a new TlsSlot */
-                TlsSlot new_slot = SearchUnusedTlsSlotUnsafe(is_internal);
-                
                 /* Set state */
                 *out_slot = new_slot;
-                if (is_internal == false) {
-                    m_tls_slot_count = m_tls_slot_count + 1;
-                }
+                m_tls_slot_count = m_tls_slot_count + 1;
                 
                 return true;
             }

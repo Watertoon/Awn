@@ -11,6 +11,8 @@ namespace vp::util {
         public:
             explicit constexpr ALWAYS_INLINE FixedString() : m_string_array{'\0'}, m_length(0) {/*...*/}
             explicit constexpr ALWAYS_INLINE FixedString(const char *string) : m_string_array{'\0'}, m_length(0) { 
+                if (string == nullptr) { return; }
+
                 if (std::is_constant_evaluated() == true) {
                     m_length = TStringCopy(m_string_array, string, TStringLength(string, Size - 1));
                 } else {
@@ -78,6 +80,12 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE FixedString &operator=(const char* rhs) {
+                if (rhs == nullptr) { 
+                    m_string_array[0] = '\0';
+                    m_length          = 0;
+                    return *this; 
+                }
+
                 if (std::is_constant_evaluated()) {
                     m_length = TStringCopy(m_string_array, rhs, TStringLength(rhs, Size - 1));
                 } else {

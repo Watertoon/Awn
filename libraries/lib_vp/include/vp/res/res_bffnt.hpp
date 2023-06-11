@@ -164,11 +164,11 @@ namespace vp::res {
 
         static constexpr inline u32 Magic = util::TCharCode32("CMAP");
 
-        ResBffntCodeMap *GetNextCodeMap() const {
+        ALWAYS_INLINE ResBffntCodeMap *GetNextCodeMap() const {
             return reinterpret_cast<ResBffntCodeMap*>(reinterpret_cast<uintptr_t>(this) + next_code_map_offset + sizeof(ResUi2dSection));
         }
 
-        u16 *GetCodeMapArray() const {
+        ALWAYS_INLINE u16 *GetCodeMapArray() const {
             return reinterpret_cast<u16*>(reinterpret_cast<uintptr_t>(this) + sizeof(ResBffntCodeMap));
         }
     };

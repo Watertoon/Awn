@@ -153,7 +153,7 @@ namespace vp::res {
         u32                          is_material_visible;
         const char                  *material_name;
         ResBfresMaterialShaderData  *material_shader_data;
-        void                       **user_texture_view_array;
+        void                       **runtime_texture_view_array;
         const char                 **texture_name_array;
         void                        *sampler_array;
         ResGfxSamplerInfo           *sampler_info_array;
@@ -167,9 +167,9 @@ namespace vp::res {
         ResGfxUserData              *user_data_array;
         ResNintendoWareDictionary   *user_data_dictionary;
         u32                         *shader_param_convert_flags_array;
-        void                        *user_pointer;
-        u64                         *user_sampler_descriptor_slot_array;
-        u64                         *user_texture_descriptor_slot_array;
+        void                        *runtime_user_pointer;
+        u64                         *runtime_sampler_descriptor_slot_array;
+        u64                         *runtime_texture_descriptor_slot_array;
         u16                          section_index;
         u8                           sampler_count;
         u8                           texture_count;
@@ -183,11 +183,11 @@ namespace vp::res {
 
         void BindTexture(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
             for (u32 i = 0; i < sampler_count; ++i) {
-                if (user_texture_view_array[i] != nullptr && user_texture_descriptor_slot_array[i] != 0xffff'ffff'ffff'ffff) { continue; }
+                if (runtime_texture_view_array[i] != nullptr && runtime_texture_descriptor_slot_array[i] != 0xffff'ffff'ffff'ffff) { continue; }
 
-                GfxBindTextureReturn ret              = (bind_callback)(res_bntx, texture_name_array[i] + 2);
-                user_texture_descriptor_slot_array[i] = ret.texture_view_decriptor_slot;
-                user_texture_view_array[i]            = ret.texture_view;
+                GfxBindTextureReturn ret                 = (bind_callback)(res_bntx, texture_name_array[i] + 2);
+                runtime_texture_descriptor_slot_array[i] = ret.texture_view_decriptor_slot;
+                runtime_texture_view_array[i]            = ret.texture_view;
             }
         }
 

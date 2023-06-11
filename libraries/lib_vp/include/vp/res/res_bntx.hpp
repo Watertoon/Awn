@@ -19,9 +19,9 @@ namespace vp::res {
 
     struct ResBntxTextureData : public ResNintendoWareSubHeader {
         static constexpr u32 cMagic = util::TCharCode32("BRTD");
-        
+
         constexpr ALWAYS_INLINE size_t GetGpuMemoryRegionSize() {
-            return block_size - sizeof(ResBntxTextureData);
+            return this->GetBlockSize() - sizeof(ResBntxTextureData);
         }
 
         ALWAYS_INLINE void *GetGpuMemoryRegion() {
@@ -38,8 +38,8 @@ namespace vp::res {
         ResBntxTextureInfo        **texture_info_array;
         ResBntxTextureData         *texture_data;
         ResNintendoWareDictionary  *texture_dictionary;
-        void                       *texture_memory_pool; /* 0x100 storage */
-        void                       *current_memory_pool;
+        void                       *runtime_memory_pool;
+        void                       *runtime_user_memory_pool;
         s32                         base_memory_pool_offset;
         u32                         reserve0;
 
@@ -58,12 +58,12 @@ namespace vp::res {
         GfxImageDimension           image_dimension;
         u8                          reserve2[0x3];
         char                       *name;
-        ResBntxTextureContainer    *res_container;
+        ResBntxTextureContainer    *container;
         void                      **mip_offset_table;
         ResGfxUserData             *user_data_array;
-        void                       *texture;      /* 0x100 storage */
-        void                       *texture_view; /* 0x100 storage */
-        u64                         user_descriptor_slot;
+        void                       *runtime_texture;
+        void                       *runtime_texture_view;
+        u64                         runtime_descriptor_slot;
         ResNintendoWareDictionary  *user_data_dictionary;
 
         static constexpr u32 cMagic = util::TCharCode32("BRTI");

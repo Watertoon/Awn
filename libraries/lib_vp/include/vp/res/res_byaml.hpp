@@ -3,25 +3,55 @@
 namespace vp::res {
 
     enum class ByamlDataType : u8 {
-        HashArray               = 0x20,
-        HashArrayWithRemap      = 0x30,
-        StringIndex             = 0xa0,
-        BinaryData              = 0xa1,
-        BinaryDataWithAlignment = 0xa2,
-        Array                   = 0xc0,
-        Dictionary              = 0xc1,
-        KeyTable                = 0xc2,
-        DictionaryWithRemap     = 0xc4,
-        RelocatedKeyTable       = 0xc5,
-        MonoTypedArray          = 0xc8,
-        Bool                    = 0xd0,
-        S32                     = 0xd1,
-        F32                     = 0xd2,
-        U32                     = 0xd3,
-        S64                     = 0xd4,
-        U64                     = 0xd5,
-        F64                     = 0xd6,
-        Null                    = 0xff,
+        HashArrayU32_1           = 0x20,
+        HashArrayU32_2           = 0x21,
+        HashArrayU32_3           = 0x22,
+        HashArrayU32_4           = 0x23,
+        HashArrayU32_5           = 0x24,
+        HashArrayU32_6           = 0x25,
+        HashArrayU32_7           = 0x26,
+        HashArrayU32_8           = 0x27,
+        HashArrayU32_9           = 0x28,
+        HashArrayU32_10          = 0x29,
+        HashArrayU32_11          = 0x2a,
+        HashArrayU32_12          = 0x2b,
+        HashArrayU32_13          = 0x2c,
+        HashArrayU32_14          = 0x2d,
+        HashArrayU32_15          = 0x2e,
+        HashArrayU32_16          = 0x2f,
+        HashArrayWithRemapU32_1  = 0x30,
+        HashArrayWithRemapU32_2  = 0x31,
+        HashArrayWithRemapU32_3  = 0x32,
+        HashArrayWithRemapU32_4  = 0x33,
+        HashArrayWithRemapU32_5  = 0x34,
+        HashArrayWithRemapU32_6  = 0x35,
+        HashArrayWithRemapU32_7  = 0x36,
+        HashArrayWithRemapU32_8  = 0x37,
+        HashArrayWithRemapU32_9  = 0x38,
+        HashArrayWithRemapU32_10 = 0x39,
+        HashArrayWithRemapU32_11 = 0x3a,
+        HashArrayWithRemapU32_12 = 0x3b,
+        HashArrayWithRemapU32_13 = 0x3c,
+        HashArrayWithRemapU32_14 = 0x3d,
+        HashArrayWithRemapU32_15 = 0x3e,
+        HashArrayWithRemapU32_16 = 0x3f,
+        StringIndex              = 0xa0,
+        BinaryData               = 0xa1,
+        BinaryDataWithAlignment  = 0xa2,
+        Array                    = 0xc0,
+        Dictionary               = 0xc1,
+        KeyTable                 = 0xc2,
+        DictionaryWithRemap      = 0xc4,
+        RelocatedKeyTable        = 0xc5,
+        MonoTypedArray           = 0xc8,
+        Bool                     = 0xd0,
+        S32                      = 0xd1,
+        F32                      = 0xd2,
+        U32                      = 0xd3,
+        S64                      = 0xd4,
+        U64                      = 0xd5,
+        F64                      = 0xd6,
+        Null                     = 0xff,
     };
 
     struct ResByamlContainer {
@@ -177,10 +207,10 @@ namespace vp::res {
                 return "F64";
             default:
             {
-                if (static_cast<ByamlDataType>(static_cast<u32>(data_type) & 0xE0) == ByamlDataType::HashArray) {
+                if (static_cast<ByamlDataType>(static_cast<u32>(data_type) & 0xe0) == ByamlDataType::HashArrayU32_1) {
                     return "HashArray";
                 }
-                if (static_cast<ByamlDataType>(static_cast<u32>(data_type) & 0xF0) == ByamlDataType::HashArrayWithRemap) {
+                if (static_cast<ByamlDataType>(static_cast<u32>(data_type) & 0xf0) == ByamlDataType::HashArrayWithRemapU32_1) {
                     return "HashArrayWithRemap";
                 }
             }

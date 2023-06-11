@@ -24,6 +24,13 @@ namespace awn::res {
                 m_main_file_device = content_device;
             }
 
+            void Finalize() {
+                if (m_main_file_device != nullptr) {
+                    delete m_main_file_device;
+                }
+                m_main_file_device = nullptr;
+            }
+
             void AddFileDevice(FileDeviceBase *file_device) {
                 VP_ASSERT(file_device != nullptr);
                 m_mounted_file_device_list.PushBack(*file_device);

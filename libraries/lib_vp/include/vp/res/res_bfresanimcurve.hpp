@@ -3,9 +3,9 @@
 namespace vp::res {
 
     enum class BfresAnimCurveFrameDataType {
-        Float = 0x0,
-        F16   = 0x1,
-        U8    = 0x2,
+        Float = 0,
+        F16   = 1,
+        U8    = 2,
     };
     enum class BfresAnimCurveValueDataType {
         Float = 0,

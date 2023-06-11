@@ -106,10 +106,10 @@ namespace awn::ukern::impl {
             }
 
             /* Release scheduler lock */
+            u32 wait_value = m_runnable_fibers;
             ::ReleaseSRWLockExclusive(std::addressof(m_scheduler_lock));
 
             /* Rest core until a new fiber is schedulable, or another rester is looking to sleep */
-            u32 wait_value = m_runnable_fibers;
             u32 time_left = TimeSpan::GetTimeLeftOnTarget(timeout_tick).GetMilliSeconds();
             if (time_left == 0) { ::AcquireSRWLockExclusive(std::addressof(m_scheduler_lock)); break; }
 
@@ -665,7 +665,7 @@ namespace awn::ukern::impl {
         /* Perform decrement */
         u32 wait_value = *wait_address;
         if (do_decrement == true) {
-            *wait_address  = *wait_address - 1;
+            ::InterlockedDecrement(wait_address);
         }
 
         /* Check address */
@@ -776,7 +776,8 @@ namespace awn::ukern::impl {
         /* Check address value */
         RESULT_RETURN_IF(*wait_address != value, ResultValueOutOfRange);
 
-        *wait_address = value + 1;
+        /* Set new value */
+        ::InterlockedExchange(wait_address, value + 1);
 
         /* Find address in wait list */
         FiberLocalStorage *address_fiber = nullptr;
@@ -861,7 +862,7 @@ namespace awn::ukern::impl {
 
         /* Only modify if non-zero signal */
         if (signal != 0) {
-            *wait_address = value + signal;
+            ::InterlockedExchange(wait_address, value + signal);
         }
 
         /* Release parent waiter */

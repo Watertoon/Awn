@@ -21,6 +21,7 @@ namespace awn::sys {
                 /* Set thread name */
                 ::strncpy(m_name, name, ukern::MaxFiberNameLength);
             }
+            virtual ~ServiceThread() override {/*...*/}
 
             virtual void StartThread() {
                 s32 result0 = ::ResumeThread(m_handle);

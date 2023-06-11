@@ -15,7 +15,7 @@ namespace awn::mem {
         }
 
         /* Enforce minimum size */
-        if (size < (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock) + MinimumAllocationGranularity)) { return nullptr; }
+        if (size < (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity)) { return nullptr; }
 
         /* Allocate heap memory from parent heap */
         void *new_heap_memory = parent_heap->TryAllocate(size, alignment);
@@ -30,7 +30,7 @@ namespace awn::mem {
         ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(new_heap) + sizeof(ExpHeap));
         std::construct_at(first_block);
 
-        first_block->alloc_magic = ExpHeapMemoryBlock::FreeMagic;
+        first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
         first_block->block_size = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
 
         new_heap->m_free_block_list.PushBack(*first_block);
@@ -47,6 +47,9 @@ namespace awn::mem {
 
         /* Lock heap */
         ScopedHeapLock lock(this);
+
+        /* Calculate this heap's old size */
+        const size_t heap_size = this->GetTotalSize() + sizeof(ExpHeap);
 
         /* Get last free block */
         ExpHeapMemoryBlock *last_block = std::addressof(m_free_block_list.Back());
@@ -71,7 +74,7 @@ namespace awn::mem {
 
         /* Resize parent heap memory block */
         if (m_parent_heap != nullptr) {
-            m_parent_heap->AdjustAllocation(m_start_address, this->GetTotalSize() - trimed_size);
+            m_parent_heap->AdjustAllocation(this, heap_size - trimed_size);
         }
 
         return { new_end_address, trimed_size };
@@ -80,7 +83,7 @@ namespace awn::mem {
     size_t ExpHeap::ResizeHeapBack(size_t new_size) {
 
         /* Align new size */
-        new_size = vp::util::AlignUp(new_size, MinimumAllocationGranularity);
+        new_size = vp::util::AlignUp(new_size, cMinimumAllocationGranularity);
 
         /* Lock the heap */
         ScopedHeapLock lock(this);
@@ -134,10 +137,10 @@ namespace awn::mem {
             if (m_parent_heap == nullptr) { return heap_size; }
 
             /* Check whether the start region is a dedicated allocation */
-            if (m_parent_heap->IsAddressAllocation(m_start_address) == false) { return heap_size; }
+            if (m_parent_heap->IsAddressAllocation(this) == false) { return heap_size; }
 
             /* Try to adjust the parent allocation */
-            const size_t adjust_size = m_parent_heap->AdjustAllocation(m_start_address, new_size);
+            const size_t adjust_size = m_parent_heap->AdjustAllocation(this, sizeof(ExpHeap) + new_size);
             if (adjust_size != new_size) { return heap_size; }
         }
 
@@ -174,7 +177,7 @@ namespace awn::mem {
     size_t ExpHeap::AdjustAllocation(void *address, size_t new_size) {
 
         /* Align new size */
-        new_size = vp::util::AlignUp(new_size, MinimumAllocationGranularity);
+        new_size = vp::util::AlignUp(new_size, cMinimumAllocationGranularity);
 
         /* Lock the heap */
         ScopedHeapLock lock(this);
@@ -197,6 +200,7 @@ namespace awn::mem {
 
         /* Walk free list for the free block directly after this allocation */
         FreeList::iterator free_block = m_free_block_list.begin();
+        if (free_block == m_free_block_list.end()) { return block->block_size; }
         while (free_block != m_free_block_list.end()) {
 
             /* Complete if the block is directly after our current free block */
@@ -208,7 +212,7 @@ namespace awn::mem {
         /* Ensure we found the block after and it is large enough */
         ExpHeapMemoryBlock *block_after = std::addressof(*free_block);
         const size_t after_size = block_after->block_size + sizeof(ExpHeapMemoryBlock);
-        if ((free_block != m_free_block_list.end()) == false || after_size + block->block_size > new_size) { return block->block_size; }
+        if (free_block == m_free_block_list.end() || after_size + block->block_size > new_size) { return block->block_size; }
 
         /* Remove after block from free list */
         block_after->exp_list_node.Unlink();
@@ -227,7 +231,7 @@ namespace awn::mem {
         if (sizeof(ExpHeapMemoryBlock) <= new_free_size) {
             std::construct_at(new_free);
 
-            new_free->alloc_magic = ExpHeapMemoryBlock::FreeMagic;
+            new_free->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
             new_free->alignment   = 0;
             new_free->block_size  = new_free_size;
             m_free_block_list.PushBack(*new_free);
@@ -239,8 +243,8 @@ namespace awn::mem {
     void *ExpHeap::TryAllocate(size_t size, s32 alignment) {
 
         /* Enforce allocation limits */
-        if (alignment < MinimumAlignment) {
-            alignment = MinimumAlignment;
+        if (alignment < cMinimumAlignment) {
+            alignment = cMinimumAlignment;
         }
 
         /* Lock heap */
@@ -249,9 +253,9 @@ namespace awn::mem {
         /* Label for out of memory restart */
         _ExpHeap_OutOfMemoryRestart:
 
-        /* Existing free block check */
+        /* Integrity check existing free block */
         if (m_free_block_list.IsEmpty() == true) {
-            
+
             /* Attempt out of memory callback */
             OutOfMemoryInfo out_of_memory = {
                 .out_of_memory_heap      = this,
