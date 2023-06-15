@@ -77,7 +77,7 @@ namespace awn::ukern {
 
         static constexpr u32 HasChildWaitersBit = 0x4000'0000;
 
-        constexpr ALWAYS_INLINE FiberLocalStorage() {/*...*/}
+        constexpr ALWAYS_INLINE FiberLocalStorage() : priority(), current_core(), core_mask(), stack_size(), user_arg(), user_function(), is_suspended(), ukern_fiber_handle(), win32_fiber_handle(), scheduler_list_node(), wait_list_node(), wait_list(), was_locked(), activity_level(), wait_tag(), lock_address(), wait_address(), waitable_object(), timeout(), last_result(), fiber_state(), fiber_name(), fiber_name_storage{} {/*...*/}
 
         bool IsSchedulable(u32 core_number, u64 time);
         void ReleaseLockWaitListUnsafe();

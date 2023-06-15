@@ -70,11 +70,11 @@ namespace vp::res {
         ResBfresModel              *user_bound_model;
         u16                        *bind_table;
         ResBfresMaterialAnimData   *material_anim_data_array;
-        void                      **user_texture_view_array;
+        void                      **runtime_texture_view_array;
         const char                **texture_name_array;
         ResGfxUserData             *user_data_array;
         ResNintendoWareDictionary  *user_data_dictionary;
-        u64                        *user_texture_descriptor_slot_array;
+        u64                        *runtime_texture_descriptor_slot_array;
         u32                         frame_count;
         u32                         bake_size;
         u16                         user_data_count;
@@ -86,16 +86,39 @@ namespace vp::res {
         u16                         texture_count;
         u16                         reserve3;
 
-        static constexpr u32 cMagic = util::TCharCode32("FMAA");
+        static constexpr u32    cMagic = util::TCharCode32("FMAA");
+        static constexpr size_t cInvalidDescriptorSlot = 0xffff'ffff'ffff'ffff;
 
-        void BindTexture(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
+        void BindTextures(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
             for (u32 i = 0; i < texture_count; ++i) {
-                if (user_texture_view_array[i] != nullptr && user_texture_descriptor_slot_array[i] != 0xffff'ffff'ffff'ffff) { continue; }
+                if (runtime_texture_view_array[i] != nullptr && runtime_texture_descriptor_slot_array[i] != 0xffff'ffff'ffff'ffff) { continue; }
         
-                GfxBindTextureReturn ret       = (bind_callback)(res_bntx, texture_name_array[i] + 2);
-                user_texture_view_array[i]            = ret.texture_view;
-                user_texture_descriptor_slot_array[i] = ret.texture_view_decriptor_slot;
+                GfxBindTextureView bind_texture_view  = (bind_callback)(res_bntx, texture_name_array[i] + 2);
+                runtime_texture_view_array[i]            = bind_texture_view.texture_view;
+                runtime_texture_descriptor_slot_array[i] = bind_texture_view.texture_view_decriptor_slot;
             }
+        }
+
+        void ReleaseTextures() {
+            for (u32 i = 0; i < texture_count; ++i) {
+                runtime_texture_descriptor_slot_array[i] = cInvalidDescriptorSlot;
+                runtime_texture_view_array[i]            = nullptr;
+            }
+        }
+
+        bool TrySetTextureByName(const char *name, GfxBindTextureView *bind_texture_view) {
+
+            bool had_success = false;
+            for (u32 i = 0; i < texture_count; ++i) {
+                if (::strcmp(texture_name_array[i], name) != 0) { continue; }
+
+                runtime_texture_descriptor_slot_array[i] = bind_texture_view->texture_view_decriptor_slot;
+                runtime_texture_view_array[i]            = bind_texture_view->texture_view;
+
+                had_success = true;
+            }
+
+            return had_success;
         }
     };
     static_assert(sizeof(ResBfresMaterialAnim) == 0x70);

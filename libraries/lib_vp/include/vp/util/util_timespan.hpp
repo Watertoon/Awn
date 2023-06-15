@@ -21,8 +21,8 @@ namespace vp {
 
     class TimeSpan {
         public:
-            static constexpr s64 MaxTime = LLONG_MAX;
-            static constexpr s64 MinTime = LLONG_MIN;
+            static constexpr s64 cMaxTime = LLONG_MAX;
+            static constexpr s64 cMinTime = LLONG_MIN;
         private:
             s64 m_time_ns;
         public:
@@ -36,8 +36,8 @@ namespace vp {
                 const s64 max_tick_to_timespan = util::GetMaxTickToTimeSpan();
 
                 /* Verify tick to timespan limit */
-                if (max_tick_to_timespan < tick)  { return MaxTime; }
-                if (tick < -max_tick_to_timespan) { return MinTime; }
+                if (max_tick_to_timespan < tick)  { return cMaxTime; }
+                if (tick < -max_tick_to_timespan) { return cMinTime; }
 
                 const s64 residual = ((tick % frequency) * 1'000'000'000) / frequency;
                 const s64 quotient = (tick / frequency) * 1'000'000'000;
@@ -54,15 +54,15 @@ namespace vp {
 
                 const s64 tick_left = tick - util::GetSystemTick();
 
-                if (tick_left == 0 || tick_left < tick) { return 0; }
+                if (tick_left <= 0) { return 0; }
 
                 return FromTick(tick_left);
             }
 
             s64 GetTick() const {
 
-                if (m_time_ns == MinTime) {
-                    return MinTime;
+                if (m_time_ns == cMinTime) {
+                    return cMinTime;
                 }
 
                 const s64 frequency = util::GetSystemTickFrequency();

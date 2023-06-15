@@ -17,7 +17,7 @@
 
 namespace awn::ukern::impl {
 
-    constinit vp::util::FixedObjectAllocator<FiberLocalStorage, MaxThreadCount> UserFiberLocalAllocator = {};
+    constinit vp::util::FixedObjectAllocator<FiberLocalStorage, MaxThreadCount> sUserFiberLocalAllocator = {};
 
     TickSpan GetAbsoluteTimeToWakeup(TimeSpan timeout_ns) {
 
@@ -25,12 +25,12 @@ namespace awn::ukern::impl {
         const s64 timeout_tick = timeout_ns.GetTick();
 
         /* "Infinite" time on zero */
-        if (0 >= timeout_tick) { return TimeSpan::MaxTime; }
+        if (0 >= timeout_tick) { return TimeSpan::cMaxTime; }
 
         /* Calculate absolute timeout */
         const s64 absolute_time = timeout_tick + vp::util::GetSystemTick();
 
-        if (absolute_time + 1 <= 1) { return TimeSpan::MaxTime; }
+        if (absolute_time + 1 <= 1) { return TimeSpan::cMaxTime; }
 
         return absolute_time + 2;
     }
@@ -49,10 +49,7 @@ namespace awn::ukern::impl {
         for (FiberLocalStorage &waiting_fiber : m_wait_list) {
 
             /* Check if the waiter has become schedulable */
-            if (waiting_fiber.IsSchedulable(core_number, tick) == false) { continue; }
-
-            /* Cancel the wait */
-            waiting_fiber.waitable_object->CancelWait(std::addressof(waiting_fiber), ResultTimeout);
+            waiting_fiber.IsSchedulable(core_number, tick);
         }
 
         /* Run first available thread by priority */
@@ -128,12 +125,13 @@ namespace awn::ukern::impl {
     void UserScheduler::Dispatch(FiberLocalStorage *fiber_local, u32 core_number) {
 
         /* Set fiber runtime args */
-        fiber_local->fiber_state = FiberState_Running;
+        fiber_local->fiber_state  = FiberState_Running;
         fiber_local->current_core = core_number;
         VP_ASSERT(m_core_count > fiber_local->current_core);
         
         /* Delist from scheduler */
         fiber_local->scheduler_list_node.Unlink();
+        --m_runnable_fibers;
 
         /* Switch to user fiber */
         ::SwitchToFiber(fiber_local->win32_fiber_handle);
@@ -151,14 +149,18 @@ namespace awn::ukern::impl {
                 /* Delete Win32 fiber */
                 ::DeleteFiber(fiber_local->win32_fiber_handle);
 
+                /* Unregister handle */
+                m_handle_table.FreeHandle(fiber_local->ukern_fiber_handle);
+
                 /* Free fiber local */
-                UserFiberLocalAllocator.Free(fiber_local);
+                sUserFiberLocalAllocator.Free(fiber_local);
 
                 break;
             case FiberState_Waiting:
                 break;
             default:
                 VP_ASSERT(false);
+                break;
         }
 
         return;
@@ -186,7 +188,7 @@ namespace awn::ukern::impl {
 		m_scheduler_thread_table[0] = main_thread_handle;
 
 		/* Setup main thread fiber local */
-		FiberLocalStorage *main_fiber_local = UserFiberLocalAllocator.Allocate();
+		FiberLocalStorage *main_fiber_local = sUserFiberLocalAllocator.Allocate();
 
 		main_fiber_local->priority           = 2;
 		main_fiber_local->current_core       = 0;
@@ -236,7 +238,7 @@ namespace awn::ukern::impl {
         ScopedSchedulerLock lock(this);
 
         /* Try to acquire a freed fiber slot from the free list */
-        FiberLocalStorage *fiber_local = UserFiberLocalAllocator.Allocate();
+        FiberLocalStorage *fiber_local = sUserFiberLocalAllocator.Allocate();
         RESULT_RETURN_IF(fiber_local == nullptr, ResultThreadStorageExhaustion);
 
         /* Try to reserve a ukern handle */
@@ -263,7 +265,7 @@ namespace awn::ukern::impl {
 
         *out_handle = fiber_local->ukern_fiber_handle;
 
-        return ResultSuccess;
+        RESULT_RETURN_SUCCESS;
     }
 
     void UserScheduler::ExitFiberImpl() {
@@ -312,10 +314,11 @@ namespace awn::ukern::impl {
         /* Reschedule if necessary */
         if (fiber_local->fiber_state == FiberState_Scheduled) {
             fiber_local->scheduler_list_node.Unlink();
+            --m_runnable_fibers;
             this->AddToSchedulerUnsafe(fiber_local);
         }
 
-        return ResultSuccess;
+        RESULT_RETURN_SUCCESS;
     }
 
     Result UserScheduler::SetCoreMaskImpl(UKernHandle handle, UKernCoreMask core_mask) {
@@ -336,10 +339,11 @@ namespace awn::ukern::impl {
         /* Reschedule if necessary */
         if (fiber_local->fiber_state == FiberState_Scheduled) {
             fiber_local->scheduler_list_node.Unlink();
+            --m_runnable_fibers;
             this->AddToSchedulerUnsafe(fiber_local);
         }
         
-        return ResultSuccess;
+        RESULT_RETURN_SUCCESS;
     }
 
     Result UserScheduler::SetActivityImpl(UKernHandle handle, u16 activity_level) {
@@ -356,15 +360,19 @@ namespace awn::ukern::impl {
         /* Same value check */
         RESULT_RETURN_IF(fiber_local->activity_level == activity_level, ResultSameActivityLevel);
 
+        /* Set new activity level */
         fiber_local->activity_level = static_cast<ActivityLevel>(activity_level);
 
         /* Reschedule if necessary */
-        if (fiber_local->fiber_state == FiberState_Scheduled || fiber_local->fiber_state == FiberState_Suspended) {
-            fiber_local->scheduler_list_node.Unlink();
-            this->AddToSchedulerUnsafe(fiber_local);
-        }
+        if (fiber_local->fiber_state == FiberState_Waiting) { RESULT_RETURN_SUCCESS; }
 
-        return ResultSuccess;
+        fiber_local->scheduler_list_node.Unlink();
+        if (fiber_local->fiber_state == FiberState_Scheduled) {
+            --m_runnable_fibers;
+        }
+        this->AddToSchedulerUnsafe(fiber_local);
+
+        RESULT_RETURN_SUCCESS;
     }
 
     void UserScheduler::SleepThreadImpl(u64 absolute_timeout) {
@@ -415,8 +423,7 @@ namespace awn::ukern::impl {
         /* Push back thread waiter */
         handle_fiber->wait_list.PushBack(*current_fiber);
 
-        /* Swap fiber to suspend list */
-        current_fiber->scheduler_list_node.Unlink();
+        /* Add fiber to suspend list */
         m_suspended_list.PushBack(*current_fiber);
 
         /* Swap to scheduler */
@@ -443,7 +450,7 @@ namespace awn::ukern::impl {
         /* Release lock */
         current_fiber->ReleaseLockWaitListUnsafe();
 
-        return ResultSuccess;
+        RESULT_RETURN_SUCCESS;
     }
 
     Result UserScheduler::WaitKeyImpl(u32 *lock_address, u32 *cv_key, u32 tag, s64 absolute_timeout) {
@@ -494,6 +501,7 @@ namespace awn::ukern::impl {
         /* If no parent, become the parent */
         if (current_fiber->wait_list_node.IsLinked() == true) {
             current_fiber->scheduler_list_node.Unlink();
+            --m_runnable_fibers;
             m_wait_list.PushBack(*current_fiber);
         }
 
@@ -542,7 +550,7 @@ namespace awn::ukern::impl {
             /* Set cv key to 0 */
             *cv_key = 0;
 
-            return ResultSuccess;
+            RESULT_RETURN_SUCCESS;
         }
 
         /* Find parent waiter */
@@ -590,13 +598,14 @@ namespace awn::ukern::impl {
             }
 
             cv_fiber->scheduler_list_node.Unlink();
+            --m_runnable_fibers;
             m_wait_list.PushBack(*next_cv_parent);
         }
 
         /* Set cv key to 0 */
         *cv_key = 0;
 
-        return ResultSuccess;
+        RESULT_RETURN_SUCCESS;
     }
 
     Result UserScheduler::WaitForAddressIfEqualImpl(u32 *wait_address, u32 value, s64 absolute_timeout) {
@@ -678,10 +687,10 @@ namespace awn::ukern::impl {
 
             /* Set wait address state */
             WaitAddressArbiter wait_address_arbiter = {};
-            current_fiber->waitable_object  = std::addressof(wait_address_arbiter);
-            current_fiber->wait_address = wait_address;
-            current_fiber->fiber_state  = FiberState_Waiting;
-            current_fiber->timeout      = absolute_timeout;
+            current_fiber->waitable_object = std::addressof(wait_address_arbiter);
+            current_fiber->wait_address    = wait_address;
+            current_fiber->fiber_state     = FiberState_Waiting;
+            current_fiber->timeout         = absolute_timeout;
 
             /* Find address in wait list */
             FiberLocalStorage *address_fiber = nullptr;
@@ -717,7 +726,7 @@ namespace awn::ukern::impl {
         /* Lock scheduler */
         ScopedSchedulerLock lock(this);
 
-        if (count == 0) { return ResultSuccess; }
+        if (count == 0) { RESULT_RETURN_SUCCESS; }
 
         /* Find address in wait list */
         FiberLocalStorage *address_fiber = nullptr;
@@ -740,8 +749,8 @@ namespace awn::ukern::impl {
 
             if (count < i) { break; }
 
-            waiting_fiber.waitable_object->EndWait(std::addressof(waiting_fiber), ResultSuccess);
             waiting_fiber.wait_list_node.Unlink();
+            waiting_fiber.waitable_object->EndWait(std::addressof(waiting_fiber), ResultSuccess);
 
             ++i;
         }
@@ -759,10 +768,11 @@ namespace awn::ukern::impl {
             }
 
             address_fiber->scheduler_list_node.Unlink();
+            --m_runnable_fibers;
             m_wait_list.PushBack(*next_address_parent);
         }
 
-       return ResultSuccess;
+       RESULT_RETURN_SUCCESS;
     }
 
     Result UserScheduler::WakeByAddressIncrementEqualImpl(u32 *wait_address, u32 value, u32 count) {
@@ -797,8 +807,8 @@ namespace awn::ukern::impl {
 
             if (count < i) { break; }
 
-            waiting_fiber.waitable_object->EndWait(std::addressof(waiting_fiber), ResultSuccess);
             waiting_fiber.wait_list_node.Unlink();
+            waiting_fiber.waitable_object->EndWait(std::addressof(waiting_fiber), ResultSuccess);
 
             ++i;
         }
@@ -816,10 +826,11 @@ namespace awn::ukern::impl {
             }
 
             address_fiber->scheduler_list_node.Unlink();
+            --m_runnable_fibers;
             m_wait_list.PushBack(*next_address_parent);
         }
 
-        return ResultSuccess;
+        RESULT_RETURN_SUCCESS;
     }
 
     Result UserScheduler::WakeByAddressModifyLessThanImpl(u32 *wait_address, u32 value, u32 count) {
@@ -852,10 +863,8 @@ namespace awn::ukern::impl {
         } else if (0 < count) {
             /* Count waiters */
             signal = 0;
-            u32 i = 1;
-            for ([[maybe_unused]] FiberLocalStorage &waiting_fiber : address_fiber->wait_list) {
-                ++i;
-            }
+            u32 i  = address_fiber->wait_list.GetCount();
+
             /* Signal -1 if less waiters to wakeup then count */
             if (i < count) { signal = -1; }
         }
@@ -874,8 +883,8 @@ namespace awn::ukern::impl {
 
             if (count < i) { break; }
 
-            waiting_fiber.waitable_object->EndWait(std::addressof(waiting_fiber), ResultSuccess);
             waiting_fiber.wait_list_node.Unlink();
+            waiting_fiber.waitable_object->EndWait(std::addressof(waiting_fiber), ResultSuccess);
 
             ++i;
         }
@@ -893,10 +902,11 @@ namespace awn::ukern::impl {
             }
 
             address_fiber->scheduler_list_node.Unlink();
+            --m_runnable_fibers;
             m_wait_list.PushBack(*next_address_parent);
         }
 
-        return ResultSuccess;
+        RESULT_RETURN_SUCCESS;
     }
 
 }

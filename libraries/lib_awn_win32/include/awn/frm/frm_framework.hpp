@@ -18,8 +18,9 @@ namespace awn::frm {
         int          argc;
         char       **argv;
         u32          drag_drop_count;
+        bool         is_auto_show_windows;
         u32          window_count;
-        WindowInfo *window_info_array;
+        WindowInfo  *window_info_array;
     };
 
     long long int FrameworkWindowFunction(HWND hwnd, u32 msg, WPARAM wparam, LPARAM lparam);
@@ -181,7 +182,7 @@ namespace awn::frm {
                 VP_ASSERT(result0 == true);
 
                 mem::Heap *root_heap       = mem::GetRootHeap(0);
-                size_t     total_heap_size = mem::GetRootHeapTotalSize(0);
+                //size_t     total_heap_size = mem::GetRootHeapTotalSize(0);
                 mem::FinalizeHeapManager();
 
                 const bool result1 = ::VirtualFree(root_heap, 0, MEM_RELEASE);
@@ -205,6 +206,12 @@ namespace awn::frm {
                     VP_ASSERT(wnd_thread != nullptr);
                     wnd_thread->StartThread();
                     m_window_thread_array.PushPointer(wnd_thread);
+                }
+                for (u32 i = 0; i < framework_run_info->window_count; ++i) {
+                    m_window_thread_array[i]->WaitForInitialize();
+                    if (framework_run_info->is_auto_show_windows == true ) {
+                        m_window_thread_array[i]->ShowWindow();
+                    }
                 }
 
                 return;

@@ -179,19 +179,42 @@ namespace vp::res {
         u16                          user_shading_model_option_ubo_size;
         u32                          reserve2;
 
-        static constexpr u32 cMagic = util::TCharCode32("FMAT");
+        static constexpr u32    cMagic = util::TCharCode32("FMAT");
+        static constexpr size_t cInvalidDescriptorSlot = 0xffff'ffff'ffff'ffff;
 
-        void BindTexture(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
+        void BindTextures(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
             for (u32 i = 0; i < sampler_count; ++i) {
-                if (runtime_texture_view_array[i] != nullptr && runtime_texture_descriptor_slot_array[i] != 0xffff'ffff'ffff'ffff) { continue; }
+                if (runtime_texture_view_array[i] != nullptr && runtime_texture_descriptor_slot_array[i] != cInvalidDescriptorSlot) { continue; }
 
-                GfxBindTextureReturn ret                 = (bind_callback)(res_bntx, texture_name_array[i] + 2);
-                runtime_texture_descriptor_slot_array[i] = ret.texture_view_decriptor_slot;
-                runtime_texture_view_array[i]            = ret.texture_view;
+                GfxBindTextureView bind_texture_view     = (bind_callback)(res_bntx, texture_name_array[i] + 2);
+                runtime_texture_descriptor_slot_array[i] = bind_texture_view.texture_view_decriptor_slot;
+                runtime_texture_view_array[i]            = bind_texture_view.texture_view;
             }
         }
 
-        ALWAYS_INLINE u32 GetStaticShaderOptionIndex(const char *option_name) {
+        void ReleaseTextures() {
+            for (u32 i = 0; i < sampler_count; ++i) {
+                runtime_texture_descriptor_slot_array[i] = cInvalidDescriptorSlot;
+                runtime_texture_view_array[i]            = nullptr;
+            }
+        }
+
+        bool TrySetTextureByName(const char *name, GfxBindTextureView *bind_texture_view) {
+
+            bool had_success = false;
+            for (u32 i = 0; i < sampler_count; ++i) {
+                if (::strcmp(texture_name_array[i], name) != 0) { continue; }
+
+                runtime_texture_descriptor_slot_array[i] = bind_texture_view->texture_view_decriptor_slot;
+                runtime_texture_view_array[i]            = bind_texture_view->texture_view;
+
+                had_success = true;
+            }
+
+            return had_success;
+        }
+
+        ALWAYS_INLINE u32 TryGetStaticShaderOptionIndex(const char *option_name) {
             const u32 dic_index = material_shader_data->shader_reflection->static_shader_option_dictionary->FindEntryIndex(option_name);
             return (material_shader_data->static_option_indice_array != nullptr) ? material_shader_data->static_option_indice_array[material_shader_data->total_static_option_count + dic_index] : dic_index;
         }
@@ -204,36 +227,44 @@ namespace vp::res {
             return (material_shader_data->bool_static_option_count < option_index);
         }
 
-        constexpr ALWAYS_INLINE s32 GetStaticShaderOptionBool(u32 option_index) {
+        constexpr ALWAYS_INLINE s32 TryGetStaticShaderOptionBool(u32 option_index) {
             return (material_shader_data->bool_static_option_count <= option_index) ? -1 : ((material_shader_data->static_shader_option_packed_bool_value_array[(option_index / 32)] & 0x7fff'ffff) >> (option_index & 0x1f)) & 1;
         }
 
-        constexpr ALWAYS_INLINE const char *GetStaticShaderOptionString(u32 option_index) {
+        constexpr ALWAYS_INLINE const char *TryGetStaticShaderOptionString(u32 option_index) {
             return (option_index < material_shader_data->bool_static_option_count || material_shader_data->total_static_option_count <= option_index) ? nullptr : material_shader_data->static_shader_option_string_value_array[(option_index - material_shader_data->bool_static_option_count)];
         }
 
-        ALWAYS_INLINE const char *GetShaderVertexAttributeName(const char *attribute_name) {
+        ALWAYS_INLINE const char *TryGetShaderVertexAttributeName(const char *attribute_name) {
             for (u32 i = 0; i < material_shader_data->vertex_attribute_count; ++i) {
                 if (::strcmp(material_shader_data->vertex_attribute_name_array[i] + 2, attribute_name) == 0) { return material_shader_data->shader_reflection->vertex_attribute_dictionary->FindKeyByEntryIndex((material_shader_data->vertex_attribute_index_array != nullptr) ? material_shader_data->vertex_attribute_index_array[i] : i); }
             }
             return nullptr;
         }
 
-        ALWAYS_INLINE const char *GetShaderSamplerName(const char *sampler_name) {
+        ALWAYS_INLINE const char *TryGetShaderSamplerName(const char *sampler_name) {
             for (u32 i = 0; i < material_shader_data->sampler_count; ++i) {
                 if (::strcmp(material_shader_data->sampler_name_array[i] + 2, sampler_name) == 0) { return material_shader_data->shader_reflection->sampler_dictionary->FindKeyByEntryIndex((material_shader_data->sampler_index_array != nullptr) ? material_shader_data->sampler_index_array[i] : i); }
             }
             return nullptr; 
         }
 
-        ALWAYS_INLINE const char *GetTextureName(const char *sampler_name) {
+        ALWAYS_INLINE const char *TryGetTextureName(const char *sampler_name) {
             const u32 entry_index = sampler_dictionary->FindEntryIndex(sampler_name);
             return (entry_index != 0xffff'ffff) ? texture_name_array[entry_index] : nullptr;
         }
 
-        ALWAYS_INLINE ResGfxSamplerInfo *GetSamplerInfo(const char *sampler_name) {
-            const u32 entry_index = sampler_dictionary->FindEntryIndex(sampler_name);
-            return (entry_index != 0xffff'ffff) ? std::addressof(sampler_info_array[entry_index]) : nullptr;
+        ResGfxSamplerInfo *TryGetSamplerInfo(const char *sampler_name) {
+            if (sampler_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = sampler_dictionary->FindEntryIndex(sampler_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(sampler_info_array[entry_id]);
+        }
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
         }
     };
     static_assert(sizeof(ResBfresMaterial) == 0xb0);

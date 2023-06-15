@@ -34,12 +34,12 @@ namespace vp::util {
     }
 
     s64 sSystemFrequency   = 0;
-    s64 sMaxTickToTimeSpan = TimeSpan::MaxTime;
+    s64 sMaxTickToTimeSpan = TimeSpan::cMaxTime;
 
     void InitializeTimeStamp() {
         const bool result = ::QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(std::addressof(sSystemFrequency)));
         VP_ASSERT(result == true);
-        sMaxTickToTimeSpan = ((TimeSpan::MaxTime - (TimeSpan::MaxTime % sSystemFrequency)) / 1'000'000'000) * sSystemFrequency;
+        sMaxTickToTimeSpan = ((TimeSpan::cMaxTime - (TimeSpan::cMaxTime % sSystemFrequency)) / 1'000'000'000) * sSystemFrequency;
     }
 
     s64 GetSystemTick() {

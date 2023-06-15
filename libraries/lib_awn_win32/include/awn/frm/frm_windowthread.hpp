@@ -69,6 +69,7 @@ namespace awn::frm {
             VkImage                     m_vk_image_array[cMaxRenderTargetCount];
             gfx::RenderTargetColor      m_render_target_color_array[cMaxRenderTargetCount];
             u32                         m_image_index;
+            VkFence                     m_acquire_vk_fence;
             sys::ServiceCriticalSection m_window_cs;
             sys::ServiceEvent           m_window_event;
             WindowInfo                  m_window_info;
@@ -83,7 +84,7 @@ namespace awn::frm {
                 size_t awn_message;
             };
         public:
-            WindowThread(mem::Heap *heap, WindowInfo *window_info, u32 max_file_drag_drop) : ServiceThread("WindowThread", heap, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cNormalPriority) {
+            WindowThread(mem::Heap *heap, WindowInfo *window_info, u32 max_file_drag_drop) : ServiceThread("WindowThread", heap, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cNormalPriority), m_hwnd(0), m_vk_surface(VK_NULL_HANDLE), m_vk_image_array{}, m_render_target_color_array{}, m_image_index(-1), m_acquire_vk_fence(), m_window_cs(), m_window_event(), m_window_info(), m_drag_drop_array(), m_drag_drop_count(), m_drag_drop_status(), m_require_swapchain_refresh(false), m_skip_draw(false) {
 
                 /* Allocate drag drop array */
                 m_drag_drop_array.Initialize(heap, max_file_drag_drop);
@@ -96,9 +97,11 @@ namespace awn::frm {
 
                 {
                     /* Initialize window */
+                    const s32 border_x = ::GetSystemMetrics(SM_CXBORDER);
+                    const s32 border_y = ::GetSystemMetrics(SM_CYBORDER);
                     const u32 drag_drop_style = (0 < m_drag_drop_array.GetCount()) ? WS_EX_ACCEPTFILES : 0;
                     const u32 window_style = WS_OVERLAPPEDWINDOW | drag_drop_style;
-                    m_hwnd = ::CreateWindowA(m_window_info.class_name, m_window_info.window_name, window_style, m_window_info.x, m_window_info.y, m_window_info.width, m_window_info.height, nullptr, nullptr, nullptr, this);
+                    m_hwnd = ::CreateWindowA(m_window_info.class_name, m_window_info.window_name, window_style, m_window_info.x + border_x, m_window_info.y + border_y, m_window_info.width, m_window_info.height, nullptr, nullptr, nullptr, this);
                     VP_ASSERT(m_hwnd != nullptr);
 
                     /* Initialize surface */
@@ -156,6 +159,14 @@ namespace awn::frm {
                         m_render_target_color_array[i].Initialize(std::addressof(import_info));
                     }
 
+                    const VkFenceCreateInfo fence_info = {
+                        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                    };
+                    const u32 result4 = ::pfn_vkCreateFence(gfx::Context::GetInstance()->GetVkDevice(), std::addressof(fence_info), gfx::Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_acquire_vk_fence));
+                    VP_ASSERT(result4 == VK_SUCCESS);
+
+                    this->AcquireNextImage();
+
                     /* Signal setup has complete */
                     m_window_event.Signal();
                 }
@@ -166,14 +177,25 @@ namespace awn::frm {
                     this->ThreadCalc(reinterpret_cast<size_t>(std::addressof(window_message)));
                 }
 
-                /* Set skip draw */
-                m_skip_draw = true;
+                {
+                    /* Set skip draw */
+                    m_skip_draw = true;
 
-                /* Destroy swapchain */
-                ::pfn_vkDestroySwapchainKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
+                    /* Finalize render targets */
+                    const u32 image_count = (m_window_info.enable_triple_buffer) ? 3 : 2;
+                    for (u32 i = 0; i < image_count; ++i) {
+                        m_render_target_color_array[i].Finalize();
+                    }
 
-                /* Destroy surface */
-                ::pfn_vkDestroySurfaceKHR(gfx::Context::GetInstance()->GetVkInstance(), m_vk_surface, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
+                    /* Destroy fence */
+                    ::pfn_vkDestroyFence(gfx::Context::GetInstance()->GetVkDevice(), m_acquire_vk_fence, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
+
+                    /* Destroy swapchain */
+                    ::pfn_vkDestroySwapchainKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
+
+                    /* Destroy surface */
+                    ::pfn_vkDestroySurfaceKHR(gfx::Context::GetInstance()->GetVkInstance(), m_vk_surface, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
+                }
 
                 return;
             }
@@ -264,9 +286,19 @@ namespace awn::frm {
             void SignalWindowChange() { m_require_swapchain_refresh = true; }
 
             void AcquireNextImage() {
-                const u32 result = ::pfn_vkAcquireNextImageKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, 0xffff'ffff'ffff'ffff, nullptr, nullptr, std::addressof(m_image_index));
+
+                /* Acquire full */
+                const u32 result = ::pfn_vkAcquireNextImageKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, 0xffff'ffff'ffff'ffff, nullptr, m_acquire_vk_fence, std::addressof(m_image_index));
+                ::pfn_vkWaitForFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence), true, 0xffff'ffff'ffff'ffff);
+                ::pfn_vkResetFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence));
+
+                /* Update results */
                 if (result == VK_SUBOPTIMAL_KHR) { m_require_swapchain_refresh = true; }
-                else { VP_ASSERT(result != VK_SUCCESS); }
+                else { VP_ASSERT(result == VK_SUCCESS); }
+            }
+
+            void WaitForInitialize() { 
+                m_window_event.Wait(); 
             }
 
             constexpr ALWAYS_INLINE VkSurfaceKHR            GetVkSurface()           const { return m_vk_surface; }

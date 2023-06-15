@@ -21,8 +21,9 @@ namespace vp::res {
         s32        node_count; /* Note; does not include Root Node */
         ResDicNode root_node;
 
-        static constexpr inline u32 Magic = util::TCharCode32("_DIC");
-        static constexpr inline s32 NPos = -1;
+        static constexpr inline u32 Magic           = util::TCharCode32("_DIC");
+        static constexpr inline s32 NPos            = -1;
+        static constexpr inline u32 cInvalidEntryId = 0xffff'ffff;
 
         bool Build() {
             if (node_count < 0) {
@@ -158,7 +159,7 @@ namespace vp::res {
 
         u32 FindRefBit();
 
-        s32 FindEntryIndex(const char *key) const {
+        u32 FindEntryIndex(const char *key) const {
 
             /* Find key length */
             u32 len = 0;
@@ -204,7 +205,8 @@ namespace vp::res {
             if ((~ptr_diff & 0xf'ffff'fff0) != 0) {
                 return ptr_diff >> 4;
             }
-            return -1;
+
+            return cInvalidEntryId;
         }
 
         const char *FindKeyByEntryIndex(u32 entry_id) const {

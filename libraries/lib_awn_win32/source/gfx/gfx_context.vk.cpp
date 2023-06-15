@@ -9,6 +9,7 @@ namespace awn::gfx {
         static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback([[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT message_type, const VkDebugUtilsMessengerCallbackDataEXT* callback_data, [[maybe_unused]] void* user_data) {
 
             ::puts(callback_data->pMessage);
+            ::fflush(stdout);
 
             return VK_FALSE;
         }
@@ -257,12 +258,14 @@ namespace awn::gfx {
         m_video_decode_queue_family_index = 0xffff'ffff;
         m_video_encode_queue_family_index = 0xffff'ffff;
         m_optical_flow_queue_family_index = 0xffff'ffff;
+        m_queue_family_count              = 0;
         
         /* Acquire graphics queue family index */
         for (u32 i = 0; i < queue_family_count; ++i) {
 
             if ((queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == VK_QUEUE_GRAPHICS_BIT) {
                 m_graphics_queue_family_index = i;
+                ++m_queue_family_count;
                 break;
             }
         }
@@ -273,6 +276,7 @@ namespace awn::gfx {
 
             if ((queue_properties[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)) == VK_QUEUE_COMPUTE_BIT) {
                 m_compute_queue_family_index = i;
+                ++m_queue_family_count;
                 break;
             }
         }
@@ -283,6 +287,7 @@ namespace awn::gfx {
 
             if ((queue_properties[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT)) == VK_QUEUE_TRANSFER_BIT) {
                 m_transfer_queue_family_index = i;
+                ++m_queue_family_count;
                 break;
             }
         }
@@ -293,6 +298,7 @@ namespace awn::gfx {
 
             if ((queue_properties[i].queueFlags & VK_QUEUE_VIDEO_DECODE_BIT_KHR) == VK_QUEUE_VIDEO_DECODE_BIT_KHR) {
                 m_video_decode_queue_family_index = i;
+                ++m_queue_family_count;
                 break;
             }
         }
@@ -303,6 +309,7 @@ namespace awn::gfx {
 
             if ((queue_properties[i].queueFlags & VK_QUEUE_VIDEO_ENCODE_BIT_KHR) == VK_QUEUE_VIDEO_ENCODE_BIT_KHR) {
                 m_video_encode_queue_family_index = i;
+                ++m_queue_family_count;
                 break;
             }
         }
@@ -313,6 +320,7 @@ namespace awn::gfx {
 
             if ((queue_properties[i].queueFlags & VK_QUEUE_OPTICAL_FLOW_BIT_NV) == VK_QUEUE_OPTICAL_FLOW_BIT_NV) {
                 m_optical_flow_queue_family_index = i;
+                ++m_queue_family_count;
                 break;
             }
         }

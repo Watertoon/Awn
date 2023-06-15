@@ -83,10 +83,8 @@ namespace vp::res {
             void             *m_file_region;
             char             *m_path_table;
         public:
-            constexpr SarcExtractor() {/*...*/}
-            SarcExtractor(void *sarc_file) {
-                this->Initialize(sarc_file);
-            }
+            constexpr SarcExtractor() : m_sarc(nullptr), m_sfat(nullptr), m_sfat_entry_array(nullptr), m_file_region(nullptr), m_path_table(nullptr) {/*...*/}
+            constexpr ~SarcExtractor() {/*...*/}
 
             bool Initialize(void *sarc_file) {
 

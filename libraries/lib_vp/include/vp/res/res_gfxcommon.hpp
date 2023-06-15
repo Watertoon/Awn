@@ -19,12 +19,12 @@ namespace vp::res {
 
     struct ResBntx;
 
-    struct GfxBindTextureReturn {
+    struct GfxBindTextureView {
         u64   texture_view_decriptor_slot;
         void *texture_view;
     };
 
-    using GfxBindTextureCallback = GfxBindTextureReturn (*) (ResBntx*, const char *);
+    using GfxBindTextureCallback = GfxBindTextureView (*) (ResBntx*, const char *);
 
     enum class GfxMemoryPoolFlags : u32 {
         CpuNoAccess  = (1 << 0),

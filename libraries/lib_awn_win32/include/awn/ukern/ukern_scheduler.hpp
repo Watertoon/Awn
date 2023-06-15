@@ -76,6 +76,7 @@ namespace awn::ukern::impl {
 
             static void InternalSchedulerMainThreadFiberMain(void *arg) {
 
+                /* Note the scheduler lock is implicitly acquired */
                 UserScheduler *scheduler = impl::GetScheduler();
 
                 /* Add main fiber to scheduler */
@@ -107,6 +108,7 @@ namespace awn::ukern::impl {
 
                 /* Handle suspension */
                 if (fiber_local->activity_level == ActivityLevel_Suspended) {
+                    
                     fiber_local->fiber_state = FiberState_Suspended;
                     m_suspended_list.PushBack(*fiber_local);
                     return;
@@ -206,6 +208,7 @@ namespace awn::ukern::impl {
 
                 /* Iterate through all other fibers for backtrace */
                 ::puts("Backtrace was called. But it's not yet implemented.");
+                ::fflush(stdout);
             }
     };
 

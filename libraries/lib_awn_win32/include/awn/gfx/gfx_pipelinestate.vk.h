@@ -144,7 +144,6 @@ namespace awn::gfx {
         VertexBufferState    *vertex_buffer_state_array;
     };
 
-
     struct ViewportState {
         vp::util::Vector2f position;
         vp::util::Vector2f extents;

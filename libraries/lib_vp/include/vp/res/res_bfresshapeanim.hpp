@@ -60,6 +60,13 @@ namespace vp::res {
         u16                        total_anim_curves;
 
         static constexpr u32 cMagic = util::TCharCode32("FSHA");
+
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresShapeAnim) == 0x50);
 }

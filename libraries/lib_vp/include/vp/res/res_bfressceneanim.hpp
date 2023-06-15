@@ -61,6 +61,13 @@ namespace vp::res {
         u32                              reserve5;
 
         static constexpr u32 cMagic = util::TCharCode32("FCAM");
+
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresCameraAnim) == 0x40);
 
@@ -108,6 +115,13 @@ namespace vp::res {
         u16                             reserve3;
 
         static constexpr u32 cMagic = util::TCharCode32("FLIT");
+
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresLightAnim) == 0x58);
 
@@ -137,6 +151,13 @@ namespace vp::res {
         u16                           reserve2;
 
         static constexpr u32 cMagic = util::TCharCode32("FFOG");
+
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresFogAnim) == 0x48);
 
@@ -159,6 +180,31 @@ namespace vp::res {
         u16                        fog_anim_count;
 
         static constexpr u32 cMagic = util::TCharCode32("FSCN");
+
+        ResBfresCameraAnim *TryGetCameraAnim(const char *camera_anim_name) {
+            if (camera_anim_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = camera_anim_dictionary->FindEntryIndex(camera_anim_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(camera_anim_array[entry_id]);
+        }
+        ResBfresLightAnim *TryGetLightAnim(const char *light_anim_name) {
+            if (light_anim_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = light_anim_dictionary->FindEntryIndex(light_anim_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(light_anim_array[entry_id]);
+        }
+        ResBfresFogAnim *TryGetFogAnim(const char *fog_anim_name) {
+            if (fog_anim_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = fog_anim_dictionary->FindEntryIndex(fog_anim_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(fog_anim_array[entry_id]);
+        }
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresSceneAnim) == 0x60);
 }

@@ -42,11 +42,44 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FMDL");
 
-        void BindTexture(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
+        void BindTextures(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
             const u32 mat_count = material_count;
             for (u32 i = 0; i < mat_count; ++i) {
-                material_array[i].BindTexture(bind_callback, res_bntx);
+                material_array[i].BindTextures(bind_callback, res_bntx);
             }
+        }
+        void ReleaseTextures() {
+            const u32 mat_count = material_count;
+            for (u32 i = 0; i < mat_count; ++i) {
+                material_array[i].ReleaseTextures();
+            }
+        }
+        bool TrySetTextureByName(const char *name, GfxBindTextureView *bind_texture_view) {
+            const u32 mat_count = material_count;
+            bool had_success = false;
+            for (u32 i = 0; i < mat_count; ++i) {
+                had_success |= material_array[i].TrySetTextureByName(name, bind_texture_view);
+            }
+            return had_success;
+        }
+
+        ResBfresShape *TryGetShape(const char *shape_name) {
+            if (shape_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = shape_dictionary->FindEntryIndex(shape_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(shape_array[entry_id]);
+        }
+        ResBfresMaterial *TryGetMaterial(const char *material_name) {
+            if (material_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = material_dictionary->FindEntryIndex(material_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(material_array[entry_id]);
+        }
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
         }
     };
     static_assert(sizeof(ResBfresModel) == 0x78);

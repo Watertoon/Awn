@@ -59,6 +59,13 @@ namespace vp::res {
         u32                            base_curve_index;
         u16                            user_data_count;
         u16                            reserve6;
+
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresBoneAnim) == 0x38);
 
@@ -86,6 +93,13 @@ namespace vp::res {
         u16                        user_data_count;
 
         static constexpr u32 cMagic = util::TCharCode32("FSKA");
+
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresSkeletalAnim) == 0x50);
 }

@@ -44,9 +44,7 @@ namespace awn::ukern {
 
                     /* If we fail, lock the thread */
                     RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateLockImpl(other_waiter & (~FiberLocalStorage::HasChildWaitersBit), std::addressof(m_handle), tag));
-                    if ((m_handle & (~FiberLocalStorage::HasChildWaitersBit)) == tag) {
-                        return;
-                    }
+                    if ((m_handle & (~FiberLocalStorage::HasChildWaitersBit)) == tag) { return; }
                 }
             }
 

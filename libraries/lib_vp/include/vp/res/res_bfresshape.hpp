@@ -118,6 +118,13 @@ namespace vp::res {
         u16                        reserve2;
 
         static constexpr u32 cMagic = util::TCharCode32("FSHP");
+
+        ResBfresKeyShape *TryGetKeyShape(const char *key_shape_name) {
+            if (key_shape_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = key_shape_dictionary->FindEntryIndex(key_shape_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            return std::addressof(key_shape_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresShape) == 0x60);
 }
