@@ -15,7 +15,7 @@ namespace awn::res {
             virtual bool Initialize(mem::Heap *heap, void *file, u32 file_size) { VP_UNUSED(heap, file, file_size); return false; }
             virtual void Finalize() { return; }
 
-            constexpr virtual size_t GetFileAlignment() const { return alignof(u32); }
+            constexpr virtual size_t GetFileAlignment()        const { return alignof(u32); }
 
             constexpr ALWAYS_INLINE void *GetFile()           { return m_file; }
             constexpr ALWAYS_INLINE u32   GetFileSize() const { return m_file_size; }

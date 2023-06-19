@@ -159,7 +159,7 @@ namespace vp::res {
 
         u32 FindRefBit();
 
-        u32 FindEntryIndex(const char *key) const {
+        u32 TryGetEntryIndexByKey(const char *key) const {
 
             /* Find key length */
             u32 len = 0;
@@ -209,8 +209,8 @@ namespace vp::res {
             return cInvalidEntryIndex;
         }
 
-        const char *FindKeyByEntryIndex(u32 entry_id) const {
-            return (std::addressof(root_node) + 1)[entry_id].key + 2;
+        const char *GetKeyByEntryIndex(u32 entry_id) const {
+            return (std::addressof(root_node) + 1)[entry_id].key;
         }
     };
     static_assert(sizeof(ResNintendoWareDictionary) == 0x18);

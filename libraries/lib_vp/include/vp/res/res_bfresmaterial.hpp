@@ -215,7 +215,7 @@ namespace vp::res {
         }
 
         ALWAYS_INLINE u32 TryGetStaticShaderOptionIndex(const char *option_name) {
-            const u32 dic_index = material_shader_data->shader_reflection->static_shader_option_dictionary->FindEntryIndex(option_name);
+            const u32 dic_index = material_shader_data->shader_reflection->static_shader_option_dictionary->TryGetEntryIndexByKey(option_name);
             return (material_shader_data->static_option_indice_array != nullptr) ? material_shader_data->static_option_indice_array[material_shader_data->total_static_option_count + dic_index] : dic_index;
         }
 
@@ -237,32 +237,32 @@ namespace vp::res {
 
         ALWAYS_INLINE const char *TryGetShaderVertexAttributeName(const char *attribute_name) {
             for (u32 i = 0; i < material_shader_data->vertex_attribute_count; ++i) {
-                if (::strcmp(material_shader_data->vertex_attribute_name_array[i] + 2, attribute_name) == 0) { return material_shader_data->shader_reflection->vertex_attribute_dictionary->FindKeyByEntryIndex((material_shader_data->vertex_attribute_index_array != nullptr) ? material_shader_data->vertex_attribute_index_array[i] : i); }
+                if (::strcmp(material_shader_data->vertex_attribute_name_array[i] + 2, attribute_name) == 0) { return material_shader_data->shader_reflection->vertex_attribute_dictionary->GetKeyByEntryIndex((material_shader_data->vertex_attribute_index_array != nullptr) ? material_shader_data->vertex_attribute_index_array[i] : i); }
             }
             return nullptr;
         }
 
         ALWAYS_INLINE const char *TryGetShaderSamplerName(const char *sampler_name) {
             for (u32 i = 0; i < material_shader_data->sampler_count; ++i) {
-                if (::strcmp(material_shader_data->sampler_name_array[i] + 2, sampler_name) == 0) { return material_shader_data->shader_reflection->sampler_dictionary->FindKeyByEntryIndex((material_shader_data->sampler_index_array != nullptr) ? material_shader_data->sampler_index_array[i] : i); }
+                if (::strcmp(material_shader_data->sampler_name_array[i] + 2, sampler_name) == 0) { return material_shader_data->shader_reflection->sampler_dictionary->GetKeyByEntryIndex((material_shader_data->sampler_index_array != nullptr) ? material_shader_data->sampler_index_array[i] : i); }
             }
             return nullptr; 
         }
 
         ALWAYS_INLINE const char *TryGetTextureName(const char *sampler_name) {
-            const u32 entry_index = sampler_dictionary->FindEntryIndex(sampler_name);
+            const u32 entry_index = sampler_dictionary->TryGetEntryIndexByKey(sampler_name);
             return (entry_index != 0xffff'ffff) ? texture_name_array[entry_index] : nullptr;
         }
 
         ResGfxSamplerInfo *TryGetSamplerInfo(const char *sampler_name) {
             if (sampler_dictionary == nullptr) { return nullptr; }
-            const u32 entry_id = sampler_dictionary->FindEntryIndex(sampler_name);
+            const u32 entry_id = sampler_dictionary->TryGetEntryIndexByKey(sampler_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(sampler_info_array[entry_id]);
         }
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
-            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }

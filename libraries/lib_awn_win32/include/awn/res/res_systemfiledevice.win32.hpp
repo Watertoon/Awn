@@ -15,6 +15,8 @@ namespace awn::res {
                 return ResultFileLockViolation;
             case ERROR_TOO_MANY_OPEN_FILES:
                 return ResultOpenFileExhaustion;
+            case ERROR_NO_MORE_FILES:
+                return ResultDirectoryExhausted;
             default:
                 break;
         }
@@ -23,7 +25,6 @@ namespace awn::res {
 
     class SystemFileDevice : public FileDeviceBase {
         protected:
-
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) override {
 
                 /* Integrity checks */
@@ -181,6 +182,43 @@ namespace awn::res {
 
                 RESULT_RETURN_SUCCESS;
             }
+
+            virtual Result OpenDirectoryImpl(DirectoryHandle *out_directory_handle, const char *directory_path) override {
+
+                /* Integrity checks */
+                RESULT_RETURN_UNLESS(out_directory_handle != nullptr,            ResultNullHandle);
+                RESULT_RETURN_UNLESS(directory_path != nullptr,                  ResultNullPath);
+                RESULT_RETURN_UNLESS(::PathIsDirectoryA(directory_path) == true, ResultDirectoryNotFound);
+
+                /* Setup handle */
+                out_directory_handle->search_handle  = INVALID_HANDLE_VALUE;
+                out_directory_handle->directory_path = directory_path;
+
+                RESULT_RETURN_SUCCESS;
+            }
+            virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle) override {
+                ::CloseHandle(directory_handle->search_handle);
+            }
+            virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) {
+
+                /* Read next file */
+                WIN32_FIND_DATAA  find_data = {};
+                for (u32 i = 0; i < entry_count; ++i) {
+
+                    /* Find a file */
+                    if (directory_handle->search_handle == INVALID_HANDLE_VALUE) {
+                        directory_handle->search_handle = ::FindFirstFileExA(directory_handle->directory_path.GetString(), FindExInfoBasic, std::addressof(find_data), FindExSearchNameMatch, nullptr, FIND_FIRST_EX_LARGE_FETCH);
+                        if (directory_handle->search_handle == INVALID_HANDLE_VALUE) { return ConvertWin32ErrorToResult(); }
+                    } else {
+                        bool result = ::FindNextFileA(directory_handle->search_handle, std::addressof(find_data));
+                        if (result == false) { return ConvertWin32ErrorToResult(); }
+                    }
+                }
+
+                RESULT_RETURN_SUCCESS;
+            }
+
+            virtual Result CheckDirectoryExistsImpl(const char *directory_path) override { return ::PathIsDirectoryA(directory_path);}
         public:
             explicit constexpr ALWAYS_INLINE SystemFileDevice(const char *device_name) : FileDeviceBase(device_name) {/*...*/}
             constexpr virtual ALWAYS_INLINE ~SystemFileDevice() override {/*...*/}

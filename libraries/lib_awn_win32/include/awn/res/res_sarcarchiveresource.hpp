@@ -34,5 +34,18 @@ namespace awn::res {
                 out_file_return->compression_type    = CompressionType::None;
                 return out_file_return->file != nullptr;
             }
+
+            virtual bool TryReadDirectoryEntryByIndex(DirectoryEntry *out_directory_entry, u32 index) {
+
+                if (out_directory_entry == nullptr) { return false; }
+                if (m_sarc_extractor.GetFileCount() <= index)     { return false; }
+
+                out_directory_entry->archive_entry_index = index;
+                out_directory_entry->file_path           = m_sarc_extractor.TryGetPathByEntryIndex(index);
+
+                return true;
+            }
+
+            virtual constexpr u32 GetFileCount() const { return m_sarc_extractor.GetFileCount(); }
     };
 }

@@ -18,8 +18,9 @@ namespace awn::res {
     };
 
     struct DirectoryHandle {
-        u32    entry_index;
-        HANDLE search_handle;
+        u32           entry_index;
+        HANDLE        search_handle;
+        MaxPathString directory_path;
     };
 
     constexpr inline const u32 cInvalidEntryIndex = 0xffff'ffff;
@@ -60,7 +61,7 @@ namespace awn::res {
         private:
             friend class FileDeviceManager;
         protected:
-            vp::util::IntrusiveListNode             m_manager_list_node;
+            vp::util::IntrusiveListNode                m_manager_list_node;
             vp::util::FixedString<vp::util::cMaxDrive> m_device_name;
         public:
             VP_RTTI_BASE(FileDeviceBase);

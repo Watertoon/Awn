@@ -47,7 +47,7 @@ namespace vp::res {
 
         ResBntxTextureInfo *TryGetTextureInfo(const char *texture_name) {
             if (texture_dictionary == nullptr) { return nullptr; }
-            const u32 entry_id = texture_dictionary->FindEntryIndex(texture_name);
+            const u32 entry_id = texture_dictionary->TryGetEntryIndexByKey(texture_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return texture_info_array[entry_id];
         }
@@ -76,7 +76,7 @@ namespace vp::res {
 
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
-            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }
@@ -89,7 +89,7 @@ namespace vp::res {
         static constexpr u64 cMagic = static_cast<u64>(util::TCharCode32("BNTX"));
 
         ResBntxTextureInfo *FindTexture(const char *name) {
-            u32 entry_index = texture_container.texture_dictionary->FindEntryIndex(name);
+            u32 entry_index = texture_container.texture_dictionary->TryGetEntryIndexByKey(name);
             if (entry_index == static_cast<u32>(-1)) { return nullptr; }
             return texture_container.texture_info_array[entry_index];
         }

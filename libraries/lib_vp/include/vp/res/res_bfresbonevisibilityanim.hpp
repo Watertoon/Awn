@@ -43,7 +43,7 @@ namespace vp::res {
 
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
-            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }

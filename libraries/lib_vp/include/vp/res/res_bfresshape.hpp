@@ -122,7 +122,7 @@ namespace vp::res {
 
         ResBfresKeyShape *TryGetKeyShape(const char *key_shape_name) {
             if (key_shape_dictionary == nullptr) { return nullptr; }
-            const u32 entry_id = key_shape_dictionary->FindEntryIndex(key_shape_name);
+            const u32 entry_id = key_shape_dictionary->TryGetEntryIndexByKey(key_shape_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(key_shape_array[entry_id]);
         }

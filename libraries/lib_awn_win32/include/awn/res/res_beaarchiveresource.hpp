@@ -31,7 +31,7 @@ namespace awn::res {
             }
 
             virtual u32 TryGetEntryIndex(const char *path) const override {
-                return m_bea->file_dictionary->FindEntryIndex(path);
+                return m_bea->file_dictionary->TryGetEntryIndexByKey(path);
             }
 
             virtual bool TryGetFileByIndex(ArchiveFileReturn *out_file_return, u32 entry_index) override {
@@ -54,5 +54,19 @@ namespace awn::res {
                 out_file_return->compression_type  = BeaCompressionTypeToAwnCompressionType(vp::res::BeaCompressionType{file_entry->compression_type});
                 return true;
             }
+            
+            
+            virtual bool TryReadDirectoryEntryByIndex(DirectoryEntry *out_directory_entry, u32 index) {
+
+                if (out_directory_entry == nullptr) { return false; }
+                if (m_bea->file_count <= index)     { return false; }
+
+                out_directory_entry->archive_entry_index = index;
+                out_directory_entry->file_path           = m_bea->GetFilePathByIndex(index) + 2;
+
+                return true;
+            }
+
+            virtual constexpr u32 GetFileCount() const { return m_bea->file_count; }
     };
 }

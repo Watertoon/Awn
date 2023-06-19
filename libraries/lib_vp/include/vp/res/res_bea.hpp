@@ -41,7 +41,7 @@ namespace vp::res {
         }
 
         constexpr ALWAYS_INLINE ResBeaFileEntry *TryGetFileEntryByPath(const char *file_path) {
-            const s32 entry_index = file_dictionary->FindEntryIndex(file_path);
+            const s32 entry_index = file_dictionary->TryGetEntryIndexByKey(file_path);
             if (entry_index == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
 
             return file_entry_array[entry_index];
@@ -53,6 +53,10 @@ namespace vp::res {
 
         ALWAYS_INLINE void *GetFileByEntry(ResBeaFileEntry *file_entry) {
             return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + file_entry->file_offset);
+        }
+
+        ALWAYS_INLINE const char *GetFilePathByIndex(u32 entry_index) {
+            return file_dictionary->GetKeyByEntryIndex(entry_index);
         }
 
         static constexpr inline u64 cMagic = util::TCharCode32("SCNE");
