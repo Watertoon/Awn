@@ -99,7 +99,7 @@ namespace awn::res {
                 RESULT_RETURN_SUCCESS;
             }
 
-            virtual Result CheckDirectoryExistsImpl(const char *path) override {
+            virtual bool CheckDirectoryExistsImpl(const char *path) override {
                 const char character = *path;
                 RESULT_RETURN_IF(character != '\0' && character != '/', ResultDirectoryNotFound);
                 RESULT_RETURN_SUCCESS;

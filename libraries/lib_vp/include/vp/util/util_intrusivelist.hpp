@@ -15,9 +15,6 @@
  */
 #pragma once
 
-/* While the initial idea of some elements were inspired by Atmosphère, for this implementation I only used cppreference and vague mental notes from months ago */
-/* If you can make a case for infringement please let me know and I'll correct it */
-
 namespace vp::util {
 
     class IntrusiveListNode {
@@ -77,14 +74,14 @@ namespace vp::util {
                 private:
                     IntrusiveListNode *m_next;
                 public:
-                    constexpr ALWAYS_INLINE Iterator(IntrusiveListNode *node) : m_next(node->next()) {}
-                    constexpr ALWAYS_INLINE Iterator(const IntrusiveListNode *node) : m_next(const_cast<IntrusiveListNode*>(node->next())) {}
+                    constexpr ALWAYS_INLINE Iterator(IntrusiveListNode *node) : m_next(node) {}
+                    constexpr ALWAYS_INLINE Iterator(const IntrusiveListNode *node) : m_next(const_cast<IntrusiveListNode*>(node)) {}
 
                     ALWAYS_INLINE reference operator*() {
-                        return Traits::GetParentReference(m_next->prev());
+                        return Traits::GetParentReference(m_next);
                     }
                     ALWAYS_INLINE const_reference operator*() const {
-                        return Traits::GetParentReference(m_next->prev());
+                        return Traits::GetParentReference(m_next);
                     }
 
                     constexpr ALWAYS_INLINE bool operator==(const Iterator<IsConst> &rhs) const {
@@ -137,13 +134,13 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE iterator end() {
-                return iterator(std::addressof(m_list));
+                return iterator(m_list.m_prev->m_next);
             }
             constexpr ALWAYS_INLINE const_iterator end() const {
-                return const_iterator(std::addressof(m_list));
+                return const_iterator(m_list.m_prev->m_next);
             }
             constexpr ALWAYS_INLINE const_iterator cend() const {
-                return const_iterator(std::addressof(m_list));
+                return const_iterator(m_list.m_prev->m_next);
             }
 
             ALWAYS_INLINE reference Front() {

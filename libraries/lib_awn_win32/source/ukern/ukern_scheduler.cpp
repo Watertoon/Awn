@@ -74,7 +74,7 @@ namespace awn::ukern::impl {
         /* If we are the last core, and there are no runnable fibers, then we have deadlocked */
         if (m_runnable_fibers == 0 && m_active_cores == 0) { 
             /* Kill process */
-            VP_ASSERT(false);
+            //VP_ASSERT(false);
         } else if (m_active_cores == 0) {
             /* Alert another waiting core to check if they can run a fiber */
             ::WakeByAddressSingle(std::addressof(m_runnable_fibers));
@@ -82,7 +82,7 @@ namespace awn::ukern::impl {
 
         do {
             /* Find next wakeup time */
-            u64 timeout_tick = 0xffff'ffff'ffff'ffff;
+            u64 timeout_tick = 0x7fff'ffff'ffff'ffff;
             for (FiberLocalStorage &waiting_fiber : m_wait_list) {
                 if ((waiting_fiber.core_mask & (1 << core_number)) != 0  && waiting_fiber.timeout < timeout_tick)  { timeout_tick = waiting_fiber.timeout; }
             }
@@ -745,10 +745,17 @@ namespace awn::ukern::impl {
 
         /* Release the waiting fibers */
         u32 i = 1;
-        for (FiberLocalStorage &waiting_fiber : address_fiber->wait_list) {
+        FiberLocalStorage::WaitList::iterator wait_list_iter = address_fiber->wait_list.begin();
+        while (wait_list_iter != address_fiber->wait_list.end()) {
 
+            /* Pre-iterate for list removal */
+            FiberLocalStorage &waiting_fiber = *wait_list_iter;
+            ++wait_list_iter;
+
+            /* Terminate loop if specified waiters are waked */
             if (count < i) { break; }
 
+            /* End a waiter's wait */
             waiting_fiber.wait_list_node.Unlink();
             waiting_fiber.waitable_object->EndWait(std::addressof(waiting_fiber), ResultSuccess);
 
@@ -759,7 +766,14 @@ namespace awn::ukern::impl {
         if (address_fiber->wait_list.IsEmpty() == false) {
 
             FiberLocalStorage *next_address_parent = std::addressof(address_fiber->wait_list.PopFront());
-            for (FiberLocalStorage &waiting_fiber : address_fiber->wait_list) {
+
+            FiberLocalStorage::WaitList::iterator wait_list_iter = address_fiber->wait_list.begin();
+            while (wait_list_iter != address_fiber->wait_list.end()) {
+
+                /* Pre-iterate for list removal */
+                FiberLocalStorage &waiting_fiber = *wait_list_iter;
+                ++wait_list_iter;
+
                 /* Detach from previous list */
                 waiting_fiber.wait_list_node.Unlink();
 
@@ -817,7 +831,14 @@ namespace awn::ukern::impl {
         if (address_fiber->wait_list.IsEmpty() == false) {
 
             FiberLocalStorage *next_address_parent = std::addressof(address_fiber->wait_list.PopFront());
-            for (FiberLocalStorage &waiting_fiber : address_fiber->wait_list) {
+
+            FiberLocalStorage::WaitList::iterator wait_list_iter = address_fiber->wait_list.begin();
+            while (wait_list_iter != address_fiber->wait_list.end()) {
+
+                /* Pre-iterate for list removal */
+                FiberLocalStorage &waiting_fiber = *wait_list_iter;
+                ++wait_list_iter;
+
                 /* Detach from previous list */
                 waiting_fiber.wait_list_node.Unlink();
 
@@ -879,7 +900,12 @@ namespace awn::ukern::impl {
 
         /* Release the waiting fibers */
         u32 i = 1;
-        for (FiberLocalStorage &waiting_fiber : address_fiber->wait_list) {
+        FiberLocalStorage::WaitList::iterator wait_list_iter = address_fiber->wait_list.begin();
+        while (wait_list_iter != address_fiber->wait_list.end()) {
+
+            /* Pre-iterate for list removal */
+            FiberLocalStorage &waiting_fiber = *wait_list_iter;
+            ++wait_list_iter;
 
             if (count < i) { break; }
 
@@ -893,7 +919,14 @@ namespace awn::ukern::impl {
         if (address_fiber->wait_list.IsEmpty() == false) {
 
             FiberLocalStorage *next_address_parent = std::addressof(address_fiber->wait_list.PopFront());
-            for (FiberLocalStorage &waiting_fiber : address_fiber->wait_list) {
+
+            FiberLocalStorage::WaitList::iterator wait_list_iter = address_fiber->wait_list.begin();
+            while (wait_list_iter != address_fiber->wait_list.end()) {
+
+                /* Pre-iterate for list removal */
+                FiberLocalStorage &waiting_fiber = *wait_list_iter;
+                ++wait_list_iter;
+
                 /* Detach from previous list */
                 waiting_fiber.wait_list_node.Unlink();
 

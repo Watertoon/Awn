@@ -56,7 +56,7 @@ namespace awn::res {
             }
             
             
-            virtual bool TryReadDirectoryEntryByIndex(DirectoryEntry *out_directory_entry, u32 index) {
+            virtual bool TryReadDirectoryEntryByIndex(DirectoryEntry *out_directory_entry, u32 index) override {
 
                 if (out_directory_entry == nullptr) { return false; }
                 if (m_bea->file_count <= index)     { return false; }
@@ -67,6 +67,6 @@ namespace awn::res {
                 return true;
             }
 
-            virtual constexpr u32 GetFileCount() const { return m_bea->file_count; }
+            virtual constexpr u32 GetFileCount() const override { return m_bea->file_count; }
     };
 }

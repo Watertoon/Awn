@@ -32,6 +32,7 @@ namespace awn::ukern::impl {
                 /* Set Fiber state */
                 wait_fiber->fiber_state = FiberState_Scheduled;
                 wait_fiber->last_result = wait_result;
+                wait_fiber->timeout     = 0;
 
                 /* Add to scheduler */
                 GetScheduler()->AddToSchedulerUnsafe(wait_fiber);
@@ -67,7 +68,14 @@ namespace awn::ukern::impl {
                 if (wait_fiber->wait_list.IsEmpty() == false) {
 
                     FiberLocalStorage *next_cv_parent = std::addressof(wait_fiber->wait_list.PopFront());
-                    for (FiberLocalStorage &waiting_fiber : wait_fiber->wait_list) {
+
+                    FiberLocalStorage::WaitList::iterator wait_list_iter = wait_fiber->wait_list.begin();
+                    while (wait_list_iter != wait_fiber->wait_list.end()) {
+
+                        /* Pre-iterate for list removal */
+                        FiberLocalStorage &waiting_fiber = *wait_list_iter;
+                        ++wait_list_iter;
+
                         /* Detach from previous list */
                         waiting_fiber.wait_list_node.Unlink();
 
@@ -118,8 +126,31 @@ namespace awn::ukern::impl {
             }
 
             virtual void CancelWait(FiberLocalStorage *wait_fiber, Result wait_result) override {
-                
+
+                /* Transfer wait list or remove from child list */
+                if (wait_fiber->wait_list.IsEmpty() == false) {
+
+                    FiberLocalStorage *next_wait_parent = std::addressof(wait_fiber->wait_list.PopFront());
+
+                    FiberLocalStorage::WaitList::iterator wait_list_iter = wait_fiber->wait_list.begin();
+                    while (wait_list_iter != wait_fiber->wait_list.end()) {
+
+                        /* Pre-iterate for list removal */
+                        FiberLocalStorage &waiting_fiber = *wait_list_iter;
+                        ++wait_list_iter;
+
+                        /* Detach from previous list */
+                        waiting_fiber.wait_list_node.Unlink();
+
+                        /* Add to new parent */
+                        next_wait_parent->wait_list.PushBack(waiting_fiber);
+                    }
+                } else if (wait_fiber->wait_list_node.IsLinked() == true) {
+                    wait_fiber->wait_list_node.Unlink();
+                }
+
                 EndFiberWaitImpl(wait_fiber, wait_result);
+                return;
             }
     };
 }

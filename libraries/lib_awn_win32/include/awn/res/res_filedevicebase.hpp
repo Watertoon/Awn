@@ -122,7 +122,7 @@ namespace awn::res {
             virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle)                                              { VP_ASSERT(false); VP_UNUSED(directory_handle); }
             virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { VP_ASSERT(false); VP_UNUSED(directory_handle, entry_array, entry_count); }
 
-            virtual Result CheckDirectoryExistsImpl(const char *path) { VP_UNUSED(path);}
+            virtual bool CheckDirectoryExistsImpl(const char *path) { VP_UNUSED(path); return false; }
 
             virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { VP_ASSERT(false); VP_UNUSED(out_formatted_path, path); }
         public:

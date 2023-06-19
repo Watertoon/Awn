@@ -96,13 +96,19 @@ namespace awn::frm {
             virtual void Run() override {
 
                 {
-                    /* Initialize window */
-                    const s32 border_x = ::GetSystemMetrics(SM_CXBORDER);
-                    const s32 border_y = ::GetSystemMetrics(SM_CYBORDER);
+                    /* Calculate window style */
                     const u32 drag_drop_style = (0 < m_drag_drop_array.GetCount()) ? WS_EX_ACCEPTFILES : 0;
                     const u32 window_style = WS_OVERLAPPEDWINDOW | drag_drop_style;
-                    m_hwnd = ::CreateWindowA(m_window_info.class_name, m_window_info.window_name, window_style, m_window_info.x + border_x, m_window_info.y + border_y, m_window_info.width, m_window_info.height, nullptr, nullptr, nullptr, this);
+                    
+                    /* Calculate adjusted window size for desired client area */
+                    RECT wnd_rect = {};
+                    const bool rect_result = ::AdjustWindowRect(std::addressof(wnd_rect), window_style, false);
+                    VP_ASSERT(rect_result == true);
+
+                    /* Create window */
+                    m_hwnd = ::CreateWindowA(m_window_info.class_name, m_window_info.window_name, window_style, m_window_info.x, m_window_info.y, m_window_info.width + (wnd_rect.right - wnd_rect.left), m_window_info.height + (wnd_rect.bottom - wnd_rect.top), nullptr, nullptr, nullptr, this);
                     VP_ASSERT(m_hwnd != nullptr);
+                    ::SetWindowLongPtrA(m_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
                     /* Initialize surface */
                     const VkWin32SurfaceCreateInfoKHR win32_surface_info = {

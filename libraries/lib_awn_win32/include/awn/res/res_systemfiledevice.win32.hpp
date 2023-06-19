@@ -198,6 +198,7 @@ namespace awn::res {
             }
             virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle) override {
                 ::CloseHandle(directory_handle->search_handle);
+                RESULT_RETURN_SUCCESS;
             }
             virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) {
 
@@ -218,7 +219,7 @@ namespace awn::res {
                 RESULT_RETURN_SUCCESS;
             }
 
-            virtual Result CheckDirectoryExistsImpl(const char *directory_path) override { return ::PathIsDirectoryA(directory_path);}
+            virtual bool CheckDirectoryExistsImpl(const char *directory_path) override { return ::PathIsDirectoryA(directory_path);}
         public:
             explicit constexpr ALWAYS_INLINE SystemFileDevice(const char *device_name) : FileDeviceBase(device_name) {/*...*/}
             constexpr virtual ALWAYS_INLINE ~SystemFileDevice() override {/*...*/}

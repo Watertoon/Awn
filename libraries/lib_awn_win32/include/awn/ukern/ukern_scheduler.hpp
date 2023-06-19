@@ -80,7 +80,12 @@ namespace awn::ukern::impl {
                 UserScheduler *scheduler = impl::GetScheduler();
 
                 /* Add main fiber to scheduler */
-                scheduler->AddToSchedulerUnsafe(reinterpret_cast<FiberLocalStorage*>(arg));
+                {
+                    FiberLocalStorage *main_fiber = reinterpret_cast<FiberLocalStorage*>(arg);
+                    if (main_fiber->fiber_state != FiberState_Waiting) {
+                        scheduler->AddToSchedulerUnsafe(main_fiber);
+                    }
+                }
 
                 /* Call into the scheduler */
                 scheduler->SchedulerFiberMain(0);
