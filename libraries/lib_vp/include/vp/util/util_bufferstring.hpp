@@ -162,10 +162,13 @@ namespace vp::util {
             explicit HeapString(imem::IHeap *heap, const char *string, s32 alignment = 8) {
                 const u32 length = ::strlen(string);
 
-                /* This is the only time we should modify the string */
                 m_string = new (heap, alignment) char [length + 1];
 
-                ::strncpy(m_string, string, length); 
+                ::strncpy(m_string, string, length);
+
+                m_string[length] = '\0';
+
+                return;
             }
 
             ~HeapString() {

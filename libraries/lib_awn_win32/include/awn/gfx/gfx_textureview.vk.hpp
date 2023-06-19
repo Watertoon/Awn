@@ -53,4 +53,5 @@ namespace awn::gfx {
 
             constexpr ALWAYS_INLINE VkImageView GetVkImageView() const { return m_vk_image_view; }
     };
+    static_assert(sizeof(TextureView) <= cMaxGfxTextureViewSize);
 }

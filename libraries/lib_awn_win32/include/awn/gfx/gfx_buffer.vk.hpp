@@ -67,4 +67,5 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE VkDeviceAddress  GetVkDeviceAddress() const { return m_vk_device_address; } 
             constexpr ALWAYS_INLINE VkBuffer         GetVkBuffer()        const { return m_vk_buffer; } 
 	};
+    static_assert(sizeof(Buffer) <= cMaxGfxBufferSize);
 }

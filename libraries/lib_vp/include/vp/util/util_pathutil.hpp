@@ -56,8 +56,9 @@ namespace vp::util {
         }
     }
 
-    constexpr inline size_t cMaxPath  = 260;
-    constexpr inline size_t cMaxDrive = 32;
+    constexpr inline size_t cMaxPath      = 260;
+    constexpr inline size_t cMaxDrive     = 32;
+    constexpr inline size_t cMaxExtension = 16;
 
     constexpr void GetDriveFromPath(util::FixedString<cMaxDrive> *out_drive, const char *path_with_drive) {
 

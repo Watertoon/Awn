@@ -93,10 +93,11 @@ namespace vp::res {
 
     struct ResBfresShape {
         u32                        magic;
-        u32                        reserve0               : 1;
-        u32                        is_bounding_consistent : 1;
-        u32                        has_vertex_buffer      : 1;
-        u32                        reserve1               : 29;
+        u32                        reserve0                    : 1;
+        u32                        is_bounding_consistent      : 1;
+        u32                        has_vertex_buffer           : 1;
+        u32                        is_skip_setup_index_buffers : 1;
+        u32                        reserve1                    : 28;
         const char                *shape_name;
         ResBfresVertex            *vertex;
         ResBfresMesh              *mesh_array;
@@ -122,7 +123,7 @@ namespace vp::res {
         ResBfresKeyShape *TryGetKeyShape(const char *key_shape_name) {
             if (key_shape_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = key_shape_dictionary->FindEntryIndex(key_shape_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(key_shape_array[entry_id]);
         }
     };

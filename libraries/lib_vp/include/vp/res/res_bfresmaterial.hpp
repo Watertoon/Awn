@@ -102,10 +102,10 @@ namespace vp::res {
     using ConvertTextureSrtFunction = u32 (*)(void*, const void*, ResBfresShaderParam*, void*);
 
     struct ResBfresShaderParam {
-        ConvertTextureSrtFunction  *convert_texture_srt_callback;
+        ConvertTextureSrtFunction  *runtime_convert_texture_srt_callback;
         const char                 *shader_param_name;
         u16                         shader_param_offset;
-        BfresShaderParamDataType    data_type;
+        u8                          data_type;
         u8                          reserve0;
         u32                         reserve1;
     };
@@ -257,13 +257,13 @@ namespace vp::res {
         ResGfxSamplerInfo *TryGetSamplerInfo(const char *sampler_name) {
             if (sampler_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = sampler_dictionary->FindEntryIndex(sampler_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(sampler_info_array[entry_id]);
         }
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }
     };

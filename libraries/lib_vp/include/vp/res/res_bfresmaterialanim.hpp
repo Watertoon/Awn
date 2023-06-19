@@ -120,6 +120,13 @@ namespace vp::res {
 
             return had_success;
         }
+
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBfresMaterialAnim) == 0x70);
 }

@@ -40,4 +40,5 @@ namespace awn::gfx {
                 return m_vk_image;
             }
     };
+    static_assert(sizeof(Texture) <= cMaxGfxTextureSize);
 }

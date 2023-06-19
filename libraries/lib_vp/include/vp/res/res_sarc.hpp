@@ -75,7 +75,7 @@ namespace vp::res {
 
     class SarcExtractor {
         public:
-            static constexpr u32 cInvalidEntryId = 0xFFFF'FFFF;
+            static constexpr u32 cInvalidEntryIndex = 0xFFFF'FFFF;
         private:
             ResSarc          *m_sarc;
             ResSarcSfat      *m_sfat;
@@ -121,11 +121,11 @@ namespace vp::res {
                 return true;
             }
 
-            constexpr const char *ConvertIndexToPath(u32 entry_id) const {
+            constexpr const char *TryGetPathByEntryIndex(u32 entry_id) const {
                 return m_path_table + (m_sfat_entry_array[entry_id].file_name_offset * 4);
             }
 
-            constexpr u32 ConvertPathToIndex(const char *path) const {
+            constexpr u32 TryGetEntryIndexByPath(const char *path) const {
 
                 /* Calculate file path hash */
                 const u32 hash_seed = m_sfat->hash_seed;
@@ -153,7 +153,7 @@ namespace vp::res {
 
                     low_iter = result;
                     if (i == entry_id) {
-                        return cInvalidEntryId;
+                        return cInvalidEntryIndex;
                     }
 
                     i = high_iter + low_iter;
@@ -164,13 +164,13 @@ namespace vp::res {
 
                 /* TODO Handle collisions */
                 if (m_sfat_entry_array[entry_id].hash_collision_count != 1) {
-                    return cInvalidEntryId;
+                    return cInvalidEntryIndex;
                 }
 
                 return entry_id;
             }
 
-            void *GetFileByIndex(u32 *out_file_size, u32 entry_id) {
+            void *TryGetFileByIndex(u32 *out_file_size, u32 entry_id) {
 
                 /* Integrity check bounds */
                 if (m_sfat->file_count < entry_id) { return nullptr; }
@@ -185,13 +185,13 @@ namespace vp::res {
                 return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_file_region) + start_offset);
             }
 
-            void *GetFileByPath(u32 *out_file_size, const char *path) {
+            void *TryGetFileByPath(u32 *out_file_size, const char *path) {
 
                 /* Get entry index */
-                const u32 entry_index = this->ConvertPathToIndex(path);
+                const u32 entry_index = this->TryGetEntryIndexByPath(path);
 
                 /* Try get file and file size */
-                return this->GetFileByIndex(out_file_size, entry_index);
+                return this->TryGetFileByIndex(out_file_size, entry_index);
             }
             
             constexpr ALWAYS_INLINE u32 GetFileCount() const { return m_sfat->file_count; }

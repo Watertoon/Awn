@@ -12,12 +12,20 @@ namespace vp::util {
             constexpr ALWAYS_INLINE PointerArray() : m_max_pointers(0), m_used_pointers(0), m_pointer_array(nullptr) {/*...*/}
 
             constexpr ALWAYS_INLINE T *operator[](u32 index) {
-                VP_ASSERT(index < m_used_pointers);
+                if (index < m_used_pointers) {
+                    VP_ASSERT(index < m_used_pointers);
+                    index = 0;
+                    VP_ASSERT(0 < m_max_pointers);
+                }
                 return m_pointer_array[index];
             }
 
             constexpr ALWAYS_INLINE const T *operator[](u32 index) const {
-                VP_ASSERT(index < m_used_pointers);
+                if (index < m_used_pointers) {
+                    VP_ASSERT(index < m_used_pointers);
+                    index = 0;
+                    VP_ASSERT(0 < m_max_pointers);
+                }
                 return m_pointer_array[index];
             }
 
@@ -25,6 +33,7 @@ namespace vp::util {
 
                 /* Integrity checks */
                 VP_ASSERT(pointer_count != 0);
+                VP_ASSERT(m_pointer_array == nullptr && m_max_pointers == 0);
 
                 /* Allocate pointer array */
                 m_pointer_array = new (heap, alignment) T*[pointer_count];
@@ -80,11 +89,13 @@ namespace vp::util {
                 const u32 move_element_index = base_index + number_of_elements;
                 const u32 move_element_count = m_used_pointers - move_element_index;
                 VP_ASSERT(move_element_index <= m_used_pointers);
-                
+
                 if (move_element_count != 0) {
                     ::memmove(std::addressof(m_pointer_array[base_index], std::addressof(m_pointer_array[move_element_index]), move_element_count * sizeof(T**)));
                 }
-                m_used_pointers -= number_of_elements;
+                m_used_pointers = m_used_pointers - number_of_elements;
+
+                return;
             }
 
             constexpr u32 GetUsedCount() const { return m_used_pointers; }

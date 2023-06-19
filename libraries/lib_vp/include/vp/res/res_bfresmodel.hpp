@@ -66,19 +66,19 @@ namespace vp::res {
         ResBfresShape *TryGetShape(const char *shape_name) {
             if (shape_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = shape_dictionary->FindEntryIndex(shape_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(shape_array[entry_id]);
         }
         ResBfresMaterial *TryGetMaterial(const char *material_name) {
             if (material_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = material_dictionary->FindEntryIndex(material_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(material_array[entry_id]);
         }
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }
     };

@@ -65,7 +65,7 @@ namespace vp::res {
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }
     };
@@ -119,7 +119,7 @@ namespace vp::res {
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }
     };
@@ -155,7 +155,7 @@ namespace vp::res {
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }
     };
@@ -184,25 +184,25 @@ namespace vp::res {
         ResBfresCameraAnim *TryGetCameraAnim(const char *camera_anim_name) {
             if (camera_anim_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = camera_anim_dictionary->FindEntryIndex(camera_anim_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(camera_anim_array[entry_id]);
         }
         ResBfresLightAnim *TryGetLightAnim(const char *light_anim_name) {
             if (light_anim_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = light_anim_dictionary->FindEntryIndex(light_anim_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(light_anim_array[entry_id]);
         }
         ResBfresFogAnim *TryGetFogAnim(const char *fog_anim_name) {
             if (fog_anim_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = fog_anim_dictionary->FindEntryIndex(fog_anim_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(fog_anim_array[entry_id]);
         }
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
-            if (entry_id == ResNintendoWareDictionary::cInvalidEntryId) { return nullptr; }
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(user_data_array[entry_id]);
         }
     };

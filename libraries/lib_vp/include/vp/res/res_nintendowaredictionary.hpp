@@ -21,9 +21,9 @@ namespace vp::res {
         s32        node_count; /* Note; does not include Root Node */
         ResDicNode root_node;
 
-        static constexpr inline u32 Magic           = util::TCharCode32("_DIC");
-        static constexpr inline s32 NPos            = -1;
-        static constexpr inline u32 cInvalidEntryId = 0xffff'ffff;
+        static constexpr inline u32 cMagic             = util::TCharCode32("_DIC");
+        static constexpr inline s32 cNPos              = -1;
+        static constexpr inline u32 cInvalidEntryIndex = 0xffff'ffff;
 
         bool Build() {
             if (node_count < 0) {
@@ -37,17 +37,17 @@ namespace vp::res {
 
             /* Default initialize our dictionary nodes in a double pattern */
             for (s32 i = 0; i < (node_count + 1) - odd_bit; i = i + 2) {
-                current_node[i + 0].ref_bit = NPos;
-                current_node[i + 0].left_node = i;
+                current_node[i + 0].ref_bit    = cNPos;
+                current_node[i + 0].left_node  = i;
                 current_node[i + 0].right_node = i;
-                current_node[i + 1].ref_bit = NPos;
-                current_node[i + 1].left_node = i + 1;
+                current_node[i + 1].ref_bit    = cNPos;
+                current_node[i + 1].left_node  = i + 1;
                 current_node[i + 1].right_node = i + 1;
             }
             /* Take care of odd node */
             if (odd_bit == 1) {
-                current_node->ref_bit = NPos;
-                current_node->left_node = node_count;
+                current_node->ref_bit    = cNPos;
+                current_node->left_node  = node_count;
                 current_node->right_node = node_count;
             }
 
@@ -80,7 +80,7 @@ namespace vp::res {
 
                 /* Null string is invalid */
                 if (longer_len == 0) {
-                    root_node_array[i].ref_bit = NPos;
+                    root_node_array[i].ref_bit = cNPos;
                     return false;
                 }
 
@@ -106,14 +106,14 @@ namespace vp::res {
                     new_ref = new_ref + 1;
                     /* Two identical keys are invalid */
                     if ((longer_len << 3) - new_ref < 0) {
-                        root_node_array[i].ref_bit = NPos;
+                        root_node_array[i].ref_bit = cNPos;
                         return false;
                     }
                 }
 
                 /* Set current nodes ref_bit to the new ref */
                 root_node_array[i].ref_bit = new_ref;
-                if (new_ref == NPos) {
+                if (new_ref == cNPos) {
                     return false;
                 }
 
@@ -206,7 +206,7 @@ namespace vp::res {
                 return ptr_diff >> 4;
             }
 
-            return cInvalidEntryId;
+            return cInvalidEntryIndex;
         }
 
         const char *FindKeyByEntryIndex(u32 entry_id) const {

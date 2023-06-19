@@ -21,7 +21,9 @@ namespace vp::util {
         const char *string_leftover = string + aligned_size;
         if (aligned_size != 0) {
             while (string != string_leftover) {
-                const size_t val = *reinterpret_cast<const size_t*>(string);
+                const size_t val = (std::is_constant_evaluated() == false) ? *reinterpret_cast<const size_t*>(string) : 
+                    (static_cast<size_t>(*string + 0) << 0x0) | (static_cast<size_t>(*string + 1) << 0x8) | (static_cast<size_t>(*string + 2) << 0x10) | (static_cast<size_t>(*string + 3) << 0x18) |
+                    (static_cast<size_t>(*string + 4) << 0x20) | (static_cast<size_t>(*string + 5) << 0x28) | (static_cast<size_t>(*string + 6) << 0x30) | (static_cast<size_t>(*string + 7) << 0x38);
                 state = ((((val * cMurmur64Constant) ^ ((val * cMurmur64Constant) >> cShift) * cMurmur64Constant)) ^ state) * cMurmur64Constant;
                 string = string + 8;
             }
@@ -49,7 +51,7 @@ namespace vp::util {
 
         return (state ^ state >> cShift);
     }
-    
+
     constexpr inline u32 cMurmur32Constant1 = 0xcc9e2d51;
     constexpr inline u32 cMurmur32Constant2 = 0x1b873593;
     constexpr inline u32 cMurmur32PreShift  = 0x16a88000;

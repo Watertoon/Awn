@@ -44,7 +44,13 @@ namespace vp::res {
         u32                         reserve0;
 
         static constexpr u32 cMagicNX   = util::TCharCode32("NX  ");
-        static constexpr u32 cMagicDDVK = util::TCharCode32("DDVK");
+
+        ResBntxTextureInfo *TryGetTextureInfo(const char *texture_name) {
+            if (texture_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = texture_dictionary->FindEntryIndex(texture_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
+            return texture_info_array[entry_id];
+        }
     };
     static_assert(sizeof(ResBntxTextureContainer) == 0x38);
 
@@ -67,6 +73,13 @@ namespace vp::res {
         ResNintendoWareDictionary  *user_data_dictionary;
 
         static constexpr u32 cMagic = util::TCharCode32("BRTI");
+
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+            if (user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = user_data_dictionary->FindEntryIndex(user_data_name);
+            if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
+            return std::addressof(user_data_array[entry_id]);
+        }
     };
     static_assert(sizeof(ResBntxTextureInfo) == 0xA0);
 

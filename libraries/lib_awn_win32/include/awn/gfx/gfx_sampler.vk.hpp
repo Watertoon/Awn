@@ -49,4 +49,5 @@ namespace awn::gfx {
 
             constexpr ALWAYS_INLINE VkSampler GetVkSampler() const { return m_vk_sampler; }
     };
+    static_assert(sizeof(Sampler) <= cMaxGfxSamplerSize);
 }

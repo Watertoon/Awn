@@ -23,47 +23,6 @@ namespace awn::res {
 
     class SystemFileDevice : public FileDeviceBase {
         protected:
-            virtual Result LoadFileImpl(FileLoadContext *file_load_context) {
-
-                /* Integrity checks */
-                RESULT_RETURN_UNLESS(file_load_context->out_file != nullptr && file_load_context->out_file_size == 0, ResultInvalidFileBufferSize);
-                RESULT_RETURN_UNLESS((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
-
-                /* Open file handle */
-                FileHandle handle = {};
-                const Result open_result = this->TryOpenFile(std::addressof(handle), file_load_context->file_path, OpenMode_Read);
-                RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
-
-                /* Get file size */
-                size_t file_size = 0;
-                const Result size_result = this->GetFileSize(std::addressof(file_size), std::addressof(handle));
-                RESULT_RETURN_UNLESS(size_result == ResultSuccess, size_result);
-
-                /* Handle file buffer */
-                if (file_load_context->out_file == nullptr) {
-                    file_load_context->out_file              = ::operator new(file_size, file_load_context->heap, file_load_context->alignment);
-                    file_load_context->out_file_size         = file_size;
-                    file_load_context->out_is_heap_allocated = true;
-                } else {
-                    RESULT_RETURN_UNLESS(file_size <= file_load_context->out_file_size, ResultInvalidFileBufferSize);
-                }
-
-                /* Read loop */
-                const u32 div_size  = file_load_context->read_div;
-                size_t    remaining = vp::util::AlignDown(file_size, div_size);
-                size_t    offset    = 0;
-                while (offset != remaining) {
-                    this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(file_load_context->out_file)) + offset), std::addressof(handle), div_size);
-                    offset = offset + div_size;
-                }
-                this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(file_load_context->out_file)) + offset), std::addressof(handle), file_size - remaining);
-
-                /* Close file handle */
-                const Result close_result = this->TryCloseFile(std::addressof(handle));
-                RESULT_RETURN_UNLESS(close_result == ResultSuccess, close_result);
-
-                RESULT_RETURN_SUCCESS;
-            }
 
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) override {
 
@@ -73,18 +32,18 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS((open_mode & OpenMode_ReadWriteAppend) != 0, ResultInvalidOpenMode);
 
                 /* Format path */
-                vp::util::FixedString<vp::util::cMaxPath> formatted_path;
+                MaxPathString formatted_path;
                 const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
                 RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
 
                 /* Open file */
-                out_file_handle->win32_handle = ::CreateFile(path, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-                if (out_file_handle->win32_handle == INVALID_HANDLE_VALUE) {
+                out_file_handle->handle = ::CreateFile(path, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+                if (out_file_handle->handle == INVALID_HANDLE_VALUE) {
                     return ConvertWin32ErrorToResult();
                 }
 
                 /* Get file size */
-                RESULT_RETURN_IF(::GetFileSizeEx(out_file_handle->win32_handle, reinterpret_cast<LARGE_INTEGER*>(std::addressof(out_file_handle->file_size))), ResultFileSizeRetrievalFailed);
+                RESULT_RETURN_IF(::GetFileSizeEx(out_file_handle->handle, reinterpret_cast<LARGE_INTEGER*>(std::addressof(out_file_handle->file_size))), ResultFileSizeRetrievalFailed);
 
                 RESULT_RETURN_SUCCESS;
             }
@@ -93,16 +52,16 @@ namespace awn::res {
 
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullHandle);
-                RESULT_RETURN_UNLESS(file_handle->win32_handle != nullptr && file_handle->win32_handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
+                RESULT_RETURN_UNLESS(file_handle->handle != nullptr && file_handle->handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
 
                 /* Close win32 handle */
-                const bool close_result = ::CloseHandle(file_handle->win32_handle);
+                const bool close_result = ::CloseHandle(file_handle->handle);
                 if (close_result == false) {
                     return ConvertWin32ErrorToResult();
                 }
 
                 /* Null res::FileHandle */
-                file_handle->win32_handle = nullptr;
+                file_handle->handle = nullptr;
                 file_handle->file_offset  = 0;
                 file_handle->file_size    = 0;
 
@@ -113,20 +72,20 @@ namespace awn::res {
 
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullHandle);
-                RESULT_RETURN_UNLESS(file_handle->win32_handle != nullptr && file_handle->win32_handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
+                RESULT_RETURN_UNLESS(file_handle->handle != nullptr && file_handle->handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
 
                 /* Set file location */
                 LARGE_INTEGER offset = {
                     .QuadPart = static_cast<s64>(file_handle->file_offset)
                 };
-                u32 set_result = ::SetFilePointerEx(file_handle->win32_handle, offset, nullptr, FILE_BEGIN);
+                u32 set_result = ::SetFilePointerEx(file_handle->handle, offset, nullptr, FILE_BEGIN);
                 if (set_result != 0) {
                     return ConvertWin32ErrorToResult();
                 }
 
                 /* Read File */
                 u32 out_read_size = 0;
-                const bool read_result = ::ReadFile(file_handle->win32_handle, std::addressof(out_read_buffer), read_size, reinterpret_cast<long unsigned int*>(std::addressof(out_read_size)), nullptr);
+                const bool read_result = ::ReadFile(file_handle->handle, std::addressof(out_read_buffer), read_size, reinterpret_cast<long unsigned int*>(std::addressof(out_read_size)), nullptr);
                 if (read_result == false) {
                     return ConvertWin32ErrorToResult();
                 }
@@ -138,13 +97,13 @@ namespace awn::res {
 
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullHandle);
-                RESULT_RETURN_UNLESS(file_handle->win32_handle != nullptr && file_handle->win32_handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
+                RESULT_RETURN_UNLESS(file_handle->handle != nullptr && file_handle->handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
                 RESULT_RETURN_UNLESS(write_buffer != nullptr, ResultNullOutBuffer);
                 RESULT_RETURN_UNLESS(write_size != 0, ResultInvalidSize);
 
                 /* Write file */
                 u32 out_write_size = 0;
-                [[maybe_unused]] const bool write_result = ::WriteFile(file_handle->win32_handle, write_buffer, write_size, reinterpret_cast<long unsigned int*>(std::addressof(out_write_size)), nullptr);
+                [[maybe_unused]] const bool write_result = ::WriteFile(file_handle->handle, write_buffer, write_size, reinterpret_cast<long unsigned int*>(std::addressof(out_write_size)), nullptr);
                 //if () {
                     
                 //}
@@ -157,10 +116,10 @@ namespace awn::res {
 
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullHandle);
-                RESULT_RETURN_UNLESS(file_handle->win32_handle != nullptr && file_handle->win32_handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
+                RESULT_RETURN_UNLESS(file_handle->handle != nullptr && file_handle->handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
 
                 /* Flush file buffers */
-                const bool flush_result = ::FlushFileBuffers(file_handle->win32_handle);
+                const bool flush_result = ::FlushFileBuffers(file_handle->handle);
                 if (flush_result == false) {
                     return ConvertWin32ErrorToResult();
                 }
@@ -172,7 +131,7 @@ namespace awn::res {
 
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullHandle);
-                RESULT_RETURN_UNLESS(file_handle->win32_handle != nullptr && file_handle->win32_handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
+                RESULT_RETURN_UNLESS(file_handle->handle != nullptr && file_handle->handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
 
                 *out_size = file_handle->file_size;
 
@@ -185,7 +144,7 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
 
                 /* Format path */
-                vp::util::FixedString<vp::util::cMaxPath> formatted_path;
+                MaxPathString formatted_path;
                 const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
                 RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
 
@@ -210,7 +169,7 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
 
                 /* Format path */
-                vp::util::FixedString<vp::util::cMaxPath> formatted_path;
+                MaxPathString formatted_path;
                 const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
                 RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
 
@@ -229,9 +188,9 @@ namespace awn::res {
 
     class ContentFileDevice : public SystemFileDevice {
         protected:
-            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) override {
+            virtual Result FormatPath(MaxPathString *out_formatted_path, const char *path) override {
 
-                vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
+                MaxPathString path_no_drive;
 
                 vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
 
@@ -246,9 +205,9 @@ namespace awn::res {
 
     class SaveFileDevice : public SystemFileDevice {
         protected:
-            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) override {
+            virtual Result FormatPath(MaxPathString *out_formatted_path, const char *path) override {
 
-                vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
+                MaxPathString path_no_drive;
 
                 vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
 
