@@ -67,8 +67,12 @@ namespace awn::gfx {
     void TextureSamplerManager::Finalize() {
 
         /* Destroy descriptor buffers */
-        ::pfn_vkDestroyBuffer(Context::GetInstance()->GetVkDevice(), m_texture_descriptor_vk_buffer, Context::GetInstance()->GetVkAllocationCallbacks());
-        ::pfn_vkDestroyBuffer(Context::GetInstance()->GetVkDevice(), m_sampler_descriptor_vk_buffer, Context::GetInstance()->GetVkAllocationCallbacks());
+        if (m_texture_descriptor_vk_buffer != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyBuffer(Context::GetInstance()->GetVkDevice(), m_texture_descriptor_vk_buffer, Context::GetInstance()->GetVkAllocationCallbacks());
+        }
+        if (m_sampler_descriptor_vk_buffer != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyBuffer(Context::GetInstance()->GetVkDevice(), m_sampler_descriptor_vk_buffer, Context::GetInstance()->GetVkAllocationCallbacks());
+        }
         m_texture_descriptor_vk_buffer = VK_NULL_HANDLE;
         m_sampler_descriptor_vk_buffer = VK_NULL_HANDLE;
 
@@ -280,7 +284,6 @@ namespace awn::gfx {
 
         return;
     }
-
 
     Texture *TextureSamplerManager::TryGetTextureByHandle(DescriptorSlot texture_slot) {
 

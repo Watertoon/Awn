@@ -15,14 +15,15 @@ namespace awn::res {
     class ArchiveResource : public Resource {
         private:
         public:
-            constexpr ArchiveResource() {/*...*/}
+            constexpr ArchiveResource() : Resource() {/*...*/}
+            constexpr virtual ~ArchiveResource() override {/*...*/}
 
-            virtual u32 TryGetEntryIndex(const char *path) const {/*...*/}
+            virtual u32 TryGetEntryIndex(const char *path) const { VP_UNUSED(path); return cInvalidEntryIndex; }
 
-            virtual bool TryGetFileByIndex(ArchiveFileReturn *out_file_return, u32 index)       { return false; }
-            virtual bool TryGetFileByPath(ArchiveFileReturn *out_file_return, const char *path) { return false; }
+            virtual bool TryGetFileByIndex(ArchiveFileReturn *out_file_return, u32 index)       { VP_UNUSED(out_file_return, index); return false; }
+            virtual bool TryGetFileByPath(ArchiveFileReturn *out_file_return, const char *path) { VP_UNUSED(out_file_return, path); return false; }
 
-            virtual bool TryReadDirectoryEntryByIndex(DirectoryEntry *out_directory_entry, u32 index) { return false; }
+            virtual bool TryReadDirectoryEntryByIndex(DirectoryEntry *out_directory_entry, u32 index) { VP_UNUSED(out_directory_entry, index); return false; }
 
             virtual constexpr u32 GetFileCount() const { return 0; }
     };

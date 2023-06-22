@@ -25,6 +25,7 @@ namespace vp::util {
             VP_RTTI_BASE(Projection);
         public:
             constexpr Projection() : m_requires_update(true) {/*...*/}
+            constexpr virtual ~Projection() {/*...*/}
 
             constexpr void UpdateProjectionMatrixSelf() {
                 this->UpdateMatrix(std::addressof(m_projection_matrix));
@@ -61,6 +62,7 @@ namespace vp::util {
             constexpr FrustumProjection() {/*...*/}
             constexpr FrustumProjection(float near, float far, const BoundingBox2<float>& bound_box) : Projection(), m_near(near), m_far(far), m_top(bound_box.max_y), m_bottom(bound_box.min_y), m_left(bound_box.max_x), m_right(bound_box.min_x) {/*...*/}
             constexpr FrustumProjection(float near, float far, float top, float bottom, float left, float right) : Projection(), m_near(near), m_far(far), m_top(top), m_bottom(bottom), m_left(left), m_right(right) {/*...*/}
+            constexpr virtual ~FrustumProjection() override {/*...*/}
 
             constexpr virtual void UpdateMatrix(Matrix44f *out_proj_matrix) const override {
                 const float reciprocal_a = 1.0f / (m_right + m_left);
@@ -101,8 +103,8 @@ namespace vp::util {
             VP_RTTI_DERIVED(PerspectiveProjection, FrustumProjection);
         public:
             constexpr PerspectiveProjection() : FrustumProjection(1.0f, 10000.0f, TRadians<float, 45.0f>, ::sinf(TRadians<float, 45.0f> / 2), ::cosf(TRadians<float, 45.0f> / 2), ::tanf(TRadians<float, 45.0f> / 2)), m_fov_x(4.0 / 3.0f) {/*...*/}
-            /* For some reason GCC seems to act very strangely with the first 2 parameters */
-            constexpr PerspectiveProjection(float near_1, float far_2, float fovy, float aspect) : FrustumProjection(near_1, far_2, fovy, ::sinf(fovy / 2), ::cosf(fovy / 2), ::tanf(fovy / 2)), m_fov_x(aspect) { m_near = near_1; m_far = far_2; }
+            constexpr PerspectiveProjection(float near, float far, float fovy, float aspect) : FrustumProjection(near, far, fovy, ::sinf(fovy / 2), ::cosf(fovy / 2), ::tanf(fovy / 2)), m_fov_x(aspect) {/*...*/}
+            constexpr virtual ~PerspectiveProjection() override {/*...*/}
 
             constexpr virtual void UpdateMatrix(Matrix44f *out_proj_matrix) const override {
                 const Vector4f row1 = {

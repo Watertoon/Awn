@@ -14,13 +14,17 @@ namespace awn::res {
 
     struct DirectoryEntry {
         u32           archive_entry_index;
+        size_t        file_size;
         MaxPathString file_path;
     };
 
     struct DirectoryHandle {
+        static constexpr inline u32 cMaxDirectoryDepth = 8;
+
         u32           entry_index;
-        HANDLE        search_handle;
-        MaxPathString directory_path;
+        u32           directory_depth;
+        HANDLE        search_handle_array[cMaxDirectoryDepth];
+        MaxPathString directory_path_array[cMaxDirectoryDepth];
     };
 
     constexpr inline const u32 cInvalidEntryIndex = 0xffff'ffff;

@@ -811,7 +811,10 @@ namespace awn::ukern::impl {
                 break;
             }
         }
-        
+
+        /* Check address value */
+        RESULT_RETURN_IF(*wait_address != value, ResultNoWaiters);
+
         /* Release parent waiter */
         address_fiber->waitable_object->EndWait(address_fiber, ResultSuccess);
 

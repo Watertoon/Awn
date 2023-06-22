@@ -71,6 +71,9 @@ namespace awn::gfx {
                 if (command_pool_holder == nullptr) {
                     command_pool_holder = m_command_pool_holder_allocator.Allocate();
                     VP_ASSERT(command_pool_holder != nullptr);
+                    
+                    /* Set Tls */
+                    sys::ThreadManager::GetInstance()->GetCurrentThread()->SetTlsData(m_command_pool_tls_slot, command_pool_holder);
                 }
 
                 /* Get command pool */
@@ -173,6 +176,7 @@ namespace awn::gfx {
             }
         public:
             constexpr ALWAYS_INLINE CommandBufferBase() : m_command_list() {/*...*/}
+            constexpr ~CommandBufferBase() {/*...*/}
 
             /* Gpu dispatch commands */
             void Draw(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count) {
@@ -465,6 +469,7 @@ namespace awn::gfx {
     class ThreadLocalCommandBuffer : public CommandBufferBase {
         public:
             constexpr ALWAYS_INLINE ThreadLocalCommandBuffer() : CommandBufferBase() {/*...*/}
+            constexpr ~ThreadLocalCommandBuffer() {/*...*/}
 
             /* Commmand buffer management */
             void Begin(QueueType queue_type = QueueType::Graphics, bool is_primary = false) {

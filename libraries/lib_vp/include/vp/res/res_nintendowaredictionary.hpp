@@ -209,7 +209,7 @@ namespace vp::res {
             return cInvalidEntryIndex;
         }
 
-        const char *GetKeyByEntryIndex(u32 entry_id) const {
+        constexpr const char *GetKeyByEntryIndex(u32 entry_id) const {
             return (std::addressof(root_node) + 1)[entry_id].key;
         }
     };

@@ -11,6 +11,7 @@ namespace vp::mem {
             UnitHeapMemoryBlock *m_free_block_list;
         public:
             constexpr UnitHeap() {/*...*/}
+            virtual ~UnitHeap() override {/*...*/}
 
             virtual void Finalize() override {/*...*/}
 

@@ -18,14 +18,14 @@
 namespace vp::res {
 
     enum class BfresBoneBillboardMode {
-        None,
-        Child,
-        WorldViewVector,
-        WorldViewPoint,
-        ScreenViewVector,
-        ScreenViewPoint,
-        YAxisViewVector,
-        YAxisViewPoint,
+        None             = 0,
+        Child            = 1,
+        WorldViewVector  = 2,
+        WorldViewPoint   = 3,
+        ScreenViewVector = 4,
+        ScreenViewPoint  = 5,
+        YAxisViewVector  = 6,
+        YAxisViewPoint   = 7,
     };
     enum class BfresBoneLocalTransformMode : u8 {
         None                    = (1 << 0),
@@ -77,19 +77,19 @@ namespace vp::res {
     static_assert(sizeof(ResBfresBone) == 0x58);
 
     enum class BfresSkeletonMirrorMode {
-        X,
-        XY,
-        XZ,
+        X  = 0,
+        XY = 1,
+        XZ = 2,
     };
     enum class BfresSkeletonScaleMode {
-        None,
-        Standard,
-        Maya,
-        SoftImage,
+        None      = 0,
+        Standard  = 1,
+        Maya      = 2,
+        SoftImage = 3,
     };
     enum class BfresSkeletonRotationMode {
-        Quarternion,
-        EulerXYZ,
+        Quarternion = 0,
+        EulerXYZ    = 1,
     };
 
     struct ResBfresSkeleton {
@@ -100,6 +100,7 @@ namespace vp::res {
         u32                        scale_mode       : 2;
         u32                        reserve1         : 2;
         u32                        rotation_mode    : 2;
+        u32                        reserve2         : 18;
         ResNintendoWareDictionary *bone_dictionary;
         ResBfresBone              *bone_array;
         u16                       *bone_index_table;
@@ -109,8 +110,8 @@ namespace vp::res {
         u16                        bone_count;
         u16                        smooth_bone_count;
         u16                        rigid_bone_count;
-        u16                        reserve2;
-        
+        u16                        reserve3;
+
         static constexpr u32 cMagic = util::TCharCode32("FSKL");
 
         ResBfresBone *TryGetBone(const char *bone_name) {

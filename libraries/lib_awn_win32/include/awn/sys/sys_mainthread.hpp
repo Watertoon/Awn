@@ -7,6 +7,7 @@ namespace awn::sys {
             ukern::UKernHandle m_thread_handle;
         public:
             MainThread(mem::Heap *thread_heap) : ThreadBase(thread_heap), m_thread_handle(ukern::GetCurrentThread()->ukern_fiber_handle) { ukern::GetCurrentThread()->user_arg = this; }
+            virtual ~MainThread() override {/*...*/}
 
             virtual void StartThread() {
                 VP_ASSERT(false);

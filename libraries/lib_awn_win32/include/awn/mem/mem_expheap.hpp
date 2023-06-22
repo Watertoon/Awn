@@ -166,7 +166,7 @@ namespace awn::mem {
             }
         public:
             explicit ExpHeap(const char *name, Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : Heap(name, parent_heap, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(start_address) + sizeof(ExpHeap)), size - sizeof(ExpHeap), is_thread_safe), m_free_block_list(), m_allocated_block_list(), m_allocation_mode(AllocationMode::BestFit) {/*...*/}
-            ~ExpHeap() {/*...*/}
+            virtual ~ExpHeap() override {/*...*/}
 
             static ExpHeap *TryCreate(const char *name, Heap *parent_heap, size_t size, s32 alignment, bool is_thread_safe);
 

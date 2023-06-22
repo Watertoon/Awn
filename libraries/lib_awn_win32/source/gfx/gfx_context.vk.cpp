@@ -337,7 +337,8 @@ namespace awn::gfx {
         /* Check supported Vulkan Api version */
         {
             u32 api_version = 0;
-            ::pfn_vkEnumerateInstanceVersion(std::addressof(api_version));
+            const u32 result0 = ::pfn_vkEnumerateInstanceVersion(std::addressof(api_version));
+            VP_ASSERT(result0 == VK_SUCCESS);
             VP_ASSERT(cTargetMinimumApiVersion <= api_version);
         }
 
@@ -362,8 +363,7 @@ namespace awn::gfx {
             
             #if defined(VP_DEBUG)
             const VkValidationFeatureEnableEXT validation_feature_enable_array[] = {
-                VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
-                VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT
+                VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
             };
             const VkValidationFeaturesEXT validation_features = {
                 .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
@@ -395,7 +395,7 @@ namespace awn::gfx {
                 .ppEnabledExtensionNames = instance_extension_array
             };
 
-            s32 result = ::pfn_vkCreateInstance(std::addressof(instance_info), nullptr, std::addressof(m_vk_instance));
+            const u32 result = ::pfn_vkCreateInstance(std::addressof(instance_info), nullptr, std::addressof(m_vk_instance));
             VP_ASSERT(result == VK_SUCCESS);
         }
 
@@ -413,7 +413,7 @@ namespace awn::gfx {
                 .pUserData = nullptr
             };
 
-            s32 result = ::pfn_vkCreateDebugUtilsMessengerEXT(m_vk_instance, std::addressof(debug_messenger_info), nullptr, std::addressof(m_debug_messenger));
+            const u32 result = ::pfn_vkCreateDebugUtilsMessengerEXT(m_vk_instance, std::addressof(debug_messenger_info), nullptr, std::addressof(m_debug_messenger));
             VP_ASSERT(result == VK_SUCCESS);
         }
         #endif
@@ -812,11 +812,11 @@ namespace awn::gfx {
         }
         VkSemaphoreSubmitInfo signal_semaphore_array[cMaxQueueSignalSyncCount] = {};
         for (u32 i = 0; i < signal_sync_count; ++i) {
-            wait_semaphore_array[i].sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-            wait_semaphore_array[i].semaphore   = signal_sync_array[i]->GetVkSemaphore();
-            wait_semaphore_array[i].value       = signal_sync_array[i]->GetExpectedValue();
-            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
-            wait_semaphore_array[i].deviceIndex = 0;
+            signal_semaphore_array[i].sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            signal_semaphore_array[i].semaphore   = signal_sync_array[i]->GetVkSemaphore();
+            signal_semaphore_array[i].value       = signal_sync_array[i]->GetExpectedValue();
+            signal_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+            signal_semaphore_array[i].deviceIndex = 0;
         }
 
         const VkSubmitInfo2 graphics_submit_info = {
@@ -858,11 +858,11 @@ namespace awn::gfx {
         }
         VkSemaphoreSubmitInfo signal_semaphore_array[cMaxQueueSignalSyncCount] = {};
         for (u32 i = 0; i < signal_sync_count; ++i) {
-            wait_semaphore_array[i].sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-            wait_semaphore_array[i].semaphore   = signal_sync_array[i]->GetVkSemaphore();
-            wait_semaphore_array[i].value       = signal_sync_array[i]->GetExpectedValue();
-            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
-            wait_semaphore_array[i].deviceIndex = 0;
+            signal_semaphore_array[i].sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            signal_semaphore_array[i].semaphore   = signal_sync_array[i]->GetVkSemaphore();
+            signal_semaphore_array[i].value       = signal_sync_array[i]->GetExpectedValue();
+            signal_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+            signal_semaphore_array[i].deviceIndex = 0;
         }
 
         const VkSubmitInfo2 graphics_submit_info = {

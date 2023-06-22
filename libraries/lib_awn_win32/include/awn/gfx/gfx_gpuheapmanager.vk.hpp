@@ -16,7 +16,8 @@ namespace awn::gfx {
         private:
             AWN_SINGLETON_TRAITS(GpuHeapManager);
         public:
-            constexpr GpuHeapManager() : m_minimum_block_size(), m_gpu_heap_list_mutex(), m_gpu_heap_allocator() {/*...*/}
+            constexpr GpuHeapManager() : m_minimum_block_size(), m_gpu_heap_list_mutex(), m_gpu_heap_list(), m_gpu_heap_allocator() {/*...*/}
+            constexpr ~GpuHeapManager() {/*...*/}
 
             constexpr ALWAYS_INLINE void Initialize(size_t minimum_block_size) {
 

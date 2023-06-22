@@ -9,9 +9,7 @@ namespace vp::util {
             u32  m_array_count;
         public:
             constexpr ALWAYS_INLINE HeapArray() : m_object_array(nullptr), m_array_count(0) {/*...*/}
-            ALWAYS_INLINE ~HeapArray() {
-                this->Finalize();
-            }
+            constexpr ALWAYS_INLINE ~HeapArray() {/*...*/}
 
             ALWAYS_INLINE bool Initialize(imem::IHeap *alloc_heap, u32 element_count) {
 

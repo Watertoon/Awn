@@ -22,6 +22,7 @@ namespace awn::ukern {
             u32 m_cv;
         public:
             constexpr InternalConditionVariable() {/*...*/}
+            constexpr ~InternalConditionVariable() {/*...*/}
             
             void Wait(InternalCriticalSection *cs) {
                 

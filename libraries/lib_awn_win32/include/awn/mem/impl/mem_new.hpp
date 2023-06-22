@@ -17,9 +17,7 @@ namespace awn::mem::impl {
 
         /* Try to allocate from current heap if able */
         vp::imem::IHeap *current_heap = awn::mem::GetCurrentThreadHeap();
-        if (current_heap == nullptr) {
-            return nullptr;
-        }
+        VP_ASSERT(current_heap != nullptr);
 
         return current_heap->TryAllocate(size, alignment);
     }
@@ -35,9 +33,7 @@ namespace awn::mem::impl {
 
         /* Try to allocate from specified heap if able, or current heap */
         vp::imem::IHeap *current_heap = (heap != nullptr) ? heap : awn::mem::GetCurrentThreadHeap();
-        if (current_heap == nullptr) {
-            return nullptr;
-        }
+        VP_ASSERT(current_heap != nullptr);
 
         return current_heap->TryAllocate(size, alignment);
     }
@@ -49,9 +45,7 @@ namespace awn::mem::impl {
             }
         }
         vp::imem::IHeap *current_heap = awn::mem::GetCurrentThreadHeap();
-        if (current_heap == nullptr) {
-            return;
-        }
+        VP_ASSERT(current_heap != nullptr);
 
         current_heap->Free(address);
     }

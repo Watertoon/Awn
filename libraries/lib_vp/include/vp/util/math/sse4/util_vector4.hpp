@@ -40,6 +40,8 @@ namespace vp::util {
 
             constexpr Vector4Type(const Vector4Type& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w) { /*...*/ }
 
+            constexpr ~Vector4Type() {/*...*/}
+
             constexpr ALWAYS_INLINE v4 GetVectorType() const {
                 return v4{x, y, z, w};
             }

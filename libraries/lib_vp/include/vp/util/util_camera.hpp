@@ -23,7 +23,8 @@ namespace vp::util {
         public:
             VP_RTTI_BASE(Camera);
         public:
-            constexpr Camera() {}
+            constexpr Camera() : m_camera_mtx() {/*...*/}
+            constexpr virtual ~Camera() {/*...*/}
 
             void UpdateCameraMatrixSelf() {
                 this->UpdateCameraMatrix(std::addressof(m_camera_mtx));
@@ -48,7 +49,8 @@ namespace vp::util {
         public:
             VP_RTTI_DERIVED(LookAtCamera, Camera);
         public:
-            constexpr LookAtCamera(const Vector3f& pos, const Vector3f& at, const Vector3f& up) : m_pos(pos), m_at(at), m_up(up) {/*...*/}
+            constexpr LookAtCamera(const Vector3f& pos, const Vector3f& at, const Vector3f& up) : Camera(), m_pos(pos), m_at(at), m_up(up) {/*...*/}
+            constexpr virtual ~LookAtCamera() override {/*...*/}
 
             constexpr virtual void UpdateCameraMatrix(Matrix34f *out_view_matrix) const override {
 

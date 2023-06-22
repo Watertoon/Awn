@@ -191,29 +191,74 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(::PathIsDirectoryA(directory_path) == true, ResultDirectoryNotFound);
 
                 /* Setup handle */
-                out_directory_handle->search_handle  = INVALID_HANDLE_VALUE;
-                out_directory_handle->directory_path = directory_path;
+                out_directory_handle->entry_index             = 0;
+                out_directory_handle->directory_depth         = 0;
+                out_directory_handle->search_handle_array[0]  = INVALID_HANDLE_VALUE;
+                out_directory_handle->directory_path_array[0] = directory_path;
 
                 RESULT_RETURN_SUCCESS;
             }
             virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle) override {
-                ::CloseHandle(directory_handle->search_handle);
+                for (u32 i = 0; i < DirectoryHandle::cMaxDirectoryDepth; ++i) {
+                    if (directory_handle->search_handle_array[i] != INVALID_HANDLE_VALUE) {
+                        ::CloseHandle(directory_handle->search_handle_array[i]);
+                    }
+                    directory_handle->search_handle_array[i] = nullptr;
+                }
                 RESULT_RETURN_SUCCESS;
             }
             virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) {
 
-                /* Read next file */
+                /* Read next files */
                 WIN32_FIND_DATAA  find_data = {};
-                for (u32 i = 0; i < entry_count; ++i) {
+                HANDLE         search_handle  = directory_handle->search_handle_array[directory_handle->directory_depth];
+                MaxPathString *directory_path = std::addressof(directory_handle->directory_path_array[directory_handle->directory_depth]);
+
+                u32 i = 0;
+                while (i < entry_count) {
 
                     /* Find a file */
-                    if (directory_handle->search_handle == INVALID_HANDLE_VALUE) {
-                        directory_handle->search_handle = ::FindFirstFileExA(directory_handle->directory_path.GetString(), FindExInfoBasic, std::addressof(find_data), FindExSearchNameMatch, nullptr, FIND_FIRST_EX_LARGE_FETCH);
-                        if (directory_handle->search_handle == INVALID_HANDLE_VALUE) { return ConvertWin32ErrorToResult(); }
+                    if (search_handle == INVALID_HANDLE_VALUE) {
+                        search_handle = ::FindFirstFileExA(directory_path->GetString(), FindExInfoBasic, std::addressof(find_data), FindExSearchNameMatch, nullptr, FIND_FIRST_EX_LARGE_FETCH);
+                        if (search_handle == INVALID_HANDLE_VALUE) { return ConvertWin32ErrorToResult(); }
+                        directory_handle->search_handle_array[directory_handle->directory_depth] = search_handle;
                     } else {
-                        bool result = ::FindNextFileA(directory_handle->search_handle, std::addressof(find_data));
+                        bool result = ::FindNextFileA(search_handle, std::addressof(find_data));
                         if (result == false) { return ConvertWin32ErrorToResult(); }
                     }
+
+                    /* Handle normal file */
+                    if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_NORMAL) == FILE_ATTRIBUTE_NORMAL) {
+                        entry_array[i].file_path = find_data.cFileName;
+                        entry_array[i].file_size = static_cast<size_t>(find_data.nFileSizeLow) | (static_cast<size_t>(find_data.nFileSizeHigh) << 0x20);
+                        ++i;
+                        directory_handle->entry_index = directory_handle->entry_index + 1;
+                        continue;
+                    }
+
+                    /* TODO; handle more then normal files and directories */
+                    VP_ASSERT((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
+
+                    /* Handle sub directory */
+                    directory_handle->directory_depth = directory_handle->directory_depth + 1;
+                    RESULT_RETURN_IF(DirectoryHandle::cMaxDirectoryDepth <= directory_handle->directory_depth, ResultExhaustedDirectoryDepth);
+
+                    /* Set sub directory path */
+                    directory_handle->directory_path_array[directory_handle->directory_depth] = find_data.cFileName;
+
+                    /* Save entry index */
+                    const u32       entry_index     = directory_handle->entry_index;
+                    const u32       sub_entry_count = directory_handle->entry_index - i;
+                    DirectoryEntry *sub_base_entry  = std::addressof(entry_array[i]);
+
+                    /* Process sub directory */
+                    const Result result = this->ReadDirectoryImpl(directory_handle, sub_base_entry, sub_entry_count);
+
+                    /* Add all parsed files */
+                    i = i + (directory_handle->entry_index - entry_index);
+
+                    /* Assert directory succeeded */
+                    RESULT_RETURN_UNLESS(result == ResultSuccess || result == ResultDirectoryExhausted, result);
                 }
 
                 RESULT_RETURN_SUCCESS;

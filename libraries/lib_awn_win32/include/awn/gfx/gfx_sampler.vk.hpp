@@ -7,6 +7,7 @@ namespace awn::gfx {
             VkSampler m_vk_sampler;
         public:
             constexpr ALWAYS_INLINE Sampler() : m_vk_sampler(VK_NULL_HANDLE) {/*...*/}
+            constexpr ~Sampler() {/*...*/}
 
             void Initialize(SamplerInfo *sampler_info) {
 

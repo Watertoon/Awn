@@ -7,7 +7,7 @@ namespace vp::res {
             const ResByaml          *m_byaml;
             const ResByamlContainer *m_data_container;
         public:
-            constexpr ByamlIterator() {/*...*/}
+            constexpr ByamlIterator() : m_byaml(nullptr), m_data_container(nullptr) {/*...*/}
 
             ALWAYS_INLINE ByamlIterator(const unsigned char *byaml_file) : m_byaml(reinterpret_cast<const ResByaml*>(byaml_file)) {
 
@@ -35,6 +35,8 @@ namespace vp::res {
             ALWAYS_INLINE ByamlIterator(const unsigned char *byaml_header, const unsigned char *container_header) : m_byaml(reinterpret_cast<const ResByaml*>(byaml_header)), m_data_container(reinterpret_cast<const ResByamlContainer*>(container_header)) {/*...*/}
 
             constexpr ALWAYS_INLINE ByamlIterator(const ByamlIterator& rhs) : m_byaml(rhs.m_byaml), m_data_container(rhs.m_data_container) {/*...*/}
+
+            constexpr ~ByamlIterator() {/*...*/}
 
             constexpr ALWAYS_INLINE ByamlIterator &operator=(const ByamlIterator &rhs) {
                 m_byaml = rhs.m_byaml;

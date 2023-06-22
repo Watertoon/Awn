@@ -193,6 +193,18 @@ namespace vp::util {
                 return Traits::GetParentReference(back);
             }
 
+            constexpr ALWAYS_INLINE void Clear() {
+
+                /* Remove all nodes */
+                IntrusiveListNode *c_node = m_list.next();
+                IntrusiveListNode *i_node = nullptr;
+                while (c_node != m_list.prev()) {
+                    i_node = c_node->next();
+                    c_node->Unlink();
+                    c_node = i_node;
+                }
+            }
+
             constexpr ALWAYS_INLINE size_t GetCount() const {
                 size_t             count = 0;
                 IntrusiveListNode *node  = m_list.next();

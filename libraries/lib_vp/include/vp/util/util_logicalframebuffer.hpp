@@ -25,6 +25,7 @@ namespace vp::util {
             virtual void BindImpl() {/*...*/}
         public:
             constexpr LogicalFrameBuffer() : m_virtual_size(), m_dimensions() {/*...*/}
+            constexpr ~LogicalFrameBuffer() {/*...*/}
 
             void Bind() {
                 this->BindImpl();

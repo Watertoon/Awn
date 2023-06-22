@@ -45,7 +45,7 @@ namespace awn::frm {
 
                     /* Create a fresh swapchain on window unminimize */
                     window_thread->m_skip_draw = false;
-                    window_thread->RecreateSwapchainIfNecessary();
+                    window_thread->RecreateSwapchainIfNecessaryUnsafe();
                     window_thread->AcquireNextImage();
                 }
             }

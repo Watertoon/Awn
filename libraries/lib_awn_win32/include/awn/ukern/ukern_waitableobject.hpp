@@ -21,8 +21,8 @@ namespace awn::ukern::impl {
         public:
             constexpr WaitableObject() {/*...*/}
 
-            virtual void EndWait(FiberLocalStorage *wait_fiber, Result wait_result);
-            virtual void CancelWait(FiberLocalStorage *wait_fiber, Result wait_result);
+            virtual void EndWait(FiberLocalStorage *wait_fiber, Result wait_result) = 0;
+            virtual void CancelWait(FiberLocalStorage *wait_fiber, Result wait_result) = 0;
 
             void EndFiberWaitImpl(FiberLocalStorage *wait_fiber, Result wait_result) {
 

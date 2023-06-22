@@ -44,5 +44,6 @@ namespace vp::util {
                 m_bounding_box.max_y = Max(height, 0.0f);
             }
 
+            constexpr ~Viewport() {/*...*/}
     };
 }

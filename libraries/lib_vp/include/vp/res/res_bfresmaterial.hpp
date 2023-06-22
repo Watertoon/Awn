@@ -18,9 +18,9 @@
 namespace vp::res {
     
     enum class BfresRenderInfoDataType : u8 {
-        S32    = 0x0,
-        Float  = 0x1,
-        String = 0x2
+        S32    = 0,
+        Float  = 1,
+        String = 2,
     };
 
     struct ResBfresRenderInfo {

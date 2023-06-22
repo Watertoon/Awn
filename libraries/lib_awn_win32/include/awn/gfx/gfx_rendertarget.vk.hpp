@@ -61,6 +61,7 @@ namespace awn::gfx {
             void SetVkImageLayout(VkImageLayout vk_image_layout) { m_vk_image_layout = vk_image_layout; }
         public:
             constexpr RenderTargetBase() : m_vk_image_view(VK_NULL_HANDLE), m_vk_image(VK_NULL_HANDLE), m_vk_image_layout(VK_IMAGE_LAYOUT_UNDEFINED), m_array_layers(0), m_render_width(0), m_render_height(0) {/*...*/}
+            constexpr ~RenderTargetBase() {/*...*/}
 
             void Finalize() {
 
@@ -90,6 +91,7 @@ namespace awn::gfx {
     class RenderTargetColor : public RenderTargetBase {
         public:
             constexpr RenderTargetColor() : RenderTargetBase() {/*...*/}
+            constexpr ~RenderTargetColor() {/*...*/}
 
             void Initialize(RenderTargetInfo *render_target_info) {
 
@@ -169,6 +171,7 @@ namespace awn::gfx {
     class RenderTargetDepthStencil : public RenderTargetBase {
         public:
             constexpr RenderTargetDepthStencil() : RenderTargetBase() {/*...*/}
+            constexpr ~RenderTargetDepthStencil() {/*...*/}
 
             void Initialize(RenderTargetInfo *render_target_info) {
 

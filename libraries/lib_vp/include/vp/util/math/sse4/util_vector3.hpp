@@ -33,9 +33,11 @@ namespace vp::util {
             constexpr ALWAYS_INLINE Vector3Type(v3& copy) : x(copy[0]), y(copy[1]), z(copy[2]) {/*...*/}
             constexpr ALWAYS_INLINE Vector3Type(const v3& copy) : x(copy[0]), y(copy[1]), z(copy[2]) {/*...*/}
             constexpr ALWAYS_INLINE Vector3Type(const Vector3Type& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {/*...*/}
-            
+
             template<typename Y>
             constexpr ALWAYS_INLINE Vector3Type(const Vector3Type<Y>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {/*...*/}
+
+            constexpr ~Vector3Type() {/*...*/}
 
             constexpr v3 GetVectorType() {
                 return v3{x,y,z,0};

@@ -13,7 +13,7 @@ namespace awn::sys {
                 m_delegate->Invoke(message);
             }
         public:
-            explicit DelegateThread(ThreadDelegate *delegate, const char *name, mem::Heap *heap, ThreadRunMode run_mode, u32 stack_size, size_t exit_code, u32 max_messages, u32 priority) : Thread(name, heap, run_mode, exit_code, max_messages, stack_size, priority) {
+            explicit DelegateThread(ThreadDelegate *delegate, const char *name, mem::Heap *heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, u32 priority) : Thread(name, heap, run_mode, exit_code, max_messages, stack_size, priority) {
                 VP_ASSERT(delegate != nullptr);
 
                 delegate->m_parent = this;
@@ -34,10 +34,11 @@ namespace awn::sys {
                 m_delegate->Invoke(message);
             }
         public:
-            explicit DelegateServiceThread(ThreadDelegate *delegate, const char *name, mem::Heap *heap, ThreadRunMode run_mode, u32 stack_size, size_t exit_code, u32 max_messages, u32 priority) : ServiceThread(name, heap, run_mode, exit_code, max_messages, stack_size, priority) {
+            explicit DelegateServiceThread(ThreadDelegate *delegate, const char *name, mem::Heap *heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, u32 priority) : ServiceThread(name, heap, run_mode, exit_code, max_messages, stack_size, priority) {
                 VP_ASSERT(delegate != nullptr);
 
                 m_delegate         = delegate;
             }
+            virtual ~DelegateServiceThread() override {/*...*/}
     };
 }

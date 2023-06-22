@@ -17,7 +17,7 @@ namespace awn::gfx {
                 m_buffer_gpu_memory_address = gpu_memory_address;
 
                 /* Create vk buffer  */
-                m_vk_buffer                 = gpu_memory_address.CreateBuffer(buffer_info);
+                m_vk_buffer = gpu_memory_address.CreateBuffer(buffer_info);
 
                 /* Query VkDeviceAddress */
                 const VkBufferDeviceAddressInfo device_address_info = {

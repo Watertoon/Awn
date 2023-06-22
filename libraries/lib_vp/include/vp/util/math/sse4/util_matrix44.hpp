@@ -45,6 +45,8 @@ namespace vp::util {
 
             constexpr Matrix44RowMajorType(const Matrix44RowMajorType& rhs) : m_row1(rhs.m_row1), m_row2(rhs.m_row2), m_row3(rhs.m_row3), m_row4(rhs.m_row4) {/*...*/}
 
+            constexpr ~Matrix44RowMajorType() {/*...*/}
+
             constexpr ALWAYS_INLINE Matrix44RowMajorType& operator=(const Matrix44RowMajorType& rhs) {
                 m_row1 = rhs.m_row1;
                 m_row2 = rhs.m_row2;

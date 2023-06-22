@@ -22,14 +22,15 @@ namespace awn::ukern {
             static constexpr size_t MaxHandles = 256;
             static constexpr size_t CounterBitOffset = 0xf;
         private:
-            s16        m_counters[MaxHandles];
-            void      *m_objects[MaxHandles];
-            BusyMutex  m_table_mutex;
-            s32        m_indice_iter;
-            u16        m_active_handles;
-            u16        m_counter_value;
+            s16                  m_counters[MaxHandles];
+            void                *m_objects[MaxHandles];
+            vp::util::BusyMutex  m_table_mutex;
+            s32                  m_indice_iter;
+            u16                  m_active_handles;
+            u16                  m_counter_value;
         public:
             constexpr ALWAYS_INLINE HandleTable() : m_counters{}, m_objects{}, m_table_mutex(), m_indice_iter(-1), m_active_handles(0), m_counter_value(1) {/*...*/}
+            constexpr ~HandleTable() {/*...*/}
 
             constexpr ALWAYS_INLINE void Initialize() {
                 m_active_handles = 0;
@@ -42,7 +43,7 @@ namespace awn::ukern {
             }
 
             bool ReserveHandle(u32 *out_handle, void *object) {
-                ScopedBusyMutex lock(std::addressof(m_table_mutex));
+                vp::util::ScopedBusyMutex lock(std::addressof(m_table_mutex));
 
                 if (MaxHandles <= m_active_handles) { return false; }
 
@@ -67,7 +68,7 @@ namespace awn::ukern {
             }
 
             bool FreeHandle(u32 handle) {
-                ScopedBusyMutex lock(std::addressof(m_table_mutex));
+                vp::util::ScopedBusyMutex lock(std::addressof(m_table_mutex));
 
                 if ((handle == 0) || ((handle >> CounterBitOffset) == 0)) { return false; }
 
@@ -83,7 +84,7 @@ namespace awn::ukern {
             }
 
             void *GetObjectByHandle(u32 handle) {
-                ScopedBusyMutex lock(std::addressof(m_table_mutex));
+                vp::util::ScopedBusyMutex lock(std::addressof(m_table_mutex));
 
                 if (((handle >> 0x1e) != 0) || (handle == 0) || ((handle >> 0xf) == 0)) { return nullptr; }
 

@@ -144,7 +144,8 @@ namespace awn::ukern::impl {
 
             void Dispatch(FiberLocalStorage *fiber_local, u32 core_number);
         public:
-            constexpr ALWAYS_INLINE UserScheduler()  : m_scheduler_lock(0) , m_scheduler_thread_table{nullptr}, m_scheduler_fiber_table{nullptr} {/*...*/}
+            constexpr ALWAYS_INLINE UserScheduler()  : m_scheduler_lock(0) , m_scheduler_thread_table{nullptr}, m_scheduler_fiber_table{nullptr}, m_high_priority_list(), m_above_normal_priority_list(), m_normal_priority_list(), m_below_normal_priority_list(), m_low_priority_list(), m_suspend_lock(0), m_suspended_list(), m_wait_list(), m_next_wakeup_time(), m_core_mask(), m_allocated_user_threads(), m_core_count(), m_active_cores(), m_runnable_fibers(), m_handle_table() {/*...*/}
+            constexpr ~UserScheduler() {/*...*/}
 
             void Initialize(UKernCoreMask core_mask);
         private:

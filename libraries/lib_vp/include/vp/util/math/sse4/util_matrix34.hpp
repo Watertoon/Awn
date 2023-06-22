@@ -39,6 +39,8 @@ namespace vp::util {
 
             constexpr Matrix34RowMajorType(const Matrix34RowMajorType& rhs) : m_row1(rhs.m_row1), m_row2(rhs.m_row2), m_row3(rhs.m_row3) {/*...*/}
 
+            constexpr ~Matrix34RowMajorType() {/*...*/}
+
             constexpr ALWAYS_INLINE Matrix34RowMajorType& operator=(const Matrix34RowMajorType& rhs) {
                 m_row1 = rhs.m_row1;
                 m_row2 = rhs.m_row2;

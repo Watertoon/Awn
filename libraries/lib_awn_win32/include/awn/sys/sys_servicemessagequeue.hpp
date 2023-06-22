@@ -4,13 +4,13 @@ namespace awn::sys {
 
     class ServiceMessageQueue {
         private:
-            size_t           *m_message_buffer;
-            s32               m_max_messages;
-            s32               m_pending_messages;
-            s32               m_current_message;
-            ukern::BusyMutex  m_message_busy_mutex;
-            u32               m_sent_wait_value;
-            u32               m_full_wait_value;
+            size_t              *m_message_buffer;
+            s32                  m_max_messages;
+            s32                  m_pending_messages;
+            s32                  m_current_message;
+            vp::util::BusyMutex  m_message_busy_mutex;
+            u32                  m_sent_wait_value;
+            u32                  m_full_wait_value;
         private:
             ALWAYS_INLINE void WaitForMessage() {
 
@@ -36,10 +36,10 @@ namespace awn::sys {
 
                 /* Wait on condition variable until we have space for our message */
                 while(m_max_messages <= m_pending_messages) {
-                    m_message_busy_mutex.Leave();
                     if (m_full_wait_value != 1) {
                         ::InterlockedExchange(std::addressof(m_full_wait_value), 1);
                     }
+                    m_message_busy_mutex.Leave();
                     if (::IsThreadAFiber() == false) {
                         u32 wait_value = 0;
                         ::WaitOnAddress(std::addressof(m_full_wait_value), std::addressof(wait_value), sizeof(u32), INFINITE);
@@ -74,7 +74,7 @@ namespace awn::sys {
             ALWAYS_INLINE void RecieveMessageImpl(size_t *out_message) {
 
                 /* Pull our current message */
-                *out_message = m_message_buffer[m_current_message];
+                *out_message        = m_message_buffer[m_current_message];
                 m_current_message  += 1;
                 m_pending_messages -= 1;
                 const u32 offset    = (m_max_messages <= m_current_message) ? m_max_messages : 0;
@@ -87,7 +87,8 @@ namespace awn::sys {
                 return;
             }
         public:
-            constexpr ServiceMessageQueue() {/*...*/}
+            constexpr  ServiceMessageQueue() : m_message_buffer(nullptr), m_max_messages(0), m_pending_messages(0), m_current_message(0), m_message_busy_mutex{}, m_sent_wait_value(0), m_full_wait_value(0) {/*...*/}
+            constexpr ~ServiceMessageQueue() {/*...*/}
 
             void Initialize(s32 max_message_count) {
 
@@ -125,7 +126,7 @@ namespace awn::sys {
             }
 
             void ReceiveMessage(size_t *out_message) {
-                std::scoped_lock l(m_message_busy_mutex);
+                vp::util::ScopedBusyMutex l(std::addressof(m_message_busy_mutex));
 
                 this->WaitForMessage();
 
@@ -135,7 +136,7 @@ namespace awn::sys {
             }
 
             bool TryReceiveMessage(size_t *out_message) {
-                std::scoped_lock l(m_message_busy_mutex);
+                vp::util::ScopedBusyMutex l(std::addressof(m_message_busy_mutex));
 
                 if (m_pending_messages == 0) { return false; }
 
@@ -145,7 +146,7 @@ namespace awn::sys {
             }
 
             void SendMessage(size_t message) {
-                std::scoped_lock l(m_message_busy_mutex);
+                vp::util::ScopedBusyMutex l(std::addressof(m_message_busy_mutex));
 
                 this->WaitForMessageClear();
 
@@ -155,7 +156,7 @@ namespace awn::sys {
             }
 
             bool TrySendMessage(size_t message) {
-                std::scoped_lock l(m_message_busy_mutex);
+                vp::util::ScopedBusyMutex l(std::addressof(m_message_busy_mutex));
 
                 if (m_max_messages <= m_pending_messages) { return false; }
 

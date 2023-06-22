@@ -6,9 +6,11 @@ namespace awn::res {
         private:
             vp::res::SarcExtractor m_sarc_extractor;
         public:
-            constexpr SarcArchiveResource() {/*...*/}
+            constexpr SarcArchiveResource() : ArchiveResource(), m_sarc_extractor() {/*...*/}
+            constexpr virtual ~SarcArchiveResource() override {/*...*/}
 
             virtual bool Initialize(mem::Heap *heap, void *file, u32 file_size) override {
+                VP_UNUSED(heap, file_size);
                 return m_sarc_extractor.Initialize(file);
             }
 

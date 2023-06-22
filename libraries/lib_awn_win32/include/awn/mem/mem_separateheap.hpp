@@ -35,6 +35,7 @@ namespace awn::mem {
                     block_list[i].next = std::addressof(block_list[i + 1]);
                 }
             }
+            virtual ~SeparateHeap() override {/*...*/}
 
             static constexpr ALWAYS_INLINE size_t GetManagementAreaSize(size_t block_count) {
                 return block_count * sizeof(SeparateMemoryBlock);

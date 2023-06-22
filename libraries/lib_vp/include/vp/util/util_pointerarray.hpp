@@ -10,6 +10,7 @@ namespace vp::util {
             T   **m_pointer_array;
         public:
             constexpr ALWAYS_INLINE PointerArray() : m_max_pointers(0), m_used_pointers(0), m_pointer_array(nullptr) {/*...*/}
+            constexpr ~PointerArray() {/*...*/}
 
             constexpr ALWAYS_INLINE T *operator[](u32 index) {
                 if (index < m_used_pointers) {

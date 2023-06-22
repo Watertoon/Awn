@@ -54,7 +54,8 @@ namespace vp::res {
             u32                 m_resource_size_collision_count;
             u32                 m_max_path;
         public:
-            constexpr ALWAYS_INLINE ResourceSizeTableExtractor() {/*...*/}
+            constexpr ALWAYS_INLINE ResourceSizeTableExtractor() : m_resource_size_crc32_array(nullptr), m_resource_size_collision_array(nullptr), m_resource_size_crc32_count(0), m_resource_size_collision_count(0), m_max_path(0) {/*...*/}
+            constexpr ~ResourceSizeTableExtractor() {/*...*/}
 
             bool Initialize(void *file, u32 file_size, u32 max_path_length = 0xffff'ffff) {
 

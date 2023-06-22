@@ -8,6 +8,7 @@ namespace vp::util {
         public:
             constexpr ALWAYS_INLINE Job() : m_job_name(nullptr) {/*...*/}
             constexpr ALWAYS_INLINE Job(const char *name) : m_job_name(name) {/*...*/}
+            constexpr ~Job() {/*...*/}
 
             virtual void Invoke() {/*...*/}
 

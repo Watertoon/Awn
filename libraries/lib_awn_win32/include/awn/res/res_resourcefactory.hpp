@@ -21,6 +21,7 @@ namespace awn::res {
             VP_RTTI_BASE(ResourceFactoryBase);
         public:
             constexpr ALWAYS_INLINE explicit ResourceFactoryBase(const char *file_extension) : m_file_extension(file_extension), m_manager_list_node() {/*...*/}
+            constexpr virtual ~ResourceFactoryBase() {/*...*/}
 
             virtual Resource *AllocateResource(mem::Heap *heap, s32 alignment) {
                 return new (heap, alignment) Resource();

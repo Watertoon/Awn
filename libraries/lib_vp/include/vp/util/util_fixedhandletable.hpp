@@ -37,6 +37,7 @@ namespace vp::util {
             u16        m_counter_value;
         public:
             constexpr ALWAYS_INLINE FixedHandleTable() : m_counter_array{}, m_object_array{}, m_table_mutex(), m_indice_iter(-1), m_active_handles(0), m_counter_value(1) {/*...*/}
+            constexpr ~FixedHandleTable() {/*...*/}
 
             constexpr ALWAYS_INLINE void Initialize() {
 

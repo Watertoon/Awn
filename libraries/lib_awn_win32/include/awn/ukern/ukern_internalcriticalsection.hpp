@@ -24,6 +24,7 @@ namespace awn::ukern {
             UKernHandle m_handle;
         public:
             constexpr ALWAYS_INLINE InternalCriticalSection() : m_handle(0) {/*...*/}
+            constexpr ~InternalCriticalSection() {/*...*/}
 
             void Enter() {
 

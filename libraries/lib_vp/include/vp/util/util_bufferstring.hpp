@@ -36,6 +36,8 @@ namespace vp::util {
                 this->AssureTermination();
             }
 
+            constexpr ~FixedString() {/*...*/}
+
             constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) {
                 if (std::is_constant_evaluated()) {
                     return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
@@ -159,7 +161,7 @@ namespace vp::util {
         private:
             char *m_string;
         public:
-            explicit HeapString(imem::IHeap *heap, const char *string, s32 alignment = 8) {
+            explicit ALWAYS_INLINE HeapString(imem::IHeap *heap, const char *string, s32 alignment = 8) {
                 const u32 length = ::strlen(string);
 
                 m_string = new (heap, alignment) char [length + 1];
@@ -171,7 +173,7 @@ namespace vp::util {
                 return;
             }
 
-            ~HeapString() {
+            ALWAYS_INLINE ~HeapString() {
                 if (m_string != nullptr) {
                     delete [] m_string;
                     m_string = nullptr;

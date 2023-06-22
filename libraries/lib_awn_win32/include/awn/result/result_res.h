@@ -25,4 +25,5 @@ namespace awn::res {
     DECLARE_RESULT(DirectoryNotFound,         20);
     DECLARE_RESULT(DirectoryExhausted,        21);
     DECLARE_RESULT(FailedToOpenFile,          22);
+    DECLARE_RESULT(ExhaustedDirectoryDepth,   23);
 }

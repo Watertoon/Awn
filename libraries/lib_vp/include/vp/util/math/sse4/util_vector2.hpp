@@ -38,6 +38,8 @@ namespace vp::util {
 
             constexpr Vector2Type(const Vector2Type& rhs) : x(rhs.x), y(rhs.y) {/*...*/}
 
+            constexpr ~Vector2Type() {/*...*/}
+
             constexpr T operator[](int index) {
                 return std::addressof(x)[index];
             }

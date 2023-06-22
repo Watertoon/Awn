@@ -21,13 +21,15 @@ namespace vp {
 
     class TimeSpan {
         public:
-            static constexpr s64 cMaxTime = LLONG_MAX;
-            static constexpr s64 cMinTime = LLONG_MIN;
+            static constexpr inline s64 cMaxTime = LLONG_MAX;
+            static constexpr inline s64 cMinTime = LLONG_MIN;
         private:
             s64 m_time_ns;
         public:
             constexpr ALWAYS_INLINE TimeSpan() : m_time_ns(0) {/*...*/}
             constexpr ALWAYS_INLINE TimeSpan(s64 time_ns) : m_time_ns(time_ns) {/*...*/}
+            constexpr ALWAYS_INLINE TimeSpan(const TimeSpan &rhs) : m_time_ns(rhs.m_time_ns) {/*...*/}
+            constexpr ~TimeSpan() {/*...*/}
 
             static TimeSpan FromTick(s64 tick) {
 
@@ -41,8 +43,9 @@ namespace vp {
 
                 const s64 residual = ((tick % frequency) * 1'000'000'000) / frequency;
                 const s64 quotient = (tick / frequency) * 1'000'000'000;
+                const s64 time     = residual + quotient;
 
-                return TimeSpan(residual + quotient);
+                return time;
             }
             static constexpr ALWAYS_INLINE TimeSpan FromNanoSeconds(s64 time_ns)  { return TimeSpan(time_ns); }
             static constexpr ALWAYS_INLINE TimeSpan FromMicroSeconds(s64 time_us) { return TimeSpan(time_us  * 1'000); }

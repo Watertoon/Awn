@@ -89,21 +89,21 @@ namespace vp::res {
         constexpr ALWAYS_INLINE u64   GetGpuMemorySize()   const { return (memory_pool_info == nullptr) ? 0xffff'ffff'ffff'ffff : memory_pool_info->size; }
         constexpr ALWAYS_INLINE void *GetGpuMemoryRegion()       { return (memory_pool_info == nullptr) ? nullptr : memory_pool_info->storage; }
 
-        /*const char *FindRelocatedString(u64 key) {
-
-            
-        }
-
-        void RelocateStrings(ResBfres *external_string_bfres) {
-            
-            
-            for (u32 i = 0; i < model_count; ++i) {
-                
-                for (u32 y = 0; y < model_array[i].shader_reflection_count; ++y) {
-                    
-                }
-            }
-        }*/
+        //const char *FindRelocatedString(u64 key) {
+        //
+        //    
+        //}
+        //
+        //void RelocateStrings(ResBfres *external_string_bfres) {
+        //
+        //    
+        //    for (u32 i = 0; i < model_count; ++i) {
+        //        
+        //        for (u32 y = 0; y < model_array[i].shader_reflection_count; ++y) {
+        //            
+        //        }
+        //    }
+        //}
 
         ResBfresModel *TryGetModel(const char *model_name) {
             if (model_dictionary == nullptr) { return nullptr; }

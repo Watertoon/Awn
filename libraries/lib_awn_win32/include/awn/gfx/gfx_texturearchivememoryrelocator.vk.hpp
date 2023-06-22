@@ -93,7 +93,8 @@ namespace awn::gfx {
                 return transfer_cmd_buffer.End();
             }
         public:
-            constexpr TextureArchiveMemoryRelocator() {/*...*/}
+            constexpr TextureArchiveMemoryRelocator() : m_bntx(nullptr), m_device_memory() {/*...*/}
+            constexpr ~TextureArchiveMemoryRelocator() {/*...*/}
 
             bool Initialize(vp::res::ResBntx *bntx) {
 

@@ -8,6 +8,7 @@ namespace awn::sys {
             SRWLOCK     m_win32_lock;
         public:
             constexpr ALWAYS_INLINE ServiceCriticalSection() : m_wait_value(0), m_win32_lock(0) {/*...*/}
+            constexpr ~ServiceCriticalSection() {/*...*/}
 
             void Enter() {
 

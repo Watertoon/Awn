@@ -23,7 +23,8 @@ namespace awn::gfx {
             GpuMemoryAllocationList      m_gpu_memory_allocation_list;
             vp::util::IntrusiveListNode  m_gpu_heap_list_node;
         public:
-            constexpr ALWAYS_INLINE GpuHeapMemory() {/*...*/}
+            constexpr ALWAYS_INLINE GpuHeapMemory() : m_parent_gpu_heap(nullptr), m_vk_device_memory(VK_NULL_HANDLE), m_mapped_memory(nullptr), m_memory_size(0), m_memory_property_flags(0), m_gpu_separate_heap(nullptr), m_gpu_memory_allocation_list(), m_gpu_heap_list_node() {/*...*/}
+            constexpr ~GpuHeapMemory() {/*...*/}
 
             static GpuHeapMemory *Create(GpuHeap *parent_heap, mem::Heap *heap, size_t size, s32 alignment, MemoryPropertyFlags memory_properties);
             

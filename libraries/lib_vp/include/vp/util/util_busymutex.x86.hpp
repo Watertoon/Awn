@@ -28,6 +28,7 @@ namespace vp::util {
         };
         public:
             constexpr ALWAYS_INLINE BusyMutex() : m_counter(0) {/*...*/}
+            constexpr ALWAYS_INLINE ~BusyMutex() {/*...*/}
 
             ALWAYS_INLINE void Enter() {
 
@@ -35,22 +36,24 @@ namespace vp::util {
                 u32 wait = ::InterlockedExchangeAdd(reinterpret_cast<volatile long int*>(std::addressof(m_counter)), 0x1'0000);
 
                 /* Wait until release count is matched */
-                while ((wait & 0xffff) != ((wait >> 0x10) & 0xffff)) {
-
-                    /* Signal the processor to not aggressively speculatively execute for a bit */
-                    util::x86::pause();
-
-                    /* Atomicly acquire the lock and release counters */
-                    wait = ::InterlockedAdd(reinterpret_cast<volatile long int*>(std::addressof(m_counter)), 0);
+                if ((wait & 0xffff) != ((wait >> 0x10) & 0xffff)) {
+                    do {
+                        /* Signal the processor to not aggressively speculatively execute for a bit */
+                        util::x86::pause();
+                    } while (m_release_count != ((wait >> 0x10) & 0xffff));
                 }
+
+                return;
             }
 
             ALWAYS_INLINE void Leave() {
 
                 /* Increment release */
-                ++m_release_count;
+                ::InterlockedIncrement16(reinterpret_cast<short*>(std::addressof(m_release_count)));
             }
     };
+    static_assert(sizeof(volatile long int) == sizeof(u32));
+    static_assert(sizeof(volatile short) == sizeof(u16));
 
     class ScopedBusyMutex {
         private:

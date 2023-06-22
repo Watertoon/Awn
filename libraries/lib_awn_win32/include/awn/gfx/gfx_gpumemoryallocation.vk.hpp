@@ -20,7 +20,7 @@ namespace awn::gfx {
             GpuHeapMemory               *m_parent_gpu_heap_memory;
             vp::util::IntrusiveListNode  m_gpu_heap_memory_list_node;
         public:
-            constexpr GpuMemoryAllocation() {/*...*/}
+            constexpr GpuMemoryAllocation() : m_mapped_memory(nullptr), m_offset(0), m_size(0), m_memory_property_flags(0), m_is_dedicated_allocation(false), m_parent_gpu_heap_memory(nullptr), m_gpu_heap_memory_list_node() {/*...*/}
 
             Result TryAllocateGpuMemory(mem::Heap *meta_data_heap, size_t size, s32 alignment, MemoryPropertyFlags memory_property_flags);
             void   FreeGpuMemory();

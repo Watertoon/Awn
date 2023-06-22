@@ -56,11 +56,11 @@ namespace awn::mem {
             }
             void RemoveChild(Heap *child) {
                 ScopedHeapLock lock(this);
-                m_child_list.PushBack(*child);
+                m_child_list.Remove(*child);
             }
         public:
             explicit Heap(const char *name, IHeap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : IHeap(name, parent_heap, start_address, size), m_disposer_list(), m_heap_cs(), m_is_thread_safe(is_thread_safe) {/*...*/}
-            ~Heap() {
+            virtual ~Heap() override {
                 if (m_parent_heap != nullptr && awn::mem::Heap::CheckRuntimeTypeInfo(m_parent_heap) == true) { 
                     reinterpret_cast<awn::mem::Heap*>(m_parent_heap)->RemoveChild(this); 
                 }

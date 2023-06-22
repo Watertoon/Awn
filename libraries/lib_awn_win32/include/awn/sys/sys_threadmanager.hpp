@@ -65,8 +65,7 @@ namespace awn::sys {
 
             static void DefaultTlsDestructor([[maybe_unused]] void *arg) {/*...*/}
         public:
-            ThreadManager() : m_thread_list(), m_list_cs() {/*...*/}
-
+            constexpr ThreadManager() : m_thread_list(), m_list_cs(), m_tls_cs(), m_main_thread(), m_current_service_thread_tls_slot(0), m_tls_slot_count(0), m_tls_destructor_array() {/*...*/}
             ~ThreadManager() {
                 /* Ensure all threads exit */
                 {

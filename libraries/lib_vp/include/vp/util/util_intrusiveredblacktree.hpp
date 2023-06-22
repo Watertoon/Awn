@@ -227,6 +227,7 @@ namespace vp::util {
             }
         public:
             constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNodeBase() : m_parent(nullptr), m_left(nullptr), m_right(nullptr), m_color(false)  {/*...*/}
+            constexpr ~IntrusiveRedBlackTreeNodeBase() {/*...*/}
 
             constexpr ALWAYS_INLINE bool IsEnd() const {
                 return (m_right == nullptr) & ((m_parent == nullptr) || (m_parent->m_right == this));
@@ -389,6 +390,7 @@ namespace vp::util {
             }
         public:
             constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNode() : IntrusiveRedBlackTreeNodeBase(), m_hash_value() {/*...*/}
+            constexpr ~IntrusiveRedBlackTreeNode() {/*...*/}
 
             constexpr ALWAYS_INLINE void SetKey(key_type hash) {
                 m_hash_value = hash;
@@ -418,6 +420,7 @@ namespace vp::util {
             node_type *m_root;
 		public:
 			constexpr ALWAYS_INLINE IntrusiveRedBlackTree() : m_root(nullptr) {/*...*/}
+            constexpr ~IntrusiveRedBlackTree() {/*...*/}
 
             void Insert(node_type *node) {
                 node_type::InsertImpl(std::addressof(m_root), node);

@@ -17,6 +17,7 @@ namespace vp::util {
             u32        m_max;
         public:
             constexpr ALWAYS_INLINE PointerArrayAllocator() {/*...*/}
+            constexpr ~PointerArrayAllocator() {/*...*/}
             
             constexpr ALWAYS_INLINE T *operator[](u32 index) {
                 VP_ASSERT(index < m_used_count);

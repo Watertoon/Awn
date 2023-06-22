@@ -132,7 +132,7 @@ namespace awn::frm {
                             .height = static_cast<u32>(m_window_info.height)
                         },
                         .imageArrayLayers      = m_window_info.view_count,
-                        .imageUsage            = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
+                        .imageUsage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                         .imageSharingMode      = VK_SHARING_MODE_CONCURRENT,
                         .queueFamilyIndexCount = gfx::Context::GetInstance()->GetQueueFamilyCount(),
                         .pQueueFamilyIndices   = gfx::Context::GetInstance()->GetQueueFamilyIndiceArray(),
@@ -186,6 +186,9 @@ namespace awn::frm {
                 {
                     /* Set skip draw */
                     m_skip_draw = true;
+                    
+                    /* Wait for idle */
+                    ::pfn_vkQueueWaitIdle(gfx::Context::GetInstance()->GetVkQueueGraphics());
 
                     /* Finalize render targets */
                     const u32 image_count = (m_window_info.enable_triple_buffer) ? 3 : 2;
@@ -212,10 +215,10 @@ namespace awn::frm {
                 ::DispatchMessage(std::addressof(window_message->win32_msg));
             }
 
-            bool RecreateSwapchainIfNecessary() {
+            bool RecreateSwapchainIfNecessaryUnsafe() {
 
                 /* Lock Window */
-                std::scoped_lock lock(m_window_cs);
+                //std::scoped_lock lock(m_window_cs);
 
                 /* Bail if the swapchain is fine */
                 if (m_require_swapchain_refresh == false || m_skip_draw == true) { return false; }
@@ -294,17 +297,24 @@ namespace awn::frm {
             void AcquireNextImage() {
 
                 /* Acquire full */
-                const u32 result = ::pfn_vkAcquireNextImageKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, 0xffff'ffff'ffff'ffff, nullptr, m_acquire_vk_fence, std::addressof(m_image_index));
-                ::pfn_vkWaitForFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence), true, 0xffff'ffff'ffff'ffff);
-                ::pfn_vkResetFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence));
+                const u32 result0 = ::pfn_vkAcquireNextImageKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, 0xffff'ffff'ffff'ffff, nullptr, m_acquire_vk_fence, std::addressof(m_image_index));
+                const u32 result1 = ::pfn_vkWaitForFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence), true, 0xffff'ffff'ffff'ffff);
+                VP_ASSERT(result1 == VK_SUCCESS);
+                const u32 result2 = ::pfn_vkResetFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence));
+                VP_ASSERT(result2 == VK_SUCCESS);
 
                 /* Update results */
-                if (result == VK_SUBOPTIMAL_KHR) { m_require_swapchain_refresh = true; }
-                else { VP_ASSERT(result == VK_SUCCESS); }
+                if (result0 == VK_SUBOPTIMAL_KHR) { m_require_swapchain_refresh = true; }
+                else { VP_ASSERT(result0 == VK_SUCCESS); }
             }
 
             void WaitForInitialize() { 
                 m_window_event.Wait(); 
+            }
+
+            void ExitWindowThread() { 
+                this->SendMessage(0);
+                this->WaitForThreadExit();
             }
 
             constexpr ALWAYS_INLINE VkSurfaceKHR            GetVkSurface()           const { return m_vk_surface; }

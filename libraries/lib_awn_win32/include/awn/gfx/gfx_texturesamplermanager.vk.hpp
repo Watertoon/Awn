@@ -58,7 +58,8 @@ namespace awn::gfx {
         public:
             AWN_SINGLETON_TRAITS(TextureSamplerManager);
         public:
-            constexpr TextureSamplerManager() {/*...*/}
+            constexpr TextureSamplerManager() : m_descriptor_gpu_memory_allocation(), m_texture_descriptor_gpu_address(), m_sampler_descriptor_gpu_address(), m_texture_descriptor_vk_buffer(), m_sampler_descriptor_vk_buffer(), m_texture_vk_device_address(), m_sampler_vk_device_address(), m_texture_descriptor_buffer_address(), m_sampler_descriptor_buffer_address(), m_texture_descriptor_size(), m_sampler_descriptor_size(), m_texture_descriptor_stride(), m_sampler_descriptor_stride(), m_texture_handle_table(), m_sampler_handle_table(), m_sampler_map(), m_texture_allocator(), m_sampler_allocator(), m_texture_allocator_critical_section(), m_sampler_allocator_critical_section() {/*...*/}
+            constexpr ~TextureSamplerManager() {/*...*/}
 
             void Initialize(mem::Heap *heap);
             void Finalize();

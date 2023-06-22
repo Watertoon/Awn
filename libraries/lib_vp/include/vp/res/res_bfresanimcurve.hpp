@@ -14,19 +14,19 @@ namespace vp::res {
         S8    = 2,
     };
     enum class BfresAnimCurveCurveType {
-        CubicFloat,
-        LinearFloat,
-        BakedFloat,
-        StepInteger,
-        BakedInteger,
-        StepBoolean,
-        BakedBoolean,
+        CubicFloat   = 0,
+        LinearFloat  = 1,
+        BakedFloat   = 2,
+        StepInteger  = 3,
+        BakedInteger = 4,
+        StepBoolean  = 5,
+        BakedBoolean = 6,
     };
     enum class BfresAnimCurveWrapMode {
-        Clamp,
-        Repeat,
-        Mirror,
-        RelativeRepeat,
+        Clamp          = 0,
+        Repeat         = 1,
+        Mirror         = 2,
+        RelativeRepeat = 3,
     };
 
     struct ResBfresAnimCurve {

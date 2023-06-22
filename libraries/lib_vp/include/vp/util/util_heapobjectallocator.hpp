@@ -15,9 +15,8 @@ namespace vp::util {
             FreeList *m_free_list;
             void     *m_start_address;
         public:
-            constexpr ALWAYS_INLINE HeapObjectAllocator() : m_free_list(nullptr) {
-                
-            }
+            constexpr ALWAYS_INLINE HeapObjectAllocator() : m_free_list(nullptr), m_start_address(nullptr) {/*...*/}
+            constexpr ~HeapObjectAllocator() {/*...*/}
             
             ALWAYS_INLINE bool Initialize(imem::IHeap *alloc_heap, u32 element_count) {
                 

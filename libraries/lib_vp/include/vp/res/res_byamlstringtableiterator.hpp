@@ -6,8 +6,9 @@ namespace vp::res {
         private:
             const ResByamlContainer *m_byaml_container;
         public:
-            constexpr ALWAYS_INLINE ByamlStringTableIterator() {/*...*/}
+            constexpr ALWAYS_INLINE ByamlStringTableIterator() : m_byaml_container(nullptr) {/*...*/}
             constexpr ALWAYS_INLINE ByamlStringTableIterator(const ResByamlContainer *string_table) : m_byaml_container(string_table) {/*...*/}
+            constexpr ~ByamlStringTableIterator() {/*...*/}
 
             /* Note; binary search is only valid for the key table and not the string table */
             ALWAYS_INLINE u32 FindKeyIndexByKey(const char *key) const {

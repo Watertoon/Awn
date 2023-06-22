@@ -8,7 +8,8 @@ namespace awn::sys {
             u32    m_signal_state;
             HANDLE m_win32_event_handle;
         public:
-            constexpr ServiceEvent() {/*...*/}
+            constexpr ServiceEvent() : m_signal_state(0), m_win32_event_handle(INVALID_HANDLE_VALUE) {/*...*/}
+            constexpr ~ServiceEvent() {/*...*/}
 
             void Initialize() {
                 m_win32_event_handle = ::CreateEvent(nullptr, true, false, nullptr);
@@ -37,7 +38,7 @@ namespace awn::sys {
                 ::SetEvent(m_win32_event_handle);
             }
 
-            void Reset() {
+            void Clear() {
                 ::ResetEvent(m_win32_event_handle);
                 m_signal_state = 0;
             }

@@ -24,7 +24,7 @@ namespace vp::res {
         u32 this_table_offset;
         u32 section_count;
         u32 reserve0;
-        
+
         static constexpr u32 Magic = util::TCharCode32("_RLT");
 
         struct ResSection {
@@ -43,7 +43,7 @@ namespace vp::res {
             u8  array_stride;
         };
         static_assert(sizeof(ResEntry) == 0x8);
-        
+
         static u64 CalculateTableSize(s32 sections, s32 entries) { 
             return sections * sizeof(ResSection) + entries * sizeof(ResEntry) + sizeof(ResNintendoWareRelocationTable); 
         }

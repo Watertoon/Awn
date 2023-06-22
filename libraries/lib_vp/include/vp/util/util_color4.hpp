@@ -35,6 +35,8 @@ namespace vp::util {
             constexpr ALWAYS_INLINE Color4u8(const Color4u8 &copy) : m_r(copy.m_r), m_g(copy.m_g), m_b(copy.m_b), m_a(copy.m_a) {/*...*/}
             constexpr ALWAYS_INLINE Color4u8(const Color4f &copy);
 
+            constexpr ~Color4u8() {/*...*/}
+
             constexpr ALWAYS_INLINE Color4u8 &operator=(const Color4u8 &rhs) {
                 m_r = rhs.m_r;
                 m_g = rhs.m_g;
@@ -59,6 +61,8 @@ namespace vp::util {
             constexpr ALWAYS_INLINE Color4f(u8 r, u8 g, u8 b, u8 a)             : m_r(ConvertUnormToFloat(r)), m_g(ConvertUnormToFloat(g)), m_b(ConvertUnormToFloat(b)), m_a(ConvertUnormToFloat(a)) {/*...*/}
             constexpr ALWAYS_INLINE Color4f(const Color4f &copy)                : m_r(copy.m_r), m_g(copy.m_g), m_b(copy.m_b), m_a(copy.m_a) {/*...*/}
             constexpr ALWAYS_INLINE Color4f(const Color4u8 &copy)               : m_r(ConvertUnormToFloat(copy.m_r)), m_g(ConvertUnormToFloat(copy.m_g)), m_b(ConvertUnormToFloat(copy.m_b)), m_a(ConvertUnormToFloat(copy.m_a)) {/*...*/}
+
+            constexpr ~Color4f() {/*...*/}
 
             constexpr ALWAYS_INLINE Color4f &operator=(const Color4f &rhs) {
                 m_r = rhs.m_r;

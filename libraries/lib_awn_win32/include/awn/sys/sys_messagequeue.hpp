@@ -53,7 +53,8 @@ namespace awn::sys {
                 m_buffer_full_cv.Broadcast();
             }
         public:
-            constexpr MessageQueue() {/*...*/}
+            constexpr MessageQueue() : m_message_buffer(nullptr), m_max_messages(0), m_pending_messages(0), m_current_message(0), m_message_mutex(), m_message_sent_cv(), m_buffer_full_cv() {/*...*/}
+            constexpr ~MessageQueue() {/*...*/}
 
             void Initialize(s32 max_message_count) {
 

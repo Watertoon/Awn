@@ -53,6 +53,7 @@ namespace awn::gfx {
             VkShaderEXT           m_vk_shader_array[Context::cTargetMaxSimultaneousShaderStageCount];
         public:
             constexpr ALWAYS_INLINE Shader() : m_shader_count(0), m_shader_stage_mask(), m_vk_shader_stage_flag_array{}, m_vk_shader_array{} {/*...*/}
+            constexpr ~Shader() {/*...*/}
 
             void Initialize(MeshShaderInfo *shader_info, const bool is_binary = false) {
 

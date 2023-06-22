@@ -38,6 +38,8 @@ namespace vp::util {
 
             constexpr Matrix33RowMajorType(const Matrix33RowMajorType& rhs) : m_arr{rhs.m_arr[0],rhs.m_arr[1],rhs.m_arr[2],rhs.m_arr[3],rhs.m_arr[4],rhs.m_arr[5],rhs.m_arr[6],rhs.m_arr[7],rhs.m_arr[8]} {/*...*/}
 
+            constexpr ~Matrix33RowMajorType() {/*...*/}
+
             constexpr ALWAYS_INLINE Matrix33RowMajorType operator+(const Matrix33RowMajorType& rhs) const {
                 return { m_r1 + rhs.m_r1, m_r2 + rhs.m_r2, m_r3 + rhs.m_r3 };
             }

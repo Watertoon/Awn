@@ -11,7 +11,8 @@ namespace awn::res {
         public:
             AWN_SINGLETON_TRAITS(ResourceFactoryManager);
         public:
-            constexpr ALWAYS_INLINE ResourceFactoryManager() {/*...*/}
+            constexpr ALWAYS_INLINE ResourceFactoryManager() : m_list_cs(), m_resource_factory_list() {/*...*/}
+            constexpr ~ResourceFactoryManager() {/*...*/}
 
             void RegisterResourceFactory(ResourceFactoryBase *factory) {
                 VP_ASSERT(factory->m_file_extension != nullptr);

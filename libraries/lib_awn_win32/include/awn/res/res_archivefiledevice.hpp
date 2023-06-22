@@ -147,6 +147,7 @@ namespace awn::res {
 
             virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) override {
                 *out_formatted_path = path;
+                RESULT_RETURN_SUCCESS;
             }
 
             virtual Result GetFileReferenceImpl(void **out_file, size_t *out_size, const char *file_path) {
@@ -169,7 +170,8 @@ namespace awn::res {
             }
 
         public:
-            constexpr ArchiveFileDevice(ArchiveResource *archive_resource) {/*...*/}
+            constexpr ArchiveFileDevice(ArchiveResource *archive_resource) : FileDeviceBase(), m_archive_resource(archive_resource) {/*...*/}
+            constexpr virtual ~ArchiveFileDevice() override {/*...*/}
 
             Result GetFileReference(void **out_file, size_t *out_size, const char *file_path) {
                 return this->GetFileReferenceImpl(out_file, out_size, file_path);

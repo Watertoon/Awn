@@ -10,6 +10,7 @@ namespace vp::util {
 			T   *m_array[Size];
         public:
             constexpr ALWAYS_INLINE FixedRingBuffer() : m_current_offset(0), m_count(0), m_array{} {/*...*/}
+            constexpr ~FixedRingBuffer() {/*...*/}
 
             constexpr ALWAYS_INLINE void PushBack(T *pointer) {
 

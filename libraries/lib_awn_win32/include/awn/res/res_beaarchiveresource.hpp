@@ -23,9 +23,11 @@ namespace awn::res {
         private:
             vp::res::ResBea *m_bea;
         public:
-            constexpr BeaArchiveResource() {/*...*/}
+            constexpr BeaArchiveResource() : ArchiveResource(), m_bea(nullptr) {/*...*/}
+            constexpr virtual ~BeaArchiveResource() override {/*...*/}
 
             virtual bool Initialize(mem::Heap *heap, void *file, u32 file_size) override {
+                VP_UNUSED(heap, file_size);
                 m_bea = vp::res::ResBea::ResCast(file);
                 return (m_bea != nullptr);
             }

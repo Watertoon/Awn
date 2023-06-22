@@ -7,6 +7,7 @@ namespace awn::gfx {
             DescriptorSlot m_texture_slot;
         public:
             constexpr ALWAYS_INLINE TextureBinder() : m_texture_slot(cInvalidDescriptorSlot) {/*...*/}
+            ~TextureBinder() { this->ReleaseTexture(); }
 
             TextureBinder &operator=(const TextureBinder &rhs) {
                 this->BindTexture(rhs.m_texture_slot);
@@ -41,6 +42,7 @@ namespace awn::gfx {
             DescriptorSlot m_sampler_slot;
         public:
             constexpr ALWAYS_INLINE SamplerBinder() : m_sampler_slot(cInvalidDescriptorSlot) {/*...*/}
+            ~SamplerBinder() { this->ReleaseSampler(); }
             
             SamplerBinder &operator=(const SamplerBinder &rhs) {
                 this->BindSampler(rhs.m_sampler_slot);
@@ -79,6 +81,7 @@ namespace awn::gfx {
             SamplerBinder m_sampler_binder;
         public:
             constexpr ALWAYS_INLINE TextureSamplerBinder() : m_texture_binder(), m_sampler_binder() {/*...*/}
+            ~TextureSamplerBinder() {/*...*/}
 
             TextureSamplerBinder &operator=(const TextureSamplerBinder &rhs) {
                 m_texture_binder = rhs.m_texture_binder;

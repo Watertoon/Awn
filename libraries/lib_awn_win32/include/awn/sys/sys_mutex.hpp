@@ -8,6 +8,7 @@ namespace awn::sys {
             u32                            m_lock_count;
         public:
             constexpr ALWAYS_INLINE Mutex() : m_cs(), m_lock_count(0) {/*...*/}
+            constexpr ~Mutex() {/*...*/}
 
             void Enter() {
 
