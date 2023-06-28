@@ -4,7 +4,7 @@ namespace awn::mem {
 
     namespace {
         constinit vp::util::TypeStorage<HeapManager>   sHeapManagerStorage       = {};
-        //constinit sys::Mutex                           sHeapManagerMutex         = {};
+        constinit sys::ServiceCriticalSection          sHeapManagerCS            = {};
         constinit bool                                 sIsHeapManagerInitialized = false;
         constexpr const char *                         cRootHeapNameArray[]      = {
             "RootHeap0",
@@ -102,7 +102,7 @@ namespace awn::mem {
             }
         }
 
-        //std::scoped_lock l(sHeapManagerMutex);
+        std::scoped_lock l(sHeapManagerCS);
 
         /* Lookup all children in thread's lookup heap */
         if (last_lookup_heap != nullptr && last_lookup_heap->HasChildren() == true) {
@@ -188,7 +188,7 @@ namespace awn::mem {
         return GetRootHeap(index)->GetTotalSize() + sizeof(mem::ExpHeap);
     }
 
-    // constexpr ALWAYS_INLINE sys::Mutex *GetHeapManagerLock() { return std::addressof(sHeapManagerMutex); }
+    sys::ServiceCriticalSection *GetHeapManagerLock() { return std::addressof(sHeapManagerCS); }
 
     Heap *GetCurrentThreadHeap() {
         sys::ThreadBase *thread = sys::ThreadManager::GetInstance()->GetCurrentThread();

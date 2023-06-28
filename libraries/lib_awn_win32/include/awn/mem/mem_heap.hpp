@@ -51,10 +51,12 @@ namespace awn::mem {
             }
         public:
             void PushBackChild(Heap *child) {
+                std::scoped_lock l(*GetHeapManagerLock());
                 ScopedHeapLock lock(this);
                 m_child_list.PushBack(*child);
             }
             void RemoveChild(Heap *child) {
+                std::scoped_lock l(*GetHeapManagerLock());
                 ScopedHeapLock lock(this);
                 m_child_list.Remove(*child);
             }

@@ -44,10 +44,10 @@ namespace awn::mem::impl {
                 return ::_aligned_free (address);
             }
         }
-        vp::imem::IHeap *current_heap = awn::mem::GetCurrentThreadHeap();
-        VP_ASSERT(current_heap != nullptr);
+        vp::imem::IHeap *address_heap = awn::mem::FindHeapFromAddress(address);
+        VP_ASSERT(address_heap != nullptr);
 
-        current_heap->Free(address);
+        address_heap->Free(address);
     }
 }
 

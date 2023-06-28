@@ -98,6 +98,8 @@ namespace awn::frm {
 
                 /* Get root heap */
                 mem::Heap *root_heap = mem::GetRootHeap(0);
+
+                /* Create library heap */
                 mem::Heap *awn_library_heap = mem::ExpHeap::TryCreate("awn::frm::Framework Libs", root_heap, mem::Heap::cWholeSize, 8, false);
 
                 /* Set current heap */
@@ -156,32 +158,42 @@ namespace awn::frm {
 
             static void FinalizeLibraries() {
 
-                gfx::TextureSamplerManager::GetInstance()->Finalize();
-                gfx::TextureSamplerManager::DeleteInstance();
+                /* Finalize library */
+                mem::Heap *lib_heap = mem::FindHeapByName("awn::frm::Framework Libs");
+                VP_ASSERT(lib_heap != nullptr);
+                {
+                    mem::ScopedCurrentThreadHeap heap_scope(lib_heap);
 
-                gfx::CommandPoolManager::GetInstance()->Finalize();
-                gfx::CommandPoolManager::DeleteInstance();
+                    gfx::TextureSamplerManager::GetInstance()->Finalize();
+                    gfx::TextureSamplerManager::DeleteInstance();
 
-               //gfx::GpuHeapManager::GetInstance()->Finalize();
-                gfx::GpuHeapManager::DeleteInstance();
+                    gfx::CommandPoolManager::GetInstance()->Finalize();
+                    gfx::CommandPoolManager::DeleteInstance();
 
-                gfx::Context::GetInstance()->Finalize();
-                gfx::Context::DeleteInstance();
+                   //gfx::GpuHeapManager::GetInstance()->Finalize();
+                    gfx::GpuHeapManager::DeleteInstance();
 
-                hid::FinalizeRawInputThread();
+                    gfx::Context::GetInstance()->Finalize();
+                    gfx::Context::DeleteInstance();
 
-                res::ResourceFactoryManager::DeleteInstance();
+                    hid::FinalizeRawInputThread();
 
-                res::FileDeviceManager::GetInstance()->Finalize();
-                res::FileDeviceManager::DeleteInstance();
+                    res::ResourceFactoryManager::DeleteInstance();
 
-                sys::ThreadManager::DeleteInstance();
-                
+                    res::FileDeviceManager::GetInstance()->Finalize();
+                    res::FileDeviceManager::DeleteInstance();
+
+                    sys::ThreadManager::DeleteInstance();
+                }
+
+                /* Free library heap */
+                mem::Heap *root_heap = mem::GetRootHeap(0);
+                root_heap->Free(lib_heap);
+
                 /* Unregister framework window class */
                 const bool result0 = ::UnregisterClassA("AwnFramework", ::GetModuleHandle(nullptr));
                 VP_ASSERT(result0 == true);
 
-                mem::Heap *root_heap       = mem::GetRootHeap(0);
                 //size_t     total_heap_size = mem::GetRootHeapTotalSize(0);
                 mem::FinalizeHeapManager();
 
@@ -229,7 +241,7 @@ namespace awn::frm {
                 return;
             }
         public:
-            constexpr ALWAYS_INLINE Framework() {/*...*/}
+            constexpr ALWAYS_INLINE Framework() : m_argc(0), m_argv(nullptr), m_window_thread_array() {/*...*/}
             virtual ~Framework() {/*...*/}
 
             virtual void MainLoop()  {/*...*/}

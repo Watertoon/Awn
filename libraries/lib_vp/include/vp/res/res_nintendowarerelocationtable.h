@@ -20,13 +20,6 @@ namespace vp::res {
     struct ResNintendoWareFileHeader;
 
 	struct ResNintendoWareRelocationTable {
-        u32 magic;
-        u32 this_table_offset;
-        u32 section_count;
-        u32 reserve0;
-
-        static constexpr u32 Magic = util::TCharCode32("_RLT");
-
         struct ResSection {
             void *base_pointer;
             u32   region_offset;
@@ -43,9 +36,24 @@ namespace vp::res {
             u8  array_stride;
         };
         static_assert(sizeof(ResEntry) == 0x8);
+        
+        u32        magic;
+        u32        this_table_offset;
+        u32        section_count;
+        u32        reserve0;
+        ResSection section_array[];
 
-        static u64 CalculateTableSize(s32 sections, s32 entries) { 
+        static constexpr u32 cMagic = util::TCharCode32("_RLT");
+
+        static constexpr u64 CalculateSize(s32 sections, s32 entries) { 
             return sections * sizeof(ResSection) + entries * sizeof(ResEntry) + sizeof(ResNintendoWareRelocationTable); 
+        }
+         constexpr ALWAYS_INLINE u64 CalculateSize() {
+            u32 entry_count = 0;
+            for (u32 i = 0; i < section_count; ++i) {
+                entry_count += section_array[i].entry_count;
+            }
+            return section_count * sizeof(ResSection) + entry_count * sizeof(ResEntry) + sizeof(ResNintendoWareRelocationTable); 
         }
 
         ALWAYS_INLINE u64 GetEntryTableOffset() {
@@ -61,8 +69,6 @@ namespace vp::res {
         const ResSection *GetSection(s32 section_index) const { 
             return reinterpret_cast<const ResSection*>(reinterpret_cast<uintptr_t>(this) + sizeof(ResNintendoWareRelocationTable) + section_index * sizeof(ResSection)); 
         }
-
-        void SetSignature() { magic = Magic; }
 
         void Relocate();
         void Unrelocate();

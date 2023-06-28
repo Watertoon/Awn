@@ -96,7 +96,7 @@ namespace awn::mem {
 
         /* Get last free block */
         ExpHeapMemoryBlock &last_free_block = m_allocated_block_list.Back();
-        void               *last_free_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(last_free_block)) + last_free_block.block_size);
+        void               *last_free_end   = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(last_free_block)) + last_free_block.block_size);
 
         /* Shrink free block */
         if (new_size < heap_size) {

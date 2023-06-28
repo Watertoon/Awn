@@ -1,5 +1,9 @@
 #pragma once
 
+namespace awn::sys {
+    class ServiceCriticalSection;
+}
+
 namespace awn::mem {
 
     class Heap;
@@ -43,9 +47,10 @@ namespace awn::mem {
 
     bool IsHeapManagerInitialized();
 
-    bool OutOfMemoryImpl(OutOfMemoryInfo *out_of_memory_info);
-    
+    bool   OutOfMemoryImpl(OutOfMemoryInfo *out_of_memory_info);
     size_t GetOutOfMemoryResizeAlignment();
+
+    sys::ServiceCriticalSection *GetHeapManagerLock();
 
     mem::Heap *FindHeapByName(const char *heap_name);
     mem::Heap *FindHeapFromAddress(void *address);

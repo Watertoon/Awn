@@ -10,7 +10,7 @@ namespace awn::res {
             VP_RTTI_BASE(Resource);
         public:
             constexpr ALWAYS_INLINE Resource() : m_file(nullptr), m_file_size(0) {/*...*/}
-            virtual ~Resource() {/*...*/}
+            constexpr virtual ~Resource() {/*...*/}
 
             virtual bool Initialize(mem::Heap *heap, void *file, u32 file_size) { VP_UNUSED(heap, file, file_size); return false; }
             virtual void Finalize() { return; }

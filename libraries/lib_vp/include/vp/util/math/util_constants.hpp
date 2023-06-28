@@ -157,11 +157,13 @@ namespace vp::util {
 
     /* Interpolate a Sin value from one period  */
     constexpr ALWAYS_INLINE float GetSinPeriodStep(int t, int max) {
-        return SampleSin(((static_cast<float>(cAngleIndexHalfRound) / cFloatPi) * ((static_cast<float>(t) * cFloat2Pi) / static_cast<float>(max))));
+        const float value = ((static_cast<float>(cAngleIndexHalfRound) / cFloatPi) * ((static_cast<float>(t) * cFloat2Pi) / static_cast<float>(max)));
+        return SampleSin(value);
     }
 
     /* Interpolate a Cos value from one period  */
     constexpr ALWAYS_INLINE float GetCosPeriodStep(int t, int max) {
-        return SampleCos(((static_cast<float>(cAngleIndexHalfRound) / cFloatPi) * ((static_cast<float>(t) * cFloat2Pi) / static_cast<float>(max))));
+        const float value = ((static_cast<float>(cAngleIndexHalfRound) / cFloatPi) * ((static_cast<float>(t) * cFloat2Pi) / static_cast<float>(max)));
+        return SampleCos(value);
     }
 }

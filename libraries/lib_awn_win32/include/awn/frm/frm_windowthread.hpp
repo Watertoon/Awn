@@ -3,10 +3,10 @@
 namespace awn::frm {
 
     enum class DragDropStatus : u32 {
-        Clear,
-        Pending,
-        TooLongPathError,
-        PathCopyError
+        Clear            = 0,
+        Pending          = 1,
+        TooLongPathError = 2,
+        PathCopyError    = 3,
     };
 
     enum class PresentMode : u32 {
@@ -84,7 +84,7 @@ namespace awn::frm {
                 size_t awn_message;
             };
         public:
-            WindowThread(mem::Heap *heap, WindowInfo *window_info, u32 max_file_drag_drop) : ServiceThread("WindowThread", heap, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cNormalPriority), m_hwnd(0), m_vk_surface(VK_NULL_HANDLE), m_vk_image_array{}, m_render_target_color_array{}, m_image_index(-1), m_acquire_vk_fence(), m_window_cs(), m_window_event(), m_window_info(), m_drag_drop_array(), m_drag_drop_count(), m_drag_drop_status(), m_require_swapchain_refresh(false), m_skip_draw(false) {
+            WindowThread(mem::Heap *heap, WindowInfo *window_info, u32 max_file_drag_drop) : ServiceThread("WindowThread", heap, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cNormalPriority), m_hwnd(0), m_vk_surface(VK_NULL_HANDLE), m_vk_swapchain(VK_NULL_HANDLE), m_vk_image_array{}, m_render_target_color_array{}, m_image_index(-1), m_acquire_vk_fence(), m_window_cs(), m_window_event(), m_window_info(), m_drag_drop_array(), m_drag_drop_count(), m_drag_drop_status(), m_require_swapchain_refresh(false), m_skip_draw(false) {
 
                 /* Allocate drag drop array */
                 m_drag_drop_array.Initialize(heap, max_file_drag_drop);
