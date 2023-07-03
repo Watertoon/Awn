@@ -32,10 +32,10 @@ namespace vp::res {
     static_assert(sizeof(ResUi2dHeader) == 0x14);
 
     enum class Ui2dUserDataType {
-        String,
-        S32,
-        Float,
-        SystemData
+        String     = 0,
+        S32        = 1,
+        Float      = 2,
+        SystemData = 3,
     };
 
     struct ResUi2dUserData {

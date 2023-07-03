@@ -40,7 +40,7 @@ namespace vp::res {
         ResGfxEmbedFile            *embed_file_array;
         ResNintendoWareDictionary  *embed_file_dictionary;
         void                       *transform_tree;
-        const char                 *reserve4;
+        const char                 *empty_string;
         u32                         reserve5;
         u16                         model_count;
         u16                         reserve6;
@@ -89,21 +89,98 @@ namespace vp::res {
         constexpr ALWAYS_INLINE u64   GetGpuMemorySize()   const { return (memory_pool_info == nullptr) ? 0xffff'ffff'ffff'ffff : memory_pool_info->size; }
         constexpr ALWAYS_INLINE void *GetGpuMemoryRegion()       { return (memory_pool_info == nullptr) ? nullptr : memory_pool_info->storage; }
 
-        //const char *FindRelocatedString(u64 key) {
-        //
-        //    
-        //}
-        //
-        //void RelocateStrings(ResBfres *external_string_bfres) {
-        //
-        //    
-        //    for (u32 i = 0; i < model_count; ++i) {
-        //        
-        //        for (u32 y = 0; y < model_array[i].shader_reflection_count; ++y) {
-        //            
-        //        }
-        //    }
-        //}
+        const char *TryFindRelocatedString(u64 key) {
+
+            /* Binary search for key */
+            u32  entry_index = 0;
+            u32  iter        = embed_file_dictionary->node_count;
+            u64 *key_array = reinterpret_cast<u64*>(embed_file_array);
+            if (iter == 0) { return empty_string; }
+
+            while (iter != 0) {
+                const u32 next = iter >> 1;
+                const u32 low = iter + ~next;
+                iter = next;
+                if (key_array[entry_index + next] < key) {
+                    entry_index  = entry_index + next + 1;
+                    iter = low;
+                }
+            }
+
+            /* Try get key */
+            if (key_array[entry_index] != key) { return empty_string; }
+            return embed_file_dictionary->GetKeyByEntryIndex(entry_index);
+        }
+
+        void RelocateStrings(ResBfres *external_string_bfres) {
+
+            /* Cache empty string */
+            const char *ext_empty_string = external_string_bfres->empty_string;
+
+            /* Relocate model strings */
+            for (u32 i = 0; i < model_count; ++i) {
+
+                /* Relocate shader reflection strings */
+                for (u32 j = 0; j < model_array[i].shader_reflection_count; ++j) {
+
+                    /* Relocate option dictionary strings */
+                    ResNintendoWareDictionary *option_dic = model_array[i].shader_reflection_array[j].static_shader_option_dictionary;
+                    if (option_dic != nullptr && option_dic->root_node.key == nullptr) {
+
+                        option_dic->root_node.key = ext_empty_string;
+                        for (u32 k = 0; k < option_dic->node_count; ++k) {
+                            option_dic->node_array[k].key = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(option_dic->node_array[k].key));
+                        }
+                    }
+
+                    /* Relocate render info dictionary strings */
+                    ResNintendoWareDictionary *render_info_dic = model_array[i].shader_reflection_array[j].render_info_dictionary;
+                    if (render_info_dic != nullptr && render_info_dic->root_node.key == nullptr) {
+
+                        const u32 render_info_count    = model_array[i].shader_reflection_array[j].render_info_count;
+                        render_info_dic->root_node.key = ext_empty_string;
+                        for (u32 k = 0; k < render_info_count; ++k) {
+                            const char *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(model_array[i].shader_reflection_array[j].render_info_array[k].render_info_name));
+
+                            model_array[i].shader_reflection_array[j].render_info_array[k].render_info_name = string;
+                            render_info_dic->node_array[k].key                                              = string;
+                        }
+                    }
+
+                    /* Relocate shader param dictionary strings */
+                    ResNintendoWareDictionary *shader_param_dic = model_array[i].shader_reflection_array[j].shader_param_dictionary;
+                    if (shader_param_dic != nullptr && shader_param_dic->root_node.key == nullptr) {
+
+                        const u32 shader_param_count = model_array[i].shader_reflection_array[j].shader_param_count;
+                        shader_param_dic->root_node.key = ext_empty_string;
+                        for (u32 k = 0; k < shader_param_count; ++k) {
+                            const char *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(model_array[i].shader_reflection_array[j].shader_param_array[k].shader_param_name));
+
+                            model_array[i].shader_reflection_array[j].shader_param_array[k].shader_param_name = string;
+                            shader_param_dic->node_array[k].key                                               = string;
+                        }
+                    }
+                }
+            }
+
+            /* Relocate material anim strings */
+            for (u32 i = 0; i < material_anim_count; ++i) {
+
+                /* Relocate per material anim strings */
+                for (u32 j = 0; j < material_anim_array[i].per_material_anim_count; ++j) {
+
+                    /* Relocate shader param strings */
+                    for (u32 k = 0; k < material_anim_array[i].per_material_anim_array[j].shader_param_anim_count; ++k) {
+                        material_anim_array[i].per_material_anim_array[j].shader_param_anim_array[k].shader_param_name = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(material_anim_array[i].per_material_anim_array[j].shader_param_anim_array[k].shader_param_name));
+                    }
+                }
+            }
+
+            /* Clear external strings flag */
+            has_external_strings = false;
+
+            return;
+        }
 
         ResBfresModel *TryGetModel(const char *model_name) {
             if (model_dictionary == nullptr) { return nullptr; }

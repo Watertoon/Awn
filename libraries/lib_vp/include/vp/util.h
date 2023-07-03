@@ -25,6 +25,7 @@
 #include <vp/util/util_busymutex.x86.hpp>
 
 #include <vp/util/util_alignment.hpp>
+#include <vp/util/util_endian.hpp>
 #include <vp/util/util_sizeconstants.hpp>
 #include <vp/util/util_countbits.hpp>
 #include <vp/util/util_member.hpp>

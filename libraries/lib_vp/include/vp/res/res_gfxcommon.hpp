@@ -149,7 +149,7 @@ namespace vp::res {
         0x10, 0x10, 0x10, 0x10,
         0x10, 0x10, 0x10, 0x10,
         0x10, 0x10, 0x10, 0x10,
-        0x10, 0x02
+        0x10, 0x02,
     };
 
     constexpr ALWAYS_INLINE u32 CalculateGfxImageSize(GfxChannelFormat channel_format, u32 width, u32 height, u32 depth) {
@@ -203,7 +203,7 @@ namespace vp::res {
         Depth   = 0x7, /* (Unorm) */
         UScaled = 0x8,
         SScaled = 0x9,
-        UFloat  = 0xa
+        UFloat  = 0xa,
     };
 
     #define GFX_MAKE_IMAGE_FORMAT(channel_format, type_format) \
@@ -307,7 +307,7 @@ namespace vp::res {
         ASTC_12X10_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x10,   GfxTypeFormat::SRGB),
         ASTC_12X12_Unorm      = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x12,   GfxTypeFormat::Unorm),
         ASTC_12X12_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x12,   GfxTypeFormat::SRGB),
-        B5G5R5A1_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::B5G5R5A1,     GfxTypeFormat::Unorm)
+        B5G5R5A1_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::B5G5R5A1,     GfxTypeFormat::Unorm),
     };
 
     enum class GfxAttributeFormat : u32 {
@@ -372,7 +372,7 @@ namespace vp::res {
     enum class GfxImageStorageDimension : u8 { 
         Type1D = 1,
         Type2D = 2,
-        Type3D = 3
+        Type3D = 3,
     };
 
     struct ResGfxTextureInfo {
@@ -426,7 +426,7 @@ namespace vp::res {
         Type2DMultisample       = 6,
         Type2DMultisampleArray  = 7,
         TypeCubeArray           = 8,
-        TypeRectangle           = 9
+        TypeRectangle           = 9,
     };
 
     enum class GfxTextureSwizzle : u8 {
@@ -440,7 +440,7 @@ namespace vp::res {
 
     enum class GfxTextureDepthStencilMode : u8 {
         Depth   = 0,
-        Stencil = 1
+        Stencil = 1,
     };
 
     template <typename T>
@@ -470,7 +470,7 @@ namespace vp::res {
         MirrorRepeat      = 1,
         ClampToEdge       = 2,
         ClampToBorder     = 3,
-        MirrorClampToEdge = 4
+        MirrorClampToEdge = 4,
     };
     
     enum class GfxCompareOperation : u8 {
@@ -481,7 +481,7 @@ namespace vp::res {
         GreaterThan      = 4,
         NotEqual         = 5,
         GreaterThanEqual = 6,
-        Always           = 7
+        Always           = 7,
     };
 
     enum class GfxBorderColor : u8 {
@@ -493,25 +493,25 @@ namespace vp::res {
     enum class GfxMipMapFilter : u8 {
         None    = 0,
         Nearest = 1,
-        Linear  = 2
+        Linear  = 2,
     };
 
     enum class GfxMinFilter : u8 {
         Invalid = 0,
         Nearest = 1,
-        Linear  = 2
+        Linear  = 2,
     };
 
     enum class GfxMagFilter : u8 {
         Invalid = 0,
         Nearest = 1,
-        Linear  = 2
+        Linear  = 2,
     };
 
     enum GfxReductionFilter : u8 {
         Average = 0,
         Min     = 1,
-        Max     = 2
+        Max     = 2,
     };
 
     struct ResGfxSamplerInfo {
@@ -521,13 +521,18 @@ namespace vp::res {
         u8    compare_op;
         u8    border_color;
         u8    max_anisotropy;
-        u16   mip_map_filter    : 2;
-        u16   mag_filter        : 2;
-        u16   min_filter        : 2;
-        u16   enable_anisotropy : 1;
-        u16   enable_compare_op : 1;
-        u16   reduction_filter  : 2;
-        u16   reserve0          : 6;
+        union {
+            u16 packed_options;
+            struct {
+                u16   mip_map_filter    : 2;
+                u16   mag_filter        : 2;
+                u16   min_filter        : 2;
+                u16   enable_anisotropy : 1;
+                u16   enable_compare_op : 1;
+                u16   reduction_filter  : 2;
+                u16   reserve0          : 6;
+            };
+        };
         float lod_clamp_min;
         float lod_clamp_max;
         float lod_bias;
@@ -555,6 +560,10 @@ namespace vp::res {
         }
     };
     static_assert(sizeof(ResGfxSamplerInfo) == 0x20);
+
+    constexpr u16 ConstructSamplerPackedOptions(GfxMipMapFilter mip_map_filter, GfxMagFilter mag_filter, GfxMinFilter min_filter, bool enable_anisotropy, bool enable_compare_op, GfxReductionFilter reduction_filter) {
+        return (static_cast<u16>(mip_map_filter) & 3) | ((static_cast<u16>(mag_filter) & 3) << 2) | ((static_cast<u16>(min_filter) & 3) << 4) | ((static_cast<u16>(enable_anisotropy) & 1) << 6) | ((static_cast<u16>(enable_compare_op) & 1) << 7) | ((static_cast<u16>(reduction_filter) & 3) << 8);
+    }
 
     enum class GfxPrimitiveTopology {
         Points                 = 0,
@@ -643,7 +652,7 @@ namespace vp::res {
         CopyInverted = 12,
         OrInverted   = 13,
         Nand         = 14,
-        Set          = 15
+        Set          = 15,
     };
 
     enum class GfxCullMode : u8 {

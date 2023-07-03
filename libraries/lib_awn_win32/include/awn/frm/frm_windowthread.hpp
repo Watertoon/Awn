@@ -59,7 +59,8 @@ namespace awn::frm {
             friend class JobListFramework;
             friend long long int FrameworkWindowFunction(HWND hwnd, u32 msg, WPARAM wparam, LPARAM lparam);
         public:
-            static constexpr size_t cMaxRenderTargetCount = 3;
+            static constexpr size_t cMaxRenderTargetCount    = 3;
+            static constexpr size_t cInvalidAcquireSyncIndex = 0xffff'ffff;
         public:
             using DragDropArray = vp::util::HeapArray<vp::util::FixedString<vp::util::cMaxPath>>;
         protected:
@@ -69,7 +70,9 @@ namespace awn::frm {
             VkImage                     m_vk_image_array[cMaxRenderTargetCount];
             gfx::RenderTargetColor      m_render_target_color_array[cMaxRenderTargetCount];
             u32                         m_image_index;
-            VkFence                     m_acquire_vk_fence;
+            u32                         m_current_acquire_sync_index;
+            u32                         m_wait_acquire_sync_index;
+            gfx::Sync                   m_acquire_sync[cMaxRenderTargetCount];
             sys::ServiceCriticalSection m_window_cs;
             sys::ServiceEvent           m_window_event;
             WindowInfo                  m_window_info;
@@ -84,7 +87,7 @@ namespace awn::frm {
                 size_t awn_message;
             };
         public:
-            WindowThread(mem::Heap *heap, WindowInfo *window_info, u32 max_file_drag_drop) : ServiceThread("WindowThread", heap, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cNormalPriority), m_hwnd(0), m_vk_surface(VK_NULL_HANDLE), m_vk_swapchain(VK_NULL_HANDLE), m_vk_image_array{}, m_render_target_color_array{}, m_image_index(-1), m_acquire_vk_fence(), m_window_cs(), m_window_event(), m_window_info(), m_drag_drop_array(), m_drag_drop_count(), m_drag_drop_status(), m_require_swapchain_refresh(false), m_skip_draw(false) {
+            WindowThread(mem::Heap *heap, WindowInfo *window_info, u32 max_file_drag_drop) : ServiceThread("WindowThread", heap, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cNormalPriority), m_hwnd(0), m_vk_surface(VK_NULL_HANDLE), m_vk_swapchain(VK_NULL_HANDLE), m_vk_image_array{}, m_render_target_color_array{}, m_image_index(-1), m_acquire_sync(), m_window_cs(), m_window_event(), m_window_info(), m_drag_drop_array(), m_drag_drop_count(), m_drag_drop_status(), m_require_swapchain_refresh(false), m_skip_draw(false) {
 
                 /* Allocate drag drop array */
                 m_drag_drop_array.Initialize(heap, max_file_drag_drop);
@@ -99,7 +102,7 @@ namespace awn::frm {
                     /* Calculate window style */
                     const u32 drag_drop_style = (0 < m_drag_drop_array.GetCount()) ? WS_EX_ACCEPTFILES : 0;
                     const u32 window_style = WS_OVERLAPPEDWINDOW | drag_drop_style;
-                    
+
                     /* Calculate adjusted window size for desired client area */
                     RECT wnd_rect = {};
                     const bool rect_result = ::AdjustWindowRect(std::addressof(wnd_rect), window_style, false);
@@ -151,7 +154,7 @@ namespace awn::frm {
                     VP_ASSERT(swapchain_image_count == image_count);
                     const u32 result3 = ::pfn_vkGetSwapchainImagesKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, std::addressof(swapchain_image_count), m_vk_image_array);
                     VP_ASSERT(result3 == VK_SUCCESS);
-                    
+
                     /* Initialize render targets */
                     gfx::RenderTargetImportInfo import_info = {};
                     import_info.SetDefaults();
@@ -165,12 +168,17 @@ namespace awn::frm {
                         m_render_target_color_array[i].Initialize(std::addressof(import_info));
                     }
 
-                    const VkFenceCreateInfo fence_info = {
+                    /* Create fence */
+                    /*const VkFenceCreateInfo fence_info = {
                         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
                     };
                     const u32 result4 = ::pfn_vkCreateFence(gfx::Context::GetInstance()->GetVkDevice(), std::addressof(fence_info), gfx::Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_acquire_vk_fence));
-                    VP_ASSERT(result4 == VK_SUCCESS);
+                    VP_ASSERT(result4 == VK_SUCCESS);/*
 
+                    /* Initialize acquire sync */
+                    m_acquire_sync.Initialize(true);
+
+                    /* Acquire first image */
                     this->AcquireNextImage();
 
                     /* Signal setup has complete */
@@ -186,7 +194,7 @@ namespace awn::frm {
                 {
                     /* Set skip draw */
                     m_skip_draw = true;
-                    
+
                     /* Wait for idle */
                     ::pfn_vkQueueWaitIdle(gfx::Context::GetInstance()->GetVkQueueGraphics());
 
@@ -197,7 +205,10 @@ namespace awn::frm {
                     }
 
                     /* Destroy fence */
-                    ::pfn_vkDestroyFence(gfx::Context::GetInstance()->GetVkDevice(), m_acquire_vk_fence, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
+                    //::pfn_vkDestroyFence(gfx::Context::GetInstance()->GetVkDevice(), m_acquire_vk_fence, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
+
+                    /* Finalize acquire sync */
+                    m_acquire_sync.Finalize();
 
                     /* Destroy swapchain */
                     ::pfn_vkDestroySwapchainKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, gfx::Context::GetInstance()->GetVkAllocationCallbacks());
@@ -292,16 +303,19 @@ namespace awn::frm {
             constexpr ALWAYS_INLINE void SetSkipDraw(bool is_skip_draw)       { m_skip_draw = is_skip_draw; }
             constexpr ALWAYS_INLINE bool IsSkipDraw()                   const { return m_skip_draw; }
 
+            constexpr ALWAYS_INLINE void SetSkipAcquireSync(bool is_skip_acquire_sync)       { m_skip_acquire_sync = is_skip_acquire_sync; }
+            constexpr ALWAYS_INLINE bool IsSkipAcquireSync()                           const { return m_skip_acquire_sync; }
+
             void SignalWindowChange() { m_require_swapchain_refresh = true; }
 
             void AcquireNextImage() {
 
                 /* Acquire full */
-                const u32 result0 = ::pfn_vkAcquireNextImageKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, 0xffff'ffff'ffff'ffff, nullptr, m_acquire_vk_fence, std::addressof(m_image_index));
-                const u32 result1 = ::pfn_vkWaitForFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence), true, 0xffff'ffff'ffff'ffff);
+                const u32 result0 = ::pfn_vkAcquireNextImageKHR(gfx::Context::GetInstance()->GetVkDevice(), m_vk_swapchain, 0xffff'ffff'ffff'ffff, m_acquire_sync.GetVkSemaphore(), VK_NULL_HANDLE, std::addressof(m_image_index));
+                /*const u32 result1 = ::pfn_vkWaitForFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence), true, 0xffff'ffff'ffff'ffff);
                 VP_ASSERT(result1 == VK_SUCCESS);
                 const u32 result2 = ::pfn_vkResetFences(gfx::Context::GetInstance()->GetVkDevice(), 1, std::addressof(m_acquire_vk_fence));
-                VP_ASSERT(result2 == VK_SUCCESS);
+                VP_ASSERT(result2 == VK_SUCCESS);*/
 
                 /* Update results */
                 if (result0 == VK_SUBOPTIMAL_KHR) { m_require_swapchain_refresh = true; }
@@ -317,6 +331,7 @@ namespace awn::frm {
                 this->WaitForThreadExit();
             }
 
+            constexpr ALWAYS_INLINE gfx::Sync              *GetAcquireSync()         const { return std::addressof(m_acquire_sync); }
             constexpr ALWAYS_INLINE VkSurfaceKHR            GetVkSurface()           const { return m_vk_surface; }
             constexpr ALWAYS_INLINE VkSwapchainKHR          GetVkSwapchain()         const { return m_vk_swapchain; }
             constexpr ALWAYS_INLINE VkImage                 GetCurrentVkImage()      const { return m_vk_image_array[m_image_index]; }

@@ -144,7 +144,7 @@ namespace awn::mem {
 
             bool IsAddressAllocationUnsafe(void *address);
         public:
-            static ExpHeap *TryCreate(void *address, size_t size, const char *name, bool is_thread_safe) {
+            static ExpHeap *TryCreate(const char *name, void *address, size_t size, bool is_thread_safe) {
 
                 /* Integrity checks */
                 VP_ASSERT(address != nullptr && (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity) <= size);

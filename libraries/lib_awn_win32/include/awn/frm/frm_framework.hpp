@@ -282,7 +282,8 @@ namespace awn::frm {
         protected:
             JobList                       m_calc_job_list;
             JobList                       m_draw_job_list;
-            gfx::Sync                     m_graphics_queue_sync;
+            gfx::Sync                     m_present_sync_array[WindowThread::cMaxRenderTargetCount];
+            gfx::Sync                     m_graphics_queue_submit_sync_array[WindowThread::cMaxRenderTargetCount];
             gfx::ThreadLocalCommandBuffer m_primary_graphics_command_buffer;
             u32                           m_current_command_list_index;
             gfx::CommandList              m_primary_graphics_command_list_array[WindowThread::cMaxRenderTargetCount];
@@ -300,36 +301,46 @@ namespace awn::frm {
         protected:
             void PresentAsync([[maybe_unused]] size_t message) {
 
+                /* Early finish on paused draw */
                 if (m_is_pause_draw != 0) {
                     m_present_event.Signal();
                     return; 
                 }
 
-                /* Submit primary command buffer to graphics queue */
-                gfx::Sync *sync = std::addressof(m_graphics_queue_sync);
-                gfx::Context::GetInstance()->SubmitCommandList(m_primary_graphics_command_list_array[m_current_command_list_index], nullptr, 0, std::addressof(sync), 1);
-
-                /* Build swapchain metadata */
-                VkSwapchainKHR vk_swapchain_array[cMaxWindowCount]         = {};
-                u32            present_image_indice_array[cMaxWindowCount] = {};
-                VkResult       vk_result_array[cMaxWindowCount]            = {};
-                u32            draw_count                                  = 0;
+                /* Build window metadata */
+                VkSwapchainKHR  vk_swapchain_array[cMaxWindowCount]         = {};
+                u32             present_image_indice_array[cMaxWindowCount] = {};
+                VkResult        vk_result_array[cMaxWindowCount]            = {};
+                u32             draw_count                                  = 0;
+                gfx::Sync      *acquire_sync_array[cMaxWindowCount]         = {};
+                u32             acquire_count                               = 0;
                 for (u32 i = 0; i < m_window_thread_array.GetUsedCount(); ++i) {
 
                     /* Lock window for present */
                     m_window_thread_array[i]->m_window_cs.Enter();
 
-                    /* Respect skip draw */
-                    if (m_window_thread_array[i]->IsSkipDraw() == true) { continue; }
-
                     /* Set present info */
-                    vk_swapchain_array[draw_count]         = m_window_thread_array[i]->GetVkSwapchain();
-                    present_image_indice_array[draw_count] = m_window_thread_array[i]->GetImageIndex();
-                    draw_count = draw_count + 1;
+                    if (m_window_thread_array[i]->IsSkipDraw() == false) { 
+                        vk_swapchain_array[draw_count]         = m_window_thread_array[i]->GetVkSwapchain();
+                        present_image_indice_array[draw_count] = m_window_thread_array[i]->GetImageIndex();
+                        draw_count = draw_count + 1; 
+                    }
+
+                    /* Set acquire info */
+                    if (m_window_thread_array[i]->IsSkipAcquireSync() == false) {
+                        acquire_sync_array[acquire_count]            = m_window_thread_array[i]->GetAcquireSync();
+                        acquire_count = acquire_count + 1; 
+                    }
                 }
 
+                /* Submit primary command buffer to graphics queue */
+                gfx::Sync *sync_array[2] = {};
+                sync_array[0] = std::addressof(m_present_sync_array[m_current_command_list_index]);
+                sync_array[1] = std::addressof(m_graphics_queue_submit_sync_array[m_current_command_list_index]);
+                gfx::Context::GetInstance()->SubmitCommandList(m_primary_graphics_command_list_array[m_current_command_list_index], wait_sync_array, acquire_count, sync_array, 2);
+
                 /* Present */
-                VkSemaphore vk_semaphore = m_graphics_queue_sync.GetVkSemaphore();
+                VkSemaphore vk_semaphore = m_present_sync_array[m_current_command_list_index].GetVkSemaphore();
                 const VkPresentInfoKHR present_info = {
                     .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
                     .waitSemaphoreCount = 1,
@@ -341,6 +352,10 @@ namespace awn::frm {
                 };
                 const u32 result = ::pfn_vkQueuePresentKHR(gfx::Context::GetInstance()->GetVkQueue(m_primary_graphics_command_list_array[m_current_command_list_index].queue_type), std::addressof(present_info));
                 VP_ASSERT(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
+
+                /* Wait for gpu to process */
+                m_graphics_queue_submit_sync_array[m_current_command_list_index].Wait();
+                m_graphics_queue_submit_sync_array[m_current_command_list_index].IncrementExpectedValue();
 
                 /* Acquire next swapchain image for each window, recreate the swapchain if necessary */
                 for (u32 i = 0; i < m_window_thread_array.GetUsedCount(); ++i) {
@@ -364,7 +379,7 @@ namespace awn::frm {
                 return;
             }
         public:
-            ALWAYS_INLINE JobListFramework() : Framework(), m_calc_job_list(), m_draw_job_list(), m_graphics_queue_sync(), m_primary_graphics_command_buffer(), m_current_command_list_index(0), m_primary_graphics_command_list_array{}, m_present_delegate(this, PresentAsync), m_present_thread(std::addressof(m_present_delegate), "AwnFramework Present Thread", nullptr, sys::ThreadRunMode::WaitForMessage, 0, 8, 0x1000, sys::cHighPriority), m_present_event(), m_is_pause_calc(false), m_is_pause_draw(false), m_is_ready_to_exit(false), m_is_present(false) {/*...*/}
+            ALWAYS_INLINE JobListFramework() : Framework(), m_calc_job_list(), m_draw_job_list(), m_present_sync_array{}, m_graphics_queue_submit_sync_array{}, m_primary_graphics_command_buffer(), m_current_command_list_index(0), m_primary_graphics_command_list_array{}, m_present_delegate(this, PresentAsync), m_present_thread(std::addressof(m_present_delegate), "AwnFramework Present Thread", nullptr, sys::ThreadRunMode::WaitForMessage, 0, 8, 0x1000, sys::cHighPriority), m_present_event(), m_is_pause_calc(false), m_is_pause_draw(false), m_is_ready_to_exit(false), m_is_present(false) {/*...*/}
             virtual ~JobListFramework() override {/*...*/}
 
             virtual void MainLoop() override {
@@ -372,8 +387,14 @@ namespace awn::frm {
                 /* Start presentation thread */
                 m_present_thread.StartThread();
 
+                /* Initialize present event */
+                m_present_event.Initialize();
+
                 /* Initialize sync */
-                m_graphics_queue_sync.Initialize(true);
+                for (u32 i = 0; i < WindowThread::cMaxRenderTargetCount; ++i) {
+                    m_graphics_queue_submit_sync_array[i].Initialize();
+                    m_present_sync_array[i].Initialize(true);
+                }
 
                 /* Mainloop */
                 m_is_ready_to_exit = false;
@@ -388,15 +409,24 @@ namespace awn::frm {
                 m_present_thread.SendMessage(0);
                 m_present_thread.WaitForThreadExit();
 
+                /* Finalize present event */
+                m_present_event.Finalize();
+
+                /* Idle graphics queue for exit */
+                ::pfn_vkQueueWaitIdle(gfx::Context::GetInstance()->GetVkQueueGraphics());
+
                 /* Finalize sync */
-                m_graphics_queue_sync.Finalize();
+                for (u32 i = 0; i < WindowThread::cMaxRenderTargetCount; ++i) {
+                    m_graphics_queue_submit_sync_array[i].Finalize();
+                    m_present_sync_array[i].Finalize();
+                }
 
                 /* Finalize any command lists */
-                ::pfn_vkQueueWaitIdle(gfx::Context::GetInstance()->GetVkQueueGraphics());
                 for (u32 i = 0; i < WindowThread::cMaxRenderTargetCount; ++i) {                
-                    if (m_primary_graphics_command_list_array[m_current_command_list_index].vk_command_buffer != VK_NULL_HANDLE) {
-                        gfx::CommandPoolManager::GetInstance()->FinalizeThreadLocalCommandList(m_primary_graphics_command_list_array[m_current_command_list_index]);
+                    if (m_primary_graphics_command_list_array[i].vk_command_buffer != VK_NULL_HANDLE) {
+                        gfx::CommandPoolManager::GetInstance()->FinalizeThreadLocalCommandList(m_primary_graphics_command_list_array[i]);
                     }
+                    m_primary_graphics_command_list_array[i] = gfx::CommandList{};
                 }
 
                 return;
@@ -426,7 +456,7 @@ namespace awn::frm {
                     m_current_command_list_index = 0;
                 }
 
-                /* Try delete a previous main command list */
+                /* Try delete the previous command list */
                 if (m_primary_graphics_command_list_array[m_current_command_list_index].vk_command_buffer != VK_NULL_HANDLE) {
                     gfx::CommandPoolManager::GetInstance()->FinalizeThreadLocalCommandList(m_primary_graphics_command_list_array[m_current_command_list_index]);
                 }
@@ -454,6 +484,9 @@ namespace awn::frm {
 
                 /* End primary command buffer recording */
                 m_primary_graphics_command_list_array[m_current_command_list_index] = m_primary_graphics_command_buffer.End();
+
+                /* Clear present event */
+                m_present_event.Clear();
 
                 /* Signal present thread */
                 m_is_present = true;

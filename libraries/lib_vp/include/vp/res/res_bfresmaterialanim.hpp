@@ -39,7 +39,7 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfresTexturePatternAnim) == 0x10);
 
-    struct ResBfresMaterialAnimData {
+    struct ResBfresPerMaterialAnim {
         const char                 *model_name;
         ResBfresShaderParamAnim    *shader_param_anim_array;
         ResBfresTexturePatternAnim *texture_pattern_anim_array;
@@ -57,7 +57,7 @@ namespace vp::res {
         u16                         reserve0;
         u32                         reserve1;
     };
-    static_assert(sizeof(ResBfresMaterialAnimData) == 0x40);
+    static_assert(sizeof(ResBfresPerMaterialAnim) == 0x40);
 
     struct ResBfresMaterialAnim  {
         u32                         magic;
@@ -69,7 +69,7 @@ namespace vp::res {
         const char                 *reserve2;
         ResBfresModel              *user_bound_model;
         u16                        *bind_table;
-        ResBfresMaterialAnimData   *material_anim_data_array;
+        ResBfresPerMaterialAnim    *per_material_anim_array;
         void                      **runtime_texture_view_array;
         const char                **texture_name_array;
         ResGfxUserData             *user_data_array;

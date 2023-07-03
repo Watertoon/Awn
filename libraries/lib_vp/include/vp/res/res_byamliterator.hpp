@@ -31,7 +31,6 @@ namespace vp::res {
                 /* Set data container */
                 m_data_container = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(byaml_file) +  m_byaml->data_offset);
             }
-
             ALWAYS_INLINE ByamlIterator(const unsigned char *byaml_header, const unsigned char *container_header) : m_byaml(reinterpret_cast<const ResByaml*>(byaml_header)), m_data_container(reinterpret_cast<const ResByamlContainer*>(container_header)) {/*...*/}
 
             constexpr ALWAYS_INLINE ByamlIterator(const ByamlIterator& rhs) : m_byaml(rhs.m_byaml), m_data_container(rhs.m_data_container) {/*...*/}

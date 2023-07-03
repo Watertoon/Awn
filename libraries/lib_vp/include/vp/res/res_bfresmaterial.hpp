@@ -18,14 +18,14 @@
 namespace vp::res {
     
     enum class BfresRenderInfoDataType : u8 {
-        S32    = 0,
-        Float  = 1,
-        String = 2,
+        S32    = 0x0,
+        Float  = 0x1,
+        String = 0x2,
     };
 
     struct ResBfresRenderInfo {
         const char              *render_info_name;
-        BfresRenderInfoDataType  data_type;
+        u8                       data_type;
         u8                       reserve0;
         u16                      reserve1;
         u32                      reserve2;
@@ -77,9 +77,9 @@ namespace vp::res {
     };
 
     enum class BfresSrtMode : u32 {
-        Maya      = 0,
-        Max       = 1,
-        SoftImage = 2,
+        Maya      = 0x0,
+        Max       = 0x1,
+        SoftImage = 0x2,
     };
 
     struct ResBfresTextureSrt {
