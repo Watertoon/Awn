@@ -30,17 +30,8 @@ namespace awn::sys {
             void                        *m_tls_slot_array[cMaxThreadTlsSlotCount];
             vp::util::IntrusiveListNode  m_thread_manager_list_node;
         protected:
-            static void InternalThreadMain(void *arg) {
-                /* Recover Thread object*/
-                ThreadBase *thread = reinterpret_cast<ThreadBase*>(arg);
-                thread->Run();
-            }
-            static long unsigned int InternalServiceThreadMain(void *arg) {
-                /* Recover Thread object*/
-                ThreadBase *thread = reinterpret_cast<ThreadBase*>(arg);
-                thread->Run();
-                return 0;
-            }
+            static void InternalThreadMain(void *arg);
+            static long unsigned int InternalServiceThreadMain(void *arg);
         public:
             virtual void Run() {
                 size_t current_message = static_cast<size_t>(-1);

@@ -81,7 +81,7 @@ namespace vp::res {
         u32                        reserve3       : 19;
         const char                *animation_name;
         const char                *reserve4;
-        ResBfresSkeleton          *user_bound_skeleton;
+        ResBfresSkeleton          *runtime_bound_skeleton;
         u16                       *bind_table;
         ResBfresBoneAnim          *bone_anim_array;
         ResGfxUserData            *user_data_array;

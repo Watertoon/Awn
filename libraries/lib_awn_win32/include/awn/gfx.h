@@ -3,12 +3,6 @@
 #include <awn/gfx/gfx_proc.vk.h>
 #include <awn/gfx/gfx_nngfxinteroperation.h>
 
-#include <awn/gfx/gfx_gpumemoryaddress.vk.hpp>
-#include <awn/gfx/gfx_gpumemoryallocation.vk.hpp>
-#include <awn/gfx/gfx_gpuheapmemory.vk.hpp>
-#include <awn/gfx/gfx_gpuheap.vk.hpp>
-#include <awn/gfx/gfx_gpuheapmanager.vk.hpp>
-
 #include <awn/gfx/gfx_sync.vk.h>
 #include <awn/gfx/gfx_context.vk.hpp>
 #include <awn/gfx/gfx_buffer.vk.hpp>
@@ -20,5 +14,6 @@
 
 #include <awn/gfx/gfx_texturesamplermanager.vk.hpp>
 #include <awn/gfx/gfx_texturesamplerbinder.vk.hpp>
+
 #include <awn/gfx/gfx_pipelinestate.vk.h>
 #include <awn/gfx/gfx_commandbuffer.vk.hpp>

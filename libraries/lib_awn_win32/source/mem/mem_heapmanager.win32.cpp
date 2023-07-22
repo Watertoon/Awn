@@ -29,7 +29,7 @@ namespace awn::mem {
 
         /* Initialize RootHeaps */
         for (u32 i = 0; i < heap_manager_info->root_heap_count; ++i) {
-            heap_mgr->root_heap_array[i] = ExpHeap::TryCreate(heap_manager_info->root_heap_info_array[i].arena, heap_manager_info->root_heap_info_array[i].arena_size, cRootHeapNameArray[i], false);
+            heap_mgr->root_heap_array[i] = ExpHeap::TryCreate(cRootHeapNameArray[i], heap_manager_info->root_heap_info_array[i].arena, heap_manager_info->root_heap_info_array[i].arena_size, false);
         }
 
         /* Query our allocation granularity */

@@ -19,9 +19,11 @@
 #define NO_INLINE __attribute__((noinline))
 #define NO_CONSTANT_PROPAGATION __attribute__((optimize("-fno-ipa-cp")))
 #define NO_RETURN __attribute__((noreturn))
+#define WEAK_SYMBOL __attribute__((weak)) 
 
 #define VP_UNLIKELY(expression) __builtin_expect((expression), 0)
 #define VP_LIKELY(expression)   __builtin_expect((expression), 1)
+
 
 #define TOSTRING(var) #var
 

@@ -8,22 +8,37 @@ namespace awn::res {
         public:
             VP_RTTI_DERIVED(ArchiveFileDevice, FileDeviceBase);
         protected:
-            virtual Result LoadFileImpl(FileLoadContext *file_load_context) override {
-
-                /* Load file into user buffer if necessary */
-                if (file_load_context->out_file != nullptr) {
-                    return this->FileDeviceBase::LoadFileImpl(file_load_context);
-                }
-
-                /* Get reference to file */
-                return this->GetFileReference(std::addressof(file_load_context->out_file), std::addressof(file_load_context->out_file_size), file_load_context->file_path);
-            }
+            //virtual Result LoadFileImpl(FileLoadContext *file_load_context) override {
+            //
+            //    /* Load file into user buffer if necessary */
+            //    if (file_load_context->compression_type == CompressionType::None && file_load_context->out_file != nullptr) {
+            //        return this->FileDeviceBase::LoadFileImpl(file_load_context);
+            //    }
+            //
+            //    /* Get reference to file */
+            //    ArchiveFileReturn file_return = {};
+            //    const bool result = m_archive_resource->TryGetFileByPath(std::addressof(file_return), file_path);
+            //    RESULT_RETURN_IF(result == false, ResultFileNotFound);
+            //
+            //    /* Handle compression */
+            //    if (file_load_context->compression_type != CompressionType::None) {
+            //
+            //        file_load_context->out_file = ::operator new();
+            //
+            //        Decompressor *decompressor = DecompressorManager::GetInstance()->GetDecompressor(file_load_context->compression_type);
+            //        decompresssor->TryDecompressFile();
+            //
+            //        file_load_context->out_file_size = ;
+            //    }
+            //
+            //    return ;
+            //}
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) override {
 
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(out_file_handle != nullptr, ResultNullHandle);
                 RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
-                RESULT_RETURN_UNLESS((open_mode & OpenMode_Read) != OpenMode_Read, ResultInvalidOpenMode);
+                RESULT_RETURN_UNLESS((open_mode & OpenMode::Read) != OpenMode::Read, ResultInvalidOpenMode);
 
                 /* Get entry index */
                 out_file_handle->archive_entry_index = m_archive_resource->TryGetEntryIndex(path);

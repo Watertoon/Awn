@@ -15,7 +15,7 @@ namespace awn::res {
                 default:
                     break;
             }
-            return CompressionType::None;
+            return CompressionType::Auto;
         }
     }
 

@@ -41,7 +41,7 @@ namespace awn::mem::impl {
     ALWAYS_INLINE void DeleteImpl(void *address) {
         if constexpr (ForceUseHeapAllocator == false) {
             if (awn::mem::IsHeapManagerInitialized() == false) {
-                return ::_aligned_free (address);
+                return ::_aligned_free(address);
             }
         }
         vp::imem::IHeap *address_heap = awn::mem::FindHeapFromAddress(address);

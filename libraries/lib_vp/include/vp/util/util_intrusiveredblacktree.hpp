@@ -233,6 +233,10 @@ namespace vp::util {
                 return (m_right == nullptr) & ((m_parent == nullptr) || (m_parent->m_right == this));
             }
 
+            constexpr ALWAYS_INLINE bool IsLinked() const {
+                return (m_parent == nullptr) & (m_left == nullptr) & (m_right == nullptr);
+            }
+
             static constexpr void RemoveImpl(node_base **root, node_base *remove) {
 
                 node_base *fixup_pivot  = remove->m_right;
@@ -324,8 +328,52 @@ namespace vp::util {
             using node_type = IntrusiveRedBlackTreeNode<K>;
             using key_type  = K;
         public:
-            key_type                   m_hash_value;
+            key_type m_hash_value;
         public:
+
+            template <typename T = K>
+                requires (std::is_same<T, const char*>::value == true)
+            static void InsertImpl(node_type **root, node_type *insert) {
+
+                /* Find parent */
+                node_type *iter   = *root;
+                node_type *parent = nullptr;
+
+                s32 side = 0;
+                node_type **select = nullptr;
+                while (iter != nullptr) {
+                    parent = iter;
+                    select = reinterpret_cast<node_type**>(&iter->m_left);
+                    side = -1;
+                    if (::strcmp(iter->m_hash_value, insert->m_hash_value) < 0) {
+                        select = reinterpret_cast<node_type**>(&iter->m_right);
+                        side = 1;
+                    }
+                    iter = *select;
+                }
+
+                /* Setup node */
+                insert->m_left   = nullptr;
+                insert->m_right  = nullptr;
+                insert->m_parent = parent;
+                insert->m_color  = Color_Red;
+
+                /* Place node at respective parent node */
+                node_type **child = root;
+                if (parent != nullptr) {
+                    child = reinterpret_cast<node_type**>(std::addressof(parent->m_left));
+                    if (-1 < side) {
+                        child = reinterpret_cast<node_type**>(std::addressof(parent->m_right)); 
+                    }
+                }
+                *child = insert;
+
+                /* Fixup tree */
+                InsertFixup(reinterpret_cast<IntrusiveRedBlackTreeNodeBase**>(root), insert);
+
+                return;
+            }
+
             static void InsertImpl(node_type **root, node_type *insert) {
 
                 /* Find parent */
@@ -367,6 +415,31 @@ namespace vp::util {
                 return;
             }
 
+            
+            template <typename T = K>
+                requires (std::is_same<T, const char*>::value == true)
+            static node_type *FindImpl(node_type *iter, key_type hash) {
+
+                if (iter == nullptr) { return nullptr; }
+
+                /* Traverse tree to find hash */
+                node_type *ret     = nullptr;
+                node_type *temp    = nullptr;
+                node_type **select = nullptr;
+                do {
+                    ret = iter;
+                    select = reinterpret_cast<node_type**>(&iter->m_left);
+                    if (::strcmp(iter->m_hash_value, hash) < 0) {
+                        select = reinterpret_cast<node_type**>(&ret->m_right);
+                        ret  = temp;
+                    }
+                    iter = *select;
+                    temp = ret;
+                } while (iter != nullptr);
+
+                return ret;
+            }
+
             static node_type *FindImpl(node_type *iter, key_type hash) {
 
                 if (iter == nullptr) { return nullptr; }
@@ -390,6 +463,7 @@ namespace vp::util {
             }
         public:
             constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNode() : IntrusiveRedBlackTreeNodeBase(), m_hash_value() {/*...*/}
+            constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNode(key_type &value) : IntrusiveRedBlackTreeNodeBase(), m_hash_value(value) {/*...*/}
             constexpr ~IntrusiveRedBlackTreeNode() {/*...*/}
 
             constexpr ALWAYS_INLINE void SetKey(key_type hash) {
@@ -422,15 +496,44 @@ namespace vp::util {
 			constexpr ALWAYS_INLINE IntrusiveRedBlackTree() : m_root(nullptr) {/*...*/}
             constexpr ~IntrusiveRedBlackTree() {/*...*/}
 
+            pointer Start() {
+
+                if (m_root == nullptr) { return nullptr; }
+
+                node_type *ret = m_root;
+                while (ret->m_left != nullptr) {
+                    ret = reinterpret_cast<node_type*>(ret->m_left);
+                }
+                return Traits::GetParent(ret);
+            }
+            pointer GetNext(pointer node) {
+                node_type *next = reinterpret_cast<node_type*>(Traits::GetTreeNode(node)->GetNext());
+                return (next != nullptr) ? Traits::GetParent(next) : nullptr;
+            }
+            pointer End() {
+
+                if (m_root == nullptr) { return nullptr; }
+
+                node_type *ret = m_root;
+                while (ret->m_right != nullptr) {
+                    ret = reinterpret_cast<node_type*>(ret->m_right);
+                }
+                return Traits::GetParent(ret);
+            }
+
             void Insert(node_type *node) {
                 node_type::InsertImpl(std::addressof(m_root), node);
             }
+
             void Insert(pointer node) {
                 node_type::InsertImpl(std::addressof(m_root), Traits::GetTreeNode(node));
             }
 
             void Remove(node_base *node) {
                 node_base::RemoveImpl(reinterpret_cast<node_base**>(std::addressof(m_root)), node);
+            }
+            void Remove(pointer node) {
+                node_base::RemoveImpl(reinterpret_cast<node_base**>(std::addressof(m_root)), Traits::GetTreeNode(node));
             }
 
             void Remove(key_type hash) {
@@ -469,11 +572,14 @@ namespace vp::util {
             }
     };
 
-    template<class RP, typename K, auto M>
+    template<class RP, auto M>
     struct IntrusiveRedBlackTreeTraits {
-        using Traits      = IntrusiveRedBlackTreeMemberTraits<RP, K, M>;
-        using Node        = IntrusiveRedBlackTreeNode<K>;
-        using Tree        = IntrusiveRedBlackTree<ParentType<M>, K, Traits, false>;
-        using ReverseTree = IntrusiveRedBlackTree<ParentType<M>, K, Traits, true>;
+        public:
+            using KeyType = MemberType<M>::key_type;
+        public:
+            using Traits      = IntrusiveRedBlackTreeMemberTraits<RP, KeyType, M>;
+            using Node        = IntrusiveRedBlackTreeNode<KeyType>;
+            using Tree        = IntrusiveRedBlackTree<ParentType<M>, KeyType, Traits, false>;
+            using ReverseTree = IntrusiveRedBlackTree<ParentType<M>, KeyType, Traits, true>;
     };
 }

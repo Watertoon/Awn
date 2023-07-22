@@ -7,21 +7,24 @@ namespace awn::gfx {
             DescriptorSlot m_texture_slot;
         public:
             constexpr ALWAYS_INLINE TextureBinder() : m_texture_slot(cInvalidDescriptorSlot) {/*...*/}
-            ~TextureBinder() { this->ReleaseTexture(); }
 
             TextureBinder &operator=(const TextureBinder &rhs) {
                 this->BindTexture(rhs.m_texture_slot);
                 return *this;
             }
 
-            void BindTexture(GpuMemoryAddress texture_gpu_memory_address, TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
+            void BindTexture(TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
+                this->ReleaseTexture();
+                m_texture_slot = TextureSamplerManager::GetInstance()->RegisterTextureView(texture_info, texture_view_info);
+            }
+            void BindTexture(mem::GpuMemoryAddress texture_gpu_memory_address, TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
                 this->ReleaseTexture();
                 m_texture_slot = TextureSamplerManager::GetInstance()->RegisterTextureView(texture_gpu_memory_address, texture_info, texture_view_info);
             }
 
             void BindTexture(DescriptorSlot texture_slot) {
                 this->ReleaseTexture();
-                m_texture_slot = TextureSamplerManager::GetInstance()->RegisterTextureView(texture_slot);
+                m_texture_slot = TextureSamplerManager::GetInstance()->ReferenceTextureView(texture_slot);
             }
 
             void ReleaseTexture() {
@@ -42,7 +45,6 @@ namespace awn::gfx {
             DescriptorSlot m_sampler_slot;
         public:
             constexpr ALWAYS_INLINE SamplerBinder() : m_sampler_slot(cInvalidDescriptorSlot) {/*...*/}
-            ~SamplerBinder() { this->ReleaseSampler(); }
             
             SamplerBinder &operator=(const SamplerBinder &rhs) {
                 this->BindSampler(rhs.m_sampler_slot);
@@ -56,11 +58,11 @@ namespace awn::gfx {
 
             void BindSampler(DescriptorSlot sampler_slot) {
                 this->ReleaseSampler();
-                m_sampler_slot = TextureSamplerManager::GetInstance()->RegisterTextureView(sampler_slot);
+                m_sampler_slot = TextureSamplerManager::GetInstance()->ReferenceSampler(sampler_slot);
             }
 
             void ReleaseSampler() {
-                if (m_sampler_slot != cInvalidDescriptorSlot) { TextureSamplerManager::GetInstance()->UnregisterTextureView(m_sampler_slot); m_sampler_slot = cInvalidDescriptorSlot; }
+                if (m_sampler_slot != cInvalidDescriptorSlot) { TextureSamplerManager::GetInstance()->UnregisterSampler(m_sampler_slot); m_sampler_slot = cInvalidDescriptorSlot; }
             }
 
             Sampler *GetSampler() {
@@ -69,10 +71,9 @@ namespace awn::gfx {
     };
 
     struct TextureSamplerInfo {
-        GpuMemoryAddress  texture_gpu_memory;
-        TextureInfo      *texture_info;
-        TextureViewInfo  *texture_view_info;
-        SamplerInfo      *sampler_info;
+        TextureInfo           *texture_info;
+        TextureViewInfo       *texture_view_info;
+        SamplerInfo           *sampler_info;
     };
 
     class TextureSamplerBinder {
@@ -81,7 +82,6 @@ namespace awn::gfx {
             SamplerBinder m_sampler_binder;
         public:
             constexpr ALWAYS_INLINE TextureSamplerBinder() : m_texture_binder(), m_sampler_binder() {/*...*/}
-            ~TextureSamplerBinder() {/*...*/}
 
             TextureSamplerBinder &operator=(const TextureSamplerBinder &rhs) {
                 m_texture_binder = rhs.m_texture_binder;
@@ -90,10 +90,14 @@ namespace awn::gfx {
             }
 
             void BindTextureSampler(TextureSamplerInfo *texture_sampler_info) {
-                m_texture_binder.BindTexture(texture_sampler_info->texture_gpu_memory, texture_sampler_info->texture_info, texture_sampler_info->texture_view_info);
+                m_texture_binder.BindTexture(texture_sampler_info->texture_info, texture_sampler_info->texture_view_info);
                 m_sampler_binder.BindSampler(texture_sampler_info->sampler_info);
             }
-            
+            void BindTextureSampler(mem::GpuMemoryAddress texture_gpu_memory_address, TextureSamplerInfo *texture_sampler_info) {
+                m_texture_binder.BindTexture(texture_gpu_memory_address, texture_sampler_info->texture_info, texture_sampler_info->texture_view_info);
+                m_sampler_binder.BindSampler(texture_sampler_info->sampler_info);
+            }
+
             void ReleaseTextureSampler() {
                 m_texture_binder.ReleaseTexture();
                 m_sampler_binder.ReleaseSampler();

@@ -38,6 +38,9 @@ namespace vp::util {
     template <auto M>
     using ParentType = ParentOfMemberTraits<decltype(M)>::Parent;
 
+    template <auto M>
+    using MemberType = ParentOfMemberTraits<decltype(M)>::Member;
+
     namespace {
 
         #pragma pack(push, 1)

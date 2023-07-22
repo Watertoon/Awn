@@ -4,14 +4,15 @@ namespace awn::res {
 
     class FileDeviceManager {
         private:
-            using FileDeviceList = vp::util::IntrusiveListTraits<FileDeviceBase, &FileDeviceBase::m_manager_list_node>::List;
+            using FileDeviceTree = vp::util::IntrusiveRedBlackTreeTraits<FileDeviceBase, &FileDeviceBase::m_manager_tree_node>::Tree;
         private:
-            FileDeviceList     m_mounted_file_device_list;
-            ContentFileDevice *m_main_file_device;
+            sys::ServiceCriticalSection  m_device_tree_cs;
+            FileDeviceTree               m_mounted_file_device_tree;
+            ContentFileDevice           *m_main_file_device;
         public:
             AWN_SINGLETON_TRAITS(FileDeviceManager);
         public:
-            constexpr ALWAYS_INLINE FileDeviceManager() {/*...*/}
+            constexpr ALWAYS_INLINE FileDeviceManager() : m_device_tree_cs(), m_mounted_file_device_tree(), m_main_file_device() {/*...*/}
 
             void Initialize(mem::Heap *heap) {
 
@@ -22,6 +23,8 @@ namespace awn::res {
                 std::construct_at(content_device);
 
                 m_main_file_device = content_device;
+
+                this->AddFileDevice(content_device);
             }
 
             void Finalize() {
@@ -33,24 +36,21 @@ namespace awn::res {
 
             void AddFileDevice(FileDeviceBase *file_device) {
                 VP_ASSERT(file_device != nullptr);
-                m_mounted_file_device_list.PushBack(*file_device);
+                std::scoped_lock l(m_device_tree_cs);
+                m_mounted_file_device_tree.Insert(file_device);
             }
 
             FileDeviceBase *GetFileDeviceByName(const char *device_name) {
-
-                /* Lookup device by name */
-                for (FileDeviceBase &device : m_mounted_file_device_list) {
-                    const u32 cmp_result = ::strncmp(device.GetDeviceName(), device_name, vp::util::cMaxDrive);
-                    if (cmp_result == 0) { return std::addressof(device); }
-                }
-                return nullptr;
+                const u32 hash = vp::util::HashCrc32b(device_name);
+                std::scoped_lock l(m_device_tree_cs);
+                return m_mounted_file_device_tree.Find(hash);
             }
 
             Result TryLoadFile(FileLoadContext *file_context) {
 
                 /* Get drive */
-                vp::util::FixedString<vp::util::cMaxDrive> drive;
-                vp::util::GetDriveFromPath(std::addressof(drive), file_context->file_path);
+                MaxDriveString drive;
+                vp::util::GetDrive(std::addressof(drive), file_context->file_path);
 
                 /* Find file device */
                 FileDeviceBase *device = this->GetFileDeviceByName(drive.GetString());

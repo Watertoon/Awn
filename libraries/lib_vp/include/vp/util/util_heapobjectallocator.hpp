@@ -64,7 +64,8 @@ namespace vp::util {
                 return true;
             }
 
-            ALWAYS_INLINE T *Allocate() {
+            template <typename ... Args>
+            ALWAYS_INLINE T *Allocate(Args &&... args) {
 
                 /* Fail on empty free list */
                 if (m_free_list == nullptr) { return nullptr; }
@@ -74,11 +75,11 @@ namespace vp::util {
                 m_free_list = m_free_list->next;
 
                 /* Initialize the object */
-                std::construct_at(allocation);
+                std::construct_at(allocation, std::forward<Args>(args) ...);
 
                 return allocation;
             }
-            
+
             ALWAYS_INLINE void Free(T *allocated_object) {
 
                 /* Destruct the object */

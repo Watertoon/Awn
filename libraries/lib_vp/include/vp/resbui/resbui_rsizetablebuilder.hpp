@@ -47,7 +47,7 @@ namespace vp::resbui {
 
                 return true;
             }
-            
+
             EntryNode *SearchEntry(const char *path) {
 
                 /* Search by crc32 */

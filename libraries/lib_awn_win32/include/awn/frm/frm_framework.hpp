@@ -128,16 +128,30 @@ namespace awn::frm {
                 context->Initialize(std::addressof(context_info));
 
                 /* Initialize gpu heap mgr */
-                gfx::GpuHeapManager *gpu_heap_mgr = gfx::GpuHeapManager::CreateInstance(awn_library_heap);
-                gpu_heap_mgr->Initialize(0x1'0000);
+                mem::GpuHeapManager *gpu_heap_mgr = mem::GpuHeapManager::CreateInstance(awn_library_heap);
+                const mem::GpuHeapManagerInfo gpu_heap_mgr_info = {
+                    .host_uncached_root_heap_count     = 1,
+                    .host_cached_root_heap_count       = 1,
+                    .gpu_host_uncached_root_heap_count = 1,
+                    .host_uncached_size_array          = { vp::util::c8MB },
+                    .host_cached_size_array            = { vp::util::c16MB },
+                    .gpu_host_uncached_size_array      = { vp::util::c32MB },
+                };
+                gpu_heap_mgr->Initialize(std::addressof(gpu_heap_mgr_info));
 
                 /* Initialize command pool mgr */
                 gfx::CommandPoolManager *cmd_pool_mgr = gfx::CommandPoolManager::CreateInstance(awn_library_heap);
                 cmd_pool_mgr->Initialize();
 
                 /* Initialize texture sampler mgr */
+                mem::Heap *gpu_heap_gpu_host_uncached = gpu_heap_mgr->GetGpuRootHeapGpuHostUncached(0);
                 gfx::TextureSamplerManager *tex_samp_mgr = gfx::TextureSamplerManager::CreateInstance(awn_library_heap);
-                tex_samp_mgr->Initialize(awn_library_heap);
+                const gfx::TextureSamplerManagerInfo texture_sampler_mgr_info = {
+                    .max_texture_handles = 256,
+                    .max_sampler_handles = 256,
+                    .texture_memory_size = vp::util::c32MB,
+                };
+                tex_samp_mgr->Initialize(awn_library_heap, gpu_heap_gpu_host_uncached, std::addressof(texture_sampler_mgr_info));
 
                 /* Register framework window class */
                 const WNDCLASSEX wnd_class = {
@@ -170,8 +184,8 @@ namespace awn::frm {
                     gfx::CommandPoolManager::GetInstance()->Finalize();
                     gfx::CommandPoolManager::DeleteInstance();
 
-                   //gfx::GpuHeapManager::GetInstance()->Finalize();
-                    gfx::GpuHeapManager::DeleteInstance();
+                    mem::GpuHeapManager::GetInstance()->Finalize();
+                    mem::GpuHeapManager::DeleteInstance();
 
                     gfx::Context::GetInstance()->Finalize();
                     gfx::Context::DeleteInstance();
@@ -219,8 +233,14 @@ namespace awn::frm {
                     wnd_thread->StartThread();
                     m_window_thread_array.PushPointer(wnd_thread);
                 }
+
+                /* Initialize windows */
                 for (u32 i = 0; i < framework_run_info->window_count; ++i) {
+
+                    /* Wait for initialization */
                     m_window_thread_array[i]->WaitForInitialize();
+
+                    /* Auto show the window if required */
                     if (framework_run_info->is_auto_show_windows == true ) {
                         m_window_thread_array[i]->ShowWindow();
                     }
@@ -328,7 +348,7 @@ namespace awn::frm {
 
                     /* Set acquire info */
                     if (m_window_thread_array[i]->IsSkipAcquireSync() == false) {
-                        acquire_sync_array[acquire_count]            = m_window_thread_array[i]->GetAcquireSync();
+                        acquire_sync_array[acquire_count] = m_window_thread_array[i]->GetAcquireSync(m_current_command_list_index);
                         acquire_count = acquire_count + 1; 
                     }
                 }
@@ -337,7 +357,7 @@ namespace awn::frm {
                 gfx::Sync *sync_array[2] = {};
                 sync_array[0] = std::addressof(m_present_sync_array[m_current_command_list_index]);
                 sync_array[1] = std::addressof(m_graphics_queue_submit_sync_array[m_current_command_list_index]);
-                gfx::Context::GetInstance()->SubmitCommandList(m_primary_graphics_command_list_array[m_current_command_list_index], wait_sync_array, acquire_count, sync_array, 2);
+                gfx::Context::GetInstance()->SubmitCommandList(m_primary_graphics_command_list_array[m_current_command_list_index], acquire_sync_array, acquire_count, sync_array, 2);
 
                 /* Present */
                 VkSemaphore vk_semaphore = m_present_sync_array[m_current_command_list_index].GetVkSemaphore();
@@ -365,7 +385,7 @@ namespace awn::frm {
 
                     /* Try to acquire the next image as necessary */
                     do {
-                        m_window_thread_array[i]->AcquireNextImage();
+                        m_window_thread_array[i]->AcquireNextImage(m_current_command_list_index);
                     } while (m_window_thread_array[i]->RecreateSwapchainIfNecessaryUnsafe() == true);
 
                     /* Unlock window post acquire */
@@ -394,6 +414,11 @@ namespace awn::frm {
                 for (u32 i = 0; i < WindowThread::cMaxRenderTargetCount; ++i) {
                     m_graphics_queue_submit_sync_array[i].Initialize();
                     m_present_sync_array[i].Initialize(true);
+                }
+
+                /* Acquire first images for rendering */
+                for (u32 i = 0; i < m_window_thread_array.GetUsedCount(); ++i) {
+                    m_window_thread_array[i]->AcquireNextImage(m_current_command_list_index);
                 }
 
                 /* Mainloop */

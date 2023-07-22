@@ -128,7 +128,7 @@ namespace vp::res {
                     if (option_dic != nullptr && option_dic->root_node.key == nullptr) {
 
                         option_dic->root_node.key = ext_empty_string;
-                        for (u32 k = 0; k < option_dic->node_count; ++k) {
+                        for (s32 k = 0; k < option_dic->node_count; ++k) {
                             option_dic->node_array[k].key = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(option_dic->node_array[k].key));
                         }
                     }

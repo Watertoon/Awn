@@ -167,23 +167,26 @@ namespace awn::sys {
                 /* Free from Manager */
                 m_tls_destructor_array[slot] = nullptr;
                 m_tls_slot_count = m_tls_slot_count - 1;
+
+                return;
             }
 
-            void InvokeCurrentThreadTlsDestructors() {
+            void InvokeThreadTlsDestructors(ThreadBase *thread) {
 
                 /* Lock Tls manager */
                 std::scoped_lock l(m_tls_cs);
 
                 /* Call the Tls destructors on the current thread */
-                ThreadBase *current_thread = this->GetCurrentThread();
                 for (u32 i = 0; i < ThreadBase::cMaxThreadTlsSlotCount; ++i) {
                     if (m_tls_destructor_array[i] != nullptr) {
-                        (m_tls_destructor_array[i])(current_thread->m_tls_slot_array[i]);
+                        (m_tls_destructor_array[i])(thread->m_tls_slot_array[i]);
                     }
-                    current_thread->m_tls_slot_array[i] = nullptr;
+                    thread->m_tls_slot_array[i] = nullptr;
                 }
+
+                return;
             }
-            
+
             constexpr ALWAYS_INLINE u32 GetUsedTlsSlotCount() const {
                 return m_tls_slot_count;
             }

@@ -25,7 +25,7 @@ namespace vp::res {
         u32                         reserve1        : 29;
         const char                 *animation_name;
         const char                 *reserve2;
-        ResBfresModel              *user_bound_model;
+        ResBfresModel              *runtime_bound_model;
         u16                        *bind_table;
         ResBfresAnimCurve          *anim_curve_array;
         bool                       *default_result_array;

@@ -2,15 +2,43 @@
 
 namespace awn::res {
 
-    using MaxPathString      = vp::util::FixedString<vp::util::cMaxPath>;
-    using MaxExtensionString = vp::util::FixedString<vp::util::cMaxExtension>;
+    using MaxPathString      = vp::util::MaxPathString;
+    using MaxDriveString     = vp::util::MaxDriveString;
+    using MaxExtensionString = vp::util::MaxExtensionString;
 
-    enum OpenMode : u32 {
-        OpenMode_Read            = GENERIC_READ,
-        OpenMode_Write           = GENERIC_WRITE,
-        OpenMode_ReadWrite       = GENERIC_READ | GENERIC_WRITE,
-        OpenMode_ReadWriteAppend = OpenMode_ReadWrite | 0x1,
+    enum class CompressionType : u16 {
+        None        = (1 << 0),
+        Auto        = (1 << 1),
+        Szs         = (1 << 2),
+        Zstandard   = (1 << 3),
+        MeshCodec   = (1 << 4),
+        Zlib        = (1 << 5),
     };
+    VP_ENUM_FLAG_TRAITS(CompressionType);
+    
+    constexpr CompressionType GetCompressionType(MaxExtensionString *extension) {
+        const MaxExtensionString zs_ext(".zs");
+        if (*extension == zs_ext) {
+            return CompressionType::Zstandard;
+        }
+        const MaxExtensionString szs_ext(".szs");
+        if (*extension == szs_ext) {
+            return CompressionType::Szs;
+        }
+        const MaxExtensionString mc_ext(".mc");
+        if (*extension == mc_ext) {
+            return CompressionType::MeshCodec;
+        }
+        return CompressionType::None;
+    }
+
+    enum class OpenMode : u32 {
+        Read            = GENERIC_READ,
+        Write           = GENERIC_WRITE,
+        ReadWrite       = GENERIC_READ | GENERIC_WRITE,
+        ReadWriteAppend = static_cast<u32>(OpenMode::ReadWrite) | 0x1,
+    };
+    VP_ENUM_FLAG_TRAITS(OpenMode);
 
     struct DirectoryEntry {
         u32           archive_entry_index;
@@ -34,16 +62,16 @@ namespace awn::res {
     struct FileHandle {
         void     *handle;
         u32       archive_entry_index;
+        u32       open_mode;
         size_t    file_offset;
         size_t    file_size;
-        OpenMode  open_mode;
 
         constexpr void SetDefaults() {
             handle              = INVALID_HANDLE_VALUE;
             archive_entry_index = cInvalidEntryIndex;
             file_offset         = 0;
             file_size           = 0;
-            open_mode           = OpenMode_Read;
+            open_mode           = static_cast<u32>(OpenMode::Read);
         }
     };
 
@@ -52,9 +80,10 @@ namespace awn::res {
     struct FileLoadContext {
         void            *out_file;
         size_t           out_file_size;
-        size_t           out_compressed_file_size;
-        CompressionType  out_compression_type;
-        bool             out_is_heap_allocated;
+        s32              out_file_alignment;
+        size_t           compressed_file_size;
+        CompressionType  compression_type;
+        bool             is_heap_allocated;
         mem::Heap       *heap;
         const char      *file_path;
         u32              read_div;
@@ -64,50 +93,127 @@ namespace awn::res {
     class FileDeviceBase {
         private:
             friend class FileDeviceManager;
+        public:
+            static constexpr size_t cMaxAutoReadSize = 0x20;
         protected:
-            vp::util::IntrusiveListNode                m_manager_list_node;
-            vp::util::FixedString<vp::util::cMaxDrive> m_device_name;
+            vp::util::IntrusiveRedBlackTreeNode<u32> m_manager_tree_node;
+            MaxDriveString                           m_device_name;
         public:
             VP_RTTI_BASE(FileDeviceBase);
         protected:
-            virtual Result LoadFileImpl(FileLoadContext *file_load_context) {
+            virtual Result LoadFileImpl([[maybe_unused]] FileLoadContext *file_load_context) {
 
-                /* Integrity checks */
-                RESULT_RETURN_UNLESS(file_load_context->out_file != nullptr && file_load_context->out_file_size == 0, ResultInvalidFileBufferSize);
-                RESULT_RETURN_UNLESS((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
-
-                /* Open file handle */
-                FileHandle handle = {};
-                const Result open_result = this->TryOpenFile(std::addressof(handle), file_load_context->file_path, OpenMode_Read);
-                RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
-
-                /* Get file size */
-                size_t file_size = 0;
-                const Result size_result = this->GetFileSize(std::addressof(file_size), std::addressof(handle));
-                RESULT_RETURN_UNLESS(size_result == ResultSuccess, size_result);
-
-                /* Handle file buffer */
-                if (file_load_context->out_file == nullptr) {
-                    file_load_context->out_file              = ::operator new(file_size, file_load_context->heap, file_load_context->alignment);
-                    file_load_context->out_file_size         = file_size;
-                    file_load_context->out_is_heap_allocated = true;
-                } else {
-                    RESULT_RETURN_UNLESS(file_size <= file_load_context->out_file_size, ResultInvalidFileBufferSize);
-                }
-
-                /* Read loop */
-                const u32 div_size  = file_load_context->read_div;
-                size_t    remaining = vp::util::AlignDown(file_size, div_size);
-                size_t    offset    = 0;
-                while (offset != remaining) {
-                    this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(file_load_context->out_file)) + offset), std::addressof(handle), div_size);
-                    offset = offset + div_size;
-                }
-                this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(file_load_context->out_file)) + offset), std::addressof(handle), file_size - remaining);
-
-                /* Close file handle */
-                const Result close_result = this->TryCloseFile(std::addressof(handle));
-                RESULT_RETURN_UNLESS(close_result == ResultSuccess, close_result);
+           //     /* Integrity checks */
+           //     RESULT_RETURN_UNLESS(file_load_context->out_file != nullptr && file_load_context->out_file_size == 0, ResultInvalidFileBufferSize);
+           //     RESULT_RETURN_UNLESS((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
+           //
+           //     /* Open file handle */
+           //     FileHandle handle = {};
+           //     const Result open_result = this->TryOpenFile(std::addressof(handle), file_load_context->file_path, OpenMode::Read);
+           //     RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
+           //
+           //     /* Get file size */
+           //     size_t       file_size   = 0;
+           //     const Result size_result = this->GetFileSize(std::addressof(file_size), std::addressof(handle));
+           //     RESULT_RETURN_UNLESS(size_result == ResultSuccess, size_result);
+           //
+           //
+           //     /* Check for compression detection */
+           //     size_t output_size         = file_load_context->out_file_size;
+           //     size_t output_alignment    = vp::util::AlignUp(file_load_context->out_file_alignment, alignof(u64));
+           //     DecompressorBase *decompressor = nullptr;
+           //     if ((file_load_context->compression_type != CompressionType::None && file_load_context->out_file == nullptr) || file_load_context->compression_type == CompressionType::Auto) {
+           //
+           //         /* Load auto buffer */
+           //         char auto_read[cMaxAutoReadSize] = {};
+           //
+           //         /* Read header */
+           //         const u32 auto_size = (cMaxAutoReadSize < file_size) ? cMaxAutoReadSize : file_size;
+           //         this->TryReadFile(auto_read, std::addressof(handle), auto_size);
+           //
+           //         /* Auto detect compression */
+           //         if (file_load_context->compression_type == CompressionType::Auto) {
+           //             file_load_context->compression_type = DecompressorManager::GetInstance()->AutoDetectCompressionType(auto_read, auto_size);
+           //         }
+           //
+           //         /* Get decompressor */
+           //         decompressor = DecompressorManager::GetInstance()->GetDecompressor(file_load_context->compression_type);
+           //         RESULT_RETURN_IF(decompressor == nullptr, ResultInvalidDecompressor);
+           //
+           //         DecompSize decomp_size = decompressor->GetDecompressedSize(auto_read, auto_size);
+           //         output_alignment       = (output_alignment == alignof(u64)) ? decomp_size->alignment : output_alignment;
+           //         if (file_load_context->out_file == nullptr) {
+           //             output_size = decomp_size->size;
+           //
+           //             /* Allocate output buffer */
+           //             file_load_context->out_file              = ::operator new(output_size, file_load_context->heap, output_alignment);
+           //             file_load_context->out_file_size         = output_size;
+           //             file_load_context->out_file_alignment    = output_alignment;
+           //             file_load_context->out_is_heap_allocated = true;
+           //         }
+           //
+           //         /* Copy auto header */
+           //         file_size = file_size - auto_size;
+           //         ::memcpy(file_load_context->out_file, auto_read, auto_size);
+           //
+           //     } else {
+           //         output_size = file_size;
+           //
+           //         /* Allocate output file buffers */
+           //         if (file_load_context->out_file == nullptr) {
+           //             file_load_context->out_file              = ::operator new(output_size, file_load_context->heap, file_load_context->out_file_alignment);
+           //             file_load_context->out_file_size         = output_size;
+           //             file_load_context->out_file_alignment    = output_alignment;
+           //             file_load_context->out_is_heap_allocated = true;
+           //         }
+           //     }
+           //
+           //     /* Calculate read div */
+           //     const u32    div_size          = (file_load_context->read_div == 0) : file_size ? file_load_context->read_div;
+           //     const size_t div_total_size    = vp::util::AlignDown(file_size, div_size);
+           //     const u32    stream_read_count = file_size / div_size;
+           //
+           //     /* Allocate decompressor */
+           //     DecompThread *decomp_thread = nullptr;
+           //     StreamState  *stream_state  = nullptr;
+           //     if (file_load_context->compression_type != CompressionType::None && 1 < stream_read_count) {
+           //         stream_state  = decompressor->AllocateStreamState();
+           //         decomp_thread = decompressor->GetDecompThread();
+           //     }
+           //
+           //     RESULT_RETURN_UNLESS(file_size <= file_load_context->out_file_size, ResultInvalidFileBufferSize);
+           //
+           //     /* First read */
+           //     this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(file_load_context->out_file)) + offset), std::addressof(handle), div_size);
+           //
+           //     /* Stream read */
+           //     size_t offset = div_size;
+           //     while (offset != div_total_size) {
+           //
+           //         /* Signal decompressor thread */
+           //         if (stream_state != nullptr) {
+           //             stream_state->read_loop_event.Clear();
+           //             decompressor->SignalDecompThread();
+           //         }
+           //
+           //         /* Read next chunk */
+           //         this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(file_load_context->out_file)) + offset), std::addressof(handle), div_size);
+           //
+           //         /* Wait for previous chunk */
+           //         if (stream_state != nullptr) {
+           //             stream_state->read_loop_event.Wait();
+           //         }
+           //
+           //         offset = offset + div_size;
+           //     }
+           //
+           //     if (stream_state != nullptr) {
+           //         decompressor->FreeStreamState(stream_state);
+           //     }
+           //
+           //     /* Close file handle */
+           //     const Result close_result = this->TryCloseFile(std::addressof(handle));
+           //     RESULT_RETURN_UNLESS(close_result == ResultSuccess, close_result);
 
                 RESULT_RETURN_SUCCESS;
             }
@@ -130,8 +236,11 @@ namespace awn::res {
 
             virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { VP_ASSERT(false); VP_UNUSED(out_formatted_path, path); }
         public:
-            explicit constexpr ALWAYS_INLINE FileDeviceBase() {/*...*/}
-            explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *device_name) : m_device_name(device_name) {/*...*/}
+            explicit constexpr ALWAYS_INLINE FileDeviceBase() : m_manager_tree_node(), m_device_name() {/*...*/}
+            explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *device_name) : m_manager_tree_node(), m_device_name(device_name) {
+                const u32 hash = vp::util::HashCrc32b(device_name);
+                m_manager_tree_node.SetKey(hash);
+            }
             constexpr virtual ALWAYS_INLINE ~FileDeviceBase() {/*...*/}
 
             ALWAYS_INLINE Result TryLoadFile(FileLoadContext *file_load_context)                                { return this->LoadFileImpl(file_load_context); }

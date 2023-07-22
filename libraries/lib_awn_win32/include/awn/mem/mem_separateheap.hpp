@@ -37,7 +37,7 @@ namespace awn::mem {
             }
             virtual ~SeparateHeap() override {/*...*/}
 
-            static constexpr ALWAYS_INLINE size_t GetManagementAreaSize(size_t block_count) {
+            static constexpr ALWAYS_INLINE size_t CalculateManagementAreaSize(size_t block_count) {
                 return block_count * sizeof(SeparateMemoryBlock);
             }
 

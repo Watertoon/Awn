@@ -7,6 +7,12 @@ namespace awn::gfx {
     
     class CommandBufferBase;
 
+    struct TextureSamplerManagerInfo {
+        u32    max_texture_handles;
+        u32    max_sampler_handles;
+        size_t texture_memory_size;
+    };
+
     class TextureSamplerManager {
         public:
             friend class CommandBuffer;
@@ -17,15 +23,18 @@ namespace awn::gfx {
                 u32                                      handle;
                 Sampler                                  sampler;
 
-                constexpr SamplerNode() {/*...*/}
+                constexpr  SamplerNode() : rb_node(), reference_count(), handle(), sampler() {/*...*/}
                 constexpr ~SamplerNode() {/*...*/}
             };
             struct TextureNode {
-                u32         reference_count;
-                Texture     texture;
-                TextureView texture_view;
+                u32          reference_count;
+                size_t       separate_memory;
+                Texture      texture;
+                TextureView  texture_view;
 
-                constexpr TextureNode() {/*...*/}
+                static constexpr inline size_t cInvalidMemoryOffset = 0xffff'ffff'ffff'ffff;
+
+                constexpr  TextureNode() : reference_count(), separate_memory(cInvalidMemoryOffset), texture(), texture_view() {/*...*/}
                 constexpr ~TextureNode() {/*...*/}
             };
         public:
@@ -33,17 +42,16 @@ namespace awn::gfx {
             using SamplerHandleTable = vp::util::FixedHandleTable<Context::cTargetMaxSamplerDescriptorCount>;
             using TextureAllocator   = vp::util::FixedObjectAllocator<TextureNode, Context::cTargetMaxTextureDescriptorCount>;
             using SamplerAllocator   = vp::util::FixedObjectAllocator<SamplerNode, Context::cTargetMaxSamplerDescriptorCount>;
-            using SamplerMap         = vp::util::IntrusiveRedBlackTreeTraits<SamplerNode, u64, &SamplerNode::rb_node>::Tree;
+            using SamplerMap         = vp::util::IntrusiveRedBlackTreeTraits<SamplerNode, &SamplerNode::rb_node>::Tree;
         private:
-            GpuMemoryAllocation          m_descriptor_gpu_memory_allocation;
-            GpuMemoryAddress             m_texture_descriptor_gpu_address;
-            GpuMemoryAddress             m_sampler_descriptor_gpu_address;
+            VkDeviceMemory               m_vk_device_memory_texture;
+            mem::SeparateHeap           *m_separate_heap;
             VkBuffer                     m_texture_descriptor_vk_buffer;
             VkBuffer                     m_sampler_descriptor_vk_buffer;
             VkDeviceAddress              m_texture_vk_device_address;
             VkDeviceAddress              m_sampler_vk_device_address;
-            void                        *m_texture_descriptor_buffer_address;
-            void                        *m_sampler_descriptor_buffer_address;
+            mem::GpuMemoryAddress        m_texture_descriptor_gpu_address;
+            mem::GpuMemoryAddress        m_sampler_descriptor_gpu_address;
             u16                          m_texture_descriptor_size;
             u16                          m_sampler_descriptor_size;
             u16                          m_texture_descriptor_stride;
@@ -58,18 +66,20 @@ namespace awn::gfx {
         public:
             AWN_SINGLETON_TRAITS(TextureSamplerManager);
         public:
-            constexpr TextureSamplerManager() : m_descriptor_gpu_memory_allocation(), m_texture_descriptor_gpu_address(), m_sampler_descriptor_gpu_address(), m_texture_descriptor_vk_buffer(), m_sampler_descriptor_vk_buffer(), m_texture_vk_device_address(), m_sampler_vk_device_address(), m_texture_descriptor_buffer_address(), m_sampler_descriptor_buffer_address(), m_texture_descriptor_size(), m_sampler_descriptor_size(), m_texture_descriptor_stride(), m_sampler_descriptor_stride(), m_texture_handle_table(), m_sampler_handle_table(), m_sampler_map(), m_texture_allocator(), m_sampler_allocator(), m_texture_allocator_critical_section(), m_sampler_allocator_critical_section() {/*...*/}
+            constexpr  TextureSamplerManager() : m_vk_device_memory_texture(VK_NULL_HANDLE), m_separate_heap(nullptr), m_texture_descriptor_vk_buffer(), m_sampler_descriptor_vk_buffer(), m_texture_vk_device_address(), m_sampler_vk_device_address(), m_texture_descriptor_gpu_address{}, m_sampler_descriptor_gpu_address{},
+                                                 m_texture_descriptor_size(), m_sampler_descriptor_size(), m_texture_descriptor_stride(), m_sampler_descriptor_stride(), m_texture_handle_table(), m_sampler_handle_table(), m_sampler_map(), m_texture_allocator(), m_sampler_allocator(), m_texture_allocator_critical_section(), m_sampler_allocator_critical_section() {/*...*/}
             constexpr ~TextureSamplerManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap);
+            void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, const TextureSamplerManagerInfo *manager_info);
             void Finalize();
 
-            DescriptorSlot RegisterTextureView(GpuMemoryAddress gpu_texture_memory, TextureInfo *texture_info, TextureViewInfo *texture_view);
-            DescriptorSlot RegisterTextureView(DescriptorSlot texture_slot);
-            DescriptorSlot RegisterSampler(SamplerInfo *sampler_info);
-            DescriptorSlot RegisterSampler(DescriptorSlot sampler_slot);
-
+            DescriptorSlot RegisterTextureView(TextureInfo *texture_info, TextureViewInfo *texture_view);
+            DescriptorSlot RegisterTextureView(mem::GpuMemoryAddress gpu_texture_memory, TextureInfo *texture_info, TextureViewInfo *texture_view);
+            DescriptorSlot ReferenceTextureView(DescriptorSlot texture_slot);
             void           UnregisterTextureView(DescriptorSlot texture_slot);
+
+            DescriptorSlot RegisterSampler(SamplerInfo *sampler_info);
+            DescriptorSlot ReferenceSampler(DescriptorSlot sampler_slot);
             void           UnregisterSampler(DescriptorSlot sampler_slot);
 
             void BindDescriptorBuffers(CommandBufferBase *command_buffer);

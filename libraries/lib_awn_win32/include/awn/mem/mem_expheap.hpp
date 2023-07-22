@@ -18,7 +18,7 @@ namespace awn::mem {
     };
     static_assert(sizeof(ExpHeapMemoryBlock) == 0x20);
 
-    class ExpHeap final : public Heap {
+    class ExpHeap : public Heap {
         public:
             using FreeList      = vp::util::IntrusiveListTraits<ExpHeapMemoryBlock, &ExpHeapMemoryBlock::exp_list_node>::List;
             using AllocatedList = vp::util::IntrusiveListTraits<ExpHeapMemoryBlock, &ExpHeapMemoryBlock::exp_list_node>::List;

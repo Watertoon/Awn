@@ -25,7 +25,7 @@ namespace vp::util {
                 this->AssureTermination();
             }
             explicit constexpr FixedString(const FixedString<Size> &rhs) : m_string_array{'\0'} { 
-                if (std::is_constant_evaluated()) {
+                if (std::is_constant_evaluated() == true) {
                     m_length = TStringCopy(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
                 } else {
                     const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
@@ -39,36 +39,38 @@ namespace vp::util {
             constexpr ~FixedString() {/*...*/}
 
             constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) {
-                if (std::is_constant_evaluated()) {
+                if (std::is_constant_evaluated() == true) {
                     return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
                 }
 
-                return ::strcmp(m_string_array, rhs.m_string_array) == 0;
+                if (m_length != rhs.m_length) { return false; }
+                return ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
             constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) const {
-                if (std::is_constant_evaluated()) {
+                if (std::is_constant_evaluated() == true) {
                     return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
                 }
 
-                return ::strcmp(m_string_array, rhs.m_string_array) == 0;
+                if (m_length != rhs.m_length) { return false; }
+                return ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
             constexpr ALWAYS_INLINE bool operator!=(const FixedString& rhs) {
-                if (std::is_constant_evaluated()) {
+                if (std::is_constant_evaluated() == true) {
                     return (TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1)) != 0);
                 }
 
-                return ::strcmp(m_string_array, rhs.m_string_array) != 0;
+                return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
             constexpr ALWAYS_INLINE bool operator!=(const FixedString& rhs) const {
-                if (std::is_constant_evaluated()) {
+                if (std::is_constant_evaluated() == true) {
                     return (TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1)) != 0);
                 }
 
-                return ::strcmp(m_string_array, rhs.m_string_array) != 0;
+                return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
 
             constexpr ALWAYS_INLINE FixedString &operator=(const FixedString& rhs) {
-                if (std::is_constant_evaluated()) {
+                if (std::is_constant_evaluated() == true) {
                     m_length = TStringCopy(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
                 } else {
                     const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
@@ -124,6 +126,40 @@ namespace vp::util {
                 this->AssureTermination();
 
                 return m_length;
+            }
+
+            void TruncateStart(u32 offset_from_start) {
+
+                /* Truncate whole string */
+                if (m_length <= offset_from_start) {
+                    m_length = 0;
+                    this->AssureTermination();
+                    return;
+                }
+
+                /* Move string */
+                const u32 new_length = m_length - offset_from_start;
+                ::memmove(m_string_array, m_string_array + offset_from_start, new_length);
+                m_length = new_length;
+
+                this->AssureTermination();
+                return;
+            }
+            constexpr ALWAYS_INLINE void TruncateEnd(u32 offset_from_end) {
+
+                /* Truncate whole string */
+                if (m_length <= offset_from_end) {
+                    m_length = 0;
+                    this->AssureTermination();
+                    return;
+                }
+
+                /* Adjust end size */
+                const u32 offset_from_start = m_length - offset_from_end;
+                m_length = offset_from_start;
+
+                this->AssureTermination();
+                return;
             }
 
             constexpr ALWAYS_INLINE size_t Append(const char *append) {

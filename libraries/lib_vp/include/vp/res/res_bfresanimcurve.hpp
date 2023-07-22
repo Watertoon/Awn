@@ -2,18 +2,18 @@
 
 namespace vp::res {
 
-    enum class BfresAnimCurveFrameDataType {
+    enum class BfresAnimCurveFrameDataType : u8 {
         Float = 0,
         F16   = 1,
         U8    = 2,
     };
-    enum class BfresAnimCurveValueDataType {
+    enum class BfresAnimCurveValueDataType : u8 {
         Float = 0,
         S32   = 0,
         S16   = 1,
         S8    = 2,
     };
-    enum class BfresAnimCurveCurveType {
+    enum class BfresAnimCurveCurveType : u8 {
         CubicFloat   = 0,
         LinearFloat  = 1,
         BakedFloat   = 2,
@@ -22,7 +22,7 @@ namespace vp::res {
         StepBoolean  = 5,
         BakedBoolean = 6,
     };
-    enum class BfresAnimCurveWrapMode {
+    enum class BfresAnimCurveWrapMode : u8 {
         Clamp          = 0,
         Repeat         = 1,
         Mirror         = 2,

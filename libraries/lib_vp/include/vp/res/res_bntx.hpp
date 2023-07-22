@@ -65,7 +65,7 @@ namespace vp::res {
         u8                          reserve2[0x3];
         char                       *name;
         ResBntxTextureContainer    *container;
-        void                      **mip_offset_table;
+        void                      **mip_level_array;
         ResGfxUserData             *user_data_array;
         void                       *runtime_texture;
         void                       *runtime_texture_view;

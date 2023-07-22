@@ -30,7 +30,7 @@ namespace awn::res {
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(out_file_handle != nullptr, ResultNullHandle);
                 RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
-                RESULT_RETURN_UNLESS((open_mode & OpenMode_ReadWriteAppend) != 0, ResultInvalidOpenMode);
+                RESULT_RETURN_UNLESS((static_cast<u32>(open_mode) & static_cast<u32>(OpenMode::ReadWriteAppend)) != 0, ResultInvalidOpenMode);
 
                 /* Format path */
                 MaxPathString formatted_path;
@@ -38,7 +38,7 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
 
                 /* Open file */
-                out_file_handle->handle = ::CreateFile(path, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+                out_file_handle->handle = ::CreateFile(formatted_path.GetString(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
                 if (out_file_handle->handle == INVALID_HANDLE_VALUE) {
                     return ConvertWin32ErrorToResult();
                 }
@@ -74,6 +74,7 @@ namespace awn::res {
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullHandle);
                 RESULT_RETURN_UNLESS(file_handle->handle != nullptr && file_handle->handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
+                RESULT_RETURN_UNLESS((static_cast<u32>(file_handle->open_mode) & static_cast<u32>(OpenMode::Read)) != 0, ResultInvalidOpenMode);
 
                 /* Set file location */
                 LARGE_INTEGER offset = {
@@ -101,15 +102,15 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(file_handle->handle != nullptr && file_handle->handle != INVALID_HANDLE_VALUE, ResultInvalidHandle);
                 RESULT_RETURN_UNLESS(write_buffer != nullptr, ResultNullOutBuffer);
                 RESULT_RETURN_UNLESS(write_size != 0, ResultInvalidSize);
+                RESULT_RETURN_UNLESS((static_cast<u32>(file_handle->open_mode) & static_cast<u32>(OpenMode::Write)) != 0, ResultInvalidOpenMode);
 
                 /* Write file */
                 u32 out_write_size = 0;
-                [[maybe_unused]] const bool write_result = ::WriteFile(file_handle->handle, write_buffer, write_size, reinterpret_cast<long unsigned int*>(std::addressof(out_write_size)), nullptr);
-                //if () {
-                    
-                //}
-                //RESULT_RETURN_IF()
-                    
+                const bool write_result = ::WriteFile(file_handle->handle, write_buffer, write_size, reinterpret_cast<long unsigned int*>(std::addressof(out_write_size)), nullptr);
+                if (write_result == false) {
+                    return ConvertWin32ErrorToResult();
+                }
+
                 RESULT_RETURN_SUCCESS;
             }
 
@@ -151,7 +152,7 @@ namespace awn::res {
 
                 /* Open file */
                 FileHandle handle = {};
-                const Result open_result = this->TryOpenFile(std::addressof(handle), formatted_path.GetString(), OpenMode_Read);
+                const Result open_result = this->TryOpenFile(std::addressof(handle), formatted_path.GetString(), OpenMode::Read);
                 RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
 
                 /* Copy size */

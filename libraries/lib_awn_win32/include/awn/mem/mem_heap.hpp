@@ -71,7 +71,7 @@ namespace awn::mem {
 
             constexpr ALWAYS_INLINE bool IsThreadSafe() { return m_is_thread_safe; }
 
-            virtual GpuMemoryAddress TryAllocateGpuMemoryAddress(size_t size, s32 alignment) override {
+            virtual GpuMemoryAddress TryAllocateGpuMemoryAddress([[maybe_unused]] size_t size, [[maybe_unused]] s32 alignment) {
                 return { nullptr, nullptr };
             }
             virtual constexpr bool IsGpuHeap() const { return false; }

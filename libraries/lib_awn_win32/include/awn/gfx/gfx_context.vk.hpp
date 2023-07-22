@@ -63,10 +63,10 @@ namespace awn::gfx {
             static constexpr size_t cTargetMemoryPoolAlignment = 0x1000;
 
             /* Buffer alignments */
-            static constexpr size_t cTargetConstantBufferAlignment  = 0x100;
-            static constexpr size_t cTargetStorageBufferAlignment   = 0x100;
-            static constexpr size_t cTargetTexelBufferAlignment     = 0x100;
-            static constexpr size_t cTargetDescriptorBufferAlignment = 0x100;
+            static constexpr size_t cTargetConstantBufferAlignment   = 0x100;
+            static constexpr size_t cTargetStorageBufferAlignment    = 0x100;
+            static constexpr size_t cTargetTexelBufferAlignment      = 0x100;
+            static constexpr size_t cTargetDescriptorBufferAlignment = 0x40;
 
             /* Max resource sizes */
             static constexpr size_t cTargetMaxUniformBufferSize     = 0x10000;

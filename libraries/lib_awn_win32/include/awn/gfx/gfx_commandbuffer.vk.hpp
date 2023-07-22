@@ -39,8 +39,8 @@ namespace awn::gfx {
                 for (u32 i = 0; i < Context::cTargetMaxQueueCount; ++i) {
                     if (holder->command_pool_array[i] != VK_NULL_HANDLE) {
                         ::pfn_vkDestroyCommandPool(Context::GetInstance()->GetVkDevice(), holder->command_pool_array[i], Context::GetInstance()->GetVkAllocationCallbacks());
-                        holder->command_pool_array[i] = VK_NULL_HANDLE;
                     }
+                    holder->command_pool_array[i] = VK_NULL_HANDLE;
                 }
 
                 /* Free command pool holder to allocator */
@@ -49,7 +49,7 @@ namespace awn::gfx {
                 return;
             }
         public:
-            constexpr ALWAYS_INLINE CommandPoolManager() : m_command_pool_tls_slot(0) {/*...*/}
+            constexpr ALWAYS_INLINE  CommandPoolManager() : m_command_pool_tls_slot(0) {/*...*/}
             constexpr ALWAYS_INLINE ~CommandPoolManager() {/*...*/}
 
             void Initialize() {
@@ -58,6 +58,7 @@ namespace awn::gfx {
             }
 
             void Finalize() {
+                this->FreeCurrentThreadCommandPools();
                 sys::ThreadManager::GetInstance()->FreeTlsSlot(m_command_pool_tls_slot);
                 m_command_pool_tls_slot = 0;
             }
@@ -111,6 +112,19 @@ namespace awn::gfx {
 
                 /* Free secondary command buffer */
                 ::pfn_vkFreeCommandBuffers(Context::GetInstance()->GetVkDevice(), command_pool_holder->command_pool_array[static_cast<u32>(command_list.queue_type)], 1, std::addressof(command_list.vk_command_buffer));
+
+                return;
+            }
+
+            void FreeCurrentThreadCommandPools() {
+
+                /* Free tls data */
+                sys::ThreadBase *thread = sys::ThreadManager::GetInstance()->GetCurrentThread();
+                void *arg = thread->GetTlsData(m_command_pool_tls_slot);
+                if (arg != nullptr) {
+                    DestructCommandPoolHolderTls(arg);
+                }
+                thread->SetTlsData(m_command_pool_tls_slot, nullptr);
 
                 return;
             }
