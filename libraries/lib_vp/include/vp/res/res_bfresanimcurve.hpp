@@ -32,7 +32,7 @@ namespace vp::res {
     struct ResBfresAnimCurve {
         union {
             float *frame_array_f32;
-            s16   *frame_array_f16;
+            s16   *frame_array_s16;
             u8    *frame_array_u8;
         };
         union {
@@ -50,7 +50,7 @@ namespace vp::res {
         u16   post_wrap_mode  : 2;
         u16   reserve2        : 2;
         u16   frame_count;
-        u32   base_value;
+        u32   base_result_offset;
         float start_key;
         float end_key;
         float frame_data_scale;

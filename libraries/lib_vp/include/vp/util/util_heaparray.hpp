@@ -53,14 +53,14 @@ namespace vp::util {
                 m_object_array = nullptr;
             }
 
-            constexpr ALWAYS_INLINE T *operator[](u32 index) {
+            constexpr ALWAYS_INLINE T &operator[](u32 index) {
                 VP_ASSERT(m_array_count > index);
-                return std::addressof(m_object_array[index]);
+                return m_object_array[index];
             }
 
-            constexpr ALWAYS_INLINE T *operator[](u32 index) const {
+            constexpr ALWAYS_INLINE T &operator[](u32 index) const {
                 VP_ASSERT(m_array_count > index);
-                return std::addressof(m_object_array[index]);
+                return m_object_array[index];
             }
 
             constexpr ALWAYS_INLINE u32 GetCount() const { return m_array_count; }

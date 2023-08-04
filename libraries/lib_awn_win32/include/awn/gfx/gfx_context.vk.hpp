@@ -63,9 +63,11 @@ namespace awn::gfx {
             static constexpr size_t cTargetMemoryPoolAlignment = 0x1000;
 
             /* Buffer alignments */
-            static constexpr size_t cTargetConstantBufferAlignment   = 0x100;
-            static constexpr size_t cTargetStorageBufferAlignment    = 0x100;
-            static constexpr size_t cTargetTexelBufferAlignment      = 0x100;
+            static constexpr size_t cTargetVertexBufferAlignment     = 0x4;
+            static constexpr size_t cTargetIndexBufferAlignment      = 0x4;
+            static constexpr size_t cTargetConstantBufferAlignment   = 0x40;
+            static constexpr size_t cTargetStorageBufferAlignment    = 0x40;
+            static constexpr size_t cTargetTexelBufferAlignment      = 0x40;
             static constexpr size_t cTargetDescriptorBufferAlignment = 0x40;
 
             /* Max resource sizes */
@@ -139,6 +141,7 @@ namespace awn::gfx {
             VkPhysicalDeviceDescriptorBufferPropertiesEXT       m_vk_physical_device_descriptor_buffer_properties;
             VkPhysicalDeviceMeshShaderPropertiesEXT             m_vk_physical_device_mesh_shader_properties;
             VkPhysicalDeviceShaderObjectPropertiesEXT           m_vk_physical_device_shader_object_properties;
+            VkPhysicalDeviceHostImageCopyPropertiesEXT          m_vk_physical_device_host_image_copy_properties;
 
             VkPhysicalDeviceFeatures2                           m_vk_physical_device_supported_features;
             VkPhysicalDeviceVulkan11Features                    m_vk_physical_device_supported_features_11;
@@ -150,6 +153,7 @@ namespace awn::gfx {
             VkPhysicalDeviceDescriptorBufferFeaturesEXT         m_vk_physical_device_descriptor_buffer_features;
             VkPhysicalDeviceMeshShaderFeaturesEXT               m_vk_physical_device_mesh_shader_features;
             VkPhysicalDeviceShaderObjectFeaturesEXT             m_vk_physical_device_shader_object_features;
+            VkPhysicalDeviceHostImageCopyFeaturesEXT            m_vk_physical_device_host_image_copy_features;
 
             VkPhysicalDeviceMemoryProperties                    m_vk_physical_device_memory_properties;
 
@@ -198,7 +202,11 @@ namespace awn::gfx {
                 .pNext = std::addressof(m_vk_physical_device_shader_object_properties)
             },
             m_vk_physical_device_shader_object_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_host_image_copy_properties)
+            },
+            m_vk_physical_device_host_image_copy_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES_EXT
             },
             m_vk_physical_device_supported_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
@@ -237,7 +245,11 @@ namespace awn::gfx {
                 .pNext = std::addressof(m_vk_physical_device_shader_object_features)
             },
             m_vk_physical_device_shader_object_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_host_image_copy_features)
+            },
+            m_vk_physical_device_host_image_copy_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT
             }
             {/*...*/}
 

@@ -53,9 +53,9 @@ namespace awn::hid {
 
         class HidThread : public sys::ServiceThread {
             public:
-                ALWAYS_INLINE HidThread(mem::Heap *heap) : ServiceThread("awn::hid::HidThread", heap, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cAboveNormalPriority) {/*...*/}
+                ALWAYS_INLINE HidThread(mem::Heap *heap) : ServiceThread("awn::hid::HidThread", heap, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cPriorityAboveNormal) {/*...*/}
 
-                virtual void ThreadCalc([[maybe_unused]] size_t message) override {
+                virtual void ThreadMain([[maybe_unused]] size_t message) override {
 
                     /* Create input window */
                     const HINSTANCE process_handle = ::GetModuleHandle(nullptr);

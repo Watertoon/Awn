@@ -12,48 +12,49 @@ namespace awn::sys {
 
             void Enter() {
 
-                /* Defer to the internal cs if we are not the owner */
+                /* Defer to the internal cs if this thread is not the owner */
                 if (m_lock_count == 0 && m_cs.IsLockedByCurrentThread() == false) {
                     m_cs.Enter();
                 }
 
                 /* Increment count as the owner */
                 m_lock_count  = m_lock_count + 1;
+
+                return;
             }
             bool TryEnter() {
 
-                /* Defer to the internal cs if we are not the owner */
-                if (m_lock_count == 0 || m_cs.IsLockedByCurrentThread() == false || m_cs.TryEnter() == false) {
-                    return false;
-                }
+                /* Defer to the internal cs if this thread is not the owner */
+                if (m_cs.IsLockedByCurrentThread() == false && m_cs.TryEnter() == false) { return false; }
 
                 /* Increment count as the owner */
                 m_lock_count  = m_lock_count + 1;
+
                 return true;
             }
             void Leave() {
 
                 /* Decrement count */
                 m_lock_count  = m_lock_count - 1;
-                if (m_lock_count != 0) {
-                    return;
-                }
+                if (m_lock_count != 0) { return; }
 
                 /* Leave internal cs when count drops to 0 */
                 m_cs.Leave();
+
+                return;
             }
 
-            void lock() {
+            ALWAYS_INLINE void lock() {
                 this->Enter();
             }
-            void unlock() {
+            ALWAYS_INLINE void unlock() {
                 this->Leave();
             }
-            bool try_lock() {
+            ALWAYS_INLINE bool try_lock() {
                 return this->TryEnter();
             }
 
-            bool IsLockedByCurrentThread() {
+            ALWAYS_INLINE bool IsLockedByCurrentThread() {
                 return m_cs.IsLockedByCurrentThread();
             }
     };

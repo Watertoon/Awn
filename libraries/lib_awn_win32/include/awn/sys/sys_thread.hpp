@@ -16,28 +16,32 @@ namespace awn::sys {
             }
             virtual ~Thread() override {/*...*/}
 
-            virtual void StartThread() {
+            virtual void StartThread() override {
                 const Result result0 = ukern::StartThread(m_thread_handle);
                 VP_ASSERT(result0 == ResultSuccess);
             }
-            virtual void WaitForThreadExit() {
+            virtual void WaitForThreadExit() override {
                 ukern::ExitThread(m_thread_handle);
             }
-            virtual void ResumeThread() {
+            virtual void ResumeThread() override {
                 const Result result0 = ukern::ResumeThread(m_thread_handle);
                 VP_ASSERT(result0 == ResultSuccess);
             }
-            virtual void SuspendThread() {
+            virtual void SuspendThread() override {
                 const Result result0 = ukern::SuspendThread(m_thread_handle);
                 VP_ASSERT(result0 == ResultSuccess);
             }
 
-            virtual void SetPriority(s32 priority) {
+            virtual void SleepThread(vp::TimeSpan timeout_ns) override {
+                ukern::Sleep(timeout_ns);
+            }
+
+            virtual void SetPriority(s32 priority) override {
                 const Result result0 = ukern::SetThreadPriority(m_thread_handle, priority);
                 VP_ASSERT(result0 == ResultSuccess);
                 m_priority = priority;
             }
-            virtual void SetCoreMask(u64 core_mask) {
+            virtual void SetCoreMask(u64 core_mask) override {
                 const Result result0 = ukern::SetThreadCoreMask(m_thread_handle, core_mask);
                 VP_ASSERT(result0 == ResultSuccess);
                 m_core_mask = core_mask;

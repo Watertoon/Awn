@@ -143,16 +143,23 @@ namespace vp::util {
 
     constexpr ALWAYS_INLINE float SampleSin(float value_from_angle_index) {
         const unsigned long long angle_index = static_cast<unsigned long long>(value_from_angle_index);
-        const unsigned int       index       = (angle_index >> 24) & 0xFF;
-        const float variance = static_cast<float>(angle_index & 0xFFFFFF) * 5.9604644775390625e-8;
+        const unsigned int       index       = (angle_index >> 24) & 0xff;
+        const float variance = static_cast<float>(angle_index & 0xff'ffff) * 5.9604644775390625e-8;
         return SinCosSampleTable[(index * 4) + 1] + (SinCosSampleTable[(index * 4) + 3] * variance);
     }
 
     constexpr ALWAYS_INLINE float SampleCos(float value_from_angle_index) {
         const unsigned long long angle_index = static_cast<unsigned long long>(value_from_angle_index);
-        const unsigned int       index       = (angle_index >> 24) & 0xFF;
-        const float variance = static_cast<float>(angle_index & 0xFFFFFF) * 5.9604644775390625e-8;
+        const unsigned int       index       = (angle_index >> 24) & 0xff;
+        const float variance = static_cast<float>(angle_index & 0xff'ffff) * 5.9604644775390625e-8;
         return SinCosSampleTable[(index * 4)] + (SinCosSampleTable[(index * 4) + 2] * variance);
+    }
+
+    constexpr ALWAYS_INLINE Vector2f SampleSinCos(float value_from_angle_index) {
+        const unsigned long long angle_index = static_cast<unsigned long long>(value_from_angle_index);
+        const unsigned int       index       = (angle_index >> 24) & 0xff;
+        const float variance = static_cast<float>(angle_index & 0xff'ffff) * 5.9604644775390625e-8;
+        return { SinCosSampleTable[(index * 4) + 1] + (SinCosSampleTable[(index * 4) + 3] * variance), SinCosSampleTable[(index * 4)] + (SinCosSampleTable[(index * 4) + 2] * variance) };
     }
 
     /* Interpolate a Sin value from one period  */

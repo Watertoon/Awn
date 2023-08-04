@@ -99,6 +99,8 @@ namespace vp::util {
                 return;
             }
 
+            void Clear() { m_used_pointers = 0; }
+
             constexpr u32 GetUsedCount() const { return m_used_pointers; }
             constexpr u32 GetMaxCount()  const { return m_max_pointers; }
     };

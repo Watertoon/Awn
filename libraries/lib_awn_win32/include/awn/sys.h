@@ -6,6 +6,7 @@
 #include <awn/sys/sys_messagequeue.hpp>
 #include <awn/sys/sys_servicemessagequeue.hpp>
 #include <awn/sys/sys_threadbase.h>
+#include <awn/sys/sys_threadapi.h>
 #include <awn/sys/sys_mainthread.hpp>
 #include <awn/sys/sys_threadmanager.hpp>
 #include <awn/sys/sys_thread.hpp>

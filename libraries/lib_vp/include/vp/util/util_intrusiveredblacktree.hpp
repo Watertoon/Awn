@@ -463,11 +463,14 @@ namespace vp::util {
             }
         public:
             constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNode() : IntrusiveRedBlackTreeNodeBase(), m_hash_value() {/*...*/}
-            constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNode(key_type &value) : IntrusiveRedBlackTreeNodeBase(), m_hash_value(value) {/*...*/}
+            constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNode(key_type value) : IntrusiveRedBlackTreeNodeBase(), m_hash_value(value) {/*...*/}
             constexpr ~IntrusiveRedBlackTreeNode() {/*...*/}
 
             constexpr ALWAYS_INLINE void SetKey(key_type hash) {
                 m_hash_value = hash;
+            }
+            constexpr ALWAYS_INLINE key_type GetKey() const {
+                return m_hash_value;
             }
 
             node_type *GetLeft() {
@@ -510,6 +513,10 @@ namespace vp::util {
                 node_type *next = reinterpret_cast<node_type*>(Traits::GetTreeNode(node)->GetNext());
                 return (next != nullptr) ? Traits::GetParent(next) : nullptr;
             }
+            node_type *GetNext(node_type *node) {
+                node_type *next = reinterpret_cast<node_type*>(node->GetNext());
+                return (next != nullptr) ? next : nullptr;
+            }
             pointer End() {
 
                 if (m_root == nullptr) { return nullptr; }
@@ -547,6 +554,25 @@ namespace vp::util {
                 node_type *node = node_type::FindImpl(m_root, hash);
                 if (node == nullptr || node->m_hash_value != hash) { return nullptr; }
                 return Traits::GetParent(node);
+            }
+
+            size_t GetCount() {
+                
+                size_t count = 0;
+
+                if (m_root == nullptr) { return count; }
+
+                node_type *node = m_root;
+                while (node->m_left != nullptr) {
+                    node = reinterpret_cast<node_type*>(node->m_left);
+                }
+
+                do {
+                    ++count;
+                    node = this->GetNext(node);
+                } while (node != nullptr);
+
+                return count;
             }
 	};
 

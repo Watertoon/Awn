@@ -5,9 +5,10 @@ namespace vp::util {
     template <typename T>
     class PointerArrayAllocator {
         private:
+            static constexpr size_t cPaddingSize = (sizeof(T) < sizeof(size_t)) ? sizeof(size_t) : (sizeof(T) - sizeof(void*)) & ~(alignof(T) - 1);
             struct FreeList {
                 FreeList *next;
-                char      _padding[(sizeof(T) - sizeof(void*)) & ~(alignof(T) - 1)];
+                char      _padding[cPaddingSize];
             };
             static_assert(sizeof(T) <= sizeof(FreeList) && alignof(T) <= alignof(FreeList));
         private:
@@ -16,7 +17,7 @@ namespace vp::util {
             u32        m_used_count;
             u32        m_max;
         public:
-            constexpr ALWAYS_INLINE PointerArrayAllocator() {/*...*/}
+            constexpr ALWAYS_INLINE PointerArrayAllocator() : m_free_list(), m_pointer_array(), m_used_count(), m_max() {/*...*/}
             constexpr ~PointerArrayAllocator() {/*...*/}
             
             constexpr ALWAYS_INLINE T *operator[](u32 index) {
@@ -93,6 +94,9 @@ namespace vp::util {
                 }
                 m_used_count = 0;
             }
+
+            constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_used_count; }
+            constexpr ALWAYS_INLINE u32 GetMaxCount()  const { return m_max; }
         private:
             ALWAYS_INLINE void Free(T *allocated_object) {
 

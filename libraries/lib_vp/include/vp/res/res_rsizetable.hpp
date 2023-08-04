@@ -145,7 +145,7 @@ namespace vp::res {
 
                 return cInvalidSize;
             }
-            u32 TryGetResourceSizeByCrc32(u32 hash_crc32) {
+            constexpr u32 TryGetResourceSizeByCrc32(u32 hash_crc32) {
 
                 /* Binary search for path hash */
                 u32 entry_id  = m_resource_size_crc32_count / 2;

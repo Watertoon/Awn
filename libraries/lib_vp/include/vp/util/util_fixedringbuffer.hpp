@@ -12,7 +12,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE FixedRingBuffer() : m_current_offset(0), m_count(0), m_array{} {/*...*/}
             constexpr ~FixedRingBuffer() {/*...*/}
 
-            constexpr ALWAYS_INLINE void PushBack(T *pointer) {
+            constexpr ALWAYS_INLINE void Insert(T *pointer) {
 
                 /* Check count */
                 VP_ASSERT(Size > m_count);
@@ -34,7 +34,7 @@ namespace vp::util {
                 m_array[offset - size_offset] = pointer;
             }
 
-            constexpr ALWAYS_INLINE T *PopFront() {
+            constexpr ALWAYS_INLINE T *RemoveFront() {
 
                 /* Check count */
                 VP_ASSERT(m_count != 0);
@@ -56,5 +56,7 @@ namespace vp::util {
 
                 return ret;
             }
+
+            constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; } 
 	};
 }

@@ -127,14 +127,49 @@ namespace awn::mem {
         /* If thread heaps fail fallback to the root heaps */
         HeapManager *heap_mgr = vp::util::GetPointer(sHeapManagerStorage);
         for (u32 i = 0; i < HeapManager::cMaxRootHeaps; ++i) {
-            if (heap_mgr->root_heap_array[i] == nullptr) { return nullptr; }
+            if (heap_mgr->root_heap_array[i] == nullptr) { continue; }
 
             /* Lookup all children in root heap */
-            vp::imem::IHeap *contained_heap = heap_mgr->root_heap_array[0]->FindHeapFromAddress(address);
+            vp::imem::IHeap *contained_heap = heap_mgr->root_heap_array[i]->FindHeapFromAddress(address);
             if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
                 mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
                 thread->SetLookupHeap(out_heap);
                 return out_heap;
+            }
+        }
+
+        /* If root heaps fail fallback to the gpu root heaps */
+        GpuHeapManager *gpu_heap_mgr = GpuHeapManager::GetInstance();
+        for (u32 i = 0; i < cMaxGpuRootHeapCount; ++i) {
+            if (gpu_heap_mgr->m_host_uncached_heap_context_array[i].root_heap != nullptr) {
+
+                /* Lookup all children in root heap */
+                vp::imem::IHeap *contained_heap = gpu_heap_mgr->m_host_uncached_heap_context_array[i].root_heap->FindHeapFromAddress(address);
+                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+                    mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
+                    thread->SetLookupHeap(out_heap);
+                    return out_heap;
+                }
+            }
+            if (gpu_heap_mgr->m_host_cached_heap_context_array[i].root_heap != nullptr) {
+                
+                /* Lookup all children in root heap */
+                vp::imem::IHeap *contained_heap = gpu_heap_mgr->m_host_cached_heap_context_array[i].root_heap->FindHeapFromAddress(address);
+                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+                    mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
+                    thread->SetLookupHeap(out_heap);
+                    return out_heap;
+                }
+            }
+            if (gpu_heap_mgr->m_gpu_host_uncached_heap_context_array[i].root_heap != nullptr) {
+                
+                /* Lookup all children in root heap */
+                vp::imem::IHeap *contained_heap = gpu_heap_mgr->m_gpu_host_uncached_heap_context_array[i].root_heap->FindHeapFromAddress(address);
+                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+                    mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
+                    thread->SetLookupHeap(out_heap);
+                    return out_heap;
+                }
             }
         }
 
@@ -156,12 +191,13 @@ namespace awn::mem {
                 if (candidate != nullptr) { return candidate; }
             }
         }
+
         return nullptr;
     }
 
     Heap *FindHeapByName(const char *heap_name) {
 
-        /* Search every heap by name */
+        /* Search every root heap by name */
         HeapManager *heap_mgr = vp::util::GetPointer(sHeapManagerStorage);
         for (u32 i = 0; i < HeapManager::cMaxRootHeaps; ++i) {
             if (heap_mgr->root_heap_array[i] == nullptr) { return nullptr; }
@@ -172,6 +208,41 @@ namespace awn::mem {
                 return heap_by_name;
             } else if (::strcmp(heap_name, heap_mgr->root_heap_array[i]->GetName()) == 0) {
                 return heap_mgr->root_heap_array[i];
+            }
+        }
+
+        /* Search every gpu root heap by name */
+        GpuHeapManager *gpu_heap_mgr = GpuHeapManager::GetInstance();
+        for (u32 i = 0; i < cMaxGpuRootHeapCount; ++i) {
+            if (gpu_heap_mgr->m_host_uncached_heap_context_array[i].root_heap != nullptr) {
+
+                /* Lookup all children in root heap */
+                mem::Heap *heap_by_name = FindHeapByNameImpl(gpu_heap_mgr->m_host_uncached_heap_context_array[i].root_heap, heap_name);
+                if (heap_by_name != nullptr) {
+                    return heap_by_name;
+                } else if (::strcmp(heap_name, gpu_heap_mgr->m_host_uncached_heap_context_array[i].root_heap->GetName()) == 0) {
+                    return gpu_heap_mgr->m_host_uncached_heap_context_array[i].root_heap;
+                }
+            }
+            if (gpu_heap_mgr->m_host_cached_heap_context_array[i].root_heap != nullptr) {
+                
+                /* Lookup all children in root heap */
+                mem::Heap *heap_by_name = FindHeapByNameImpl(gpu_heap_mgr->m_host_cached_heap_context_array[i].root_heap, heap_name);
+                if (heap_by_name != nullptr) {
+                    return heap_by_name;
+                } else if (::strcmp(heap_name, gpu_heap_mgr->m_host_cached_heap_context_array[i].root_heap->GetName()) == 0) {
+                    return gpu_heap_mgr->m_host_cached_heap_context_array[i].root_heap;
+                }
+            }
+            if (gpu_heap_mgr->m_gpu_host_uncached_heap_context_array[i].root_heap != nullptr) {
+                
+                /* Lookup all children in root heap */
+                mem::Heap *heap_by_name = FindHeapByNameImpl(gpu_heap_mgr->m_gpu_host_uncached_heap_context_array[i].root_heap, heap_name);
+                if (heap_by_name != nullptr) {
+                    return heap_by_name;
+                } else if (::strcmp(heap_name, gpu_heap_mgr->m_gpu_host_uncached_heap_context_array[i].root_heap->GetName()) == 0) {
+                    return gpu_heap_mgr->m_gpu_host_uncached_heap_context_array[i].root_heap;
+                }
             }
         }
 

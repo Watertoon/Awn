@@ -36,6 +36,8 @@ void LoadVkCProcsInitial() {
     LOAD_INITIAL_VK_PROC(vkEnumerateInstanceLayerProperties);
     LOAD_INITIAL_VK_PROC(vkEnumerateInstanceVersion);
     LOAD_INITIAL_VK_PROC(vkGetInstanceProcAddr);
+
+    return;
 }
 
 /* Instance procs */
@@ -127,6 +129,8 @@ void LoadVkCProcsInstance(VkInstance instance) {
     /* Instance extension procs */
     LOAD_INSTANCE_VK_PROC(vkCreateDebugUtilsMessengerEXT);
     LOAD_INSTANCE_VK_PROC(vkDestroyDebugUtilsMessengerEXT);
+
+    return;
 }
 
 /* Device procs */
@@ -343,11 +347,16 @@ DEFINE_VK_PROC(vkCmdSetPolygonModeEXT);
 DEFINE_VK_PROC(vkCmdSetRasterizationSamplesEXT);
 DEFINE_VK_PROC(vkCmdSetSampleMaskEXT);
 DEFINE_VK_PROC(vkCmdSetVertexInputEXT);
+DEFINE_VK_PROC(vkCopyImageToImageEXT);
+DEFINE_VK_PROC(vkCopyImageToMemoryEXT);
+DEFINE_VK_PROC(vkCopyMemoryToImageEXT);
 DEFINE_VK_PROC(vkCreateShadersEXT);
 DEFINE_VK_PROC(vkDestroyShaderEXT);
 DEFINE_VK_PROC(vkGetDescriptorEXT);
 DEFINE_VK_PROC(vkGetDescriptorSetLayoutSizeEXT);
+DEFINE_VK_PROC(vkGetImageSubresourceLayout2EXT);
 DEFINE_VK_PROC(vkGetMemoryHostPointerPropertiesEXT);
+DEFINE_VK_PROC(vkTransitionImageLayoutEXT);
 
 void LoadVkCProcsDevice(VkDevice device) {
 
@@ -565,9 +574,16 @@ void LoadVkCProcsDevice(VkDevice device) {
     LOAD_DEVICE_VK_PROC(vkCmdSetRasterizationSamplesEXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetSampleMaskEXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetVertexInputEXT);
+    LOAD_DEVICE_VK_PROC(vkCopyImageToImageEXT);
+    LOAD_DEVICE_VK_PROC(vkCopyImageToMemoryEXT);
+    LOAD_DEVICE_VK_PROC(vkCopyMemoryToImageEXT);
     LOAD_DEVICE_VK_PROC(vkCreateShadersEXT);
     LOAD_DEVICE_VK_PROC(vkDestroyShaderEXT);
     LOAD_DEVICE_VK_PROC(vkGetDescriptorEXT);
     LOAD_DEVICE_VK_PROC(vkGetDescriptorSetLayoutSizeEXT);
+    LOAD_DEVICE_VK_PROC(vkGetImageSubresourceLayout2EXT);
     LOAD_DEVICE_VK_PROC(vkGetMemoryHostPointerPropertiesEXT);
+    LOAD_DEVICE_VK_PROC(vkTransitionImageLayoutEXT);
+
+    return;
 }

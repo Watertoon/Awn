@@ -2,11 +2,11 @@
 
 namespace awn::sys {
 
-    constexpr inline s32 cLowPriority         = THREAD_PRIORITY_LOWEST;
-    constexpr inline s32 cBelowNormalPriority = THREAD_PRIORITY_BELOW_NORMAL;
-    constexpr inline s32 cNormalPriority      = THREAD_PRIORITY_NORMAL;
-    constexpr inline s32 cAboveNormalPriority = THREAD_PRIORITY_ABOVE_NORMAL;
-    constexpr inline s32 cHighPriority        = THREAD_PRIORITY_HIGHEST;
+    constexpr inline s32 cPriorityLow         = THREAD_PRIORITY_LOWEST;
+    constexpr inline s32 cPriorityBelowNormal = THREAD_PRIORITY_BELOW_NORMAL;
+    constexpr inline s32 cPriorityNormal      = THREAD_PRIORITY_NORMAL;
+    constexpr inline s32 cPriorityAboveNormal = THREAD_PRIORITY_ABOVE_NORMAL;
+    constexpr inline s32 cPriorityHigh        = THREAD_PRIORITY_HIGHEST;
 
     class ThreadManager {
         public:

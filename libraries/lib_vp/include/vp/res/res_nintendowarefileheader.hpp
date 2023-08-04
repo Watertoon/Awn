@@ -2,6 +2,11 @@
 
 namespace vp::res {
 
+    enum ByteOrder : u16 {
+        ByteOrder_Reverse = 0xfffe,
+        ByteOrder_Native  = 0xfeff,
+    };
+
     struct ResNintendoWareRelocationTable;
 
     struct ResNintendoWareSubHeader {
@@ -33,12 +38,9 @@ namespace vp::res {
         u32 relocation_table_offset;
         u32 file_size;
 
-        static constexpr u64 BigEndianByteMark    = 0xFFFE;
-        static constexpr u64 LittleEndianByteMark = 0xFEFF;
-
         ALWAYS_INLINE           bool IsAlignmentValid()                                   const { return (((1ull << (this->packed_alignment & 63)) - 1) & reinterpret_cast<u64>(this)) == 0; }
-        constexpr ALWAYS_INLINE bool IsEndianReverse()                                    const { return this->endianess == BigEndianByteMark; }
-        constexpr ALWAYS_INLINE bool IsEndianValid()                                      const { return this->endianess == LittleEndianByteMark; }
+        constexpr ALWAYS_INLINE bool IsEndianReverse()                                    const { return this->endianess == ByteOrder_Reverse; }
+        constexpr ALWAYS_INLINE bool IsEndianValid()                                      const { return this->endianess == ByteOrder_Native; }
         constexpr ALWAYS_INLINE bool IsRelocated()                                        const { return this->is_relocated & 1; }
         constexpr ALWAYS_INLINE bool IsSignatureValid(u64 magic)                          const { return this->magic == magic; }
         constexpr ALWAYS_INLINE bool IsVersionValid(s32 major_version, s32 minor_version) const { return this->major_version == major_version && this->minor_version <= minor_version; }

@@ -36,7 +36,7 @@ namespace awn::sys {
         return GetSystemManager()->process_core_count;
     }
 
-    u32 GetCurrentThreadCoreNumber() {
+    u32 GetCurrentCoreNumber() {
         return ::GetCurrentProcessorNumber();
     }
 

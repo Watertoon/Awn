@@ -146,6 +146,7 @@ namespace awn::gfx {
         if (m_vk_physical_device_properties_12.maxDescriptorSetUpdateAfterBindSamplers       < cTargetMaxSamplerDescriptorCount) { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_push_descriptor_properties.maxPushDescriptors               < cTargetMaxPushDescriptorCount)    { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_extended_dynamic_state_3_properties.dynamicPrimitiveTopologyUnrestricted == false)              { VP_ASSERT(false); return false; }
+        //if (m_vk_physical_device_host_image_copy_properties.identicalMemoryTypeRequirements == false)                            { VP_ASSERT(false); return false; }
 
         /* Base feature checks */
         if (m_vk_physical_device_supported_features.features.independentBlend == false)                        { VP_ASSERT(false); return false; }
@@ -230,6 +231,9 @@ namespace awn::gfx {
 
         /* Shader Object feature checks */
         if (m_vk_physical_device_shader_object_features.shaderObject == false) { VP_ASSERT(false); return false; }
+
+        /* Host Image Copy feature checks */
+        if (m_vk_physical_device_host_image_copy_features.hostImageCopy == false) { VP_ASSERT(false); return false; }
 
         m_vk_physical_device = vk_physical_device;
 
@@ -456,15 +460,20 @@ namespace awn::gfx {
 		/* Initialize device */
         {
             /* VkDevice feature enables */
+            VkPhysicalDeviceHostImageCopyFeaturesEXT target_host_image_copy_features = {
+                .sType         = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT,
+                .hostImageCopy = VK_TRUE,
+            };
             VkPhysicalDeviceShaderObjectFeaturesEXT target_shader_object_features = {
                 .sType        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-                .shaderObject = VK_TRUE
+                .pNext        = std::addressof(target_host_image_copy_features),
+                .shaderObject = VK_TRUE,
             };
             VkPhysicalDeviceMeshShaderFeaturesEXT target_mesh_shader_features = {
                 .sType      = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
                 .pNext      = std::addressof(target_shader_object_features),
                 .taskShader = VK_TRUE,
-                .meshShader = VK_TRUE
+                .meshShader = VK_TRUE,
             };
             VkPhysicalDeviceDescriptorBufferFeaturesEXT target_descriptor_buffer_features = {
                 .sType                              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
@@ -486,12 +495,12 @@ namespace awn::gfx {
             VkPhysicalDeviceExtendedDynamicState2FeaturesEXT target_extended_dynamic_state_2_features = {
                 .sType                        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
                 .pNext                        = std::addressof(target_extended_dynamic_state_3_features),
-                .extendedDynamicState2LogicOp = VK_TRUE
+                .extendedDynamicState2LogicOp = VK_TRUE,
             };
             VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT target_extended_dynamic_state_features = {
                 .sType                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
                 .pNext                   = std::addressof(target_extended_dynamic_state_2_features),
-                .vertexInputDynamicState = VK_TRUE
+                .vertexInputDynamicState = VK_TRUE,
             };
             VkPhysicalDeviceVulkan13Features target_1_3_features = {
                 .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
@@ -534,7 +543,7 @@ namespace awn::gfx {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
                 .pNext = std::addressof(target_1_2_features),
                 .variablePointersStorageBuffer = VK_TRUE,
-                .variablePointers              = VK_TRUE
+                .variablePointers              = VK_TRUE,
             };
             const VkPhysicalDeviceFeatures2 target_features = {
                 .sType                                       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
@@ -572,6 +581,7 @@ namespace awn::gfx {
                 VK_EXT_MESH_SHADER_EXTENSION_NAME,
                 VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
                 VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
+                VK_EXT_HOST_IMAGE_COPY_EXTENSION_NAME,
             };
             const u32 device_extension_count = sizeof(device_extension_array) / sizeof(const char*);
             

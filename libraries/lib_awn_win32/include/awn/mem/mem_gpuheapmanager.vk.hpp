@@ -6,15 +6,15 @@ namespace awn::gfx {
 
 namespace awn::mem {
 
-    constexpr inline size_t cMaxRootHeapCount = 2;
+    constexpr inline size_t cMaxGpuRootHeapCount = 2;
 
     struct GpuHeapManagerInfo {
         u32    host_uncached_root_heap_count;
         u32    host_cached_root_heap_count;
         u32    gpu_host_uncached_root_heap_count;
-        size_t host_uncached_size_array[cMaxRootHeapCount];
-        size_t host_cached_size_array[cMaxRootHeapCount];
-        size_t gpu_host_uncached_size_array[cMaxRootHeapCount];
+        size_t host_uncached_size_array[cMaxGpuRootHeapCount];
+        size_t host_cached_size_array[cMaxGpuRootHeapCount];
+        size_t gpu_host_uncached_size_array[cMaxGpuRootHeapCount];
 
         static constexpr inline size_t cDefaultHostUncachedSize    = vp::util::c4MB;
         static constexpr inline size_t cDefaultHostCachedSize      = vp::util::c8MB;
@@ -46,10 +46,13 @@ namespace awn::mem {
     };
 
     class GpuHeapManager {
-        private:
-            GpuRootHeapContext m_host_uncached_heap_context_array[cMaxRootHeapCount];
-            GpuRootHeapContext m_host_cached_heap_context_array[cMaxRootHeapCount];
-            GpuRootHeapContext m_gpu_host_uncached_heap_context_array[cMaxRootHeapCount];
+        public:
+            friend Heap *FindHeapFromAddress(void *address);
+            friend Heap *FindHeapByName(const char *name);
+        protected:
+            GpuRootHeapContext m_host_uncached_heap_context_array[cMaxGpuRootHeapCount];
+            GpuRootHeapContext m_host_cached_heap_context_array[cMaxGpuRootHeapCount];
+            GpuRootHeapContext m_gpu_host_uncached_heap_context_array[cMaxGpuRootHeapCount];
             GpuHeapManagerInfo m_manager_info;
         public:
             AWN_SINGLETON_TRAITS(GpuHeapManager);

@@ -98,7 +98,7 @@ namespace awn::gfx {
                 VkMemoryRequirements2 memory_requirements_2 = {
                     .sType = VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2,
                 };
-                ::vkGetDeviceImageMemoryRequirements(Context::GetInstance()->GetVkDevice(), std::addressof(memory_requirement_info), std::addressof(memory_requirements_2));
+                ::pfn_vkGetDeviceImageMemoryRequirements(Context::GetInstance()->GetVkDevice(), std::addressof(memory_requirement_info), std::addressof(memory_requirements_2));
 
                 return { memory_requirements_2.memoryRequirements.size, memory_requirements_2.memoryRequirements.alignment };
             }

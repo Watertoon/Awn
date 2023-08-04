@@ -399,7 +399,7 @@ namespace awn::frm {
                 return;
             }
         public:
-            ALWAYS_INLINE JobListFramework() : Framework(), m_calc_job_list(), m_draw_job_list(), m_present_sync_array{}, m_graphics_queue_submit_sync_array{}, m_primary_graphics_command_buffer(), m_current_command_list_index(0), m_primary_graphics_command_list_array{}, m_present_delegate(this, PresentAsync), m_present_thread(std::addressof(m_present_delegate), "AwnFramework Present Thread", nullptr, sys::ThreadRunMode::WaitForMessage, 0, 8, 0x1000, sys::cHighPriority), m_present_event(), m_is_pause_calc(false), m_is_pause_draw(false), m_is_ready_to_exit(false), m_is_present(false) {/*...*/}
+            ALWAYS_INLINE JobListFramework() : Framework(), m_calc_job_list(), m_draw_job_list(), m_present_sync_array{}, m_graphics_queue_submit_sync_array{}, m_primary_graphics_command_buffer(), m_current_command_list_index(0), m_primary_graphics_command_list_array{}, m_present_delegate(this, PresentAsync), m_present_thread(std::addressof(m_present_delegate), "AwnFramework Present Thread", nullptr, sys::ThreadRunMode::WaitForMessage, 0, 8, 0x1000, sys::cPriorityHigh), m_present_event(), m_is_pause_calc(false), m_is_pause_draw(false), m_is_ready_to_exit(false), m_is_present(false) {/*...*/}
             virtual ~JobListFramework() override {/*...*/}
 
             virtual void MainLoop() override {

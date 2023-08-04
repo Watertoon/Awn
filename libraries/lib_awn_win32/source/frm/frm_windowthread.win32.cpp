@@ -65,7 +65,7 @@ namespace awn::frm {
                     if (vp::util::cMaxPath <= message_size) { window_thread->m_drag_drop_status = DragDropStatus::TooLongPathError; return 0; }
 
                     /* Copy string */
-                    const u32 result = ::DragQueryFileA(hdrop, i, window_thread->m_drag_drop_array[i]->GetString(), vp::util::cMaxPath);
+                    const u32 result = ::DragQueryFileA(hdrop, i, window_thread->m_drag_drop_array[i].GetString(), vp::util::cMaxPath);
                     if (result == 0) { window_thread->m_drag_drop_status = DragDropStatus::PathCopyError; return ::DefWindowProc(hwnd, msg, wparam, lparam); }
                 }
 

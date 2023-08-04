@@ -25,7 +25,7 @@ namespace awn::sys {
             size_t                       m_exit_message;
             u32                          m_stack_size;
             s32                          m_priority;
-            size_t                       m_core_mask;
+            u64                          m_core_mask;
             u32                          m_run_mode;
             void                        *m_tls_slot_array[cMaxThreadTlsSlotCount];
             vp::util::IntrusiveListNode  m_thread_manager_list_node;
@@ -41,7 +41,7 @@ namespace awn::sys {
                 }
 
                 while(current_message != m_exit_message) {
-                    this->ThreadCalc(current_message);
+                    this->ThreadMain(current_message);
                     if (m_run_mode == static_cast<u32>(ThreadRunMode::WaitForMessage)) {
                         m_message_queue.ReceiveMessage(std::addressof(current_message));
                     } else {
@@ -52,9 +52,9 @@ namespace awn::sys {
                 }
             }
 
-            virtual void ThreadCalc([[maybe_unused]] size_t message) {/*...*/}
+            virtual void ThreadMain([[maybe_unused]] size_t message) {/*...*/}
         public:
-            ALWAYS_INLINE ThreadBase(mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages , u32 stack_size, s32 priority) : m_thread_heap(thread_heap), m_lookup_heap(nullptr), m_exit_message(exit_code), m_stack_size(stack_size), m_priority(priority), m_run_mode(static_cast<u32>(run_mode)) {
+            ALWAYS_INLINE ThreadBase(mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages , u32 stack_size, s32 priority) : m_thread_heap(thread_heap), m_lookup_heap(nullptr), m_message_queue(), m_message_queue_buffer(), m_exit_message(exit_code), m_stack_size(stack_size), m_priority(priority), m_core_mask(), m_run_mode(static_cast<u32>(run_mode)), m_tls_slot_array(), m_thread_manager_list_node() {
                 m_message_queue.Initialize(thread_heap, max_messages);
             }
             ALWAYS_INLINE ThreadBase(mem::Heap *thread_heap) : m_thread_heap(thread_heap), m_lookup_heap(nullptr) {
@@ -65,10 +65,11 @@ namespace awn::sys {
                 m_message_queue.Finalize();
             }
 
-            virtual void StartThread()       {/*...*/};
-            virtual void WaitForThreadExit() {/*...*/};
-            virtual void ResumeThread()      {/*...*/};
-            virtual void SuspendThread()     {/*...*/};
+            virtual void StartThread()                    {/*...*/}
+            virtual void WaitForThreadExit()              {/*...*/}
+            virtual void ResumeThread()                   {/*...*/}
+            virtual void SuspendThread()                  {/*...*/}
+            virtual void SleepThread(vp::TimeSpan timeout_ns) {/*...*/}
 
             virtual void SetPriority([[maybe_unused]] s32 priority)  {/*...*/}
             virtual void SetCoreMask([[maybe_unused]] u64 core_mask) {/*...*/}

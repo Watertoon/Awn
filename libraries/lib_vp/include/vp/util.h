@@ -23,6 +23,7 @@
 
 #include <vp/util/util_spinloopintrinsics.x86.hpp>
 #include <vp/util/util_busymutex.x86.hpp>
+#include <vp/util/util_memorybarrier.x86.hpp>
 
 #include <vp/util/util_alignment.hpp>
 #include <vp/util/util_endian.hpp>
@@ -41,6 +42,7 @@
 #include <vp/util/util_heaparray.hpp>
 #include <vp/util/util_timestamp.h>
 #include <vp/util/util_timespan.hpp>
+#include <vp/util/util_timeconstants.hpp>
 #include <vp/util/util_constevalfail.hpp>
 #include <vp/util/util_tstring.hpp>
 #include <vp/util/util_charactercode.hpp>
@@ -53,14 +55,15 @@
 #include <vp/util/util_color4.hpp>
 #include <vp/util/util_job.hpp>
 #include <vp/util/util_enumtraits.h>
+#include <vp/util/util_priorityqueue.hpp>
 
-#include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/sse4/util_int128.sse4.hpp>
 #include <vp/util/math/sse4/util_float128.sse4.hpp>
 #include <vp/util/math/sse4/util_vector2.hpp>
 #include <vp/util/math/sse4/util_vector3.hpp>
 #include <vp/util/math/sse4/util_vector3calc.h>
 #include <vp/util/math/sse4/util_vector4.hpp>
+#include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/sse4/util_matrix33.hpp>
 #include <vp/util/math/sse4/util_matrix34.hpp>
 #include <vp/util/math/sse4/util_matrix34calc.h>

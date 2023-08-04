@@ -2,129 +2,125 @@
 
 namespace vp::resbui {
 
+    class ResourceSizeTableBuilder;
+
+    class ResourceSizeNode {
+        public:
+            friend class ResourceSizeTableBuilder;
+        private:
+            vp::util::IntrusiveRedBlackTreeNode<const char*>  collision_node;
+            vp::util::IntrusiveRedBlackTreeNode<u32>          hash_node;
+            u32                                               size;
+        public:
+            explicit constexpr  ResourceSizeNode(u32 path_crc32, u32 resource_size) : collision_node(), hash_node(path_crc32), size(resource_size) {/*...*/}
+            explicit constexpr  ResourceSizeNode(const char *file_path, u32 resource_size) : collision_node(file_path), hash_node(), size(resource_size) {
+
+                /* Integrity checks */
+                VP_ASSERT(file_path != nullptr && *file_path != '\0');
+
+                /* Calculate path hash */
+                const u32 path_crc32 = vp::util::HashCrc32b(file_path);
+                hash_node.SetKey(path_crc32);
+
+                return;
+            }
+            constexpr ~ResourceSizeNode() {/*...*/}
+    };
+
     class ResourceSizeTableBuilder {
         public:
-            class EntryNode {
-                public:
-                    friend class ResourceSizeTableBuilder;
-                private:
-                    u32                                       path_crc32;
-                    u32                                       size;
-                    vp::util::FixedString<vp::util::cMaxPath> path;
-                    vp::util::IntrusiveListNode               node;
-                public:
-                    explicit constexpr  EntryNode(u32 path_crc32, u32 resource_size) : path_crc32(path_crc32), size(resource_size), path(nullptr), node() {/*...*/}
-                    explicit constexpr  EntryNode(const char *file_path, u32 resource_size) : path_crc32(0), size(resource_size), path(file_path), node() {
-
-                        /* Integrity checks */
-                        VP_ASSERT(file_path != nullptr && *file_path != '\0');
-
-                        /* Calculate path hash */
-                        path_crc32 = vp::util::HashCrc32b(file_path);
-
-                        return;
-                    }
-                    constexpr ~EntryNode() {/*...*/}
-            };
+            using EntryHashList      = vp::util::IntrusiveRedBlackTreeTraits<ResourceSizeNode, &ResourceSizeNode::hash_node>::Tree;
+            using EntryCollisionList = vp::util::IntrusiveRedBlackTreeTraits<ResourceSizeNode, &ResourceSizeNode::collision_node>::Tree;
         public:
-            using EntryList = vp::util::IntrusiveListTraits<EntryNode, &EntryNode::node>::List;
-        public:
-            EntryList m_crc32_entry_list;
-            EntryList m_collision_entry_list;
+            EntryHashList      m_crc32_entry_list;
+            EntryCollisionList m_collision_entry_list;
         private:
-            bool LinkEntryPath(EntryNode *link_node) {
-
-                /* Find neighboring nodes by path */
-                EntryList::iterator next_iter0 = m_crc32_entry_list.begin();
-                while (next_iter0 != m_crc32_entry_list.end() && ::strcmp((*next_iter0).path.GetString(), link_node->path.GetString()) < 0) { ++next_iter0; }
-
-                /* Ensure */
-                if (::strcmp((*next_iter0).path.GetString(), link_node->path.GetString()) < 0) { return false; }
-
-                /* Link nodes */
-                (*next_iter0).node.prev()->LinkNext(std::addressof(link_node->node));
-                (*next_iter0).node.LinkPrev(std::addressof(link_node->node));
-
-                return true;
-            }
-
-            EntryNode *SearchEntry(const char *path) {
+            ResourceSizeNode *SearchEntry(const char *path) {
 
                 /* Search by crc32 */
-                const u32 path_crc32 = util::HashCrc32b(path);
-                EntryList::iterator next_iter0 = m_crc32_entry_list.begin();
-                while (next_iter0 != m_crc32_entry_list.end() && (*next_iter0).path_crc32 < path_crc32) { ++next_iter0; }
-
-                /* Return if found */
-                if ((*next_iter0).path_crc32 == path_crc32) { return std::addressof(*next_iter0); }
+                {
+                    const u32 path_crc32 = util::HashCrc32b(path);
+                    ResourceSizeNode *node = m_crc32_entry_list.Find(path_crc32);
+                    if (node != nullptr) { return node; }
+                }
 
                 /* Search by path */
-                EntryList::iterator next_iter1 = m_crc32_entry_list.begin();
-                while (next_iter1 != m_crc32_entry_list.end() && ::strcmp((*next_iter1).path.GetString(), path) < 0) { ++next_iter1; }
-
-                /* Return if found */
-                if (::strcmp((*next_iter1).path.GetString(), path) == 0) { return std::addressof(*next_iter1); } 
+                {
+                    ResourceSizeNode *node = m_collision_entry_list.Find(path);
+                    if (node != nullptr) { return node; }
+                }
 
                 return nullptr;
             }
         public:
             constexpr ResourceSizeTableBuilder() : m_crc32_entry_list(), m_collision_entry_list() {/*...*/}
-            ~ResourceSizeTableBuilder() {/*...*/}
+            constexpr ~ResourceSizeTableBuilder() {/*...*/}
 
-            bool AddEntry(EntryNode *new_entry) {
+            bool AddEntry(ResourceSizeNode *new_entry) {
 
                 /* Integrity check */
                 VP_ASSERT(new_entry != nullptr);
 
-                /* Find if there is already a hash collision */
-                EntryList::iterator next_iter0 = m_collision_entry_list.begin();
-                while (next_iter0 != m_collision_entry_list.end() && ::strcmp((*next_iter0).path.GetString(), new_entry->path.GetString()) < 0) { ++next_iter0; }
+                /* Find if there is a hash collision */
+                ResourceSizeNode *collision_node = m_crc32_entry_list.Find(new_entry->hash_node.GetKey());
 
-                /* Link nodes if there was a collision */
-                if (next_iter0 != m_collision_entry_list.end()) {
+                /* Add node to hash tree if there was no collision */
+                if (collision_node == nullptr) {
 
-                    /* Fail if the path is identical to the next node */
-                    if ((*next_iter0).path == new_entry->path) { return false; }
+                    m_crc32_entry_list.Insert(new_entry);
 
-                    (*next_iter0).node.LinkPrev(std::addressof(new_entry->node));
                     return true;
                 }
 
-                /* Find neighboring nodes by crc32 */
-                EntryList::iterator next_iter1 = m_crc32_entry_list.begin();
-                while (next_iter1 != m_crc32_entry_list.end() && (*next_iter1).path_crc32 < new_entry->path_crc32) { ++next_iter1; }
-                if (next_iter1 == m_crc32_entry_list.end()) {
-                    next_iter1 = m_crc32_entry_list.begin();
-                }
+                /* Check whether the new node has a valid path */
+                const char *new_path = new_entry->collision_node.GetKey();
+                if (new_path == nullptr || *new_path == '\0') { return false; }
 
-                /* Link nodes unless a collision occured */
-                EntryNode &next_entry = (*next_iter1);
-                if (next_entry.path_crc32 != new_entry->path_crc32) {
-                    next_entry.node.LinkPrev(std::addressof(new_entry->node));
-                    return true;
-                }
+                /* Check whether the path collides */
+                if (m_collision_entry_list.Find(new_entry->collision_node.GetKey()) == nullptr) { return false; }
 
-                /* Fail if the node has no path or collides */
-                if (next_entry.path.IsNullString() == true || next_entry.path == new_entry->path) { return false; }
+                /* Check whether the colliding node has a valid path */
+                const char *collide_path = new_entry->collision_node.GetKey();
+                if (collide_path == nullptr || *collide_path == '\0') { return false; }
 
-                /* Unlink newly colliding node */
-                next_entry.node.Unlink();
+                /* Remove colliding node */
+                m_crc32_entry_list.Remove(collision_node);
 
-                /* Link new node and colliding node to path table */
-                const bool result0 = this->LinkEntryPath(std::addressof(next_entry));
-                VP_ASSERT(result0 != false);
-                const bool result1 = this->LinkEntryPath(new_entry);
-                VP_ASSERT(result1 != false);
+                /* Add both nodes to the collision list */
+                m_collision_entry_list.Insert(collision_node);
+                m_collision_entry_list.Insert(new_entry);
 
                 return true;
             }
 
-            EntryNode *RemoveEntry(const char *path) {
+            ResourceSizeNode *RemoveEntry(const char *path) {
 
                 /* Find and unlink Entry */
-                EntryNode *entry = this->SearchEntry(path);
+                ResourceSizeNode *entry = this->SearchEntry(path);
                 if (entry == nullptr) { return nullptr; }
-                entry->node.Unlink();
+
+                /* Try remove */
+                if (entry->hash_node.IsLinked() == true)      { m_crc32_entry_list.Remove(entry); }
+                if (entry->collision_node.IsLinked() == true) {
+
+                    m_collision_entry_list.Remove(entry); 
+
+                    /* Try to readd a no longer colliding node */
+                    const u32         hash                     = entry->hash_node.GetKey();
+                    ResourceSizeNode *no_longer_colliding_node = nullptr;
+                    ResourceSizeNode *node_iter                = m_collision_entry_list.Start();
+                    while (node_iter != nullptr) {
+                        if (node_iter->hash_node.GetKey() == hash) {
+                            if (no_longer_colliding_node != nullptr) { return entry; }
+                            no_longer_colliding_node = node_iter; 
+                        }
+                        node_iter = m_collision_entry_list.GetNext(node_iter);
+                    }
+                    if (no_longer_colliding_node != nullptr) {
+                        m_collision_entry_list.Remove(no_longer_colliding_node);
+                        m_crc32_entry_list.Insert(no_longer_colliding_node); 
+                    }
+                }
 
                 return entry;
             }
@@ -132,7 +128,7 @@ namespace vp::resbui {
             bool UpdateSize(const char *path, u32 new_size) {
 
                 /* Find and remove Entry */
-                EntryNode *entry = this->SearchEntry(path);
+                ResourceSizeNode *entry = this->SearchEntry(path);
                 if (entry == nullptr) { return false; }
 
                 /* Update state */
@@ -151,27 +147,33 @@ namespace vp::resbui {
 
                 /* Write header */
                 res::ResRsizetable *rsizetable = reinterpret_cast<res::ResRsizetable*>(file);
-                rsizetable->magic0          = res::ResRsizetable::cMagic0;
-                rsizetable->magic1          = res::ResRsizetable::cMagic1;
-                rsizetable->version         = res::ResRsizetable::cTargetVersion;
-                rsizetable->max_path_length = max_path_length;
+                rsizetable->magic0             = res::ResRsizetable::cMagic0;
+                rsizetable->magic1             = res::ResRsizetable::cMagic1;
+                rsizetable->version            = res::ResRsizetable::cTargetVersion;
+                rsizetable->max_path_length    = max_path_length;
 
                 /* Stream out crc32 entries  */
                 u32 crc32_count = 0;
-                for (const EntryNode &entry_node : m_crc32_entry_list) {
-                    rsizetable->resource_size_crc32_array[crc32_count].path_crc32    = entry_node.path_crc32;
-                    rsizetable->resource_size_crc32_array[crc32_count].resource_size = entry_node.size;
+                ResourceSizeNode *hash_node = m_crc32_entry_list.Start();
+                while (hash_node != nullptr) {
+                    rsizetable->resource_size_crc32_array[crc32_count].path_crc32    = hash_node->hash_node.GetKey();
+                    rsizetable->resource_size_crc32_array[crc32_count].resource_size = hash_node->size;
+
+                    hash_node = m_crc32_entry_list.GetNext(hash_node);
                     ++crc32_count;
                 }
                 rsizetable->resource_size_crc32_count = crc32_count;
 
                 /* Stream out collision entries */
-                u32 collision_count = 0;
-                void *collision_array = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(rsizetable) + sizeof(res::ResRsizetable) + crc32_count * sizeof(res::ResRsizetableCrc32));
-                for (const EntryNode &entry_node : m_collision_entry_list) {
+                u32               collision_count = 0;
+                void             *collision_array = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(rsizetable) + sizeof(res::ResRsizetable) + crc32_count * sizeof(res::ResRsizetableCrc32));
+                ResourceSizeNode *collision_node = m_collision_entry_list.Start();
+                while (collision_node != nullptr) {
                     char *output_string = reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(collision_array) + (sizeof(u32) + max_path_length) * collision_count);
-                    ::strncpy(output_string, entry_node.path.GetString(), max_path_length);
-                    *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(output_string) + max_path_length) = entry_node.size;
+                    ::strncpy(output_string, collision_node->collision_node.GetKey(), max_path_length);
+                    *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(output_string) + max_path_length) = collision_node->size;
+
+                    collision_node = m_collision_entry_list.GetNext(collision_node);
                     ++collision_count;
                 }
                 rsizetable->resource_size_collision_count = collision_count;
@@ -179,7 +181,7 @@ namespace vp::resbui {
                 return;
             }
 
-            constexpr size_t CalculateSerializedSize(u32 max_path_length = 0x80) {
+            size_t CalculateSerializedSize(u32 max_path_length = 0x80) {
                 return sizeof(res::ResRsizetable) + sizeof(res::ResRsizetableCrc32) * m_crc32_entry_list.GetCount() + (sizeof(u32) + max_path_length) * m_collision_entry_list.GetCount();
             }
     };

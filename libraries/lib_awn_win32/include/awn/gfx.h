@@ -17,3 +17,7 @@
 
 #include <awn/gfx/gfx_pipelinestate.vk.h>
 #include <awn/gfx/gfx_commandbuffer.vk.hpp>
+
+#include <awn/gfx/gfx_primitiveshape.h>
+#include <awn/gfx/gfx_primitiveshapequad.h>
+#include <awn/gfx/gfx_primitiveshapecircle.h>

@@ -87,7 +87,7 @@ namespace awn::frm {
                 size_t awn_message;
             };
         public:
-            WindowThread(mem::Heap *heap, WindowInfo *window_info, u32 max_file_drag_drop) : ServiceThread("WindowThread", heap, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cNormalPriority), m_hwnd(0), m_vk_surface(VK_NULL_HANDLE), m_vk_swapchain(VK_NULL_HANDLE), m_vk_image_array{}, m_render_target_color_array{}, m_image_index(-1), m_acquire_sync_array(), m_window_cs(), m_window_event(), m_window_info(), m_drag_drop_array(), m_drag_drop_count(), m_drag_drop_status(), m_require_swapchain_refresh(false), m_skip_draw(false) {
+            WindowThread(mem::Heap *heap, WindowInfo *window_info, u32 max_file_drag_drop) : ServiceThread("WindowThread", heap, sys::ThreadRunMode::Looping, 0, 8, 0x1000, sys::cPriorityNormal), m_hwnd(0), m_vk_surface(VK_NULL_HANDLE), m_vk_swapchain(VK_NULL_HANDLE), m_vk_image_array{}, m_render_target_color_array{}, m_image_index(-1), m_acquire_sync_array(), m_window_cs(), m_window_event(), m_window_info(), m_drag_drop_array(), m_drag_drop_count(), m_drag_drop_status(), m_require_swapchain_refresh(false), m_skip_draw(false) {
 
                 /* Allocate drag drop array */
                 m_drag_drop_array.Initialize(heap, max_file_drag_drop);
@@ -183,7 +183,7 @@ namespace awn::frm {
                 /* Special thread mainloop for Window thread */
                 WindowMessage window_message = {};
                 while (::GetMessage(std::addressof(window_message.win32_msg), m_hwnd, 0, 0) > 0  && (m_message_queue.TryReceiveMessage(std::addressof(window_message.awn_message)) == false || window_message.awn_message != m_exit_message)) {
-                    this->ThreadCalc(reinterpret_cast<size_t>(std::addressof(window_message)));
+                    this->ThreadMain(reinterpret_cast<size_t>(std::addressof(window_message)));
                 }
 
                 {
@@ -217,7 +217,7 @@ namespace awn::frm {
                 return;
             }
 
-            virtual void ThreadCalc(size_t arg) override {
+            virtual void ThreadMain(size_t arg) override {
                 WindowMessage *window_message = reinterpret_cast<WindowMessage*>(arg);
                 ::TranslateMessage(std::addressof(window_message->win32_msg));
                 ::DispatchMessage(std::addressof(window_message->win32_msg));

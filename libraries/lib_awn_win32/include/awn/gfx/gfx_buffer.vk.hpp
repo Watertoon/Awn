@@ -91,9 +91,9 @@ namespace awn::gfx {
                 return { memory_requirements_2.memoryRequirements.size, memory_requirements_2.memoryRequirements.alignment };
             }
 
-            constexpr ALWAYS_INLINE mem::GpuMemoryAddress GetGpuAddress()      const { return m_buffer_gpu_memory_address; } 
-            constexpr ALWAYS_INLINE VkDeviceAddress       GetVkDeviceAddress() const { return m_vk_device_address; } 
-            constexpr ALWAYS_INLINE VkBuffer              GetVkBuffer()        const { return m_vk_buffer; } 
+            constexpr ALWAYS_INLINE mem::GpuMemoryAddress GetGpuMemoryAddress() const { return m_buffer_gpu_memory_address; } 
+            constexpr ALWAYS_INLINE VkDeviceAddress       GetVkDeviceAddress()  const { return m_vk_device_address; } 
+            constexpr ALWAYS_INLINE VkBuffer              GetVkBuffer()         const { return m_vk_buffer; } 
 	};
     static_assert(sizeof(Buffer) <= cMaxGfxBufferSize);
 }

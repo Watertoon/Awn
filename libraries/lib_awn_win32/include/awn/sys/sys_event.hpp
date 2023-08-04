@@ -16,14 +16,17 @@ namespace awn::sys {
             void Signal() {
                 std::scoped_lock lock(m_cs);
 
-                /* If we auto reset, we can only signal one waiter */
+                /* If auto reset, only signal one waiter */
                 if (m_auto_reset_mode == 1) {
                     m_cv.Signal();
-                } else {
-                    /* Increment wait id so all previous waiters wake even if the signal is reset */
-                    ++m_wake_id;
-                    m_cv.Broadcast();
+                    return;
                 }
+
+                /* Increment wait id so all previous waiters wake even if the signal is reset */
+                ++m_wake_id;
+                m_cv.Broadcast();
+
+                return;
             }
 
             void Clear() {

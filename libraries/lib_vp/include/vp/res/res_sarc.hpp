@@ -58,11 +58,6 @@ namespace vp::res {
     };
     static_assert(sizeof(ResSarcSfnt) == 0x8);
 
-    enum ByteOrder {
-        ByteOrder_Reverse = 0xFFFE,
-        ByteOrder_Native  = 0xFEFF
-    };
-
     struct ResSarc {
         u32 magic;
         u16 header_size;

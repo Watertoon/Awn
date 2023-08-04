@@ -39,6 +39,15 @@ namespace awn::sys {
                 s32 result0 = ::SuspendThread(m_handle);
                 VP_ASSERT(result0 != -1);
             }
+            virtual void SleepThread(vp::TimeSpan timeout_ns) {
+
+                const u64 timeout_tick = vp::util::GetSystemTick() + timeout_ns.GetTick();
+                u32       time_tick    = vp::util::GetSystemTick();
+                while (timeout_tick < time_tick) {
+                    ::SwitchToThread();
+                    time_tick = vp::util::GetSystemTick();
+                }
+            }
 
             virtual void SetPriority(s32 priority) {
                 bool result0 = ::SetThreadPriority(m_handle, priority);

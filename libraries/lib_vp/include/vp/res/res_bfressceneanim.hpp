@@ -29,13 +29,13 @@ namespace vp::res {
     static_assert(sizeof(ResBfresCameraAnimResultDefault) == 0x2c);
 
     enum class BfresCameraAnimRotationMode   : u8 {
-        Aim,
-        EulerZXY,
+        At       = 0,
+        EulerZXY = 1,
     };
 
     enum class BfresCameraAnimProjectionMode : u8 {
-        Orthographic,
-        Perspective,
+        Orthographic = 0,
+        Perspective  = 1,
     };
 
     struct ResBfresCameraAnim {

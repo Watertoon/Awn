@@ -9,7 +9,7 @@ namespace awn::sys {
             ThreadDelegate *m_delegate;
         private:
 
-            virtual void ThreadCalc(size_t message) override {
+            virtual void ThreadMain(size_t message) override {
                 m_delegate->Invoke(message);
             }
         public:
@@ -30,7 +30,7 @@ namespace awn::sys {
             ThreadDelegate *m_delegate;
         private:
 
-            virtual void ThreadCalc(size_t message) override {
+            virtual void ThreadMain(size_t message) override {
                 m_delegate->Invoke(message);
             }
         public:

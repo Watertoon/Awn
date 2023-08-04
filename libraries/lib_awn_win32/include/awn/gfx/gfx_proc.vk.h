@@ -286,10 +286,15 @@ DEFINE_EXTERN_VK_PROC(vkCmdSetPolygonModeEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetRasterizationSamplesEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetSampleMaskEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetVertexInputEXT);
+DEFINE_EXTERN_VK_PROC(vkCopyImageToImageEXT);
+DEFINE_EXTERN_VK_PROC(vkCopyImageToMemoryEXT);
+DEFINE_EXTERN_VK_PROC(vkCopyMemoryToImageEXT);
 DEFINE_EXTERN_VK_PROC(vkCreateShadersEXT);
 DEFINE_EXTERN_VK_PROC(vkDestroyShaderEXT);
 DEFINE_EXTERN_VK_PROC(vkGetDescriptorEXT);
 DEFINE_EXTERN_VK_PROC(vkGetDescriptorSetLayoutSizeEXT);
+DEFINE_EXTERN_VK_PROC(vkGetImageSubresourceLayout2EXT);
 DEFINE_EXTERN_VK_PROC(vkGetMemoryHostPointerPropertiesEXT);
+DEFINE_EXTERN_VK_PROC(vkTransitionImageLayoutEXT);
 
 void LoadVkCProcsDevice(VkDevice vk_device);
