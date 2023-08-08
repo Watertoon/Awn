@@ -265,6 +265,7 @@ DEFINE_EXTERN_VK_PROC(vkCreateSwapchainKHR);
 DEFINE_EXTERN_VK_PROC(vkDestroySwapchainKHR);
 DEFINE_EXTERN_VK_PROC(vkGetDeviceGroupPresentCapabilitiesKHR);
 DEFINE_EXTERN_VK_PROC(vkGetDeviceGroupSurfacePresentModesKHR);
+DEFINE_EXTERN_VK_PROC(vkGetImageSubresourceLayout2KHR);
 DEFINE_EXTERN_VK_PROC(vkGetSwapchainImagesKHR);
 DEFINE_EXTERN_VK_PROC(vkMapMemory2KHR);
 DEFINE_EXTERN_VK_PROC(vkQueuePresentKHR);

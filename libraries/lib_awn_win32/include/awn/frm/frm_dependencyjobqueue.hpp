@@ -135,7 +135,7 @@ namespace awn::frm {
                 const u32 previous_state = ::InterlockedAnd(reinterpret_cast<long int*>(std::addressof(queue_node->multi_run_state)), 0xffff'0000);
 
                 /* Check if job is already removed */
-                if (previous_state & 0xffff == 0) { return; }
+                if ((previous_state & 0xffff) == 0) { return; }
 
                 /* Remove job */
                 JobQueueNode **iter = m_job_priority_queue.FindIterTo(queue_node);

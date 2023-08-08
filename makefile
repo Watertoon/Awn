@@ -25,7 +25,7 @@ binary_type  ?= debug
 #Valid binary types:  release develop debug
 
 define VP_SUBMAKE
-+$(MAKE) sub_make ARCHITECTURE=$(arch) PLATFORM=$(platform) GRAPHICS_API=$(graphics_api) BINARY_TYPE=$(binary_type) -C $(1)
+$(MAKE) sub_make ARCHITECTURE=$(arch) PLATFORM=$(platform) GRAPHICS_API=$(graphics_api) BINARY_TYPE=$(binary_type) -C $(1)
 
 endef
 
@@ -35,7 +35,7 @@ $(MAKE) clean -C $(1)
 endef
 
 all:
-	$(foreach program,$(ALL_PROGRAMS_LIST),$(call VP_SUBMAKE,$(program)))
+	+$(foreach program,$(ALL_PROGRAMS_LIST),$(call VP_SUBMAKE,$(program)))
 
 clean:
 	$(foreach program,$(ALL_PROGRAMS_LIST),$(call MAKE_CLEAN,$(program)))

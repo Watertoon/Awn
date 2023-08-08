@@ -235,6 +235,9 @@ namespace awn::gfx {
         /* Host Image Copy feature checks */
         if (m_vk_physical_device_host_image_copy_features.hostImageCopy == false) { VP_ASSERT(false); return false; }
 
+        /* Maintenance 5 feature checks */
+        if (m_vk_physical_device_maintenance_5_features.maintenance5 == false) { VP_ASSERT(false); return false; }
+
         m_vk_physical_device = vk_physical_device;
 
         /* Find queue families */
@@ -460,8 +463,13 @@ namespace awn::gfx {
 		/* Initialize device */
         {
             /* VkDevice feature enables */
+            VkPhysicalDeviceMaintenance5FeaturesKHR target_maintenance_5_features = {
+                .sType        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR,
+                .maintenance5 = VK_TRUE,
+            };
             VkPhysicalDeviceHostImageCopyFeaturesEXT target_host_image_copy_features = {
                 .sType         = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT,
+                .pNext        = std::addressof(target_maintenance_5_features),
                 .hostImageCopy = VK_TRUE,
             };
             VkPhysicalDeviceShaderObjectFeaturesEXT target_shader_object_features = {

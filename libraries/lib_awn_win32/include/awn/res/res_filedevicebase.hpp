@@ -227,7 +227,7 @@ namespace awn::res {
             virtual Result GetFileSizeImpl(size_t *out_size, const char *path) { VP_ASSERT(false); VP_UNUSED(out_size, path); }
 
             virtual Result CheckFileExistsImpl(const char *path) { VP_ASSERT(false); VP_UNUSED(path); }
-            
+
             virtual Result OpenDirectoryImpl(DirectoryHandle *out_directory_handle, const char *path)                         { VP_ASSERT(false); VP_UNUSED(out_directory_handle, path); }
             virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle)                                              { VP_ASSERT(false); VP_UNUSED(directory_handle); }
             virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { VP_ASSERT(false); VP_UNUSED(directory_handle, entry_array, entry_count); }

@@ -57,13 +57,13 @@ namespace awn::mem {
         public:
             AWN_SINGLETON_TRAITS(GpuHeapManager);
         private:
-            bool AllocateContext(GpuRootHeapContext *heap_context, const char *name, size_t size, gfx::MemoryPropertyFlags memory_properties);
+            bool AllocateContext(mem::Heap *heap, GpuRootHeapContext *heap_context, const char *name, size_t size, gfx::MemoryPropertyFlags memory_properties);
             void FreeContext(GpuRootHeapContext *heap_context);
         public:
             constexpr  GpuHeapManager() : m_host_uncached_heap_context_array(), m_host_cached_heap_context_array(), m_gpu_host_uncached_heap_context_array(), m_manager_info() {/*...*/}
             constexpr ~GpuHeapManager() {/*...*/}
 
-            bool Initialize(const GpuHeapManagerInfo *gpu_heap_mgr_info);
+            bool Initialize(mem::Heap *heap, const GpuHeapManagerInfo *gpu_heap_mgr_info);
             void Finalize();
 
             constexpr ALWAYS_INLINE GpuRootHeapContext *GetGpuRootHeapContextHostUncached(u32 root_heap_index)    { return std::addressof(m_host_uncached_heap_context_array[root_heap_index]); }

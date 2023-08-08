@@ -85,9 +85,10 @@ namespace vp::imem {
             virtual size_t GetTotalFreeSize() { return 0; }
             virtual size_t GetMaximumAllocatableSize([[maybe_unused]] s32 alignment) { return 0; }
 
-            constexpr ALWAYS_INLINE const char *GetName() const { return m_name; }
-            constexpr ALWAYS_INLINE bool HasChildren() const { return m_child_list.IsEmpty(); }
-            
-            constexpr ALWAYS_INLINE void *GetEndAddress() { return m_end_address; }
+            constexpr ALWAYS_INLINE const char *GetName()     const { return m_name; }
+            constexpr ALWAYS_INLINE bool        HasChildren() const { return m_child_list.IsEmpty(); }
+
+            constexpr ALWAYS_INLINE void *GetStartAddress() const { return m_start_address; }
+            constexpr ALWAYS_INLINE void *GetEndAddress()   const { return m_end_address; }
     };
 }

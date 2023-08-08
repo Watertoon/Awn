@@ -65,11 +65,11 @@ namespace awn::sys {
                 m_message_queue.Finalize();
             }
 
-            virtual void StartThread()                    {/*...*/}
-            virtual void WaitForThreadExit()              {/*...*/}
-            virtual void ResumeThread()                   {/*...*/}
-            virtual void SuspendThread()                  {/*...*/}
-            virtual void SleepThread(vp::TimeSpan timeout_ns) {/*...*/}
+            virtual void StartThread()                                         {/*...*/}
+            virtual void WaitForThreadExit()                                   {/*...*/}
+            virtual void ResumeThread()                                        {/*...*/}
+            virtual void SuspendThread()                                       {/*...*/}
+            virtual void SleepThread([[maybe_unused]] vp::TimeSpan timeout_ns) {/*...*/}
 
             virtual void SetPriority([[maybe_unused]] s32 priority)  {/*...*/}
             virtual void SetCoreMask([[maybe_unused]] u64 core_mask) {/*...*/}

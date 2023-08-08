@@ -24,20 +24,21 @@ namespace awn::mem {
         if (new_heap_memory == nullptr) { return nullptr; }
 
         /* Construct new heap */
-        std::construct_at(new_heap, name, parent_heap, new_heap_memory, size, is_thread_safe);
+        std::construct_at(new_heap, name, parent_heap, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_heap_memory) + sizeof(ExpHeap)), size - sizeof(ExpHeap), is_thread_safe);
 
         /* Construct and add free node spanning new heap */
         ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(new_heap) + sizeof(ExpHeap));
         std::construct_at(first_block);
 
         first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-        first_block->block_size = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
+        first_block->block_size  = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
+        first_block->alignment   = 0;
 
         new_heap->m_free_block_list.PushBack(*first_block);
-        
+
         /* Add to parent heap child list */
         parent_heap->PushBackChild(new_heap);
-        
+
         return new_heap;
     }
 
@@ -186,21 +187,22 @@ namespace awn::mem {
         ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
 
         /* Nothing to do if the size doesn't change */
-        if (block->block_size == new_size) { return new_size; }
+        size_t block_size = block->block_size;
+        if (block_size == new_size) { return new_size; }
 
         /* Reduce range if new size is lesser */
-        if (new_size < block->block_size) {
+        if (new_size < block_size) {
             this->AddFreeBlock(AddressRange{reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) + new_size), reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) + block->block_size)});
             block->block_size = new_size;
             return new_size;
         }
 
         /* Calculate end of block */
-        const uintptr_t end_address = reinterpret_cast<uintptr_t>(address) + block->block_size;
+        const uintptr_t end_address = reinterpret_cast<uintptr_t>(address) + block_size;
 
         /* Walk free list for the free block directly after this allocation */
         FreeList::iterator free_block = m_free_block_list.begin();
-        if (free_block == m_free_block_list.end()) { return block->block_size; }
+        if (free_block == m_free_block_list.end()) { return block_size; }
         while (free_block != m_free_block_list.end()) {
 
             /* Complete if the block is directly after our current free block */
@@ -212,7 +214,7 @@ namespace awn::mem {
         /* Ensure we found the block after and it is large enough */
         ExpHeapMemoryBlock *block_after = std::addressof(*free_block);
         const size_t after_size = block_after->block_size + sizeof(ExpHeapMemoryBlock);
-        if (free_block == m_free_block_list.end() || after_size + block->block_size > new_size) { return block->block_size; }
+        if (free_block == m_free_block_list.end() || after_size + block_size > new_size) { return block_size; }
 
         /* Remove after block from free list */
         block_after->exp_list_node.Unlink();
@@ -316,13 +318,14 @@ namespace awn::mem {
                 const uintptr_t aligned_allocation_size = (aligned_size - sizeof(ExpHeapMemoryBlock)) - reinterpret_cast<uintptr_t>(block) + allocation_address;
 
                 /* Check if we've found a smaller block that fits */
-                if (block->block_size < smaller_size && aligned_allocation_size <= block->block_size) {
-                    smaller_size    = block->block_size;
+                const size_t block_size = block->block_size;
+                if (block_size < smaller_size && aligned_allocation_size <= block_size) {
+                    smaller_size    = block_size;
                     smaller_block   = block;
                     smaller_address = allocation_address;
 
                     /* Break if our size requirements are exact */
-                    if (block->block_size == aligned_size) { break; }
+                    if (block_size == aligned_size) { break; }
                 }
 
                 free_block = ++free_block;

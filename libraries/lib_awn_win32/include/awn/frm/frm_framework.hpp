@@ -137,7 +137,7 @@ namespace awn::frm {
                     .host_cached_size_array            = { vp::util::c16MB },
                     .gpu_host_uncached_size_array      = { vp::util::c32MB },
                 };
-                gpu_heap_mgr->Initialize(std::addressof(gpu_heap_mgr_info));
+                gpu_heap_mgr->Initialize(awn_library_heap, std::addressof(gpu_heap_mgr_info));
 
                 /* Initialize command pool mgr */
                 gfx::CommandPoolManager *cmd_pool_mgr = gfx::CommandPoolManager::CreateInstance(awn_library_heap);

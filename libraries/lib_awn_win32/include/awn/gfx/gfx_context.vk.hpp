@@ -142,6 +142,7 @@ namespace awn::gfx {
             VkPhysicalDeviceMeshShaderPropertiesEXT             m_vk_physical_device_mesh_shader_properties;
             VkPhysicalDeviceShaderObjectPropertiesEXT           m_vk_physical_device_shader_object_properties;
             VkPhysicalDeviceHostImageCopyPropertiesEXT          m_vk_physical_device_host_image_copy_properties;
+            VkPhysicalDeviceMaintenance5PropertiesKHR           m_vk_physical_device_maintenance_5_properties;
 
             VkPhysicalDeviceFeatures2                           m_vk_physical_device_supported_features;
             VkPhysicalDeviceVulkan11Features                    m_vk_physical_device_supported_features_11;
@@ -154,6 +155,7 @@ namespace awn::gfx {
             VkPhysicalDeviceMeshShaderFeaturesEXT               m_vk_physical_device_mesh_shader_features;
             VkPhysicalDeviceShaderObjectFeaturesEXT             m_vk_physical_device_shader_object_features;
             VkPhysicalDeviceHostImageCopyFeaturesEXT            m_vk_physical_device_host_image_copy_features;
+            VkPhysicalDeviceMaintenance5FeaturesKHR             m_vk_physical_device_maintenance_5_features;
 
             VkPhysicalDeviceMemoryProperties                    m_vk_physical_device_memory_properties;
 
@@ -206,7 +208,11 @@ namespace awn::gfx {
                 .pNext = std::addressof(m_vk_physical_device_host_image_copy_properties)
             },
             m_vk_physical_device_host_image_copy_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES_EXT
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_maintenance_5_properties)
+            },
+            m_vk_physical_device_maintenance_5_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES_KHR
             },
             m_vk_physical_device_supported_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
@@ -249,7 +255,11 @@ namespace awn::gfx {
                 .pNext = std::addressof(m_vk_physical_device_host_image_copy_features)
             },
             m_vk_physical_device_host_image_copy_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_maintenance_5_features)
+            },
+            m_vk_physical_device_maintenance_5_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR
             }
             {/*...*/}
 

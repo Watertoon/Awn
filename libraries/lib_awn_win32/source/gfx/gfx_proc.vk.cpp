@@ -326,6 +326,7 @@ DEFINE_VK_PROC(vkCreateSwapchainKHR);
 DEFINE_VK_PROC(vkDestroySwapchainKHR);
 DEFINE_VK_PROC(vkGetDeviceGroupPresentCapabilitiesKHR);
 DEFINE_VK_PROC(vkGetDeviceGroupSurfacePresentModesKHR);
+DEFINE_VK_PROC(vkGetImageSubresourceLayout2KHR);
 DEFINE_VK_PROC(vkGetSwapchainImagesKHR);
 DEFINE_VK_PROC(vkMapMemory2KHR);
 DEFINE_VK_PROC(vkQueuePresentKHR);
@@ -354,7 +355,6 @@ DEFINE_VK_PROC(vkCreateShadersEXT);
 DEFINE_VK_PROC(vkDestroyShaderEXT);
 DEFINE_VK_PROC(vkGetDescriptorEXT);
 DEFINE_VK_PROC(vkGetDescriptorSetLayoutSizeEXT);
-DEFINE_VK_PROC(vkGetImageSubresourceLayout2EXT);
 DEFINE_VK_PROC(vkGetMemoryHostPointerPropertiesEXT);
 DEFINE_VK_PROC(vkTransitionImageLayoutEXT);
 
@@ -553,6 +553,7 @@ void LoadVkCProcsDevice(VkDevice device) {
     LOAD_DEVICE_VK_PROC(vkDestroySwapchainKHR);
     LOAD_DEVICE_VK_PROC(vkGetDeviceGroupPresentCapabilitiesKHR);
     LOAD_DEVICE_VK_PROC(vkGetDeviceGroupSurfacePresentModesKHR);
+    //LOAD_DEVICE_VK_PROC(vkGetImageSubresourceLayout2KHR);
     LOAD_DEVICE_VK_PROC(vkGetSwapchainImagesKHR);
     LOAD_DEVICE_VK_PROC(vkMapMemory2KHR);
     LOAD_DEVICE_VK_PROC(vkQueuePresentKHR);
@@ -581,7 +582,6 @@ void LoadVkCProcsDevice(VkDevice device) {
     LOAD_DEVICE_VK_PROC(vkDestroyShaderEXT);
     LOAD_DEVICE_VK_PROC(vkGetDescriptorEXT);
     LOAD_DEVICE_VK_PROC(vkGetDescriptorSetLayoutSizeEXT);
-    LOAD_DEVICE_VK_PROC(vkGetImageSubresourceLayout2EXT);
     LOAD_DEVICE_VK_PROC(vkGetMemoryHostPointerPropertiesEXT);
     LOAD_DEVICE_VK_PROC(vkTransitionImageLayoutEXT);
 

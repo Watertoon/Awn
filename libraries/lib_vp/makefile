@@ -88,7 +88,7 @@ export BUILD_RULE_DIR := $(CURDIR)/
 # Build settings to set required variables (call these for non-defaults)
 
 sub_make:
-	@$(MAKE) all PLATFORM=$(PLATFORM) ARCHITECTURE=$(ARCHITECTURE) GRAPHICS_API=$(GRAPHICS_API) BINARY_TYPE=$(BINARY_TYPE) -f $(CURDIR)/makefile
+	$(MAKE) all PLATFORM=$(PLATFORM) ARCHITECTURE=$(ARCHITECTURE) GRAPHICS_API=$(GRAPHICS_API) BINARY_TYPE=$(BINARY_TYPE)
 
 # Output variation(s) to be used (edit this)
 

@@ -36,7 +36,7 @@ namespace awn::mem {
         return;
     }
 
-	bool GpuHeapManager::AllocateContext(GpuRootHeapContext *out_heap_context, const char *name, size_t size, gfx::MemoryPropertyFlags memory_properties) {
+	bool GpuHeapManager::AllocateContext(mem::Heap *heap, GpuRootHeapContext *out_heap_context, const char *name, size_t size, gfx::MemoryPropertyFlags memory_properties) {
 
 		/* Get context */
 		gfx::Context *context = gfx::Context::GetInstance();
@@ -60,7 +60,7 @@ namespace awn::mem {
 		VP_ASSERT(result1 == VK_SUCCESS);
 
 		/* Construct GpuExpHeap */
-		out_heap_context->root_heap = mem::GpuExpHeap::TryCreate(name, out_heap_context, out_heap_context->base_address, size);
+		out_heap_context->root_heap = mem::GpuExpHeap::TryCreate(name, heap, out_heap_context, out_heap_context->base_address, size);
 
         /* Set memory property flags */
         out_heap_context->memory_property_flags = memory_properties;
@@ -81,7 +81,7 @@ namespace awn::mem {
 		return;
 	}
 
-	bool GpuHeapManager::Initialize(const GpuHeapManagerInfo *gpu_heap_mgr_info) {
+	bool GpuHeapManager::Initialize(mem::Heap *heap, const GpuHeapManagerInfo *gpu_heap_mgr_info) {
 
 		/* Integrity checks */
 		VP_ASSERT(gpu_heap_mgr_info != nullptr);
@@ -124,17 +124,17 @@ namespace awn::mem {
 		for (u32 i = 0; i < gpu_heap_mgr_info->host_uncached_root_heap_count; ++i) {
 
 			/* Allocate host uncached memory */
-			this->AllocateContext(std::addressof(m_host_uncached_heap_context_array[i]), cpu_uncached_name_array[i], gpu_heap_mgr_info->host_uncached_size_array[i], gfx::MemoryPropertyFlags::CpuUncached);
+			this->AllocateContext(heap, std::addressof(m_host_uncached_heap_context_array[i]), cpu_uncached_name_array[i], gpu_heap_mgr_info->host_uncached_size_array[i], gfx::MemoryPropertyFlags::CpuUncached);
 		}
 		for (u32 i = 0; i < gpu_heap_mgr_info->host_cached_root_heap_count; ++i) {
 
 			/* Allocate host cached memory */
-			this->AllocateContext(std::addressof(m_host_cached_heap_context_array[i]), cpu_cached_name_array[i], gpu_heap_mgr_info->host_cached_size_array[i], gfx::MemoryPropertyFlags::CpuCached);
+			this->AllocateContext(heap, std::addressof(m_host_cached_heap_context_array[i]), cpu_cached_name_array[i], gpu_heap_mgr_info->host_cached_size_array[i], gfx::MemoryPropertyFlags::CpuCached);
 		}
 		for (u32 i = 0; i < gpu_heap_mgr_info->gpu_host_uncached_root_heap_count; ++i) {
 
 			/* Allocate gpu host uncached memory */
-			this->AllocateContext(std::addressof(m_gpu_host_uncached_heap_context_array[i]), cpu_uncached_gpu_cached_name_array[i], gpu_heap_mgr_info->gpu_host_uncached_size_array[i], gfx::MemoryPropertyFlags::GpuUncached | gfx::MemoryPropertyFlags::CpuUncached);
+			this->AllocateContext(heap, std::addressof(m_gpu_host_uncached_heap_context_array[i]), cpu_uncached_gpu_cached_name_array[i], gpu_heap_mgr_info->gpu_host_uncached_size_array[i], gfx::MemoryPropertyFlags::GpuUncached | gfx::MemoryPropertyFlags::CpuUncached);
 		}
 
 		return true;

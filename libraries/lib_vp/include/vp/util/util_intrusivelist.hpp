@@ -31,25 +31,25 @@ namespace vp::util {
             constexpr ALWAYS_INLINE IntrusiveListNode *prev() const {
                 return m_prev;
             }
-            
+
             constexpr ALWAYS_INLINE bool IsLinked() const {
                 return this != m_next;
             }
 
             constexpr ALWAYS_INLINE void LinkNext(IntrusiveListNode *new_node) {
-                IntrusiveListNode *new_prev = new_node->m_prev;
-                new_node->m_prev = m_prev;
-                new_prev->m_next = this;
-                m_prev->m_next = new_node;
-                m_prev = new_prev;
+                IntrusiveListNode *old_next = new_node->m_next;
+                new_node->m_next = m_next;
+                old_next->m_prev = this;
+                m_next->m_prev   = new_node;
+                m_next           = old_next;
             }
 
             constexpr ALWAYS_INLINE void LinkPrev(IntrusiveListNode *new_node) {
                 IntrusiveListNode *new_prev = new_node->m_prev;
-                new_node->m_prev = m_prev->m_prev;
-                new_prev->m_next = m_prev;
-                m_prev->m_prev->m_next = new_node;
-                m_prev->m_prev = new_prev;
+                new_node->m_prev = m_prev;
+                new_prev->m_next = this;
+                m_prev->m_next   = new_node;
+                m_prev           = new_prev;
             }
 
             constexpr ALWAYS_INLINE void Unlink() {
@@ -162,11 +162,11 @@ namespace vp::util {
             }
 
             void ALWAYS_INLINE PushBack(reference obj) {
-                m_list.LinkNext(Traits::GetListNode(std::addressof(obj)));
+                m_list.LinkPrev(Traits::GetListNode(std::addressof(obj)));
             }
 
             void ALWAYS_INLINE PushFront(reference obj) {
-                m_list.LinkPrev(Traits::GetListNode(std::addressof(obj)));
+                m_list.LinkNext(Traits::GetListNode(std::addressof(obj)));
             }
             
             constexpr ALWAYS_INLINE reference PopFront() {

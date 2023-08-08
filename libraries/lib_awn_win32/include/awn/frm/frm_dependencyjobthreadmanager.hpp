@@ -70,7 +70,7 @@ namespace awn::frm {
                     
                     /* Skip unactive threads */
                     const u64 thread_core_mask = m_thread_array[i].thread->GetCoreMask();
-                    if (m_is_process_in_mainthread == true && thread_core_mask == (1 << current_core) || (m_all_core_mask & thread_core_mask) == 0) { continue; }
+                    if ((m_is_process_in_mainthread == true && thread_core_mask == (1ull << current_core)) || (m_all_core_mask & thread_core_mask) == 0) { continue; }
 
                     /* Add thread control to queue */
                     m_queue->m_thread_control_array.PushPointer(std::addressof(m_thread_array[i].thread->m_thread_control));
@@ -193,7 +193,7 @@ namespace awn::frm {
 
                     /* Try to abort any workers on the same core */
                     for (u32 i = 0 ; i < m_thread_array.GetCount(); ++i) {
-                        if (m_thread_array[i].thread->GetCoreMask() != (1 << current_core)) { continue; }
+                        if (m_thread_array[i].thread->GetCoreMask() != (1ull << current_core)) { continue; }
 
                         /* Signal thread control to exit */
                         ::InterlockedOr(reinterpret_cast<long int*>(std::addressof(m_thread_array[i].thread->m_thread_control.m_is_ready_to_exit)), (1 << 1));

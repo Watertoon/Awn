@@ -28,8 +28,8 @@ $(MAKE) clean ARCHITECTURE=$(ARCHITECTURE) PLATFORM=$(PLATFORM) GRAPHICS_API=$(G
 endef
 
 sub_make:
-	$(foreach program,$(GENERIC_SUB_LIST),$(call MAKE_GENERIC,$(program)))
-	$(foreach program,$($(PLATFORM)_SUB_LIST),$(call MAKE_PLATFORM,$(program),$(PLATFORM)))
+	+$(foreach program,$(GENERIC_SUB_LIST),$(call MAKE_GENERIC,$(program)))
+	+$(foreach program,$($(PLATFORM)_SUB_LIST),$(call MAKE_PLATFORM,$(program),$(PLATFORM)))
 
 clean:
 	$(foreach program,$(GENERIC_SUB_LIST),$(call MAKE_CLEAN,$(program)))
