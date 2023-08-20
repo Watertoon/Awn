@@ -2,7 +2,7 @@
 
 namespace awn::gfx {
 
-    struct GpuAddress {
+    struct GpuBufferAddress {
         VkBuffer        vk_buffer;
         VkDeviceAddress vk_device_address;
     };
@@ -201,12 +201,12 @@ namespace awn::gfx {
                 ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
                 ::pfn_vkCmdDraw(m_command_list.vk_command_buffer, vertex_count, instance_count, base_vertex, base_instance);
             }
-            void DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex) {
+            void DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex) {
                 ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
                 ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.vk_buffer, 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
                 ::pfn_vkCmdDrawIndexed(m_command_list.vk_command_buffer, index_count, 0, base_index, base_vertex, 0);
             }
-            void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count) {
+            void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count) {
                 ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
                 ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.vk_buffer, 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
                 ::pfn_vkCmdDrawIndexed(m_command_list.vk_command_buffer, index_count, instance_count, base_index, base_vertex, base_instance);
@@ -219,7 +219,7 @@ namespace awn::gfx {
             }
 
             /* Resource state setter commands */
-            void SetVertexBuffer(GpuAddress vertex_buffer_address, u32 binding, u32 stride, u32 size) {
+            void SetVertexBuffer(GpuBufferAddress vertex_buffer_address, u32 binding, u32 stride, u32 size) {
                 const VkDeviceSize device_offset = 0;
                 const VkDeviceSize device_size   = size;
                 const VkDeviceSize device_stride = stride;
@@ -326,7 +326,7 @@ namespace awn::gfx {
                 ::pfn_vkCmdEndRendering(m_command_list.vk_command_buffer);
             }
 
-            void SetStorageBuffer(u32 location, GpuAddress storage_buffer_address) {
+            void SetStorageBuffer(u32 location, GpuBufferAddress storage_buffer_address) {
 
                 /* Push 8-byte buffer address to location in push constant range 128-256 */
                 ::pfn_vkCmdPushConstants(m_command_list.vk_command_buffer, Context::GetInstance()->GetVkPipelineLayout(), VK_SHADER_STAGE_ALL, location * sizeof(VkDeviceAddress), sizeof(VkDeviceAddress), std::addressof(storage_buffer_address.vk_device_address));

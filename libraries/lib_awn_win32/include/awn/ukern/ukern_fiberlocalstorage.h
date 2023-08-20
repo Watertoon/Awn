@@ -22,21 +22,23 @@ namespace awn::ukern {
 
     using ThreadFunction = void (*)(void *);
 
-    constexpr inline UKernHandle InvalidHandle                = 0xFFFFFFFF;
-    constexpr inline size_t      MaxFiberNameLength           = 32;
-    constexpr inline s64         WindowsToUKernPriorityOffset = 2;
-    constexpr inline size_t      MainThreadHandle             = 1;
-    constexpr inline size_t      MaxCoreCount                 = 32;
-    constexpr inline size_t      MaxThreadCount               = 256;
+    constexpr inline UKernHandle cInvalidHandle                = 0xffff'ffff;
+    constexpr inline size_t      cMaxFiberNameLength           = 32;
+    constexpr inline s64         cWindowsToUKernPriorityOffset = 2;
+    constexpr inline size_t      cMainThreadHandle             = 1;
+    constexpr inline size_t      cMaxCoreCount                 = 64;
+    constexpr inline size_t      cMaxThreadCount               = 256;
 
-    static_assert(2 == (THREAD_PRIORITY_NORMAL + WindowsToUKernPriorityOffset));
+    static_assert(2 == (THREAD_PRIORITY_NORMAL + cWindowsToUKernPriorityOffset));
 
     enum FiberState : u32 {
+        FiberState_Unscheduled,
         FiberState_Scheduled,
+        FiberState_ScheduledLocal,
         FiberState_Running,
         FiberState_Exiting,
         FiberState_Waiting,
-        FiberState_Suspended
+        FiberState_Suspended,
     };
 
     enum ActivityLevel : u16 {
@@ -58,7 +60,6 @@ namespace awn::ukern {
         bool                         is_suspended;
         UKernHandle                  ukern_fiber_handle;
         void                        *win32_fiber_handle;
-        vp::util::IntrusiveListNode  scheduler_list_node;
         vp::util::IntrusiveListNode  wait_list_node;
 
         using WaitList = vp::util::IntrusiveListTraits<FiberLocalStorage, &FiberLocalStorage::wait_list_node>::List;
@@ -73,17 +74,17 @@ namespace awn::ukern {
         u32                          last_result;
         u32                          fiber_state;
         const char                  *fiber_name;
-        char                         fiber_name_storage[MaxFiberNameLength];
+        char                         fiber_name_storage[cMaxFiberNameLength];
 
         static constexpr u32 HasChildWaitersBit = 0x4000'0000;
 
-        constexpr ALWAYS_INLINE FiberLocalStorage() : priority(), current_core(), core_mask(), stack_size(), user_arg(), user_function(), is_suspended(), ukern_fiber_handle(), win32_fiber_handle(), scheduler_list_node(), wait_list_node(), wait_list(), was_locked(), activity_level(), wait_tag(), lock_address(), wait_address(), waitable_object(), timeout(), last_result(), fiber_state(), fiber_name(), fiber_name_storage{} {/*...*/}
+        constexpr ALWAYS_INLINE FiberLocalStorage() : priority(), current_core(), core_mask(), stack_size(), user_arg(), user_function(), is_suspended(), ukern_fiber_handle(), win32_fiber_handle(), wait_list_node(), wait_list(), was_locked(), activity_level(), wait_tag(), lock_address(), wait_address(), waitable_object(), timeout(), last_result(), fiber_state(), fiber_name(), fiber_name_storage{} {/*...*/}
 
         bool IsSchedulable(u32 core_number, u64 time);
         void ReleaseLockWaitListUnsafe();
     };
 
-    constexpr inline size_t UserFiberStorageSize = MaxThreadCount * sizeof(FiberLocalStorage);
+    constexpr inline size_t cUserFiberStorageSize = cMaxThreadCount * sizeof(FiberLocalStorage);
 
-    typedef FiberLocalStorage ThreadType;
+    using ThreadType = FiberLocalStorage;
 }

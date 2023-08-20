@@ -13,7 +13,7 @@ namespace awn::gfx {
             VkDeviceAddress       m_vk_device_address;
             mem::GpuMemoryAddress m_buffer_gpu_memory_address;
 		public:
-			constexpr ALWAYS_INLINE Buffer() : m_vk_buffer(VK_NULL_HANDLE), m_vk_device_address(0), m_buffer_gpu_memory_address() {/*...*/}
+			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(VK_NULL_HANDLE), m_vk_device_address(0), m_buffer_gpu_memory_address() {/*...*/}
             constexpr ALWAYS_INLINE ~Buffer() {/*...*/}
 
 			void Initialize(mem::GpuMemoryAddress gpu_memory_address, BufferInfo *buffer_info) {
@@ -71,7 +71,7 @@ namespace awn::gfx {
                 m_vk_device_address = 0;
             }
 
-            GpuMemoryRequirements GetMemoryRequirements(const BufferInfo *buffer_info) {
+            static GpuMemoryRequirements GetMemoryRequirements(const BufferInfo *buffer_info) {
 
                 /* Get memory requirements */
                 VkMemoryRequirements2 memory_requirements_2 = {

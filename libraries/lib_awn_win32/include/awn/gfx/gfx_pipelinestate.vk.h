@@ -156,10 +156,9 @@ namespace awn::gfx {
     };
     static_assert(sizeof(ScissorState) == sizeof(VkRect2D));
     struct ViewportScissorState {
-        u16            enable_scissors;
-        u16            viewport_scissor_count;
-        u32            reserve0;
-        ViewportState *viewport_state_array;
-        ScissorState  *scissor_state_array;
+        u16                 enable_scissors;
+        u16                 viewport_scissor_count;
+        ViewportState      *viewport_state_array;
+        ScissorState       *scissor_state_array;
     };
 }

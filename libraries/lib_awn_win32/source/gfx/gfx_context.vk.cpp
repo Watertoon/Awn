@@ -238,6 +238,9 @@ namespace awn::gfx {
         /* Maintenance 5 feature checks */
         if (m_vk_physical_device_maintenance_5_features.maintenance5 == false) { VP_ASSERT(false); return false; }
 
+        /* Unused attachments feature checks */
+        if (m_vk_physical_device_dynamic_rendering_unused_attachments_features.dynamicRenderingUnusedAttachments == false) { VP_ASSERT(false); return false; }
+
         m_vk_physical_device = vk_physical_device;
 
         /* Find queue families */
@@ -463,8 +466,13 @@ namespace awn::gfx {
 		/* Initialize device */
         {
             /* VkDevice feature enables */
+            VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT target_dynamic_rendering_unused_attachment_features = {
+                .sType                             = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+                .dynamicRenderingUnusedAttachments = VK_TRUE,
+            };
             VkPhysicalDeviceMaintenance5FeaturesKHR target_maintenance_5_features = {
                 .sType        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR,
+                .pNext        = std::addressof(target_dynamic_rendering_unused_attachment_features),
                 .maintenance5 = VK_TRUE,
             };
             VkPhysicalDeviceHostImageCopyFeaturesEXT target_host_image_copy_features = {
@@ -590,6 +598,7 @@ namespace awn::gfx {
                 VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
                 VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
                 VK_EXT_HOST_IMAGE_COPY_EXTENSION_NAME,
+                VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME,
             };
             const u32 device_extension_count = sizeof(device_extension_array) / sizeof(const char*);
             

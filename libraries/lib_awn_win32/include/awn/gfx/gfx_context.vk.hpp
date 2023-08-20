@@ -109,58 +109,59 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxPerStageStorageImageCount    = 8;
         private:
             /* Vulkan current physical device objects */
-            VkInstance                                          m_vk_instance;
-            VkPhysicalDevice                                    m_vk_physical_device;
-            VkDevice                                            m_vk_device;
-            u32                                                 m_queue_family_count;
-            u32                                                 m_graphics_queue_family_index;
-            u32                                                 m_compute_queue_family_index;
-            u32                                                 m_transfer_queue_family_index;
-            u32                                                 m_video_decode_queue_family_index;
-            u32                                                 m_video_encode_queue_family_index;
-            u32                                                 m_optical_flow_queue_family_index;
-            VkQueue                                             m_vk_graphics_queue;
-            VkQueue                                             m_vk_compute_queue;
-            VkQueue                                             m_vk_transfer_queue;
-            VkQueue                                             m_vk_video_decode_queue;
-            VkQueue                                             m_vk_video_encode_queue;
-            VkQueue                                             m_vk_optical_flow_queue;
-            VkDescriptorSetLayout                               m_vk_texture_descriptor_set_layout;
-            VkDescriptorSetLayout                               m_vk_sampler_descriptor_set_layout;
-            VkDescriptorSetLayout                               m_vk_uniform_buffer_descriptor_set_layout;
-            VkPipelineLayout                                    m_vk_pipeline_layout;
-            VkPushConstantRange                                 m_vk_push_constant_range;
+            VkInstance                                                   m_vk_instance;
+            VkPhysicalDevice                                             m_vk_physical_device;
+            VkDevice                                                     m_vk_device;
+            u32                                                          m_queue_family_count;
+            u32                                                          m_graphics_queue_family_index;
+            u32                                                          m_compute_queue_family_index;
+            u32                                                          m_transfer_queue_family_index;
+            u32                                                          m_video_decode_queue_family_index;
+            u32                                                          m_video_encode_queue_family_index;
+            u32                                                          m_optical_flow_queue_family_index;
+            VkQueue                                                      m_vk_graphics_queue;
+            VkQueue                                                      m_vk_compute_queue;
+            VkQueue                                                      m_vk_transfer_queue;
+            VkQueue                                                      m_vk_video_decode_queue;
+            VkQueue                                                      m_vk_video_encode_queue;
+            VkQueue                                                      m_vk_optical_flow_queue;
+            VkDescriptorSetLayout                                        m_vk_texture_descriptor_set_layout;
+            VkDescriptorSetLayout                                        m_vk_sampler_descriptor_set_layout;
+            VkDescriptorSetLayout                                        m_vk_uniform_buffer_descriptor_set_layout;
+            VkPipelineLayout                                             m_vk_pipeline_layout;
+            VkPushConstantRange                                          m_vk_push_constant_range;
 
             /* Vulkan all physical device properties and features */
-            VkPhysicalDeviceProperties2                         m_vk_physical_device_properties;
-            VkPhysicalDeviceVulkan11Properties                  m_vk_physical_device_properties_11;
-            VkPhysicalDeviceVulkan12Properties                  m_vk_physical_device_properties_12;
-            VkPhysicalDeviceVulkan13Properties                  m_vk_physical_device_properties_13;
-            VkPhysicalDevicePushDescriptorPropertiesKHR         m_vk_physical_device_push_descriptor_properties;
-            VkPhysicalDeviceExtendedDynamicState3PropertiesEXT  m_vk_physical_device_extended_dynamic_state_3_properties;
-            VkPhysicalDeviceDescriptorBufferPropertiesEXT       m_vk_physical_device_descriptor_buffer_properties;
-            VkPhysicalDeviceMeshShaderPropertiesEXT             m_vk_physical_device_mesh_shader_properties;
-            VkPhysicalDeviceShaderObjectPropertiesEXT           m_vk_physical_device_shader_object_properties;
-            VkPhysicalDeviceHostImageCopyPropertiesEXT          m_vk_physical_device_host_image_copy_properties;
-            VkPhysicalDeviceMaintenance5PropertiesKHR           m_vk_physical_device_maintenance_5_properties;
+            VkPhysicalDeviceProperties2                                  m_vk_physical_device_properties;
+            VkPhysicalDeviceVulkan11Properties                           m_vk_physical_device_properties_11;
+            VkPhysicalDeviceVulkan12Properties                           m_vk_physical_device_properties_12;
+            VkPhysicalDeviceVulkan13Properties                           m_vk_physical_device_properties_13;
+            VkPhysicalDevicePushDescriptorPropertiesKHR                  m_vk_physical_device_push_descriptor_properties;
+            VkPhysicalDeviceExtendedDynamicState3PropertiesEXT           m_vk_physical_device_extended_dynamic_state_3_properties;
+            VkPhysicalDeviceDescriptorBufferPropertiesEXT                m_vk_physical_device_descriptor_buffer_properties;
+            VkPhysicalDeviceMeshShaderPropertiesEXT                      m_vk_physical_device_mesh_shader_properties;
+            VkPhysicalDeviceShaderObjectPropertiesEXT                    m_vk_physical_device_shader_object_properties;
+            VkPhysicalDeviceHostImageCopyPropertiesEXT                   m_vk_physical_device_host_image_copy_properties;
+            VkPhysicalDeviceMaintenance5PropertiesKHR                    m_vk_physical_device_maintenance_5_properties;
 
-            VkPhysicalDeviceFeatures2                           m_vk_physical_device_supported_features;
-            VkPhysicalDeviceVulkan11Features                    m_vk_physical_device_supported_features_11;
-            VkPhysicalDeviceVulkan12Features                    m_vk_physical_device_supported_features_12;
-            VkPhysicalDeviceVulkan13Features                    m_vk_physical_device_supported_features_13;
-            VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT  m_vk_physical_device_vertex_input_dynamic_state_features;
-            VkPhysicalDeviceExtendedDynamicState2FeaturesEXT    m_vk_physical_device_extended_dynamic_state2_features;
-            VkPhysicalDeviceExtendedDynamicState3FeaturesEXT    m_vk_physical_device_extended_dynamic_state3_features;
-            VkPhysicalDeviceDescriptorBufferFeaturesEXT         m_vk_physical_device_descriptor_buffer_features;
-            VkPhysicalDeviceMeshShaderFeaturesEXT               m_vk_physical_device_mesh_shader_features;
-            VkPhysicalDeviceShaderObjectFeaturesEXT             m_vk_physical_device_shader_object_features;
-            VkPhysicalDeviceHostImageCopyFeaturesEXT            m_vk_physical_device_host_image_copy_features;
-            VkPhysicalDeviceMaintenance5FeaturesKHR             m_vk_physical_device_maintenance_5_features;
+            VkPhysicalDeviceFeatures2                                    m_vk_physical_device_supported_features;
+            VkPhysicalDeviceVulkan11Features                             m_vk_physical_device_supported_features_11;
+            VkPhysicalDeviceVulkan12Features                             m_vk_physical_device_supported_features_12;
+            VkPhysicalDeviceVulkan13Features                             m_vk_physical_device_supported_features_13;
+            VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT           m_vk_physical_device_vertex_input_dynamic_state_features;
+            VkPhysicalDeviceExtendedDynamicState2FeaturesEXT             m_vk_physical_device_extended_dynamic_state2_features;
+            VkPhysicalDeviceExtendedDynamicState3FeaturesEXT             m_vk_physical_device_extended_dynamic_state3_features;
+            VkPhysicalDeviceDescriptorBufferFeaturesEXT                  m_vk_physical_device_descriptor_buffer_features;
+            VkPhysicalDeviceMeshShaderFeaturesEXT                        m_vk_physical_device_mesh_shader_features;
+            VkPhysicalDeviceShaderObjectFeaturesEXT                      m_vk_physical_device_shader_object_features;
+            VkPhysicalDeviceHostImageCopyFeaturesEXT                     m_vk_physical_device_host_image_copy_features;
+            VkPhysicalDeviceMaintenance5FeaturesKHR                      m_vk_physical_device_maintenance_5_features;
+            VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT m_vk_physical_device_dynamic_rendering_unused_attachments_features;
 
-            VkPhysicalDeviceMemoryProperties                    m_vk_physical_device_memory_properties;
+            VkPhysicalDeviceMemoryProperties                             m_vk_physical_device_memory_properties;
 
             #if defined(VP_DEBUG)                               
-                VkDebugUtilsMessengerEXT                        m_debug_messenger;
+                VkDebugUtilsMessengerEXT                                 m_debug_messenger;
             #endif
         public:
             AWN_SINGLETON_TRAITS(Context);
@@ -259,7 +260,11 @@ namespace awn::gfx {
                 .pNext = std::addressof(m_vk_physical_device_maintenance_5_features)
             },
             m_vk_physical_device_maintenance_5_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_dynamic_rendering_unused_attachments_features),
+            },
+            m_vk_physical_device_dynamic_rendering_unused_attachments_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
             }
             {/*...*/}
 

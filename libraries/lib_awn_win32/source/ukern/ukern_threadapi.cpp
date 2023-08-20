@@ -47,7 +47,7 @@ namespace awn::ukern {
         if (name == nullptr) {
             impl::UserScheduler::SetInitialFiberNameUnsafe(fiber);
         } else {
-            ::strncpy(fiber->fiber_name_storage, name, MaxFiberNameLength);
+            ::strncpy(fiber->fiber_name_storage, name, cMaxFiberNameLength);
         }
     }
 

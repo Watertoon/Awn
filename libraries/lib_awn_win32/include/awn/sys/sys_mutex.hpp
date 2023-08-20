@@ -13,7 +13,7 @@ namespace awn::sys {
             void Enter() {
 
                 /* Defer to the internal cs if this thread is not the owner */
-                if (m_lock_count == 0 && m_cs.IsLockedByCurrentThread() == false) {
+                if (m_cs.IsLockedByCurrentThread() == false) {
                     m_cs.Enter();
                 }
 

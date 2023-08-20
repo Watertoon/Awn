@@ -27,10 +27,10 @@ namespace awn::ukern::impl {
             void EndFiberWaitImpl(FiberLocalStorage *wait_fiber, Result wait_result) {
 
                 /* Remove from suspend/wait list */
-                wait_fiber->scheduler_list_node.Unlink();
+                wait_fiber->wait_list_node.Unlink();
 
                 /* Set Fiber state */
-                wait_fiber->fiber_state = FiberState_Scheduled;
+                wait_fiber->fiber_state = FiberState_Unscheduled;
                 wait_fiber->last_result = wait_result;
                 wait_fiber->timeout     = 0;
 
@@ -105,10 +105,9 @@ namespace awn::ukern::impl {
                     /* Push back fiber waiter */
                     lock_fiber->wait_list.PushBack(*wait_fiber);
 
-                    /* Swap to suspend list */
-                    lock_fiber->scheduler_list_node.Unlink();
-                    impl::GetScheduler()->m_suspended_list.PushBack(*lock_fiber);
-
+                    /* Suspend */
+                    lock_fiber->wait_list_node.Unlink();
+                    lock_fiber->fiber_state = FiberState_Suspended;
                 } else {
                     EndFiberWaitImpl(wait_fiber, wait_result);
                 }
@@ -151,6 +150,18 @@ namespace awn::ukern::impl {
 
                 EndFiberWaitImpl(wait_fiber, wait_result);
                 return;
+            }
+    };
+
+    class TimeWaiter : public WaitableObject {
+        public:
+            constexpr TimeWaiter() {/*...*/}
+
+            virtual void EndWait(FiberLocalStorage *wait_fiber, Result wait_result) override {
+                EndFiberWaitImpl(wait_fiber, wait_result);
+            }
+            virtual void CancelWait(FiberLocalStorage *wait_fiber, Result wait_result) override {
+                EndFiberWaitImpl(wait_fiber, wait_result);
             }
     };
 }

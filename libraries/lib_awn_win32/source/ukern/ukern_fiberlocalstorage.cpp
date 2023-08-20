@@ -18,12 +18,11 @@
 namespace awn::ukern {
 
     bool FiberLocalStorage::IsSchedulable(u32 core_number, u64 time) {
-        if (fiber_state != FiberState_Scheduled)          { return false; }
-        if ((core_mask & (1 << core_number)) == 0)        { return false; }
-        if (waitable_object != nullptr && timeout < time) { waitable_object->CancelWait(this, ResultTimeout); return true; }
-        if (timeout < time)                               { return true; }
+        if ((core_mask & (1 << core_number)) == 0)                                           { return false; }
+        if (waitable_object != nullptr && timeout < time)                                    { waitable_object->CancelWait(this, ResultTimeout); }
+        if (fiber_state != FiberState_Scheduled && fiber_state != FiberState_ScheduledLocal) { return false; }
 
-        return false;
+        return true;
     }
 
     void FiberLocalStorage::ReleaseLockWaitListUnsafe() {

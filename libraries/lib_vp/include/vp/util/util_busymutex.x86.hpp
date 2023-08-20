@@ -33,7 +33,7 @@ namespace vp::util {
             ALWAYS_INLINE void Enter() {
 
                 /* Increment lock count */
-                u32 wait = ::InterlockedExchangeAdd(reinterpret_cast<volatile long int*>(std::addressof(m_counter)), 0x1'0000);
+                u32 wait = util::InterlockedFetchAdd(std::addressof(m_counter), 0x1'0000u);
 
                 /* Wait until release count is matched */
                 if ((wait & 0xffff) != ((wait >> 0x10) & 0xffff)) {
@@ -49,7 +49,7 @@ namespace vp::util {
             ALWAYS_INLINE void Leave() {
 
                 /* Increment release */
-                ::InterlockedIncrement16(reinterpret_cast<short*>(std::addressof(m_release_count)));
+                util::InterlockedIncrementRelease(std::addressof(m_release_count));
             }
     };
     static_assert(sizeof(volatile long int) == sizeof(u32));

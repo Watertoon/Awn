@@ -29,4 +29,56 @@ namespace vp::util {
         }
         return __builtin_popcountll(value);
     }
+
+    constexpr ALWAYS_INLINE u32 CountRightOneBits32(u32 value) {
+        if (std::is_constant_evaluated() == true) {
+            return std::countr_one(value);
+        }
+        return __builtin_clz(~value);
+    }
+    constexpr ALWAYS_INLINE u32 CountRightOneBits64(u64 value) {
+        if (std::is_constant_evaluated() == true) {
+            return std::countr_one(value);
+        }
+        return __builtin_clzll(~value);
+    }
+
+    constexpr ALWAYS_INLINE u32 CountLeftOneBits32(u32 value) {
+        if (std::is_constant_evaluated() == true) {
+            return std::countl_one(value);
+        }
+        return __builtin_ctz(~value);
+    }
+    constexpr ALWAYS_INLINE u32 CountLeftOneBits64(u64 value) {
+        if (std::is_constant_evaluated() == true) {
+            return std::countl_one(value);
+        }
+        return __builtin_ctzll(~value);
+    }
+
+    constexpr ALWAYS_INLINE u32 CountRightZeroBits32(u32 value) {
+        if (std::is_constant_evaluated() == true) {
+            return std::countr_zero(value);
+        }
+        return __builtin_clz(value);
+    }
+    constexpr ALWAYS_INLINE u32 CountRightZeroBits64(u64 value) {
+        if (std::is_constant_evaluated() == true) {
+            return std::countr_zero(value);
+        }
+        return __builtin_clzll(value);
+    }
+
+    constexpr ALWAYS_INLINE u32 CountLeftZeroBits32(u32 value) {
+        if (std::is_constant_evaluated() == true) {
+            return std::countl_zero(value);
+        }
+        return __builtin_ctz(value);
+    }
+    constexpr ALWAYS_INLINE u32 CountLeftZeroBits64(u64 value) {
+        if (std::is_constant_evaluated() == true) {
+            return std::countl_zero(value);
+        }
+        return __builtin_ctzll(value);
+    }
 }

@@ -85,6 +85,39 @@ namespace vp::util {
                 return ret;
             }
 
+            T *Remove(T *iter) {
+
+                /* Find iter */
+                for (u32 i = 0; i < m_count; ++i) {
+
+                    const u32 base   = i + m_current_offset;
+                    const u32 adjust = (m_max_count < base) ? i - m_max_count : i;
+
+                    if (iter != m_array[adjust]) { continue; }
+
+                    T **adjust_location = m_array + adjust;
+                    
+                    const bool is_wrap   = (m_max_count < m_count + m_current_offset) & (m_current_offset < adjust);
+                    const u32  adj_count = (is_wrap == true) ?  m_max_count - adjust - 1 : m_count - adjust - 1;
+
+                    ::memmove(adjust_location, adjust_location + 1, adj_count << 3);
+
+                    if (is_wrap == true) {
+                        m_array[m_max_count - 1] = m_array[0];
+
+                        const u32 final_count = (m_current_offset + m_count) - m_max_count - 1;
+
+                        ::memmove(m_array, m_array + 1, final_count << 3);
+                    }
+
+                    return iter;
+                }
+
+                VP_ASSERT(false);
+
+                return iter;
+            }
+
             constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; }
 	};
 }

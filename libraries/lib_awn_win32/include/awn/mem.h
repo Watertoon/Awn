@@ -1,6 +1,6 @@
 #pragma once
 
-#include <awn/sys/sys_servicecriticalsection.hpp>
+#include <awn/sys/sys_servicecriticalsection.win32.hpp>
 
 #include <awn/mem/mem_gpumemoryaddress.vk.hpp>
 #include <awn/mem/mem_heapmanager.h>

@@ -6,7 +6,7 @@ namespace awn::sys {
 		private:
 			HANDLE            m_handle;
             long unsigned int m_win32_thread_id;
-            char              m_name[ukern::MaxFiberNameLength];
+            char              m_name[ukern::cMaxFiberNameLength];
 		public:
 			ServiceThread(const char *name, mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, s32 priority) : ThreadBase(thread_heap, run_mode, exit_code, max_messages, stack_size, priority), m_handle(nullptr), m_name('\0') {
 
@@ -19,7 +19,7 @@ namespace awn::sys {
                 VP_ASSERT(result0 == true);
 
                 /* Set thread name */
-                ::strncpy(m_name, name, ukern::MaxFiberNameLength);
+                ::strncpy(m_name, name, ukern::cMaxFiberNameLength);
             }
             virtual ~ServiceThread() override {/*...*/}
 

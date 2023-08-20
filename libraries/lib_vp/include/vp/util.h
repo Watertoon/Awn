@@ -21,6 +21,7 @@
 
 #include <vp/util/util_new.h>
 
+#include <vp/util/util_atomicapi.hpp>
 #include <vp/util/util_spinloopintrinsics.x86.hpp>
 #include <vp/util/util_busymutex.x86.hpp>
 #include <vp/util/util_memorybarrier.x86.hpp>
@@ -37,6 +38,7 @@
 #include <vp/util/util_fixedobjectallocator.hpp>
 #include <vp/util/util_fixedhandletable.hpp>
 #include <vp/util/util_fixedringbuffer.hpp>
+#include <vp/util/util_fixedpriorityqueue.hpp>
 #include <vp/util/util_heapobjectallocator.hpp>
 #include <vp/util/util_pointerarray.hpp>
 #include <vp/util/util_heaparray.hpp>

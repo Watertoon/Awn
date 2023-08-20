@@ -2,14 +2,13 @@
 
 namespace vp::util {
 
-    template <typename T, auto KeyMemberPtr>
-    class PriorityQueue {
+    template <typename T, auto KeyMemberPtr, const size_t Size>
+    class FixedPriorityQueue {
         public:
             using KeyType = vp::util::MemberType<KeyMemberPtr>;
         public:
-            T   **m_queue;
-            u32   m_max;
-            u32   m_count;
+            u32  m_count;
+            T   *m_queue[Size];
         private:
             T **InsertFixup(T **pivot) {
 
@@ -99,38 +98,13 @@ namespace vp::util {
                 return iter;
             }
         public:
-            constexpr  PriorityQueue() : m_queue(nullptr), m_max(0), m_count(0) {/*...*/}
-            constexpr ~PriorityQueue() {/*...*/}
-            
-            void Initialize(imem::IHeap *heap, u32 max_count) {
-                
-                /* Allocate queue */
-                m_queue = new (heap, alignof(T*)) T*[max_count];
-                VP_ASSERT(m_queue != nullptr);
-
-                /* Set */
-                m_count = 0;
-                m_max   = max_count;
-
-                return;
-            }
-            void Finalize() {
-                
-                /* Free memory */
-                if (m_queue != nullptr) {
-                    delete [] m_queue;
-                }
-                m_queue = nullptr;
-                m_count = 0;
-                m_max   = 0;
-
-                return;
-            }
+            constexpr  FixedPriorityQueue() : m_count(), m_queue{} {/*...*/}
+            constexpr ~FixedPriorityQueue() {/*...*/}
             
             void Insert(T *new_node) {
 
                 /* Integrity check */
-                VP_ASSERT(m_count < m_max && new_node != nullptr);
+                VP_ASSERT(m_count < Size && new_node != nullptr);
 
                 /* Add new node */
                 m_queue[m_count] = new_node;
@@ -161,8 +135,8 @@ namespace vp::util {
                 T  *out_node = m_queue[0];
 
                 if (m_count != 0) {
-                    T **iter     = m_queue;
-                    *iter = m_queue[m_count];
+                    T **iter = m_queue;
+                    *iter    = m_queue[m_count];
                     this->RemoveFixup(iter);
                 }
 

@@ -30,14 +30,26 @@
     #include <windows.h>
     #include <shellapi.h>
     #include <shlwapi.h>
-#endif
 
-/* Undef erroneous near and far from windef.h */
-#ifdef near
-    #undef near
-#endif
-#ifdef far
-    #undef far
+    /* Undef macros that ruin the api */
+    #ifdef near
+        #undef near
+    #endif
+    #ifdef far
+        #undef far
+    #endif
+    #ifdef InterlockedIncrementAcquire
+        #undef InterlockedIncrementAcquire
+    #endif
+    #ifdef InterlockedIncrementRelease
+        #undef InterlockedIncrementRelease
+    #endif
+    #ifdef InterlockedDecrementAcquire
+        #undef InterlockedDecrementAcquire
+    #endif
+    #ifdef InterlockedDecrementRelease
+        #undef InterlockedDecrementRelease
+    #endif
 #endif
 
 /* Vulkan */
