@@ -22,7 +22,8 @@ namespace vp::util {
             IntrusiveListNode *m_prev;
             IntrusiveListNode *m_next;
         public:
-            constexpr ALWAYS_INLINE IntrusiveListNode() : m_prev(this), m_next(this) {/*...*/}
+            constexpr ALWAYS_INLINE  IntrusiveListNode() : m_prev(this), m_next(this) {/*...*/}
+            constexpr ALWAYS_INLINE ~IntrusiveListNode() {/*...*/}
 
             constexpr ALWAYS_INLINE IntrusiveListNode *next() const {
                 return m_next;
@@ -85,15 +86,11 @@ namespace vp::util {
                     }
 
                     constexpr ALWAYS_INLINE bool operator==(const Iterator<IsConst> &rhs) const {
-                        IntrusiveListNode *r_next = rhs.m_next;
-                        IntrusiveListNode *l_next = m_next;
-                        return !(l_next != r_next);
+                        return !(m_next != rhs.m_next);
                     }
 
                     constexpr ALWAYS_INLINE bool operator!=(const Iterator<IsConst> &rhs) const {
-                        IntrusiveListNode *r_next = rhs.m_next;
-                        IntrusiveListNode *l_next = m_next;
-                        return l_next != r_next;
+                        return m_next != rhs.m_next;
                     }
 
                     constexpr ALWAYS_INLINE Iterator<IsConst> &operator++() {
@@ -101,9 +98,8 @@ namespace vp::util {
                         return *this;
                     }
                     constexpr ALWAYS_INLINE Iterator<IsConst> &operator++([[maybe_unused]]int) {
-                        Iterator<IsConst> prev(m_next);
                         m_next = m_next->next();
-                        return prev;
+                        return *this;
                     }
                     constexpr ALWAYS_INLINE Iterator<IsConst> &operator--() {
                         m_next = m_next->prev();
@@ -121,16 +117,17 @@ namespace vp::util {
         private:
             IntrusiveListNode m_list;
         public:
-            constexpr ALWAYS_INLINE IntrusiveList() : m_list() {/*...*/}
+            constexpr ALWAYS_INLINE  IntrusiveList() : m_list() {/*...*/}
+            constexpr ALWAYS_INLINE ~IntrusiveList() {/*...*/}
 
             constexpr ALWAYS_INLINE iterator begin() {
-                return iterator(m_list.m_prev);
+                return iterator(m_list.m_next);
             }
             constexpr ALWAYS_INLINE const_iterator begin() const {
-                return const_iterator(m_list.m_prev);
+                return const_iterator(m_list.m_next);
             }
             constexpr ALWAYS_INLINE const_iterator cbegin() const {
-                return const_iterator(m_list.m_prev);
+                return const_iterator(m_list.m_next);
             }
 
             constexpr ALWAYS_INLINE iterator end() {
@@ -144,17 +141,17 @@ namespace vp::util {
             }
 
             ALWAYS_INLINE reference Front() {
-                return Traits::GetParentReference(m_list.m_prev);
+                return Traits::GetParentReference(m_list.m_next);
             }
             ALWAYS_INLINE const_reference Front() const {
-                return Traits::GetParentReference(m_list.m_prev);
+                return Traits::GetParentReference(m_list.m_next);
             }
 
             ALWAYS_INLINE reference Back() {
-                return Traits::GetParentReference(m_list.m_next);
+                return Traits::GetParentReference(m_list.m_prev);
             }
             ALWAYS_INLINE const_reference Back() const {
-                return Traits::GetParentReference(m_list.m_next);
+                return Traits::GetParentReference(m_list.m_prev);
             }
 
             constexpr ALWAYS_INLINE bool IsEmpty() const {
@@ -162,33 +159,33 @@ namespace vp::util {
             }
 
             void ALWAYS_INLINE PushBack(reference obj) {
-                m_list.LinkNext(Traits::GetListNode(std::addressof(obj)));
+                m_list.LinkPrev(Traits::GetListNode(std::addressof(obj)));
             }
 
             void ALWAYS_INLINE PushFront(reference obj) {
-                m_list.LinkPrev(Traits::GetListNode(std::addressof(obj)));
+                m_list.LinkNext(Traits::GetListNode(std::addressof(obj)));
             }
             
             constexpr ALWAYS_INLINE reference PopFront() {
-                IntrusiveListNode *front = m_list.m_prev;
+                IntrusiveListNode *front = m_list.m_next;
                 front->Unlink();
                 return Traits::GetParentReference(front);
             }
 
             constexpr ALWAYS_INLINE const_reference PopFront() const {
-                IntrusiveListNode *front = m_list.m_prev;
+                IntrusiveListNode *front = m_list.m_next;
                 front->Unlink();
                 return Traits::GetParentReference(front);
             }
 
             constexpr ALWAYS_INLINE reference PopBack() {
-                IntrusiveListNode *back = m_list.m_next;
+                IntrusiveListNode *back = m_list.m_prev;
                 back->Unlink();
                 return Traits::GetParentReference(back);
             }
 
             constexpr ALWAYS_INLINE const_reference PopBack() const {
-                IntrusiveListNode *back = m_list.m_next;
+                IntrusiveListNode *back = m_list.m_prev;
                 back->Unlink();
                 return Traits::GetParentReference(back);
             }

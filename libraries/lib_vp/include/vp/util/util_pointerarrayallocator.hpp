@@ -40,7 +40,7 @@ namespace vp::util {
 
                 /* Split memory */
                 m_pointer_array = reinterpret_cast<T**>(memory);
-                m_free_list = reinterpret_cast<FreeList*>(::operator new(sizeof(FreeList) * array_size, heap, alignof(T)));
+                m_free_list = reinterpret_cast<FreeList*>(reinterpret_cast<uintptr_t>(memory) + sizeof(T**) * array_size);
 
                 /* Construct a free list of objects */
                 for (u32 i = 0; i < (array_size - 1); ++i) {
@@ -55,7 +55,9 @@ namespace vp::util {
             
             ALWAYS_INLINE void Finalize() {
                 this->Clear();
-                ::operator delete(reinterpret_cast<void*>(m_pointer_array));
+                if (m_pointer_array != nullptr) {
+                    ::operator delete(reinterpret_cast<void*>(m_pointer_array));
+                }
                 m_pointer_array = nullptr;
             }
 

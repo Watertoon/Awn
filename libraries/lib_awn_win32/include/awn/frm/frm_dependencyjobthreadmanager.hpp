@@ -139,10 +139,10 @@ namespace awn::frm {
             constexpr ~DependencyJobThreadManager() {/*...*/}
 
             void Initialize(mem::Heap *heap) {
-                
+
                 /* Initialize thread array */
-                m_thread_array.Initialize(heap, sys::GetProcessCoreCount());
-                
+                m_thread_array.Initialize(heap, sys::GetCoreCount());
+
                 /* Clear state */
                 m_all_core_mask    = 0;
                 m_active_core_mask = 0;
@@ -162,7 +162,17 @@ namespace awn::frm {
                 return;
             }
 
-            void Finalize();
+            void Finalize() {
+
+                /* Exit threads */
+                for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
+                    m_thread_array[i].thread->SendMessage(0);
+                    delete m_thread_array[i].thread;
+                }
+                m_thread_array.Finalize();
+
+                return;
+            }
 
             void SubmitGraph(DependencyJobQueue *job_queue, DependencyJobGraph *graph) {
 

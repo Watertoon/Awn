@@ -38,4 +38,5 @@ namespace awn::ukern {
     DECLARE_RESULT(InvalidArbitrationType,       18);
     DECLARE_RESULT(InvalidSignalType,            19);
     DECLARE_RESULT(NoWaiters,                    20);
+    DECLARE_RESULT(InvalidCoreMask,              21);
 }

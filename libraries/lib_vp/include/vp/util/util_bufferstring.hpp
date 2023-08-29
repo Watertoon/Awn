@@ -36,7 +36,7 @@ namespace vp::util {
                 this->AssureTermination();
             }
 
-            constexpr ~FixedString() {/*...*/}
+            constexpr ALWAYS_INLINE ~FixedString() {/*...*/}
 
             constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) {
                 if (std::is_constant_evaluated() == true) {

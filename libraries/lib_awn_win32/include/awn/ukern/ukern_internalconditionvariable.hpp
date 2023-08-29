@@ -21,17 +21,19 @@ namespace awn::ukern {
         private:
             u32 m_cv;
         public:
-            constexpr InternalConditionVariable() {/*...*/}
+            constexpr  InternalConditionVariable() : m_cv(0) {/*...*/}
             constexpr ~InternalConditionVariable() {/*...*/}
-            
+
             void Wait(InternalCriticalSection *cs) {
-                
+
                 const FiberLocalStorage *fiber_local = ukern::GetCurrentThread();
                 const UKernHandle tag = fiber_local->ukern_fiber_handle;
-                
+
                 VP_ASSERT(tag == (cs->m_handle & (~0x4000'0000)));
-                
-                impl::GetScheduler()->WaitKeyImpl(std::addressof(cs->m_handle), std::addressof(m_cv), tag, -1);
+
+                RESULT_ABORT_UNLESS(impl::GetScheduler()->WaitKeyImpl(std::addressof(cs->m_handle), std::addressof(m_cv), tag, -1));
+
+                return;
             }
             
             void TimedWait(InternalCriticalSection *cs, s64 timeout_ns) {

@@ -50,7 +50,7 @@ namespace vp::util {
             ALWAYS_INLINE void Finalize() {
 
                 if (m_pointer_array != nullptr) {
-                    delete[] m_pointer_array;
+                    delete [] m_pointer_array;
                 }
                 m_used_pointers = 0;
                 m_max_pointers  = 0;

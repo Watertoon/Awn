@@ -82,4 +82,5 @@ namespace awn::ukern {
     }
 
     ThreadType *GetCurrentThread() { return impl::GetScheduler()->GetCurrentThreadImpl(); }
+    u32 GetCoreCount() { return impl::GetScheduler()->GetCoreCount(); }
 }

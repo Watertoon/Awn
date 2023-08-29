@@ -3,12 +3,12 @@
 namespace awn::frm {
 
     struct FrameworkLibraryInfo {
-        u64    process_core_mask;
+        u64    process_core_count;
         size_t root_heap_initial_size;
         size_t out_of_memory_resize_alignment;
 
         constexpr void SetDefaults() {
-            process_core_mask              = 1;
+            process_core_count             = 1;
             root_heap_initial_size         = vp::util::c32MB;
             out_of_memory_resize_alignment = vp::util::c4KB;
         }
@@ -76,7 +76,7 @@ namespace awn::frm {
                 sys::InitializeSystemManager();
 
                 /* Initialize ukern */
-                ukern::InitializeUKern(framework_lib_info->process_core_mask);
+                ukern::InitializeUKern(framework_lib_info->process_core_count);
 
                 /* Allocate root heap memory */
                 void *root_heap_start = ::VirtualAlloc(nullptr, framework_lib_info->root_heap_initial_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);

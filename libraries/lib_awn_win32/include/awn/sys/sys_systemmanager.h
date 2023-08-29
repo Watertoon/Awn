@@ -8,7 +8,7 @@ namespace awn::sys {
         u64         process_core_mask;
         u64         system_core_mask;
         SYSTEM_INFO system_info;
-        
+
         static constexpr size_t cMaximumSupportedProcessorCount = 64;
     };
 
@@ -18,7 +18,8 @@ namespace awn::sys {
 
     SystemManager *GetSystemManager();
 
-    u32 GetProcessCoreCount();
+    u32 GetServiceCoreCount();
+    u32 GetCoreCount();
     u32 GetCurrentCoreNumber();
     
     SYSTEM_INFO *GetSystemInfo();

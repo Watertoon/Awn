@@ -42,4 +42,5 @@ namespace awn::ukern {
     void YieldThread();
 
     ThreadType *GetCurrentThread();
+    u32 GetCoreCount();
 }

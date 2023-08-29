@@ -160,9 +160,11 @@ namespace awn::ukern::impl {
             constexpr ALWAYS_INLINE UserScheduler()  : m_scheduler_lock(0) , m_scheduler_thread_table{nullptr}, m_scheduler_fiber_table{nullptr}, m_scheduler_local_ring_table{}, m_thread_queue(), m_wait_list(), m_core_mask(), m_allocated_user_threads(), m_core_count(), m_active_cores(), m_runnable_fibers(), m_handle_table() {/*...*/}
             constexpr ~UserScheduler() {/*...*/}
 
-            void Initialize(UKernCoreMask core_mask);
+            void Initialize(u32 core_count);
+
+            u32 GetCoreCount() const { return m_core_count; }
         private:
-            void SwapLockForSignalKey(FiberLocalStorage *waiting_fiber);
+            void TransferFiberForSignalKey(FiberLocalStorage *waiting_fiber);
         public:
             Result CreateThreadImpl(UKernHandle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, s32 priority, u32 core_id);
 

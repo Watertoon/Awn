@@ -46,5 +46,7 @@ namespace awn::ukern {
         /* End next owner's wait */
         next_owner.waitable_object->EndWait(std::addressof(next_owner), ResultSuccess);
         next_owner.waitable_object = nullptr;
+
+        return;
     }
 }

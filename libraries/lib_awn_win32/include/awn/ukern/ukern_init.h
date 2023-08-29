@@ -17,5 +17,5 @@
 
 namespace awn::ukern {
 
-    void InitializeUKern(u64 core_mask);
+    void InitializeUKern(u32 core_count);
 }

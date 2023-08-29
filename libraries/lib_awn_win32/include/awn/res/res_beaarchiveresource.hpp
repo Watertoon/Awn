@@ -57,7 +57,6 @@ namespace awn::res {
                 return true;
             }
             
-            
             virtual bool TryReadDirectoryEntryByIndex(DirectoryEntry *out_directory_entry, u32 index) override {
 
                 if (out_directory_entry == nullptr) { return false; }

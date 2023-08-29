@@ -73,7 +73,7 @@ namespace awn::ukern::impl {
             const u32     runnable_thread_count = vp::util::CountOneBits64(fiber->core_mask);
 
             /* Check for whether the current core is preferred */
-            if (runnable_thread_count == 1 && (core_mask & (1 << vp::util::CountRightZeroBits64(core_mask))) != 0) { break; }
+            if (runnable_thread_count == 1 && ((core_mask & (1 << vp::util::CountRightZeroBits64(core_mask))) != 0)) { break; }
             if (fiber->current_core == core_number && (core_mask & (1 << core_number)) != 0) { break; }
 
             /* Rank threads */
@@ -194,13 +194,12 @@ namespace awn::ukern::impl {
         return;
     }
 
-	void UserScheduler::Initialize(UKernCoreMask core_mask) {
+	void UserScheduler::Initialize(u32 core_count) {
 
 		/* Get and set initial core count */
-		const u32 core_count = vp::util::CountOneBits64(core_mask);
 		m_active_cores = core_count;
 		m_core_count   = core_count;
-        m_core_mask    = core_mask;
+        m_core_mask    = ~((~1) << core_count);
 
 		/* Set main thread core mask to core 0 */
 		const u64 main_thread_mask = 1;
@@ -319,22 +318,22 @@ namespace awn::ukern::impl {
             this->SleepThreadImpl(0);
             exit_fiber = this->GetFiberByHandle(handle);
         }
-    
+
         return;
     }
 
     Result UserScheduler::SetPriorityImpl(UKernHandle handle, s32 priority) {
-    
+
         /* Verify input */
-        if (-2 <= priority && priority <= 2) { return ResultInvalidPriority; }
-        
+        RESULT_RETURN_IF(-2 <= priority && priority <= 2, ResultInvalidPriority);
+
         /* Get fiber by handle  */
         FiberLocalStorage *fiber_local = this->GetFiberByHandle(handle);
         RESULT_RETURN_UNLESS(fiber_local != nullptr, ResultInvalidHandle)
 
         /* Lock scheduler */
         ScopedSchedulerLock lock(this);
-        
+
         /* Same value check */
         if (fiber_local->priority == priority) { return ResultSamePriority; }
 
@@ -348,17 +347,20 @@ namespace awn::ukern::impl {
     }
 
     Result UserScheduler::SetCoreMaskImpl(UKernHandle handle, UKernCoreMask core_mask) {
-        
+
+        /* Integrity check */
+        RESULT_RETURN_IF((core_mask & (~m_core_mask)) != 0, ResultInvalidCoreMask);
+
         /* Get fiber by handle  */
         FiberLocalStorage *fiber_local = this->GetFiberByHandle(handle);
         RESULT_RETURN_UNLESS(fiber_local != nullptr, ResultInvalidHandle);
 
         /* Lock scheduler */
         ScopedSchedulerLock lock(this);
-        
+
         /* Same value check */
         if (fiber_local->core_mask == core_mask) { return ResultSameCoreMask; }
-        
+
         /* Change core mask */
         fiber_local->core_mask = core_mask;
 
@@ -398,12 +400,10 @@ namespace awn::ukern::impl {
         ScopedSchedulerLock lock(this);
 
         /* Only set timeout if required */
+        TimeWaiter time_waiter;
         if (absolute_timeout != 0) {
 
             /* Set timeout state */
-            
-            TimeWaiter time_waiter;
-            
             current_fiber->timeout         = absolute_timeout;
             current_fiber->fiber_state     = FiberState_Waiting;
             current_fiber->waitable_object = std::addressof(time_waiter);
@@ -464,8 +464,8 @@ namespace awn::ukern::impl {
         ScopedSchedulerLock lock(this);
 
         /* Integrity checks */
-        RESULT_RETURN_UNLESS(current_fiber->wait_list.IsEmpty() == false,                                                       ResultRequiresLock);
-        RESULT_RETURN_UNLESS(current_fiber->ukern_fiber_handle == ((*lock_address) & (~FiberLocalStorage::HasChildWaitersBit)), ResultInvalidLockAddressValue);
+        RESULT_RETURN_UNLESS(current_fiber->wait_list.IsEmpty() == false,                                                  ResultRequiresLock);
+        RESULT_RETURN_UNLESS((current_fiber->ukern_fiber_handle | FiberLocalStorage::HasChildWaitersBit) == *lock_address, ResultInvalidLockAddressValue);
 
         /* Release lock */
         current_fiber->ReleaseLockWaitListUnsafe();
@@ -486,41 +486,44 @@ namespace awn::ukern::impl {
         ScopedSchedulerLock lock(this);
 
         /* Integrity checks */
-        RESULT_RETURN_UNLESS(current_fiber->wait_list.IsEmpty() == false,   ResultRequiresLock);
-        RESULT_RETURN_UNLESS(current_fiber->ukern_fiber_handle == *lock_address, ResultInvalidLockAddressValue);
+        RESULT_RETURN_UNLESS(current_fiber->ukern_fiber_handle == ((*lock_address) & (~FiberLocalStorage::HasChildWaitersBit)), ResultInvalidLockAddressValue);
 
         /* Release lock */
-        current_fiber->ReleaseLockWaitListUnsafe();
+        if (current_fiber->wait_list.IsEmpty() == false) {
+            current_fiber->ReleaseLockWaitListUnsafe();
+        } else {
+            *lock_address = 0;
+        }
 
         /* Set cv key to 1 */
         *cv_key = 1;
 
         /* Check if timed out */
+        KeyArbiter key_arbiter = {};
         u32 result = ResultSuccess;
         if (0 == absolute_timeout) {
             result = ResultTimeout;
         } else {
             /* Set wait state */
-            KeyArbiter key_arbiter         = {};
             current_fiber->waitable_object = std::addressof(key_arbiter);
             current_fiber->wait_address    = cv_key;
             current_fiber->lock_address    = lock_address;
             current_fiber->wait_tag        = tag;
             current_fiber->fiber_state     = FiberState_Waiting;
             current_fiber->timeout         = absolute_timeout;
-        }
-
-        /* Find a parent cv waiter */
-        for (FiberLocalStorage &waiting_fiber : m_wait_list) {
-            if (waiting_fiber.wait_address == cv_key) {
-                waiting_fiber.wait_list.PushBack(*current_fiber);
-                break;
+            
+            /* Find a parent cv waiter */
+            for (FiberLocalStorage &waiting_fiber : m_wait_list) {
+                if (waiting_fiber.wait_address == cv_key) {
+                    waiting_fiber.wait_list.PushBack(*current_fiber);
+                    break;
+                }
             }
-        }
 
-        /* If no parent, become the parent */
-        if (current_fiber->wait_list_node.IsLinked() == false) {
-            m_wait_list.PushBack(*current_fiber);
+            /* If no parent, become the parent */
+            if (current_fiber->wait_list_node.IsLinked() == false) {
+                m_wait_list.PushBack(*current_fiber);
+            }
         }
 
         /* Swap to scheduler */
@@ -533,26 +536,29 @@ namespace awn::ukern::impl {
         return result;
     }
 
-    void UserScheduler::SwapLockForSignalKey(FiberLocalStorage *waiting_fiber) {
+    void UserScheduler::TransferFiberForSignalKey(FiberLocalStorage *waiting_fiber) {
 
-        /* Try to take the lock back */
+        /* Check lock is set */
         const u32 prev_tag = *waiting_fiber->lock_address;
-        u32       tag      =  waiting_fiber->wait_tag;
-        if (prev_tag != 0) {
-            tag |= FiberLocalStorage::HasChildWaitersBit;
-        }
-        *waiting_fiber->lock_address = tag;
 
-        /* If there were other waiters */
         if (prev_tag != 0) {
+
+            *waiting_fiber->lock_address |= FiberLocalStorage::HasChildWaitersBit;
+
             /* Get fiber by handle */
-            FiberLocalStorage *lock_fiber = this->GetFiberByHandle(~FiberLocalStorage::HasChildWaitersBit);
+            FiberLocalStorage *lock_fiber = this->GetFiberByHandle(prev_tag & (~FiberLocalStorage::HasChildWaitersBit));
 
             /* Push back fiber waiter */
             lock_fiber->wait_list.PushBack(*waiting_fiber);
-        } else {
-            waiting_fiber->waitable_object->EndWait(waiting_fiber, ResultSuccess);
+
+            return;
         }
+
+        /* Take the lock back */
+        u32 tag                      = waiting_fiber->wait_tag;
+        *waiting_fiber->lock_address = tag;
+
+        return;
     }
 
     Result UserScheduler::SignalKeyImpl(u32 *cv_key, u32 signal_count) {
@@ -584,7 +590,9 @@ namespace awn::ukern::impl {
         RESULT_RETURN_IF(cv_fiber == nullptr, ResultInvalidAddress);
 
         /* Handle reacquisition of lock */
-        this->SwapLockForSignalKey(cv_fiber);
+        *cv_fiber->lock_address = 0;
+        cv_fiber->waitable_object->EndWait(cv_fiber, ResultSuccess);
+        cv_fiber->waitable_object = nullptr;
 
         /* Unlock cv waiters */
         u32 i = 1;
@@ -597,7 +605,7 @@ namespace awn::ukern::impl {
             waiting_fiber.wait_list_node.Unlink();
 
             /* Handle reacquisition of lock */
-            this->SwapLockForSignalKey(std::addressof(waiting_fiber));
+            this->TransferFiberForSignalKey(std::addressof(waiting_fiber));
 
             /* Loop count */
             ++i;

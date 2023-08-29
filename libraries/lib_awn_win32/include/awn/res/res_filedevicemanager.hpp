@@ -12,7 +12,8 @@ namespace awn::res {
         public:
             AWN_SINGLETON_TRAITS(FileDeviceManager);
         public:
-            constexpr ALWAYS_INLINE FileDeviceManager() : m_device_tree_cs(), m_mounted_file_device_tree(), m_main_file_device() {/*...*/}
+            constexpr ALWAYS_INLINE  FileDeviceManager() : m_device_tree_cs(), m_mounted_file_device_tree(), m_main_file_device() {/*...*/}
+            constexpr ALWAYS_INLINE ~FileDeviceManager() {/*...*/}
 
             void Initialize(mem::Heap *heap) {
 

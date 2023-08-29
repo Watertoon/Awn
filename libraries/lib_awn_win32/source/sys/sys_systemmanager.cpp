@@ -32,8 +32,11 @@ namespace awn::sys {
 
     SystemManager *GetSystemManager() { return vp::util::GetPointer(sSystemManagerStorage); }
 
-    u32 GetProcessCoreCount() {
+    u32 GetServiceCoreCount() {
         return GetSystemManager()->process_core_count;
+    }
+    u32 GetCoreCount() {
+        return ukern::GetCoreCount();
     }
 
     u32 GetCurrentCoreNumber() {

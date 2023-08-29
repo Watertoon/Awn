@@ -21,16 +21,19 @@ namespace vp {
 
     namespace result {
 
-        constexpr inline u32 ModuleBits      = 9;
-        constexpr inline u32 DescriptionBits = 13;
-        constexpr inline u32 ReserveBits     = 9;
+        constexpr inline u32 cModuleBits         = 9;
+        constexpr inline u32 cModuleBitMask      = (~((~0) << cModuleBits));
+        constexpr inline u32 cDescriptionBits    = 13;
+        constexpr inline u32 cDescriptionBitMask = (~((~0) << cDescriptionBits));
+        constexpr inline u32 cReserveBits        = 9;
+        constexpr inline u32 cReserveBitMask     = 9;
 
         constexpr ALWAYS_INLINE GetModule(Result result) {
-            return result & ModuleBits;
+            return result & cModuleBitMask;
         }
 
         constexpr ALWAYS_INLINE GetDescription(Result result) {
-            return (result >> ModuleBits) & DescriptionBits;
+            return (result >> cModuleBits) & cDescriptionBitMask;
         }
 
         /*NO_RETURN void OnUnhandledResult(Result result) {
@@ -91,9 +94,9 @@ namespace vp {
         constexpr inline u32 ResultModule = module_num;
 
     #define DECLARE_RESULT(result_name, description) \
-        constexpr inline u32 Result##result_name =  ((description & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits);
+        constexpr inline u32 Result##result_name =  ((description & vp::result::cDescriptionBitMask) << vp::result::cModuleBits) | (ResultModule & vp::result::cModuleBitMask);
 
     #define DECLARE_RESULT_RANGE(result_name, description_start, description_end) \
-        constexpr inline u32 Result##result_name##Start =  ((description_start & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits); \
-        constexpr inline u32 Result##result_name##End   =  ((description_end & vp::result::DescriptionBits) << vp::result::ModuleBits) | (ResultModule & vp::result::ModuleBits);
+        constexpr inline u32 Result##result_name##Start =  ((description_start & vp::result::cDescriptionBitMask) << vp::result::cModuleBits) | (ResultModule & vp::result::cModuleBitMask); \
+        constexpr inline u32 Result##result_name##End   =  ((description_end & vp::result::cDescriptionBitMask) << vp::result::cModuleBits) | (ResultModule & vp::result::cModuleBitMask);
 }

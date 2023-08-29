@@ -217,6 +217,7 @@ namespace awn::mem {
         if (free_block == m_free_block_list.end() || after_size + block_size > new_size) { return block_size; }
 
         /* Remove after block from free list */
+        vp::util::IntrusiveListNode *prev_block = block_after->exp_list_node.prev();
         block_after->exp_list_node.Unlink();
 
         /* Find new free node address and size */
@@ -231,12 +232,14 @@ namespace awn::mem {
         block->block_size = reinterpret_cast<uintptr_t>(new_free) - reinterpret_cast<uintptr_t>(address);
 
         if (sizeof(ExpHeapMemoryBlock) <= new_free_size) {
-            std::construct_at(new_free);
 
+            std::construct_at(new_free);
             new_free->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
             new_free->alignment   = 0;
             new_free->block_size  = new_free_size;
-            m_free_block_list.PushBack(*new_free);
+            
+            prev_block->LinkNext(std::addressof(new_free->exp_list_node));
+            //m_free_block_list.PushBack(*new_free);
         }
 
         return new_size;
@@ -272,7 +275,7 @@ namespace awn::mem {
         }
 
         /* Calculate adjusted size */
-        const size_t aligned_size = (size != Heap::cWholeSize) ? vp::util::AlignUp(size, alignment) : this->GetMaximumAllocatableSize(alignment);
+        const size_t aligned_size = (size != Heap::cWholeSize) ? vp::util::AlignUp(size, alignment) : this->GetMaximumAllocatableSizeUnsafe(alignment);
 
         /* Find a free memory block that corresponds to our desired size */
         uintptr_t allocation_address = 0;
@@ -291,13 +294,14 @@ namespace awn::mem {
                 allocation_address = vp::util::AlignUp(reinterpret_cast<uintptr_t>(block) + sizeof(ExpHeapMemoryBlock), alignment);
 
                 /* Find the total size of the allocation with alignment */
-                const uintptr_t aligned_allocation_size = (allocation_address + aligned_size) - reinterpret_cast<uintptr_t>(block);
+                const uintptr_t aligned_allocation_size = (aligned_size - sizeof(ExpHeapMemoryBlock)) - reinterpret_cast<uintptr_t>(block) + allocation_address;
 
                 /* Complete if the allocated size is within our free block's range */
                 if (aligned_allocation_size <= block->block_size) { break; }
 
-                free_block = ++free_block;
+                ++free_block;
             }
+
         } else {
 
             /* Best fit mode */
@@ -324,11 +328,11 @@ namespace awn::mem {
                     smaller_block   = block;
                     smaller_address = allocation_address;
 
-                    /* Break if our size requirements are exact */
+                    /* Complete if our size requirements are exact */
                     if (block_size == aligned_size) { break; }
                 }
 
-                free_block = ++free_block;
+                ++free_block;
                 allocation_address = smaller_address;
             }
 
@@ -336,7 +340,7 @@ namespace awn::mem {
         }
 
         /* Ensure we found a block */
-        if ((free_block != m_free_block_list.end()) == false) {
+        if (free_block == m_free_block_list.end()) {
 
             /* Attempt out of memory callback */
             OutOfMemoryInfo out_of_memory = {
@@ -358,16 +362,21 @@ namespace awn::mem {
     }
 
     void ExpHeap::Free(void *address) {
+
+        /* Lock heap */
         ScopedHeapLock lock(this);
 
         /* Unlink used block */
         ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
+        VP_ASSERT(block->alloc_magic == ExpHeapMemoryBlock::cAllocMagic);
         block->exp_list_node.Unlink();
 
         /* Add back to free list */
         void *start = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(block) - block->alignment);
         void *end   = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) + block->block_size);
         this->AddFreeBlock(AddressRange{start, end});
+
+        return;
     }
 
     size_t ExpHeap::GetTotalFreeSize() {
@@ -384,8 +393,17 @@ namespace awn::mem {
 
     size_t ExpHeap::GetMaximumAllocatableSize(s32 alignment) {
 
+        /* Enforce alignment */
+        if (alignment < cMinimumAlignment) {
+            alignment = cMinimumAlignment;
+        }
+
         /* Lock the heap */
         ScopedHeapLock lock(this);
+
+        return this->GetMaximumAllocatableSizeUnsafe(alignment);
+    }
+    size_t ExpHeap::GetMaximumAllocatableSizeUnsafe(s32 alignment) {
 
         /* Find largest contiguous free block while respecting alignment */
         size_t max_free_size = 0;

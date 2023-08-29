@@ -16,6 +16,9 @@ namespace awn::sys {
             void Signal() {
                 std::scoped_lock lock(m_cs);
 
+                /* Set signal */
+                m_signal_state = 1;
+
                 /* If auto reset, only signal one waiter */
                 if (m_auto_reset_mode == 1) {
                     m_cv.Signal();
