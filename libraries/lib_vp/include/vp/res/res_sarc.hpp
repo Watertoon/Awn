@@ -2,6 +2,17 @@
 
 namespace vp::res {
 
+    constexpr ALWAYS_INLINE u32 CalculateSarcHash(u32 hash_seed, const char *path) {
+
+        u32 hash = 0;
+        while (*path != '\0') {
+            hash = hash * hash_seed + static_cast<int>(*path);
+            path = path + 1;
+        }
+
+        return hash;
+    }
+
     struct ResSarcSfatEntry {
         u32 file_name_hash;
         union {
@@ -185,8 +196,8 @@ namespace vp::res {
                 if (file_count <= entry_index) { return nullptr; }
 
                 /* Integrity check name offset */
-                const u32 file_name_offset = ((is_reverse_endian == false) ? m_sfat->entry_array[entry_index].name_data : vp::util::SwapEndian(m_sfat->entry_array[entry_index].name_data)) & 0xff'ffff;
-                if (m_file_region < m_path_table + file_name_offset) { return nullptr; }
+                const u32 file_name_offset = ((is_reverse_endian == false) ? m_sfat->entry_array[entry_index].name_data & 0xff'ffff : vp::util::SwapEndian(m_sfat->entry_array[entry_index].name_data)) & 0xff'ffff;
+                if (m_file_region < m_path_table + (file_name_offset << 2)) { return nullptr; }
 
                 /* Get file path */
                 return m_path_table + (file_name_offset << 2);
