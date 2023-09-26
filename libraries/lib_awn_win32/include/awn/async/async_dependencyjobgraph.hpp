@@ -1,6 +1,6 @@
 #pragma once
 
-namespace awn::frm {
+namespace awn::async {
 
     using UserId     = u8;
     using RegisterId = u16;

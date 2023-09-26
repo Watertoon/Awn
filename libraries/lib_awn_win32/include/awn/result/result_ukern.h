@@ -17,7 +17,7 @@
 
 namespace awn::ukern {
 
-    DECLARE_RESULT_MODULE(1);
+    DECLARE_RESULT_MODULE(10);
     DECLARE_RESULT(Timeout,                      1);
     DECLARE_RESULT(InvalidHandle,                2);
     DECLARE_RESULT(Win32Error,                   3);

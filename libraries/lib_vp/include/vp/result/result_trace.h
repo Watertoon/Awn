@@ -17,6 +17,6 @@
 
 namespace vp::trace {
 
-    DECLARE_RESULT_MODULE(2);
+    DECLARE_RESULT_MODULE(1);
     DECLARE_RESULT(AssertFailed, 1);
 }

@@ -97,6 +97,17 @@ namespace awn::sys {
                 return true;
             }
 
+            bool TryPeekMessage(size_t *out_message) {
+                std::scoped_lock l(m_message_mutex);
+
+                const u32 pending_messages = m_pending_messages;
+                if (pending_messages == 0) { return false; }
+
+                *out_message = m_message_buffer[m_current_message];
+
+                return true;
+            }
+
             void SendMessage(size_t message) {
                 std::scoped_lock l(m_message_mutex);
 

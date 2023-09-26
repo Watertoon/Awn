@@ -158,11 +158,15 @@ namespace vp::util {
                 return !m_list.IsLinked();
             }
 
-            void ALWAYS_INLINE PushBack(reference obj) {
+            ALWAYS_INLINE reference GetNext(reference obj) {
+                return Traits::GetParentReference(Traits::GetListNode(std::addressof(obj))->next());
+            }
+
+            ALWAYS_INLINE void PushBack(reference obj) {
                 m_list.LinkPrev(Traits::GetListNode(std::addressof(obj)));
             }
 
-            void ALWAYS_INLINE PushFront(reference obj) {
+            ALWAYS_INLINE void PushFront(reference obj) {
                 m_list.LinkNext(Traits::GetListNode(std::addressof(obj)));
             }
             

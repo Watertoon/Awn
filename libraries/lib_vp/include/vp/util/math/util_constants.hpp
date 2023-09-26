@@ -17,11 +17,15 @@
 
 namespace vp::util {
 
+    constexpr inline float cInfinity = INFINITY;
+
+    constexpr inline float cEpsilon = 9.094947e-14;
+
     constexpr inline float cFloatPi = 3.1415927;
 
     constexpr inline float cFloat2Pi = 6.2831855;
 
-    constexpr inline float ccFloatPiDivided2 = 1.5707964;
+    constexpr inline float cFloatPiDivided2 = 1.5707964;
 
     constexpr inline float cFloat3PiDivided2 = 4.712389;
 
@@ -172,5 +176,11 @@ namespace vp::util {
     constexpr ALWAYS_INLINE float GetCosPeriodStep(int t, int max) {
         const float value = ((static_cast<float>(cAngleIndexHalfRound) / cFloatPi) * ((static_cast<float>(t) * cFloat2Pi) / static_cast<float>(max)));
         return SampleCos(value);
+    }
+
+    /* Interpolate a Sin and Cos value from one period  */
+    constexpr ALWAYS_INLINE Vector2f GetSinCosPeriodStep(int t, int max) {
+        const float value = ((static_cast<float>(cAngleIndexHalfRound) / cFloatPi) * ((static_cast<float>(t) * cFloat2Pi) / static_cast<float>(max)));
+        return SampleSinCos(value);
     }
 }

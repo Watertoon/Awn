@@ -62,10 +62,10 @@
 #include <vp/util/math/sse4/util_int128.sse4.hpp>
 #include <vp/util/math/sse4/util_float128.sse4.hpp>
 #include <vp/util/math/sse4/util_vector2.hpp>
+#include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/sse4/util_vector3.hpp>
 #include <vp/util/math/sse4/util_vector3calc.h>
 #include <vp/util/math/sse4/util_vector4.hpp>
-#include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/sse4/util_matrix33.hpp>
 #include <vp/util/math/sse4/util_matrix34.hpp>
 #include <vp/util/math/sse4/util_matrix34calc.h>

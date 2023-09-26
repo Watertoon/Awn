@@ -145,6 +145,17 @@ namespace awn::sys {
                 return true;
             }
 
+            bool TryPeekMessage(size_t *out_message) {
+                vp::util::ScopedBusyMutex l(std::addressof(m_message_busy_mutex));
+
+                const u32 pending_messages = m_pending_messages;
+                if (pending_messages == 0) { return false; }
+
+                *out_message = m_message_buffer[m_current_message];
+
+                return true;
+            }
+
             void SendMessage(size_t message) {
                 vp::util::ScopedBusyMutex l(std::addressof(m_message_busy_mutex));
 

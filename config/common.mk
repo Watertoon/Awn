@@ -85,10 +85,14 @@ endif
 ifeq ($(GRAPHICS_API), vk)
 include $(dir $(lastword $(MAKEFILE_LIST)))../graphics_api/gfxapi_vk.mk
 else
+ifeq ($(GRAPHICS_API), nvn)
+include $(dir $(lastword $(MAKEFILE_LIST)))../graphics_api/gfxapi_nvn.mk
+else
 ifeq ($(GRAPHICS_API), awngfx)
 # ...
 else
 $(error Invalid GRAPHICS_API (check "config/gfxapi" for valid list))
+endif
 endif
 endif
 

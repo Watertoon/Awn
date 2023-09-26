@@ -81,7 +81,9 @@ namespace awn::sys {
                 return m_core_mask;
             }
 
-            void SendMessage(size_t message) { m_message_queue.SendMessage(message); }
+            ALWAYS_INLINE void SendMessage(size_t message) { m_message_queue.SendMessage(message); }
+            ALWAYS_INLINE bool TrySendMessage(size_t message) { return m_message_queue.TrySendMessage(message); }
+            ALWAYS_INLINE bool TryPeekMessage(size_t *out_message) { return m_message_queue.TryPeekMessage(out_message); }
 
             constexpr ALWAYS_INLINE void SetThreadCurrentHeap(mem::Heap *heap) { m_thread_heap = heap; }
             constexpr ALWAYS_INLINE void SetLookupHeap(mem::Heap *heap)        { m_lookup_heap = heap; }
@@ -91,6 +93,8 @@ namespace awn::sys {
 
             constexpr ALWAYS_INLINE       mem::Heap *GetLookupHeap()       { return m_lookup_heap; }
             constexpr ALWAYS_INLINE const mem::Heap *GetLookupHeap() const { return m_lookup_heap; }
+
+            constexpr ALWAYS_INLINE size_t GetExitMessage() const { return m_exit_message; }
 
             constexpr ALWAYS_INLINE void SetTlsData(TlsSlot slot, void *object) {
                 VP_ASSERT(slot < cMaxThreadTlsSlotCount);

@@ -13,6 +13,7 @@ namespace awn {
 #include <awn/ukern.h>
 #include <awn/mem.h>
 #include <awn/sys.h>
+#include <awn/async.h>
 #include <awn/res.h>
 #include <awn/gfx.h>
 #include <awn/hid.h>

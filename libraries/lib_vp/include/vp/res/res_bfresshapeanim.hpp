@@ -35,7 +35,7 @@ namespace vp::res {
         u16                   key_shape_anim_count;
         u32                   base_curve;
         u32                   base_key_shape_anim;
-        u32                   reverse0;
+        u32                   reserve0;
     };
     static_assert(sizeof(ResBfresVertexShapeAnim) == 0x30);
 
@@ -56,8 +56,8 @@ namespace vp::res {
         u32                        baked_size;
         u16                        user_data_count;
         u16                        vertex_shape_anim_count;
-        u16                        total_key_shape_anims;
-        u16                        total_anim_curves;
+        u16                        total_key_shape_anim_count;
+        u16                        total_anim_curve_count;
 
         static constexpr u32 cMagic = util::TCharCode32("FSHA");
 

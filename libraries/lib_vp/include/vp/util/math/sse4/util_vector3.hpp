@@ -21,6 +21,8 @@ namespace vp::util {
         requires std::is_integral<T>::value || std::is_floating_point<T>::value
     class Vector3Type {
         public:
+            static constexpr u32 cVectorLength = 3;
+        public:
             typedef T __attribute__((vector_size(sizeof(T) * 4))) v3;
         public:
             T x;
@@ -194,10 +196,16 @@ namespace vp::util {
                 requires std::is_floating_point<A>::value && (sizeof(Vector3Type<A>) == sizeof(float) * 3)
             constexpr ALWAYS_INLINE Vector3Type<A> Normalize() {
                 Vector3Type<A> vec = *this;
-                const float mag = this->Magnitude();
-                if (0.0 < mag) {
-                    const float reciprocal_mag = 1.0 / mag;
+                const float mag0 = this->Magnitude();
+                if (mag0 == cInfinity) {
+                    vec              = vec * 3.129822e-20;
+                    const float mag1 = vec.Magnitude();
+                    vec              = vec * mag1;
+                } else if (cEpsilon < mag0) {
+                    const float reciprocal_mag = 1.0 / mag0;
                     vec = vec * reciprocal_mag;
+                } else {
+                    vec = v3{0.0, 0.0, 0.0, 0.0};
                 }
                 return vec;
             }
@@ -206,10 +214,16 @@ namespace vp::util {
                 requires std::is_floating_point<A>::value && (sizeof(Vector3Type<A>) == sizeof(float) * 3)
             constexpr ALWAYS_INLINE Vector3Type<A> Normalize() const {
                 Vector3Type<A> vec = *this;
-                const float mag = this->Magnitude();
-                if (0.0 < mag) {
-                    const float reciprocal_mag = 1.0 / mag;
+                const float mag0 = this->Magnitude();
+                if (mag0 == cInfinity) {
+                    vec              = vec * 3.129822e-20;
+                    const float mag1 = vec.Magnitude();
+                    vec              = vec * mag1;
+                } else if (cEpsilon < mag0) {
+                    const float reciprocal_mag = 1.0 / mag0;
                     vec = vec * reciprocal_mag;
+                } else {
+                    vec = v3{0.0, 0.0, 0.0, 0.0};
                 }
                 return vec;
             }
@@ -229,10 +243,16 @@ namespace vp::util {
     static_assert(alignof(Vector3d) == 0x8);
 
     template<typename T>
-    constexpr Vector3Type<T> ZeroVector3 = {};
+    constexpr Vector3Type<T> cZeroVector3 = {};
 
     template<typename T>
-    constexpr Vector3Type<T> ezVector3(0, 0, 1);
+    constexpr Vector3Type<T> cEXVector3(1, 0, 0);
+
+    template<typename T>
+    constexpr Vector3Type<T> cEYVector3(0, 1, 0);
+
+    template<typename T>
+    constexpr Vector3Type<T> cEZVector3(0, 0, 1);
 
     static_assert((Vector3u(sse4::v4ui{2,2,2}) + Vector3u(sse4::v4ui{2,4,2})) != Vector3u(sse4::v4ui{2,2,2}));
     static_assert((Vector3f(sse4::v4s{1.0f,1.0f,1.0f}) + Vector3f(sse4::v4s{1.0f,1.0f,1.0f})) == Vector3f(sse4::v4s{2.0f,2.0f,2.0f}));

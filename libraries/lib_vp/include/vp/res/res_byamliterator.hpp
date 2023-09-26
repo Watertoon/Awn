@@ -708,19 +708,19 @@ namespace vp::res {
                 return this->TryGetStringByData(out_string, data);
             }
 
-            bool TryGetStringByHash(const char **out_string, u32 index) const {
+            bool TryGetStringByHash(const char **out_string, u32 hash) const {
 
                 ByamlData data = {};
-                const bool result = this->TryGetByamlDataByHash(std::addressof(data), index);
+                const bool result = this->TryGetByamlDataByHash(std::addressof(data), hash);
                 if (result == false) { return false; }
 
                 return this->TryGetStringByData(out_string, data);
             }
 
-            bool TryGetStringByHash(const char **out_string, u64 index) const {
+            bool TryGetStringByHash(const char **out_string, u64 hash) const {
 
                 ByamlData data = {};
-                const bool result = this->TryGetByamlDataByHash(std::addressof(data), index);
+                const bool result = this->TryGetByamlDataByHash(std::addressof(data), hash);
                 if (result == false) { return false; }
 
                 return this->TryGetStringByData(out_string, data);
@@ -807,6 +807,136 @@ namespace vp::res {
                 out_iterator->m_container_data = ByamlData{ .key_index = ByamlData::cInvalidKeyIndex };
 
                 return false;
+            }
+
+            template <typename T>
+                requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
+            bool TryGetValueByKey(T *out_value, const char *key) const {
+
+                /* Lookup required function at compile time */
+                const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
+
+                if constexpr (data_type == ByamlDataType::Bool) {
+                    return this->TryGetBoolByKey(out_value, key);
+                } else if constexpr (data_type == ByamlDataType::S32) {
+                    return this->TryGetS32ByKey(out_value, key);
+                } else if constexpr (data_type == ByamlDataType::F32) {
+                    return this->TryGetF32ByKey(out_value, key);
+                } else if constexpr (data_type == ByamlDataType::U32) {
+                    return this->TryGetU32ByKey(out_value, key);
+                } else if constexpr (data_type == ByamlDataType::S64) {
+                    return this->TryGetS64ByKey(out_value, key);
+                } else if constexpr (data_type == ByamlDataType::U64) {
+                    return this->TryGetU64ByKey(out_value, key);
+                } else if constexpr (data_type == ByamlDataType::F64) {
+                    return this->TryGetF64ByKey(out_value, key);
+                } else if constexpr (data_type == ByamlDataType::StringIndex) {
+                    return this->TryGetStringByKey(out_value, key);
+                }
+            }
+    
+            template <typename T>
+                requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
+            bool TryGetValueByIndex(T *out_value, u32 index) const {
+
+                /* Lookup required function at compile time */
+                const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
+
+                if constexpr (data_type == ByamlDataType::Bool) {
+                    return this->TryGetBoolByIndex(out_value, index);
+                } else if constexpr (data_type == ByamlDataType::S32) {
+                    return this->TryGetS32ByIndex(out_value, index);
+                } else if constexpr (data_type == ByamlDataType::F32) {
+                    return this->TryGetF32ByIndex(out_value, index);
+                } else if constexpr (data_type == ByamlDataType::U32) {
+                    return this->TryGetU32ByIndex(out_value, index);
+                } else if constexpr (data_type == ByamlDataType::S64) {
+                    return this->TryGetS64ByIndex(out_value, index);
+                } else if constexpr (data_type == ByamlDataType::U64) {
+                    return this->TryGetU64ByIndex(out_value, index);
+                } else if constexpr (data_type == ByamlDataType::F64) {
+                    return this->TryGetF64ByIndex(out_value, index);
+                } else if constexpr (data_type == ByamlDataType::StringIndex) {
+                    return this->TryGetStringByIndex(out_value, index);
+                }
+            }
+
+            template <typename T>
+                requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
+            bool TryGetValueByHash(T *out_value, u32 hash) const {
+
+                /* Lookup required function at compile time */
+                const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
+
+                if constexpr (data_type == ByamlDataType::Bool) {
+                    return this->TryGetBoolByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::S32) {
+                    return this->TryGetS32ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::F32) {
+                    return this->TryGetF32ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::U32) {
+                    return this->TryGetU32ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::S64) {
+                    return this->TryGetS64ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::U64) {
+                    return this->TryGetU64ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::F64) {
+                    return this->TryGetF64ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::StringIndex) {
+                    return this->TryGetStringByData(out_value, hash);
+                }
+            }
+
+            template <typename T>
+                requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
+            bool TryGetValueByHash(T *out_value, u64 hash) const {
+
+                /* Lookup required function at compile time */
+                const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
+
+                if constexpr (data_type == ByamlDataType::Bool) {
+                    return this->TryGetBoolByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::S32) {
+                    return this->TryGetS32ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::F32) {
+                    return this->TryGetF32ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::U32) {
+                    return this->TryGetU32ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::S64) {
+                    return this->TryGetS64ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::U64) {
+                    return this->TryGetU64ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::F64) {
+                    return this->TryGetF64ByHash(out_value, hash);
+                } else if constexpr (data_type == ByamlDataType::StringIndex) {
+                    return this->TryGetStringByData(out_value, hash);
+                }
+            }
+
+            template <typename T>
+                requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
+            bool TryGetValueByData(T *out_value, ByamlData data) const {
+
+                /* Lookup required function at compile time */
+                const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
+
+                if constexpr (data_type == ByamlDataType::Bool) {
+                    return this->TryGetBoolByData(out_value, data);
+                } else if constexpr (data_type == ByamlDataType::S32) {
+                    return this->TryGetS32ByData(out_value, data);
+                } else if constexpr (data_type == ByamlDataType::F32) {
+                    return this->TryGetF32ByData(out_value, data);
+                } else if constexpr (data_type == ByamlDataType::U32) {
+                    return this->TryGetU32ByData(out_value, data);
+                } else if constexpr (data_type == ByamlDataType::S64) {
+                    return this->TryGetS64ByData(out_value, data);
+                } else if constexpr (data_type == ByamlDataType::U64) {
+                    return this->TryGetU64ByData(out_value, data);
+                } else if constexpr (data_type == ByamlDataType::F64) {
+                    return this->TryGetF64ByData(out_value, data);
+                } else if constexpr (data_type == ByamlDataType::StringIndex) {
+                    return this->TryGetStringByData(out_value, data);
+                }
             }
     };
 }

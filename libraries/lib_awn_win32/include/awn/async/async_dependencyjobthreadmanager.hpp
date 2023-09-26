@@ -1,6 +1,6 @@
 #pragma once
 
-namespace awn::frm {
+namespace awn::async {
 
     class DependencyJobThreadManager;
 

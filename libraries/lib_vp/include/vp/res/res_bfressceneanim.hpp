@@ -148,7 +148,7 @@ namespace vp::res {
         u16                           user_data_count;
         u8                            anim_curve_count;
         s8                            distance_attenuation_type;
-        u16                           reserve2;
+        u32                           reserve2;
 
         static constexpr u32 cMagic = util::TCharCode32("FFOG");
 

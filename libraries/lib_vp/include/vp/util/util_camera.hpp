@@ -26,8 +26,8 @@ namespace vp::util {
             constexpr Camera() : m_camera_mtx() {/*...*/}
             constexpr virtual ~Camera() {/*...*/}
 
-            void UpdateCameraMatrixSelf() {
-                this->UpdateCameraMatrix(std::addressof(m_camera_mtx));
+            void UpdateCameraMatrix() {
+                this->CalculateCameraMatrix(std::addressof(m_camera_mtx));
             }
 
             constexpr Matrix34f *GetCameraMatrix() {
@@ -38,7 +38,7 @@ namespace vp::util {
                 return std::addressof(m_camera_mtx);
             }
 
-            constexpr inline virtual void UpdateCameraMatrix(Matrix34f *out_view_matrix) const = 0;
+            constexpr inline virtual void CalculateCameraMatrix(Matrix34f *out_view_matrix) const = 0;
     };
 
     class LookAtCamera : public Camera {
@@ -52,24 +52,15 @@ namespace vp::util {
             constexpr LookAtCamera(const Vector3f& pos, const Vector3f& at, const Vector3f& up) : Camera(), m_pos(pos), m_at(at), m_up(up) {/*...*/}
             constexpr virtual ~LookAtCamera() override {/*...*/}
 
-            constexpr virtual void UpdateCameraMatrix(Matrix34f *out_view_matrix) const override {
+            constexpr virtual void CalculateCameraMatrix(Matrix34f *out_view_matrix) const override {
 
                 /* Calculate normalized direction */
                 Vector3f dir = m_pos - m_at;
-                const float dir_mag = dir.Magnitude();
-                if (0.0 < dir_mag) {
-                    const float dir_norm = 1.0 / dir_mag;
-                    dir = dir * dir_norm;
-                }
+                dir          = dir.Normalize();
 
                 /* Calculate normalized right */
                 Vector3f right = m_up.Cross(dir);
-                const float right_mag = right.Magnitude();
-                if (0.0 < right_mag) {
-                    const float right_norm = 1.0 / right_mag;
-                    right = right * right_norm;
-                    
-                }
+                right          = right.Normalize();
 
                 /* Calculate normalized up */
                 const Vector3f up = dir.Cross(right);
@@ -89,11 +80,16 @@ namespace vp::util {
                 out_view_matrix->m_arr2d[0][3] = -(right.x * m_pos.x + right.y * m_pos.y + right.z * m_pos.z);
                 out_view_matrix->m_arr2d[1][3] = -(up.x    * m_pos.x + up.y    * m_pos.y + up.z    * m_pos.z);
                 out_view_matrix->m_arr2d[2][3] = -(dir.x   * m_pos.x + dir.y   * m_pos.y + dir.z   * m_pos.z);
+
+                return;
             }
 
-            constexpr ALWAYS_INLINE void SetPosition(const Vector3f& new_pos) { m_pos = new_pos; }
-            constexpr ALWAYS_INLINE void SetAt(const Vector3f& new_at)        { m_at = new_at; }
-            constexpr ALWAYS_INLINE void SetUp(const Vector3f& new_up)        { m_up = new_up; }
+            constexpr ALWAYS_INLINE void SetPosition(const Vector3f &new_pos) { m_pos = new_pos; }
+            constexpr ALWAYS_INLINE void SetAt(const Vector3f &new_at)        { m_at = new_at; }
+
+            constexpr ALWAYS_INLINE void SetUp(const Vector3f &new_up) {
+                m_up = new_up.Normalize();
+            }
 
             constexpr ALWAYS_INLINE void GetPosition(Vector3f *out_pos) const { *out_pos = m_pos; }
             constexpr ALWAYS_INLINE void GetAt(Vector3f *out_at)        const { *out_at = m_at; }

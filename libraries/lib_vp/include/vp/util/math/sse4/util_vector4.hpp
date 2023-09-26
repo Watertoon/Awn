@@ -26,6 +26,8 @@ namespace vp::util {
         requires std::is_integral<T>::value || std::is_floating_point<T>::value
     class Vector4Type {
         public:
+            static constexpr u32 cVectorLength = 4;
+        public:
             typedef T __attribute__((vector_size(sizeof(T) * 4))) v4;
 
             T x;

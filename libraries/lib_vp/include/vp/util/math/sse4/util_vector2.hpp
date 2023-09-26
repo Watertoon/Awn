@@ -17,6 +17,9 @@
 
 namespace vp::util {
 
+    template <typename T>
+    concept IsVectorType = (0 < T::cVectorLength);
+
     typedef float v2f __attribute__((vector_size(8)));
     typedef int v2si __attribute__((vector_size(8)));
     typedef unsigned int v2ui __attribute__((vector_size(8)));
@@ -25,6 +28,8 @@ namespace vp::util {
     template<typename T>
         requires std::is_integral<T>::value || std::is_floating_point<T>::value
     class Vector2Type {
+        public:
+            static constexpr u32 cVectorLength = 2;
         private:
             typedef T __attribute__((vector_size(sizeof(T) * 2))) v2;
             

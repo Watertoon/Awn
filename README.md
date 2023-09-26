@@ -25,6 +25,7 @@ Vp is an included personal C++ library designed to carry common utilities and fi
 * Window support
 
 # Pending integration (in-drafting)
+* A pipeline for compiling shaders into a suitable container
 * A font drawer
 * A file decompressor
 * More cryptograhically secure hash algorithms (SHA256)
