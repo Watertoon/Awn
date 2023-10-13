@@ -545,7 +545,7 @@ namespace vp::util {
 
             void Remove(key_type hash) {
                 node_type *node = node_type::FindImpl(m_root, hash);
-                VP_ASSERT(node->hash == hash);
+                VP_ASSERT(node->m_hash_value == hash);
                 if (node == nullptr) { return; }
                 node_base::RemoveImpl(reinterpret_cast<node_base**>(std::addressof(m_root)), node);
             }

@@ -16,6 +16,10 @@
 #pragma once
 
 /* Libc */
+#include <cstddef>
+#include <climits>
+#include <cstring>
+#include <cstdarg>
 #include <cmath>
 
 /* STD */
@@ -24,7 +28,7 @@
 #include <mutex>
 #include <array>
 
-/* Windows */
+/* Platform includes */
 #ifdef VP_TARGET_PLATFORM_win32
     #define WIN32_LEAN_AND_MEAN
     #include <windows.h>
@@ -50,6 +54,8 @@
     #ifdef InterlockedDecrementRelease
         #undef InterlockedDecrementRelease
     #endif
+#elif VP_TARGET_PLATFORM_nx
+    //#include <vp/nn.hpp>
 #endif
 
 /* Vulkan */

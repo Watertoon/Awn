@@ -28,11 +28,11 @@ namespace vp {
         constexpr inline u32 cReserveBits        = 9;
         constexpr inline u32 cReserveBitMask     = 9;
 
-        constexpr ALWAYS_INLINE GetModule(Result result) {
+        constexpr ALWAYS_INLINE u32 GetModule(Result result) {
             return result & cModuleBitMask;
         }
 
-        constexpr ALWAYS_INLINE GetDescription(Result result) {
+        constexpr ALWAYS_INLINE u32 GetDescription(Result result) {
             return (result >> cModuleBits) & cDescriptionBitMask;
         }
 

@@ -74,5 +74,9 @@ namespace awn::async {
             ~AsyncTask() { m_finish_event.Finalize(); }
 
             Result PushTask(AsyncTaskPushInfo *push_info);
+            
+            void Wait() {
+                m_finish_event.Wait();
+            }
     };
 }

@@ -22,9 +22,16 @@
 #include <vp/util/util_new.h>
 
 #include <vp/util/util_atomicapi.hpp>
-#include <vp/util/util_spinloopintrinsics.x86.hpp>
-#include <vp/util/util_busymutex.x86.hpp>
-#include <vp/util/util_memorybarrier.x86.hpp>
+
+#ifdef VP_TARGET_ARCHITECTURE_x86
+    #include <vp/util/util_spinloopintrinsics.x86.hpp>
+    #include <vp/util/util_busymutex.x86.hpp>
+    #include <vp/util/util_memorybarrier.x86.hpp>
+#elif VP_TARGET_ARCHITECTURE_aarch64
+    #include <vp/util/util_spinloopintrinsics.aarch64.hpp>
+    #include <vp/util/util_busymutex.aarch64.hpp>
+    #include <vp/util/util_memorybarrier.aarch64.hpp>
+#endif
 
 #include <vp/util/util_alignment.hpp>
 #include <vp/util/util_endian.hpp>
@@ -59,20 +66,27 @@
 #include <vp/util/util_enumtraits.h>
 #include <vp/util/util_priorityqueue.hpp>
 
-#include <vp/util/math/sse4/util_int128.sse4.hpp>
-#include <vp/util/math/sse4/util_float128.sse4.hpp>
-#include <vp/util/math/sse4/util_vector2.hpp>
+
+#ifdef VP_TARGET_ARCHITECTURE_x86
+    #include <vp/util/math/util_int128.sse4.hpp>
+    #include <vp/util/math/util_float128.sse4.hpp>
+    #include <vp/util/util_crc32b.x86.hpp>
+#elif VP_TARGET_ARCHITECTURE_aarch64
+    #include <vp/util/util_crc32b.aarch64.hpp>
+    //#include <vp/util/math/util_int128.neon.hpp>
+    //#include <vp/util/math/util_float128.neon.hpp>
+#endif
+#include <vp/util/math/util_vector2.hpp>
 #include <vp/util/math/util_constants.hpp>
-#include <vp/util/math/sse4/util_vector3.hpp>
-#include <vp/util/math/sse4/util_vector3calc.h>
-#include <vp/util/math/sse4/util_vector4.hpp>
-#include <vp/util/math/sse4/util_matrix33.hpp>
-#include <vp/util/math/sse4/util_matrix34.hpp>
-#include <vp/util/math/sse4/util_matrix34calc.h>
-#include <vp/util/math/sse4/util_matrix44.hpp>
+#include <vp/util/math/util_vector3.hpp>
+#include <vp/util/math/util_vector3calc.h>
+#include <vp/util/math/util_vector4.hpp>
+#include <vp/util/math/util_matrix33.hpp>
+#include <vp/util/math/util_matrix34.hpp>
+#include <vp/util/math/util_matrix34calc.h>
+#include <vp/util/math/util_matrix44.hpp>
 #include <vp/util/math/util_clamp.hpp>
 
-#include <vp/util/util_crc32b.hpp>
 #include <vp/util/util_logicalframebuffer.hpp>
 #include <vp/util/util_viewport.hpp>
 #include <vp/util/util_camera.hpp>

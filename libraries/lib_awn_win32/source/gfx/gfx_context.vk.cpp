@@ -146,6 +146,7 @@ namespace awn::gfx {
         if (m_vk_physical_device_properties_12.maxDescriptorSetUpdateAfterBindSamplers       < cTargetMaxSamplerDescriptorCount) { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_push_descriptor_properties.maxPushDescriptors               < cTargetMaxPushDescriptorCount)    { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_extended_dynamic_state_3_properties.dynamicPrimitiveTopologyUnrestricted == false)              { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_nested_command_buffer_properties.maxCommandBufferNestingLevel < cTargetCommandBufferNestingLevel)              { VP_ASSERT(false); return false; }
         //if (m_vk_physical_device_host_image_copy_properties.identicalMemoryTypeRequirements == false)                            { VP_ASSERT(false); return false; }
 
         /* Base feature checks */
@@ -240,6 +241,11 @@ namespace awn::gfx {
 
         /* Unused attachments feature checks */
         if (m_vk_physical_device_dynamic_rendering_unused_attachments_features.dynamicRenderingUnusedAttachments == false) { VP_ASSERT(false); return false; }
+        
+        /* Nested command buffer feature checks */
+        if (m_vk_physical_device_nested_command_buffer_features.nestedCommandBuffer == false)                { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_nested_command_buffer_features.nestedCommandBufferRendering == false)       { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_nested_command_buffer_features.nestedCommandBufferSimultaneousUse == false) { VP_ASSERT(false); return false; }
 
         m_vk_physical_device = vk_physical_device;
 
@@ -466,8 +472,15 @@ namespace awn::gfx {
 		/* Initialize device */
         {
             /* VkDevice feature enables */
+            VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
+                .sType                              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+                .nestedCommandBuffer                = VK_TRUE,
+                .nestedCommandBufferRendering       = VK_TRUE,
+                .nestedCommandBufferSimultaneousUse = VK_TRUE,
+            };
             VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT target_dynamic_rendering_unused_attachment_features = {
                 .sType                             = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+                .pNext                             = std::addressof(nested_command_buffer_features),
                 .dynamicRenderingUnusedAttachments = VK_TRUE,
             };
             VkPhysicalDeviceMaintenance5FeaturesKHR target_maintenance_5_features = {
@@ -599,6 +612,7 @@ namespace awn::gfx {
                 VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
                 VK_EXT_HOST_IMAGE_COPY_EXTENSION_NAME,
                 VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME,
+                VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
             };
             const u32 device_extension_count = sizeof(device_extension_array) / sizeof(const char*);
             

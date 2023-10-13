@@ -188,7 +188,7 @@ ifeq ($(PLATFORM), ctr)
 %.elf:
 	@echo Compiling $@
 	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
-	
+
 endif
 
 # Nintendo DS build rules

@@ -64,6 +64,10 @@ namespace vp::util {
                 return Vector3Type(this->GetVectorType() + rhs.GetVectorType());
             }
 
+            constexpr ALWAYS_INLINE Vector3Type operator-() {
+                return Vector3Type(-this->x, -this->y, -this->z);
+            }
+
             constexpr ALWAYS_INLINE Vector3Type operator-(Vector3Type& rhs) {
                 return Vector3Type(this->GetVectorType() - rhs.GetVectorType());
             }
@@ -72,12 +76,20 @@ namespace vp::util {
                 return Vector3Type(this->GetVectorType() - rhs.GetVectorType());
             }
 
-            constexpr ALWAYS_INLINE Vector3Type operator*(const T scalar) {
+            constexpr ALWAYS_INLINE Vector3Type operator*(T scalar) {
                 return Vector3Type(this->x * scalar, this->y * scalar, this->z * scalar);
             }
 
             constexpr ALWAYS_INLINE Vector3Type operator*(const T scalar) const {
                 return Vector3Type(this->x * scalar, this->y * scalar, this->z * scalar);
+            }
+
+            constexpr ALWAYS_INLINE Vector3Type operator/(T scalar) {
+                return Vector3Type(this->x / scalar, this->y / scalar, this->z / scalar);
+            }
+
+            constexpr ALWAYS_INLINE Vector3Type operator/(const T scalar) const {
+                return Vector3Type(this->x / scalar, this->y / scalar, this->z / scalar);
             }
 
             constexpr ALWAYS_INLINE Vector3Type& operator+=(Vector3Type& rhs) {
@@ -128,6 +140,7 @@ namespace vp::util {
                 return !(*this == rhs);
             }
 
+#ifdef VP_TARGET_ARCHITECTURE_x86
             template<typename A = T> 
                 requires std::is_floating_point<A>::value && (sizeof(Vector3Type<A>) == sizeof(float) * 3)
             constexpr ALWAYS_INLINE Vector3Type Cross(const Vector3Type& rhs) {
@@ -169,6 +182,16 @@ namespace vp::util {
                 const v3 e = sse4::pshufd(c, sse4::ShuffleToOrder(1, 2, 0, 3));
                 return Vector3Type(sse4::psubd(d, e));
             }
+#else
+            /* TODO; generic impl */
+            constexpr ALWAYS_INLINE Vector3Type Cross([[maybe_unused]] const Vector3Type& rhs) {
+                return Vector3Type();
+            }
+
+            constexpr ALWAYS_INLINE Vector3Type Cross([[maybe_unused]] const Vector3Type& rhs) const {
+                return Vector3Type();
+            }
+#endif
 
             constexpr ALWAYS_INLINE T Dot(const Vector3Type& rhs) {
                 const v3 temp = this->GetVectorType() * rhs.GetVectorType();
@@ -254,7 +277,9 @@ namespace vp::util {
     template<typename T>
     constexpr Vector3Type<T> cEZVector3(0, 0, 1);
 
+#ifdef VP_TARGET_ARCHITECTURE_x86
     static_assert((Vector3u(sse4::v4ui{2,2,2}) + Vector3u(sse4::v4ui{2,4,2})) != Vector3u(sse4::v4ui{2,2,2}));
     static_assert((Vector3f(sse4::v4s{1.0f,1.0f,1.0f}) + Vector3f(sse4::v4s{1.0f,1.0f,1.0f})) == Vector3f(sse4::v4s{2.0f,2.0f,2.0f}));
     static_assert(Vector3f(sse4::v4s{1.0f,0.0f,1.0f}).Dot(Vector3f(sse4::v4s{1.0f,1.0f,0.0f})) == 1.0f);
+#endif
 }

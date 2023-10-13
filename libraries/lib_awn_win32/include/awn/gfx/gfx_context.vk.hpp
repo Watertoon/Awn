@@ -107,6 +107,9 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxPerStageTextureCount         = 32;
             static constexpr size_t cTargetMaxPerStageSamplerCount         = 32;
             static constexpr size_t cTargetMaxPerStageStorageImageCount    = 8;
+            
+            /* Command buffer nesting limits */
+            static constexpr size_t cTargetCommandBufferNestingLevel = 256;
         private:
             /* Vulkan current physical device objects */
             VkInstance                                                   m_vk_instance;
@@ -143,6 +146,7 @@ namespace awn::gfx {
             VkPhysicalDeviceShaderObjectPropertiesEXT                    m_vk_physical_device_shader_object_properties;
             VkPhysicalDeviceHostImageCopyPropertiesEXT                   m_vk_physical_device_host_image_copy_properties;
             VkPhysicalDeviceMaintenance5PropertiesKHR                    m_vk_physical_device_maintenance_5_properties;
+            VkPhysicalDeviceNestedCommandBufferPropertiesEXT             m_vk_physical_device_nested_command_buffer_properties;
 
             VkPhysicalDeviceFeatures2                                    m_vk_physical_device_supported_features;
             VkPhysicalDeviceVulkan11Features                             m_vk_physical_device_supported_features_11;
@@ -157,6 +161,7 @@ namespace awn::gfx {
             VkPhysicalDeviceHostImageCopyFeaturesEXT                     m_vk_physical_device_host_image_copy_features;
             VkPhysicalDeviceMaintenance5FeaturesKHR                      m_vk_physical_device_maintenance_5_features;
             VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT m_vk_physical_device_dynamic_rendering_unused_attachments_features;
+            VkPhysicalDeviceNestedCommandBufferFeaturesEXT               m_vk_physical_device_nested_command_buffer_features;
 
             VkPhysicalDeviceMemoryProperties                             m_vk_physical_device_memory_properties;
 
@@ -213,7 +218,11 @@ namespace awn::gfx {
                 .pNext = std::addressof(m_vk_physical_device_maintenance_5_properties)
             },
             m_vk_physical_device_maintenance_5_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES_KHR
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_nested_command_buffer_properties)
+            },
+            m_vk_physical_device_nested_command_buffer_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT
             },
             m_vk_physical_device_supported_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
@@ -265,6 +274,10 @@ namespace awn::gfx {
             },
             m_vk_physical_device_dynamic_rendering_unused_attachments_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_nested_command_buffer_features),
+            },
+            m_vk_physical_device_nested_command_buffer_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
             }
             {/*...*/}
 

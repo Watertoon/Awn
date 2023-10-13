@@ -174,6 +174,7 @@ namespace vp::util {
                 return !((lhsv[0] == rhsv[0]) & (lhsv[1] == rhsv[1]) & (lhsv[2] == rhsv[2]) & (lhsv[3] == rhsv[3]));
             }
 
+#ifdef VP_TARGET_ARCHITECTURE_x86
             template<typename A = T> requires std::is_floating_point<A>::value && (sizeof(Vector3Type<A>) == sizeof(float) * 3)
             constexpr Vector4Type Cross(const Vector4Type& rhs) {
                 const v4 a = sse4::shufps(this->GetVectorType(), this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
@@ -213,6 +214,7 @@ namespace vp::util {
                 const v4 e = sse4::pshufd(c, sse4::ShuffleToOrder(1, 2, 0, 3));
                 return Vector4Type(sse4::psubd(d, e));
             }
+#endif
 
             constexpr T Dot(Vector4Type& rhs) {
                 const v4 lhsv = this->GetVectorType();

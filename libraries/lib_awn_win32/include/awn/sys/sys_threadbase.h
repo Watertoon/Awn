@@ -94,6 +94,7 @@ namespace awn::sys {
             constexpr ALWAYS_INLINE       mem::Heap *GetLookupHeap()       { return m_lookup_heap; }
             constexpr ALWAYS_INLINE const mem::Heap *GetLookupHeap() const { return m_lookup_heap; }
 
+            ALWAYS_INLINE void SendExitMessage() { m_message_queue.SendMessage(m_exit_message); }
             constexpr ALWAYS_INLINE size_t GetExitMessage() const { return m_exit_message; }
 
             constexpr ALWAYS_INLINE void SetTlsData(TlsSlot slot, void *object) {

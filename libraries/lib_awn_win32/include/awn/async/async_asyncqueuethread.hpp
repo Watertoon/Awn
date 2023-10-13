@@ -20,7 +20,13 @@ namespace awn::async {
             AsyncQueue        *m_queue;
             sys::ServiceEvent  m_execute_event;
         public:
-             AsyncQueueThread(const char *name, mem::Heap *thread_heap, sys::ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, s32 priority) : ServiceThread(name, thread_heap, run_mode, exit_code, max_messages, stack_size, priority), m_is_finished(true), m_requests_per_yield(), m_current_task(), m_queue(), m_execute_event() { m_execute_event.Initialize(); }
+             AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, sys::ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, s32 priority) : ServiceThread(name, thread_heap, run_mode, exit_code, max_messages, stack_size, priority), m_is_finished(true), m_requests_per_yield(), m_current_task(), m_queue(), m_execute_event() { 
+
+                async_queue->m_task_thread_array.PushPointer(this);
+
+                m_execute_event.Initialize();
+                m_execute_event.Signal();
+            }
             ~AsyncQueueThread() { m_execute_event.Finalize(); }
 
             virtual void ThreadMain(size_t message) override {

@@ -7,6 +7,7 @@ Vp is an included personal C++ library designed to carry common utilities and fi
 # Current Features
 * A cooperative M:N threading environment powered by a usermode fiber scheduler
 * A multithreaded job queue system enabling a Task Graph architecture
+* An asynchronous task queue system enabling async job processing
 * A custom CPU and GPU heap memory manager
 * A Vulkan 1.3 wrapper library targeting ampere-level GPUs, taking advantage of: 
   * Resizable-Bar

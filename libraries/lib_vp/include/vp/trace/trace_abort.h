@@ -17,6 +17,7 @@
 
 namespace vp::trace {
 
+#ifdef VP_TARGET_PLATFORM_win32
     ALWAYS_INLINE bool IsDebuggerPresent() {
         return ::IsDebuggerPresent();
     }
@@ -26,6 +27,20 @@ namespace vp::trace {
             ::DebugBreak();
         }
     }
+#endif
+#ifdef VP_TARGET_PLATFORM_nx
+    ALWAYS_INLINE bool IsDebuggerPresent() {
+        size_t value = 0;
+        //const Result result = nn::svc::aarch64::GetInfo(std::addressof(value), nn::svc::InfoType::IsDebuggerAttached, 0, 0);
+        return value;
+    }
+
+    ALWAYS_INLINE void Break() {
+        if (IsDebuggerPresent() == true) {
+            //const Result result = nn::svc::aarch64::Break(0, 0, 0);
+        }
+    }
+#endif
 
     namespace impl {
 
