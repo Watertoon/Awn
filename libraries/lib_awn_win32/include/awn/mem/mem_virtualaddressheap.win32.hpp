@@ -9,7 +9,7 @@ namespace awn::mem {
             static constexpr size_t cMaxPageMask                  = 0xffff;
             static constexpr size_t cMaxAllocationsPerSmallMemory = 8;
             static constexpr size_t cMinimumSize                  = 8;
-            static constexpr size_t cMinimumAlignment             = 8;
+            static constexpr s32    cMinimumAlignment             = 8;
         public:
             using PageMask = u16;
             static_assert((sizeof(PageMask) * 8) >= cSmallMemoryPageMaskBitCount);
@@ -31,7 +31,7 @@ namespace awn::mem {
             SmallMemoryList m_filled_small_memory_list;
             LargeMemoryMap  m_large_memory_map;
         public:
-            constexpr  VirtualAddressHeap(const char *name, void *start, size_t size) : Heap(name, nullptr, start, size, true) {
+            VirtualAddressHeap(const char *name, void *start, size_t size) : Heap(name, nullptr, start, size, true) {
 
                 /* Create a small memory block */
                 VirtualHeapSmallMemoryBlock *first_block = reinterpret_cast<VirtualHeapSmallMemoryBlock*>(start);
@@ -42,10 +42,16 @@ namespace awn::mem {
 
                 return;
             }
-            virtual constexpr ~VirtualAddressHeap() {/*...*/}
+            virtual ~VirtualAddressHeap() {/*...*/}
 
             static VirtualAddressHeap *Create(const char *name) {
-                
+
+                /* Assert virtual memory granularities */
+                SYSTEM_INFO sys_info = {};
+                ::GetSystemInfo(std::addressof(sys_info));
+                VP_ASSERT(sys_info.dwPageSize              == vp::util::c4KB);
+                VP_ASSERT(sys_info.dwAllocationGranularity == vp::util::c64KB);
+
                 /* Query memory size */
                 MEMORYSTATUSEX memory_status = { .dwLength = sizeof(MEMORYSTATUSEX) };
                 const bool result = ::GlobalMemoryStatusEx(std::addressof(memory_status));
@@ -70,6 +76,7 @@ namespace awn::mem {
                 /* Align memory */
                 if (size < cMinimumSize) { size = cMinimumSize; }
                 if (alignment < cMinimumAlignment) { alignment = cMinimumAlignment; }
+                size += (vp::util::c4KB - 1);
 
                 /* Find aligned size TODO; fix alignment for all cases */
                 const size_t address_base_offset    = vp::util::AlignUp(sizeof(VirtualHeapSmallMemoryBlock), alignment);
@@ -77,7 +84,7 @@ namespace awn::mem {
                 const size_t small_page_count_first = (size + (vp::util::c4KB - 1) + address_base_offset) >> 0xc;
 
                 /* Handle as Large memory if over 64 KB or over a page alignment */
-                if (cSmallMemoryPageMaskBitCount <= small_page_count || vp::util::c4KB < alignment) {
+                if (cSmallMemoryPageMaskBitCount <= small_page_count || static_cast<s32>(vp::util::c4KB) < alignment) {
 
                     /* Allocate address space and memory pages for Large memory */
                     const size_t final_size = vp::util::AlignUp(size + sizeof(VirtualHeapLargeMemoryBlock), vp::util::c4KB);
@@ -125,14 +132,14 @@ namespace awn::mem {
 
                         /* Commit uncomitted regions */
                         if (1 < small_page_count_first) {
-                            void *commit = ::VirtualAlloc(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(small_memory_block)) | vp::util::c4KB), (small_page_count - 1) << 0xc, MEM_COMMIT, PAGE_READWRITE);
+                            void *commit = ::VirtualAlloc(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(small_memory_block)) | vp::util::c4KB), (small_page_count_first - 1) << 0xc, MEM_COMMIT, PAGE_READWRITE);
                             VP_ASSERT(commit != nullptr);
                         }
 
                         /* Update page mask for odd or even*/
-                        small_memory_block.page_mask                = (address_base_offset < vp::util::c4KB) ? ~(-1 << small_page_count_first) : (~(-1 << (small_page_count_first - 1)) << 1);
-                        const u8 last_alloc_size                    = small_memory_block.allocation_size_array[0];
-                        small_memory_block.allocation_size_array[0] = (address_base_offset < vp::util::c4KB) ? (last_alloc_size & 0xf0) | small_page_count_first : (last_alloc_size & 0xf) | ((small_page_count_first - 1) << 0x4);
+                        small_memory_block.page_mask                |= (address_base_offset < vp::util::c4KB) ? ~(-1 << small_page_count_first) : (~(-1 << (small_page_count_first - 1)) << 1);
+                        const u8 last_alloc_size                     = small_memory_block.allocation_size_array[0];
+                        small_memory_block.allocation_size_array[0]  = (address_base_offset < vp::util::c4KB) ? (last_alloc_size & 0xf0) | small_page_count_first : (last_alloc_size & 0xf) | ((small_page_count_first - 1) << 0x4);
 
                         /* Swap to filled list if necessary */
                         if (small_memory_block.page_mask == cMaxPageMask) {
@@ -172,9 +179,9 @@ namespace awn::mem {
                     VP_ASSERT(commit != nullptr);
 
                     /* Update page mask for odd or even*/
-                    small_memory_block.page_mask                = (~(-1 << small_page_count)) <<  i;
-                    const u8 last_alloc_size                    = small_memory_block.allocation_size_array[i >> 1];
-                    small_memory_block.allocation_size_array[i >> 1] = ((i & 1) == 0) ? (last_alloc_size & 0xf0) | small_page_count : (last_alloc_size & 0xf) | ((small_page_count - 1) << 0x4);
+                    small_memory_block.page_mask                     |= (~(-1 << small_page_count)) << i;
+                    const u8 last_alloc_size                          = small_memory_block.allocation_size_array[i >> 1];
+                    small_memory_block.allocation_size_array[i >> 1]  = ((i & 1) == 0) ? (last_alloc_size & 0xf0) | small_page_count : (last_alloc_size & 0xf) | ((small_page_count) << 0x4);
 
                     /* Swap lists if page block is fully reserved */
                     if (small_memory_block.page_mask == cMaxPageMask) {
@@ -196,8 +203,8 @@ namespace awn::mem {
                 /* Create Small memory block */
                 VirtualHeapSmallMemoryBlock *new_small_block = reinterpret_cast<VirtualHeapSmallMemoryBlock*>(reserve);
                 std::construct_at(new_small_block);
-                new_small_block->page_mask                = (address_base_offset < vp::util::c4KB) ? ~(-1 << small_page_count_first) : (~(-1 << (small_page_count_first - 1)) << 1);
-                new_small_block->allocation_size_array[0] = (address_base_offset < vp::util::c4KB) ? small_page_count_first : ((small_page_count_first - 1) << 0x4);
+                new_small_block->page_mask                |= (address_base_offset < vp::util::c4KB) ? ~(-1 << small_page_count_first) : (~(-1 << (small_page_count_first - 1)) << 1);
+                new_small_block->allocation_size_array[0]  = (address_base_offset < vp::util::c4KB) ? small_page_count_first : ((small_page_count_first - 1) << 0x4);
 
                 /* Add to memory list */
                 if (new_small_block->page_mask == 0xffff) {
@@ -306,7 +313,6 @@ namespace awn::mem {
                 ScopedHeapLock l(this);
 
                 const size_t adjusted_alignment = vp::util::AlignUp(sizeof(VirtualHeapSmallMemoryBlock), alignment);
-                size_t max_size = 0;
                 for (VirtualHeapSmallMemoryBlock &small_memory_block : m_free_small_memory_list) {
                     if ((small_memory_block.page_mask & 1) != 0) { continue; }
                     return vp::util::c4KB - adjusted_alignment;

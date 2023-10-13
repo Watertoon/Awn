@@ -131,6 +131,7 @@ namespace vp::util {
             }
 
             static constexpr ALWAYS_INLINE void Transplant(node_base **root, node_base *pivot, node_base *i) {
+                /* Transplant i to either root, pivot parent left or right */
                 if (pivot->m_parent == nullptr) {
                     *root = i;
                 } else if (pivot == pivot->m_parent->m_left) {
@@ -138,6 +139,8 @@ namespace vp::util {
                 } else {
                     pivot->m_parent->m_right = i;
                 }
+                /* Set i parent */
+                //i->m_parent = pivot->m_parent;
             }
 
             static constexpr ALWAYS_INLINE node_base *FindMinimum(node_base *node) {
@@ -241,7 +244,9 @@ namespace vp::util {
 
                 node_base *fixup_pivot  = remove->m_right;
                 node_base *fixup_parent = remove->m_parent;
-                u32 remove_color = remove->m_color;
+                u32        remove_color = remove->m_color;
+
+                /* Transplant */
                 if (remove->m_left == nullptr) {
                     if (fixup_pivot != nullptr) { fixup_pivot->m_parent = fixup_parent; }
                     Transplant(root, remove, fixup_pivot);

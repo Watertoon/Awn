@@ -60,7 +60,7 @@ namespace awn::async {
 
             virtual void FreeExecute() {/*...*/}
 
-            virtual void FormatPushInfo(AsyncTaskPushInfo *push_info) {/*...*/}
+            virtual void FormatPushInfo([[maybe_unused]] AsyncTaskPushInfo *push_info) {/*...*/}
 
             virtual void FreeCancel() {/*...*/}
         protected:

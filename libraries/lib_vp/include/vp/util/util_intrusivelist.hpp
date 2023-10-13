@@ -162,33 +162,33 @@ namespace vp::util {
                 return Traits::GetParentReference(Traits::GetListNode(std::addressof(obj))->next());
             }
 
-            ALWAYS_INLINE void PushBack(reference obj) {
+            constexpr ALWAYS_INLINE void PushBack(reference obj) {
                 m_list.LinkPrev(Traits::GetListNode(std::addressof(obj)));
             }
 
-            ALWAYS_INLINE void PushFront(reference obj) {
+            constexpr ALWAYS_INLINE void PushFront(reference obj) {
                 m_list.LinkNext(Traits::GetListNode(std::addressof(obj)));
             }
             
-            constexpr ALWAYS_INLINE reference PopFront() {
+            ALWAYS_INLINE reference PopFront() {
                 IntrusiveListNode *front = m_list.m_next;
                 front->Unlink();
                 return Traits::GetParentReference(front);
             }
 
-            constexpr ALWAYS_INLINE const_reference PopFront() const {
+            ALWAYS_INLINE const_reference PopFront() const {
                 IntrusiveListNode *front = m_list.m_next;
                 front->Unlink();
                 return Traits::GetParentReference(front);
             }
 
-            constexpr ALWAYS_INLINE reference PopBack() {
+            ALWAYS_INLINE reference PopBack() {
                 IntrusiveListNode *back = m_list.m_prev;
                 back->Unlink();
                 return Traits::GetParentReference(back);
             }
 
-            constexpr ALWAYS_INLINE const_reference PopBack() const {
+            ALWAYS_INLINE const_reference PopBack() const {
                 IntrusiveListNode *back = m_list.m_prev;
                 back->Unlink();
                 return Traits::GetParentReference(back);
@@ -216,7 +216,7 @@ namespace vp::util {
                 return count;
             }
 
-            static ALWAYS_INLINE void Remove(reference obj) {
+            static constexpr ALWAYS_INLINE void Remove(reference obj) {
                 Traits::GetListNode(std::addressof(obj))->Unlink();
             }
 
@@ -246,8 +246,11 @@ namespace vp::util {
             return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
         }
 
-        static ALWAYS_INLINE IntrusiveListNode *GetListNode(const RP *parent) {
-            return reinterpret_cast<IntrusiveListNode*>(reinterpret_cast<uintptr_t>(parent) + OffsetOf(M));
+        static constexpr ALWAYS_INLINE IntrusiveListNode *GetListNode(RP *parent) {
+            return std::addressof(parent->*M);
+        }
+        static constexpr ALWAYS_INLINE IntrusiveListNode *GetListNode(const RP *parent) {
+            return std::addressof(parent->*M);
         }
     };
 
