@@ -38,7 +38,7 @@ namespace vp::res {
         static_assert(sizeof(ResEntry) == 0x8);
         
         u32        magic;
-        u32        this_table_offset;
+        u32        offset_from_header;
         u32        section_count;
         u32        reserve0;
         ResSection section_array[];

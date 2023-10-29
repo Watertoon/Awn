@@ -22,7 +22,7 @@ namespace vp::res {
         float          far;
         float          aspect;
         float          fovy;
-        util::Vector3f position;
+        util::Vector3f translation;
         util::Vector3f rotation;
         float          twist;
     };
@@ -73,7 +73,7 @@ namespace vp::res {
 
     struct ResBfresLightAnimResultDefault {
         s32            enable;
-        util::Vector3f position;
+        util::Vector3f translation;
         util::Vector3f rotation;
         util::Vector2f distance_attenuation;
         util::Vector2f angle_attenuation;

@@ -30,7 +30,7 @@ namespace vp::res {
     static_assert(sizeof(ResBfresShaderParamAnim) == 0x18);
 
     struct ResBfresTexturePatternAnim {
-        const char *texture_name;
+        const char *sampler_name;
         u16         base_curve;
         u16         base_constant;
         u8          material_sub_sampler_index;

@@ -17,7 +17,7 @@
 
 namespace vp::res {
 
-    enum class BfresBoneBillboardMode {
+    enum class BfresBoneBillboardMode : u8 {
         None             = 0,
         Child            = 1,
         WorldViewVector  = 2,
@@ -35,7 +35,7 @@ namespace vp::res {
         NoRotation              = (1 << 4),
         NoTranslation           = (1 << 5),
     };
-    enum class BfresBoneHierarchyTransformMode {
+    enum class BfresBoneHierarchyTransformMode : u8 {
         None                    = (1 << 0),
         ScaleUniform            = (1 << 1),
         ScaleVolumeOne          = (1 << 2),
@@ -76,18 +76,18 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfresBone) == 0x58);
 
-    enum class BfresSkeletonMirrorMode {
+    enum class BfresSkeletonMirrorMode : u8 {
         X  = 0,
         XY = 1,
         XZ = 2,
     };
-    enum class BfresSkeletonScaleMode {
+    enum class BfresSkeletonScaleMode : u8 {
         None      = 0,
         Standard  = 1,
         Maya      = 2,
         SoftImage = 3,
     };
-    enum class BfresSkeletonRotationMode {
+    enum class BfresSkeletonRotationMode : u8 {
         Quarternion = 0,
         EulerXYZ    = 1,
     };
@@ -105,7 +105,7 @@ namespace vp::res {
         ResBfresBone              *bone_array;
         u16                       *bone_index_table;
         util::Matrix34f           *inverse_transformation_matrix_array;
-        void                      *user_pointer;
+        void                      *runtime_user_pointer;
         u16                       *mirrored_bone_index_table;
         u16                        bone_count;
         u16                        smooth_bone_count;

@@ -57,7 +57,7 @@ namespace vp::res {
     struct ResGfxMemoryPoolInfo {
         u32   memory_pool_flags;
         u32   size;
-        void *storage;
+        void *gpu_region_base;
     };
     static_assert(sizeof(ResGfxMemoryPoolInfo) == 0x10);
 
@@ -125,14 +125,14 @@ namespace vp::res {
         B5G5R5A1     = 0x3b,
     };
 
-    static constexpr inline u32 VariableBlockWidthTable[] = {
+    static constexpr inline u32 cVariableBlockWidthTable[] = {
         0x10, 0x08, 0x10, 0x08,
         0x08, 0x04, 0x04, 0x05,
         0x05, 0x06, 0x06, 0x08,
         0x08, 0x08, 0x0a, 0x0a,
         0x0a, 0x0a, 0x0c, 0x0c,
     };
-    static constexpr inline u32 VariableBlockHeightTable[] = {
+    static constexpr inline u32 cVariableBlockHeightTable[] = {
         0x08, 0x08, 0x08, 0x08,
         0x04, 0x04, 0x04, 0x04,
         0x05, 0x05, 0x06, 0x05,
@@ -140,7 +140,7 @@ namespace vp::res {
         0x08, 0x0a, 0x0a, 0x0c,
     };
 
-    static constexpr inline u32 PackagedTextureTexelSizeTable[] = {
+    static constexpr inline u32 cPackagedTextureTexelSizeTable[] = {
         0x08, 0x10, 0x10, 0x08,
         0x10, 0x10, 0x10, 0x08,
         0x10, 0x08, 0x08, 0x08,
@@ -152,6 +152,28 @@ namespace vp::res {
         0x10, 0x02,
     };
 
+    constexpr ALWAYS_INLINE u32 CalculateGfxAttributeSize(GfxChannelFormat channel_format, u32 count) {
+        
+        u32 format         = static_cast<u32>(channel_format);
+        u32 attribute_size = 0;
+        if (format < 0x3) {
+            attribute_size = 1;
+        } else if (format < 0xb) {
+            attribute_size = 2;
+        } else if (format < 0x15) {
+            attribute_size = 4;
+        } else if (format < 0x18) {
+            attribute_size = 8;
+        } else {
+            attribute_size = 12;
+            if (format != 0x18) {
+                attribute_size = 16;
+            }
+        }
+
+        return attribute_size * count;
+    }
+
     constexpr ALWAYS_INLINE u32 CalculateGfxImageSize(GfxChannelFormat channel_format, u32 width, u32 height, u32 depth) {
         u32 format = static_cast<u32>(channel_format);
 
@@ -162,8 +184,8 @@ namespace vp::res {
             u32 block_width     = 4;
             u32 block_height    = 4;
             if (variable_format < 0x14) {
-                block_width  = VariableBlockWidthTable[variable_format];
-                block_height = VariableBlockHeightTable[variable_format];
+                block_width  = cVariableBlockWidthTable[variable_format];
+                block_height = cVariableBlockHeightTable[variable_format];
             }
 
             width  = (block_width != 0)  ? (width  + block_width  - 1) / block_width  : 0;
@@ -173,7 +195,7 @@ namespace vp::res {
         /* Find texel size */
         u32 texel_size = 0;
         if (package_format < 0x22) {
-            texel_size = PackagedTextureTexelSizeTable[package_format];
+            texel_size = cPackagedTextureTexelSizeTable[package_format];
         } else if (format < 0x3) {
             texel_size = 1;
         } else if (format < 0xb) {
@@ -207,7 +229,7 @@ namespace vp::res {
     };
 
     #define GFX_MAKE_IMAGE_FORMAT(channel_format, type_format) \
-        (((static_cast<u32>(channel_format) & 0xFF) << 8) | (static_cast<u32>(type_format) & 0xFF))
+        (((static_cast<u32>(channel_format) & 0xff) << 8) | (static_cast<u32>(type_format) & 0xff))
 
     enum class GfxImageFormat : u32 {
         R8_Unorm              = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::R8,           GfxTypeFormat::Unorm),
@@ -508,7 +530,7 @@ namespace vp::res {
         Linear  = 2,
     };
 
-    enum GfxReductionFilter : u8 {
+    enum class GfxReductionFilter : u8 {
         Average = 0,
         Min     = 1,
         Max     = 2,

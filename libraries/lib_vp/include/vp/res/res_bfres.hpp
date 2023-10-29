@@ -87,7 +87,7 @@ namespace vp::res {
         }
 
         constexpr ALWAYS_INLINE u64   GetGpuMemorySize()   const { return (memory_pool_info == nullptr) ? 0xffff'ffff'ffff'ffff : memory_pool_info->size; }
-        constexpr ALWAYS_INLINE void *GetGpuMemoryRegion()       { return (memory_pool_info == nullptr) ? nullptr : memory_pool_info->storage; }
+        constexpr ALWAYS_INLINE void *GetGpuMemoryRegion()       { return (memory_pool_info == nullptr) ? nullptr : memory_pool_info->gpu_region_base; }
 
         const char *TryFindRelocatedString(u64 key) {
 

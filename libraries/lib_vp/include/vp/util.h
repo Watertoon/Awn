@@ -57,7 +57,10 @@
 #include <vp/util/util_charactercode.hpp>
 #include <vp/util/util_bufferstring.hpp>
 #include <vp/util/util_pathutil.hpp>
-#include <vp/util/util_intrusiveredblacktree.hpp>
+#include <vp/util/util_pointerbitflag.hpp>
+#include <vp/util/util_hashmap.hpp>
+#include <vp/util/util_keyindexmap.hpp>
+#include <vp/util/util_intrusiveslimredblacktree.hpp>
 #include <vp/util/util_murmur32.hpp>
 #include <vp/util/util_pointerarrayallocator.hpp>
 #include <vp/util/util_ringbuffer.hpp>
@@ -65,7 +68,6 @@
 #include <vp/util/util_job.hpp>
 #include <vp/util/util_enumtraits.h>
 #include <vp/util/util_priorityqueue.hpp>
-
 
 #ifdef VP_TARGET_ARCHITECTURE_x86
     #include <vp/util/math/util_int128.sse4.hpp>

@@ -18,7 +18,7 @@
 namespace vp::res {
 
     ResNintendoWareFileHeader *ResNintendoWareRelocationTable::GetFileHeader() {
-        return reinterpret_cast<ResNintendoWareFileHeader*>(reinterpret_cast<uintptr_t>(this) - this_table_offset);
+        return reinterpret_cast<ResNintendoWareFileHeader*>(reinterpret_cast<uintptr_t>(this) - offset_from_header);
     }
 
     void ResNintendoWareRelocationTable::Relocate() {

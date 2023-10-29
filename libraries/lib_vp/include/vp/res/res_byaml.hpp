@@ -136,26 +136,26 @@ namespace vp::res {
             const bool is_reverse_endian = this->IsReverseEndian();
 
             /* Header checks */
-            const u32 r_magic = (is_reverse_endian == false) ? magic : vp::util::SwapEndian(magic);
+            const u32 r_magic   = (is_reverse_endian == false) ? magic : vp::util::SwapEndian(magic);
             const u32 r_version = (is_reverse_endian == false) ? version : vp::util::SwapEndian(version);
             if (r_magic != cMagic || r_version < cMinVersion || cMaxVersion < r_version) { return false; }
 
             /* String table checks */
-            const u32 r_key_table_offset = (is_reverse_endian == false) ? key_table_offset : vp::util::SwapEndian(key_table_offset);
+            const u32 r_key_table_offset    = (is_reverse_endian == false) ? key_table_offset : vp::util::SwapEndian(key_table_offset);
             const u32 r_string_table_offset = (is_reverse_endian == false) ? string_table_offset : vp::util::SwapEndian(string_table_offset);
-            if (r_key_table_offset != 0 && VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_key_table_offset), is_reverse_endian) == false)       { return false; }
+            if (r_key_table_offset != 0    && VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_key_table_offset), is_reverse_endian) == false)       { return false; }
             if (r_string_table_offset != 0 && VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_string_table_offset), is_reverse_endian) == false) { return false; }
 
             /* Table offset checks */
             const ResByamlContainer *string_table = reinterpret_cast<ResByamlContainer*>(reinterpret_cast<uintptr_t>(this) + r_string_table_offset);
-            const u32 r_string_count = (is_reverse_endian == false) ? string_table->count : vp::util::SwapEndian24(string_table->count);
-            const u32 final_string_offset = (r_string_table_offset != 0) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(string_table) + sizeof(u32) * (r_string_count + 1)) : 0;
-            const u32 r_final_string_offset = (is_reverse_endian == false) ? final_string_offset : vp::util::SwapEndian(final_string_offset);
+            const u32 r_string_count              = (is_reverse_endian == false) ? string_table->count : vp::util::SwapEndian24(string_table->count);
+            const u32 final_string_offset         = (r_string_table_offset != 0) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(string_table) + sizeof(u32) * (r_string_count + 1)) : 0;
+            const u32 r_final_string_offset       = (is_reverse_endian == false) ? final_string_offset : vp::util::SwapEndian(final_string_offset);
 
             const ResByamlContainer *key_table = reinterpret_cast<ResByamlContainer*>(reinterpret_cast<uintptr_t>(this) + r_key_table_offset);
-            const u32 r_key_count = (is_reverse_endian == false) ? key_table->count : vp::util::SwapEndian24(key_table->count);
-            const u32 final_key_offset = (r_key_table_offset != 0) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(key_table) + sizeof(u32) * (r_key_count + 1)) : 0;
-            const u32 r_final_key_offset = (is_reverse_endian == false) ? final_key_offset : vp::util::SwapEndian(final_key_offset);
+            const u32 r_key_count              = (is_reverse_endian == false) ? key_table->count : vp::util::SwapEndian24(key_table->count);
+            const u32 final_key_offset         = (r_key_table_offset != 0) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(key_table) + sizeof(u32) * (r_key_count + 1)) : 0;
+            const u32 r_final_key_offset       = (is_reverse_endian == false) ? final_key_offset : vp::util::SwapEndian(final_key_offset);
 
             if ((r_string_table_offset | r_key_table_offset) != 0 && data_offset == 0) { return false; }
             if (r_key_table_offset != 0) {
@@ -173,7 +173,6 @@ namespace vp::res {
 
         static ALWAYS_INLINE ResByaml *ResCast(void *file) {
             if (file == nullptr || reinterpret_cast<ResByaml*>(file)->IsValid() == false) { return nullptr; }
-            if (reinterpret_cast<ResByaml*>(file)->IsReverseEndian() == true) { return nullptr; }
             return reinterpret_cast<ResByaml*>(file);
         }
 

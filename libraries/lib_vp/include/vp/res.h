@@ -47,3 +47,6 @@
 
 /* Reverse engineered Nintendo EPD resource size table format */
 #include <vp/res/res_rsizetable.hpp>
+
+/* Reverse engineered Nintendo szs */
+#include <vp/res/res_szs.hpp>

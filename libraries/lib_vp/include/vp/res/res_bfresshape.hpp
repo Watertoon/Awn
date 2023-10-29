@@ -46,7 +46,7 @@ namespace vp::res {
         ResGfxBufferInfo            *vertex_buffer_info_array;
         ResBfresVertexBufferStride  *vertex_buffer_stride_info_array;
         void                        *user_pointer;
-        u32                          base_memory_offset;
+        u32                          base_gpu_region_offset;
         u8                           vertex_attribute_count;
         u8                           vertex_buffer_count;
         u16                          section_index;
@@ -59,7 +59,7 @@ namespace vp::res {
     static_assert(sizeof(ResBfresVertex) == 0x58);
 
     struct ResBfresSubMeshRange {
-        u32 base_memory_offset;
+        u32 base_gpu_region_offset;
         u32 index_count;
     };
     static_assert(sizeof(ResBfresSubMeshRange) == 0x8);
@@ -91,11 +91,11 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfresBounding) == 0x18);
 
-    struct ResBfresBoundingSphereRadius {
-        util::Vector3f offset;
+    struct ResBfresBoundingSphere {
+        util::Vector3f center_position;
         float          radius;
     };
-    static_assert(sizeof(ResBfresBoundingSphereRadius) == 0x10);
+    static_assert(sizeof(ResBfresBoundingSphere) == 0x10);
 
     struct ResBfresShape {
         u32                           magic;
@@ -111,7 +111,7 @@ namespace vp::res {
         ResBfresKeyShape             *key_shape_array;
         ResNintendoWareDictionary    *key_shape_dictionary;
         ResBfresBounding             *bounding_box_array;
-        ResBfresBoundingSphereRadius *bounding_sphere_radius_array;
+        ResBfresBoundingSphere       *bounding_sphere_array;
         void                         *runtime_user_pointer;
         u16                           section_index;
         u16                           material_index;

@@ -31,7 +31,7 @@ namespace vp::res {
         ResBfresShaderReflection  *shader_reflection_array;
         ResGfxUserData            *user_data_array;
         ResNintendoWareDictionary *user_data_dictionary;
-        void                      *user_pointer;
+        void                      *runtime_user_pointer;
         u16                        vertex_count;
         u16                        shape_count;
         u16                        material_count;

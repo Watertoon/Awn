@@ -48,7 +48,7 @@ namespace vp::res {
         u32                            is_use_scale        : 1;
         u32                            is_use_rotation     : 1;
         u32                            is_use_translation  : 1;
-        u32                            curve_type          : 10;
+        u32                            curve_type_mask     : 10;
         u32                            reserve1            : 5;
         u32                            transform_mode      : 5;
         u32                            reserve2            : 6;

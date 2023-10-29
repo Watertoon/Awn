@@ -13,7 +13,7 @@ namespace vp::res {
         u32 magic;
         u32 next_block_offset;
         u32 block_size;
-        u32 reserve;
+        u32 reserve0;
 
         ALWAYS_INLINE ResNintendoWareSubHeader *GetNextBlock() {
             return (this->next_block_offset == 0) ? nullptr : reinterpret_cast<ResNintendoWareSubHeader*>(reinterpret_cast<uintptr_t>(this) + this->next_block_offset);

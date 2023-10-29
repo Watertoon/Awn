@@ -34,21 +34,21 @@ namespace vp::res {
 
     enum class BfresShaderParamDataType : u8 {
         Bool                      = 0x0,
-        Vec2Bool                  = 0x1,
-        Vec3Bool                  = 0x2,
-        Vec4Bool                  = 0x3,
+        BoolVector2               = 0x1,
+        BoolVector3               = 0x2,
+        BoolVector4               = 0x3,
         S32                       = 0x4,
-        Vec2S32                   = 0x5,
-        Vec3S32                   = 0x6,
-        Vec4S32                   = 0x7,
+        S32Vector2                = 0x5,
+        S32Vector3                = 0x6,
+        S32Vector4                = 0x7,
         U32                       = 0x8,
-        Vec2U32                   = 0x9,
-        Vec3U32                   = 0xa,
-        Vec4U32                   = 0xb,
+        U32Vector2                = 0x9,
+        U32Vector3                = 0xa,
+        U32Vector4                = 0xb,
         Float                     = 0xc,
-        Vec2Float                 = 0xd,
-        Vec3Float                 = 0xe,
-        Vec4Float                 = 0xf,
+        FloatVector2              = 0xd,
+        FloatVector3              = 0xe,
+        FloatVector4              = 0xf,
         Matrix22f                 = 0x11,
         Matrix23f                 = 0x12,
         Matrix24f                 = 0x13,
@@ -155,7 +155,7 @@ namespace vp::res {
         ResBfresMaterialShaderData  *material_shader_data;
         void                       **runtime_texture_view_array;
         const char                 **texture_name_array;
-        void                        *sampler_array;
+        void                        *runtime_sampler_array;
         ResGfxSamplerInfo           *sampler_info_array;
         ResNintendoWareDictionary   *sampler_dictionary;
         void                        *render_info_value_array;

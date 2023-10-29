@@ -29,8 +29,8 @@ namespace vp::res {
     struct ResBfresVertexShapeAnim {
         const char           *name;
         ResBfresAnimCurve    *anim_curve_array;
-        float                *default_shapes;
-        ResBfresKeyShapeAnim *key_shape_array;
+        float                *default_result_array;
+        ResBfresKeyShapeAnim *key_shape_anim_array;
         u16                   anim_curve_count;
         u16                   key_shape_anim_count;
         u32                   base_curve;

@@ -27,7 +27,7 @@ namespace vp::res {
 		static constexpr u32 cMagic = util::TCharCode32("Yaz0");
 
         constexpr bool IsValid() const {
-            return magic == cMagic & decompressed_size != 0;
+            return (magic == cMagic) & (decompressed_size != 0);
         }
 
         constexpr u32 GetDecompressedSize() const {
