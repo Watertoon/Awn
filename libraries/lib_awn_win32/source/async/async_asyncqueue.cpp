@@ -28,10 +28,10 @@ namespace awn::async {
 			return nullptr;
 		}
 
-		/* Remove task from task list */
-		AsyncTask *new_head = nullptr;
-		if (std::addressof(m_task_list.GetNext(*next_task)) != std::addressof(m_task_list.Back())) {
-			new_head = std::addressof(m_task_list.GetNext(*next_task));
+		/* Remove task from task list if not end */
+		AsyncTask *new_head = std::addressof(m_task_list.GetNext(*next_task));
+		if (new_head != std::addressof(*m_task_list.end())) {
+			new_head = nullptr;
 		}
 		priority_level->async_task_head = new_head;
 		next_task->m_queue_list_node.Unlink();
@@ -85,6 +85,14 @@ namespace awn::async {
 
 	void AsyncQueue::Initialize(mem::Heap *heap, AsyncQueueInfo *queue_info) {
 
+        /* Integrity checks */
+        VP_ASSERT(queue_info != nullptr);
+        VP_ASSERT(0 < queue_info->priority_level_count);
+        VP_ASSERT(0 < queue_info->queue_thread_count);
+
+        /* Initialize service mutex */
+        m_queue_mutex.Initialize();
+
 		/* Initialize arrays */
 		m_priority_level_array.Initialize(heap, queue_info->priority_level_count);
 		m_task_thread_array.Initialize(heap, queue_info->queue_thread_count);
@@ -101,6 +109,8 @@ namespace awn::async {
 
 	void AsyncQueue::Finalize() {
 
+        m_queue_mutex.Finalize();
+
 		m_all_task_complete_event.Finalize();
 		for (u32 i = 0; i < m_priority_level_array.GetCount(); ++i) {
 			m_priority_level_array[i].priority_cleared_event.Finalize();
@@ -116,7 +126,7 @@ namespace awn::async {
 
 		/* Try cancel task if running */
 		{
-			std::scoped_lock l(m_queue_cs);
+			std::scoped_lock l(m_queue_mutex);
 
 			if (task->m_status <= static_cast<u32>(AsyncTask::Status::Cancelled) || task->m_status == static_cast<u32>(AsyncTask::Status::Complete)) { return; }
 
@@ -129,7 +139,7 @@ namespace awn::async {
 	void AsyncQueue::CancelPriorityLevel(u32 priority) {
 
 		/* Lock thread */
-		std::scoped_lock l(m_queue_cs);
+		std::scoped_lock l(m_queue_mutex);
 
 		/* Cancel all tasks on the priority level */
 		AsyncTask *head = m_priority_level_array[priority].async_task_head;

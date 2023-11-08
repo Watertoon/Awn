@@ -214,7 +214,15 @@ endif
 
 # Nintendo GameBoy Advance build rules
 ifeq ($(PLATFORM), agb)
-%.gba:
+
+GAME_TITLE ?= dev
+GAME_CODE  ?= 0000
+MAKER_CODE ?= 00
+
+%.gba: %.elf
+	$(COMPILER_PREFIX)objcopy -O binary $< $@
+	@echo Assembling ROM $(notdir $@)
+	gbafix $@ -t$(GAME_TITLE) -c$(GAME_CODE) -m$(MAKER_CODE)
 
 %.elf:
 	@echo Compiling $@

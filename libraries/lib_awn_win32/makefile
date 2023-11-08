@@ -4,7 +4,7 @@
 ARCHITECTURE ?= x86
 PLATFORM     ?= win32
 GRAPHICS_API ?= vk
-BINARY_TYPE  ?= develop
+BINARY_TYPE  ?= debug
 
 # Pull in common config
 include $(BUILD_RULE_DIR)../../config/common.mk
@@ -34,7 +34,7 @@ export PROJECT_LIB_INCLUDES := $(foreach dir,$(LIBRARY_DIRS),-I$(dir)/lib)
 export PROJECT_INCLUDES     := $(foreach dir,$(PROJECT_INCLUDE_DIRS),-I$(CURDIR)/$(dir)) \
 					           $(foreach dir,$(LIBRARY_DIRS),-I$(dir)/include) \
 					           -I.
-export PROJECT_LIBS			:= 
+export PROJECT_LIBS			:=  -l:vp.a
 
 # Filter source files to exclude the unselected targets in the format (file-name).(target platform, arch, binary type, or gfxapi).cpp
 UNFILTERED_CPP_FILES  := $(call FIND_SOURCE_FILES,$(SOURCE_DIRS),cpp)

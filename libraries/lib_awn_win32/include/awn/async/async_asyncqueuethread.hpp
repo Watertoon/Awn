@@ -38,7 +38,7 @@ namespace awn::async {
 
                     {
                         /* Lock queue */
-                        std::scoped_lock l(m_queue->m_queue_cs);
+                        std::scoped_lock l(m_queue->m_queue_mutex);
 
                         /* Schedule async task */
                         AsyncTask *task = m_queue->AcquireNextTask(this);
@@ -49,7 +49,7 @@ namespace awn::async {
 
                         /* Signal execute event */
                         m_execute_event.Signal();
-                        
+
                         /* Signal finished tasks */
                         m_queue->UpdateCompletion();
                     }

@@ -8,7 +8,7 @@ namespace awn::sys {
             SRWLOCK     m_win32_lock;
         public:
             constexpr ALWAYS_INLINE ServiceCriticalSection() : m_wait_value(0), m_win32_lock(0) {/*...*/}
-            constexpr ~ServiceCriticalSection() {/*...*/}
+            constexpr ALWAYS_INLINE ~ServiceCriticalSection() {/*...*/}
 
             void Enter() {
 
@@ -32,6 +32,57 @@ namespace awn::sys {
             void Leave() {
                 ::ReleaseSRWLockExclusive(std::addressof(m_win32_lock));
                 ukern::WakeByAddress(reinterpret_cast<uintptr_t>(std::addressof(m_wait_value)), ukern::SignalType_Signal, 0, 1);
+            }
+
+            ALWAYS_INLINE void lock()   { this->Enter(); }
+            ALWAYS_INLINE void unlock() { this->Leave(); }
+    };
+
+    class ServiceMutex {
+        private:
+            u32              m_wait_value;
+            u32              m_lock_count;
+            CRITICAL_SECTION m_win32_lock;
+        public:
+            constexpr ALWAYS_INLINE  ServiceMutex() : m_wait_value(0), m_lock_count(0), m_win32_lock(0) {/*...*/}
+            constexpr ALWAYS_INLINE ~ServiceMutex() {/*...*/}
+
+            void Initialize() {
+                ::InitializeCriticalSection(std::addressof(m_win32_lock));
+            }
+            void Finalize() {
+                ::DeleteCriticalSection(std::addressof(m_win32_lock));
+            }
+
+            void Enter() {
+
+                if (::IsThreadAFiber() == false) {
+                    ::EnterCriticalSection(std::addressof(m_win32_lock));
+                    ++m_lock_count;
+                    return;
+                }
+
+                for(;;) {
+                    /* Try to lock the Win32 SRWLock */
+                    const bool result0 = ::TryEnterCriticalSection(std::addressof(m_win32_lock));
+
+                    /* Success */
+                    if (result0 == true) {
+                        ++m_lock_count;
+                        return; 
+                    }
+
+                    /* Fallback wait */
+                    ukern::WaitOnAddress(reinterpret_cast<uintptr_t>(std::addressof(m_wait_value)), ukern::ArbitrationType_WaitIfEqual, 0, -1);
+                }
+            }
+
+            void Leave() {
+                ::LeaveCriticalSection(std::addressof(m_win32_lock));
+                --m_lock_count;
+                if (m_lock_count == 0) {
+                    ukern::WakeByAddress(reinterpret_cast<uintptr_t>(std::addressof(m_wait_value)), ukern::SignalType_Signal, 0, 1);
+                }
             }
 
             ALWAYS_INLINE void lock()   { this->Enter(); }

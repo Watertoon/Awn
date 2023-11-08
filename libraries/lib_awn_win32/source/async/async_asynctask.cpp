@@ -71,7 +71,7 @@ namespace awn::async {
 
         /* Integrity checks */
         VP_ASSERT(push_info->queue != nullptr || push_info->queue_thread != nullptr);
-        RESULT_RETURN_IF(m_queue_list_node.IsLinked() == false, ResultAlreadyQueued);
+        RESULT_RETURN_UNLESS(m_queue_list_node.IsLinked() == false, ResultAlreadyQueued);
 
         /* Get queue */
         AsyncQueue *queue = (push_info->queue != nullptr) ? push_info->queue : push_info->queue_thread->m_queue;
@@ -86,13 +86,13 @@ namespace awn::async {
 
         /* Try invoke sync */
         if (push_info->is_sync == true) {
-            std::scoped_lock l(queue->m_queue_cs);
+            std::scoped_lock l(queue->m_queue_mutex);
             if (this->TryInvokeSync() == true) { RESULT_RETURN_SUCCESS; }
         }
 
         {
-            std::scoped_lock l(queue->m_queue_cs);
-            
+            std::scoped_lock l(queue->m_queue_mutex);
+
             /* Find lowest populated priority level */
             const u32 priority = push_info->priority;
             u32 priority_iter  = priority;
@@ -100,10 +100,10 @@ namespace awn::async {
                 priority_iter = priority_iter - 1;
             } while(priority_iter != cInvalidPriorityLevel && queue->m_priority_level_array[priority_iter].async_task_head == nullptr);
 
-            /* Insert into list */
+            /* Insert into list at respective priority level */
             if (priority_iter == cInvalidPriorityLevel) {
 
-                /* Push back async task */
+                /* Insert as head since there are no other tasks */
                 queue->m_task_list.PushBack(*this);
 
                 /* Clear priorty level event */
@@ -134,7 +134,7 @@ namespace awn::async {
         for (;;) {
             u32 is_failed_to_signal_thread = 1;
             {
-                std::scoped_lock l(queue->m_queue_cs);
+                std::scoped_lock l(queue->m_queue_mutex);
 
                 size_t thread_mask = 0;
                 for (u32 i = 0; i < queue->m_task_thread_array.GetUsedCount(); ++i) {
@@ -154,7 +154,7 @@ namespace awn::async {
                     /* Signal thread */
                     const bool is_sent_message  = q_thread->TrySendMessage(static_cast<size_t>(AsyncQueueThread::Message::Start));
 
-                    /* Adjust mask */
+                    /* Adjust thread mask */
                     is_failed_to_signal_thread &= is_sent_message;
                     if (is_sent_message == true) {
                         thread_mask |= thread_mask_index;

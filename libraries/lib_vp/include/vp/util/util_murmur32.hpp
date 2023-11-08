@@ -5,7 +5,7 @@ namespace vp::util {
     constexpr inline size_t cMurmur64Constant = 0xc6a4a7935bd1e995;
     constexpr inline size_t cMurmur64Seed     = 0xa9f63e6017234875;
 
-    constexpr ALWAYS_INLINE size_t Murmur64Hash(const char *string) {
+    constexpr ALWAYS_INLINE size_t HashMurmur64(const char *string) {
 
         /* Shift constant */
         constexpr u32 cShift = 47;
@@ -33,18 +33,25 @@ namespace vp::util {
         switch (size & 7) {
             case 7:
                 state = state ^ static_cast<size_t>(string_leftover[6]) << 48;
+                [[fallthrough]];
             case 6:
                 state = state ^ static_cast<size_t>(string_leftover[5]) << 40;
+                [[fallthrough]];
             case 5:
                 state = state ^ static_cast<size_t>(string_leftover[4]) << 32;
+                [[fallthrough]];
             case 4:
                 state = state ^ static_cast<size_t>(string_leftover[3]) << 24;
+                [[fallthrough]];
             case 3:
                 state = state ^ static_cast<size_t>(string_leftover[2]) << 16;
+                [[fallthrough]];
             case 2:
                 state = state ^ static_cast<size_t>(string_leftover[1]) << 8;
+                [[fallthrough]];
             case 1:
                 state = (state ^ static_cast<size_t>(string_leftover[0])) * cMurmur64Constant;
+                [[fallthrough]];
             default:
                 state = (state ^ state >> cShift) * cMurmur64Constant;
         }
@@ -59,7 +66,7 @@ namespace vp::util {
     constexpr inline u32 cMurmur32Finish1   = 0x85ebca6b;
     constexpr inline u32 cMurmur32Finish2   = 0xc2b2ae35;
 
-    constexpr ALWAYS_INLINE u32 Murmur3Hash32(const char *string, u32 seed) {
+    constexpr ALWAYS_INLINE u32 HashMurmur3(const char *string, u32 seed = 0xffff'ffff) {
 
         u32 state = static_cast<u32>(*string);
         u32 iter = 0;

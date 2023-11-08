@@ -23,12 +23,12 @@ namespace awn::async {
             using PriorityLevelArray = vp::util::HeapArray<PriorityLevel>;
             using TaskThreadArray    = vp::util::PointerArray<AsyncQueueThread>;
         private:
-            AsyncTaskList                m_task_list;
-            u32                          m_task_count;
-            PriorityLevelArray           m_priority_level_array;
-            TaskThreadArray              m_task_thread_array;
-            sys::ServiceEvent            m_all_task_complete_event;
-            sys::ServiceCriticalSection  m_queue_cs;
+            AsyncTaskList      m_task_list;
+            u32                m_task_count;
+            PriorityLevelArray m_priority_level_array;
+            TaskThreadArray    m_task_thread_array;
+            sys::ServiceEvent  m_all_task_complete_event;
+            sys::ServiceMutex  m_queue_mutex;
         protected:
             AsyncTask *AcquireNextTask(AsyncQueueThread *queue_thread);
 
@@ -36,7 +36,7 @@ namespace awn::async {
             void UpdatePriorityLevelCompletion();
             void UpdateCompletion();
         public:
-            constexpr  AsyncQueue() : m_task_list(), m_task_count(), m_priority_level_array(), m_task_thread_array(), m_all_task_complete_event(), m_queue_cs() {/*...*/}
+            constexpr  AsyncQueue() : m_task_list(), m_task_count(), m_priority_level_array(), m_task_thread_array(), m_all_task_complete_event(), m_queue_mutex() {/*...*/}
             constexpr ~AsyncQueue() {/*...*/}
 
             void Initialize(mem::Heap *heap, AsyncQueueInfo *queue_info);

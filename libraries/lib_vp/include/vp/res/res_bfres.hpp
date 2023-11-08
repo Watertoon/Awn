@@ -129,7 +129,7 @@ namespace vp::res {
 
                         option_dic->root_node.key = ext_empty_string;
                         for (s32 k = 0; k < option_dic->node_count; ++k) {
-                            option_dic->node_array[k].key = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(option_dic->node_array[k].key));
+                            std::addressof(option_dic->root_node)[k + 1].key = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(std::addressof(option_dic->root_node)[k + 1].key));
                         }
                     }
 
@@ -143,7 +143,7 @@ namespace vp::res {
                             const char *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(model_array[i].shader_reflection_array[j].render_info_array[k].render_info_name));
 
                             model_array[i].shader_reflection_array[j].render_info_array[k].render_info_name = string;
-                            render_info_dic->node_array[k].key                                              = string;
+                            std::addressof(render_info_dic->root_node)[k + 1].key                           = string;
                         }
                     }
 
@@ -157,7 +157,7 @@ namespace vp::res {
                             const char *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(model_array[i].shader_reflection_array[j].shader_param_array[k].shader_param_name));
 
                             model_array[i].shader_reflection_array[j].shader_param_array[k].shader_param_name = string;
-                            shader_param_dic->node_array[k].key                                               = string;
+                            std::addressof(shader_param_dic->root_node)[k + 1].key                            = string;
                         }
                     }
                 }
