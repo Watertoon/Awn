@@ -33,7 +33,7 @@ namespace vp::res {
         u32 character_width_section_offset;
         u32 code_map_section_offset;
 
-        static constexpr inline u32 Magic = util::TCharCode32("FINF");
+        static constexpr inline u32 cMagic = util::TCharCode32("FINF");
     };
     static_assert(sizeof(ResBffntFontInfo) == 0x20);
 

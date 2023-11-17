@@ -3,13 +3,13 @@
 
 namespace awn::mem::impl {
 
-    constexpr inline size_t DefaultNewAlignment = 8;
-    constexpr inline bool   ForceUseHeapAllocator  = false;
+    constexpr inline size_t cDefaultNewAlignment = 8;
+    constexpr inline bool   cForceUseHeapAllocator  = false;
 
     ALWAYS_INLINE void *NewImpl(size_t size, u32 alignment) {
 
         /* Attempt to fallback to malloc if the heap manager is not initialized */
-        if constexpr (ForceUseHeapAllocator == false) {
+        if constexpr (cForceUseHeapAllocator == false) {
             if (awn::mem::IsHeapManagerInitialized() == false) {
                 return ::_aligned_malloc(size, alignment);
             }
@@ -25,7 +25,7 @@ namespace awn::mem::impl {
     ALWAYS_INLINE void *NewImpl(size_t size, u32 alignment, vp::imem::IHeap *heap) {
 
         /* Attempt to fallback to malloc if the heap manager is not initialized */
-        if constexpr (ForceUseHeapAllocator == false) {
+        if constexpr (cForceUseHeapAllocator == false) {
             if (awn::mem::IsHeapManagerInitialized() == false) {
                 return ::_aligned_malloc(size, alignment);
             }
@@ -39,7 +39,7 @@ namespace awn::mem::impl {
     }
 
     ALWAYS_INLINE void DeleteImpl(void *address) {
-        if constexpr (ForceUseHeapAllocator == false) {
+        if constexpr (cForceUseHeapAllocator == false) {
             if (awn::mem::IsHeapManagerInitialized() == false) {
                 return ::_aligned_free(address);
             }
@@ -54,7 +54,7 @@ namespace awn::mem::impl {
 /* Default overloads */
 
 ALWAYS_INLINE void *operator new(size_t size) {
-    return awn::mem::impl::NewImpl(size, awn::mem::impl::DefaultNewAlignment);
+    return awn::mem::impl::NewImpl(size, awn::mem::impl::cDefaultNewAlignment);
 }
 
 ALWAYS_INLINE void *operator new(size_t size, std::align_val_t alignment) {
@@ -62,7 +62,7 @@ ALWAYS_INLINE void *operator new(size_t size, std::align_val_t alignment) {
 }
 
 ALWAYS_INLINE void *operator new(size_t size, const std::nothrow_t&) {
-    return awn::mem::impl::NewImpl(size, awn::mem::impl::DefaultNewAlignment);
+    return awn::mem::impl::NewImpl(size, awn::mem::impl::cDefaultNewAlignment);
 }
 
 ALWAYS_INLINE void *operator new(size_t size, std::align_val_t alignment, const std::nothrow_t&) {
@@ -70,7 +70,7 @@ ALWAYS_INLINE void *operator new(size_t size, std::align_val_t alignment, const 
 }
 
 ALWAYS_INLINE void *operator new[](size_t size) {
-    return awn::mem::impl::NewImpl(size, awn::mem::impl::DefaultNewAlignment);
+    return awn::mem::impl::NewImpl(size, awn::mem::impl::cDefaultNewAlignment);
 }
 
 ALWAYS_INLINE void *operator new[](size_t size, std::align_val_t alignment) {
@@ -78,7 +78,7 @@ ALWAYS_INLINE void *operator new[](size_t size, std::align_val_t alignment) {
 }
 
 ALWAYS_INLINE void *operator new[](size_t size, const std::nothrow_t&) {
-    return awn::mem::impl::NewImpl(size, awn::mem::impl::DefaultNewAlignment);
+    return awn::mem::impl::NewImpl(size, awn::mem::impl::cDefaultNewAlignment);
 }
 
 ALWAYS_INLINE void *operator new[](size_t size, std::align_val_t alignment, const std::nothrow_t&) {
@@ -92,7 +92,7 @@ ALWAYS_INLINE void *operator new(size_t size, vp::imem::IHeap *heap, u32 alignme
 }
 
 ALWAYS_INLINE void *operator new(size_t size, vp::imem::IHeap *heap, const std::nothrow_t&) {
-    return awn::mem::impl::NewImpl(size, awn::mem::impl::DefaultNewAlignment, heap);
+    return awn::mem::impl::NewImpl(size, awn::mem::impl::cDefaultNewAlignment, heap);
 }
 
 ALWAYS_INLINE void *operator new(size_t size, vp::imem::IHeap *heap, u32 alignment, const std::nothrow_t&) {
@@ -104,7 +104,7 @@ ALWAYS_INLINE void *operator new[](size_t size, vp::imem::IHeap *heap, u32 align
 }
 
 ALWAYS_INLINE void *operator new[](size_t size, vp::imem::IHeap *heap, const std::nothrow_t&) {
-    return awn::mem::impl::NewImpl(size, awn::mem::impl::DefaultNewAlignment, heap);
+    return awn::mem::impl::NewImpl(size, awn::mem::impl::cDefaultNewAlignment, heap);
 }
 
 ALWAYS_INLINE void *operator new[](size_t size, vp::imem::IHeap *heap, u32 alignment, const std::nothrow_t&) {

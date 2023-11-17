@@ -2,6 +2,7 @@
 
 /* Reverse engineered ui2d common */
 #include <vp/res/res_ui2dcommon.hpp>
+#include <vp/res/res_nintendowarerandom.hpp>
 
 #ifdef VP_64_BIT
 

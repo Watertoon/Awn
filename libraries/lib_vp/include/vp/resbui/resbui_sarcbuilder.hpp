@@ -40,13 +40,15 @@ namespace vp::resbui {
     };
 
     class SarcBuilder {
+        public:
+            static constexpr u32 cDefaultHashSeed = 0x65;
         private:
             using FileList = vp::util::IntrusiveListTraits<SarcFileNode, &SarcFileNode::m_builder_node>::List;
         public:
             FileList m_file_list;
             u32      m_hash_seed;
         public:
-            constexpr  SarcBuilder() : m_file_list(), m_hash_seed(0x65) {/*...*/}
+            constexpr  SarcBuilder() : m_file_list(), m_hash_seed(cDefaultHashSeed) {/*...*/}
             constexpr ~SarcBuilder() {/*...*/}
 
             Result AddFile(SarcFileNode *file_node) {
@@ -117,6 +119,7 @@ namespace vp::resbui {
                     /* Handle collision */
                     const u32 hash = vp::res::CalculateSarcHash(m_hash_seed, node.m_file_path);
 
+                    /* Check if the next element in the hash sorted list is the same hash */
                     if (0 < file_count && hash == last_hash) {
                         ++collision_count;
                         VP_ASSERT(collision_count < 0x100);

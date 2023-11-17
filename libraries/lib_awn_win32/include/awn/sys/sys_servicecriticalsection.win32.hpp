@@ -78,9 +78,10 @@ namespace awn::sys {
             }
 
             void Leave() {
-                ::LeaveCriticalSection(std::addressof(m_win32_lock));
                 --m_lock_count;
-                if (m_lock_count == 0) {
+                const u32 lock_count = m_lock_count;
+                ::LeaveCriticalSection(std::addressof(m_win32_lock));
+                if (lock_count == 0) {
                     ukern::WakeByAddress(reinterpret_cast<uintptr_t>(std::addressof(m_wait_value)), ukern::SignalType_Signal, 0, 1);
                 }
             }
