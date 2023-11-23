@@ -45,12 +45,15 @@ namespace awn::gfx {
 
     class Shader {
         public:
+            static constexpr u32 cInvalidInterfaceSlot = 0xffff'ffff;
+        public:
             friend class CommandBuffer;
         private:
-            u32                   m_shader_count;
-            u32                   m_shader_stage_mask;
-            VkShaderStageFlagBits m_vk_shader_stage_flag_array[Context::cTargetMaxSimultaneousShaderStageCount];
-            VkShaderEXT           m_vk_shader_array[Context::cTargetMaxSimultaneousShaderStageCount];
+            u32                            m_shader_count;
+            u32                            m_shader_stage_mask;
+            VkShaderStageFlagBits          m_vk_shader_stage_flag_array[Context::cTargetMaxSimultaneousShaderStageCount];
+            VkShaderEXT                    m_vk_shader_array[Context::cTargetMaxSimultaneousShaderStageCount];
+            vp::res::ResBnshShaderProgram *m_res_program;
         public:
             constexpr ALWAYS_INLINE Shader() : m_shader_count(0), m_shader_stage_mask(), m_vk_shader_stage_flag_array{}, m_vk_shader_array{} {/*...*/}
             constexpr ~Shader() {/*...*/}
@@ -314,6 +317,208 @@ namespace awn::gfx {
                 return;
             }
 
+            void Initialize(vp::res::ResBnshShaderProgram *res_program) {
+    
+                /* Integrity checks */
+                VP_ASSERT(res_program->code_type == static_cast<u8>(vp::res::GfxShaderCodeType::Binary));
+
+                /* Get code info */
+                vp::res::ResBnshShaderCodeInfo *vertex_code_info                  = res_program->vertex_info;
+                vp::res::ResBnshShaderCodeInfo *tessellation_control_code_info    = res_program->tessellation_control_info;
+                vp::res::ResBnshShaderCodeInfo *tessellation_evaluation_code_info = res_program->tessellation_evaluation_info;
+                vp::res::ResBnshShaderCodeInfo *geometry_code_info                = res_program->geometry_info;
+                vp::res::ResBnshShaderCodeInfo *fragment_code_info                = res_program->fragment_info;
+                vp::res::ResBnshShaderCodeInfo *compute_code_info                 = res_program->compute_info;
+
+                /* Calculate shader stages */
+                VkShaderStageFlags  next_stage_array[Context::cTargetMaxPrimitiveShaderStageCount] = {};
+                u32                 code_size_array[Context::cTargetMaxPrimitiveShaderStageCount]  = {};
+                void               *code_array[Context::cTargetMaxPrimitiveShaderStageCount]       = {};
+
+                u32 last_stage        = 0xffff'ffff;
+                u32 shader_count      = 0;
+                u32 shader_stage_mask = 0;
+
+                if (vertex_code_info != nullptr) {
+
+                    /* Set shader state */
+                    m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_VERTEX_BIT;
+                    shader_stage_mask                          |= static_cast<u32>(ShaderStage::Vertex);
+                    code_array[shader_count]                    = vertex_code_info->shader_code;
+                    code_size_array[shader_count]               = vertex_code_info->shader_code_size;
+
+                    /* Advance shader iter */
+                    ++shader_count;
+                    last_stage = VK_SHADER_STAGE_VERTEX_BIT;
+                }
+                if (tessellation_control_code_info != nullptr) {
+
+                    /* Set last stage */
+                    if (last_stage != 0xffff'ffff) { next_stage_array[shader_count - 1] = last_stage; }
+
+                    /* Set shader state */
+                    m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+                    shader_stage_mask                          |= static_cast<u32>(ShaderStage::TessellationControl);
+                    code_array[shader_count]                    = tessellation_control_code_info->shader_code;
+                    code_size_array[shader_count]               = tessellation_control_code_info->shader_code_size;
+
+                    /* Advance shader iter */
+                    ++shader_count;
+                    last_stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+                }
+                if (tessellation_evaluation_code_info != nullptr) {
+
+                    /* Set last stage */
+                    if (last_stage != 0xffff'ffff) { next_stage_array[shader_count - 1] = last_stage; }
+
+                    /* Set shader state */
+                    m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+                    shader_stage_mask                          |= static_cast<u32>(ShaderStage::TessellationEvaluation);
+                    code_array[shader_count]                    = tessellation_evaluation_code_info->shader_code;
+                    code_size_array[shader_count]               = tessellation_evaluation_code_info->shader_code_size;
+
+                    /* Advance shader iter */
+                    ++shader_count;
+                    last_stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+                }
+                if (geometry_code_info != nullptr) {
+
+                    /* Set last stage */
+                    if (last_stage != 0xffff'ffff) { next_stage_array[shader_count - 1] = last_stage; }
+
+                    /* Set shader state */
+                    m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_GEOMETRY_BIT;
+                    shader_stage_mask                          |= static_cast<u32>(ShaderStage::Geometry);
+                    code_array[shader_count]                    = geometry_code_info->shader_code;
+                    code_size_array[shader_count]               = geometry_code_info->shader_code_size;
+
+                    /* Advance shader iter */
+                    ++shader_count;
+                    last_stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+                }
+                if (fragment_code_info != nullptr) {
+
+                    /* Set last stage */
+                    if (last_stage != 0xffff'ffff) { next_stage_array[shader_count - 1] = last_stage; }
+
+                    /* Set shader state */
+                    m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_FRAGMENT_BIT;
+                    shader_stage_mask                          |= static_cast<u32>(ShaderStage::Fragment);
+                    code_array[shader_count]                    = fragment_code_info->shader_code;
+                    code_size_array[shader_count]               = fragment_code_info->shader_code_size;
+
+                    /* Advance shader iter */
+                    ++shader_count;
+                    last_stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                }
+                if (compute_code_info != nullptr) {
+
+                    /* Set last stage */
+                    if (last_stage != 0xffff'ffff) { next_stage_array[shader_count - 1] = last_stage; }
+
+                    /* Set shader state */
+                    m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_COMPUTE_BIT;
+                    shader_stage_mask                          |= static_cast<u32>(ShaderStage::Compute);
+                    code_array[shader_count]                    = compute_code_info->shader_code;
+                    code_size_array[shader_count]               = compute_code_info->shader_code_size;
+
+                    /* Advance shader iter */
+                    ++shader_count;
+                    last_stage = VK_SHADER_STAGE_COMPUTE_BIT;
+                }
+                VP_ASSERT(shader_count < Context::cTargetMaxPrimitiveShaderStageCount);
+
+                /* Setup mesh, fragment, and the optional task shader info */
+                const VkShaderCreateInfoEXT vk_shader_create_info_array[Context::cTargetMaxPrimitiveShaderStageCount] = {
+                    {
+                        .sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+                        .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
+                        .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[0]),
+                        .nextStage              = next_stage_array[0],
+                        .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                        .codeSize               = code_size_array[0],
+                        .pCode                  = code_array[0],
+                        .pName                  = "main",
+                        .setLayoutCount         = Context::cTargetDescriptorSetLayoutCount,
+                        .pSetLayouts            = Context::GetInstance()->GetVkDescriptorSetLayoutArray(),
+                        .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
+                        .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
+                        .pSpecializationInfo    = nullptr
+                    },
+                    {
+                        .sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+                        .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
+                        .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[1]),
+                        .nextStage              = next_stage_array[1],
+                        .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                        .codeSize               = code_size_array[1],
+                        .pCode                  = code_array[1],
+                        .pName                  = "main",
+                        .setLayoutCount         = Context::cTargetDescriptorSetLayoutCount,
+                        .pSetLayouts            = Context::GetInstance()->GetVkDescriptorSetLayoutArray(),
+                        .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
+                        .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
+                        .pSpecializationInfo    = nullptr
+                    },
+                    {
+                        .sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+                        .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
+                        .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[2]),
+                        .nextStage              = next_stage_array[2],
+                        .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                        .codeSize               = code_size_array[2],
+                        .pCode                  = code_array[2],
+                        .pName                  = "main",
+                        .setLayoutCount         = Context::cTargetDescriptorSetLayoutCount,
+                        .pSetLayouts            = Context::GetInstance()->GetVkDescriptorSetLayoutArray(),
+                        .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
+                        .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
+                        .pSpecializationInfo    = nullptr
+                    },
+                    {
+                        .sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+                        .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
+                        .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[3]),
+                        .nextStage              = next_stage_array[3],
+                        .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                        .codeSize               = code_size_array[3],
+                        .pCode                  = code_array[3],
+                        .pName                  = "main",
+                        .setLayoutCount         = Context::cTargetDescriptorSetLayoutCount,
+                        .pSetLayouts            = Context::GetInstance()->GetVkDescriptorSetLayoutArray(),
+                        .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
+                        .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
+                        .pSpecializationInfo    = nullptr
+                    },
+                    {
+                        .sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+                        .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
+                        .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[4]),
+                        .nextStage              = next_stage_array[4],
+                        .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                        .codeSize               = code_size_array[4],
+                        .pCode                  = code_array[4],
+                        .pName                  = "main",
+                        .setLayoutCount         = Context::cTargetDescriptorSetLayoutCount,
+                        .pSetLayouts            = Context::GetInstance()->GetVkDescriptorSetLayoutArray(),
+                        .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
+                        .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
+                        .pSpecializationInfo    = nullptr
+                    },
+                };
+
+                /* Create shaders */
+                const u32 vk_result = ::pfn_vkCreateShadersEXT(Context::GetInstance()->GetVkDevice(), shader_count, vk_shader_create_info_array, Context::GetInstance()->GetVkAllocationCallbacks(), m_vk_shader_array);
+                VP_ASSERT(vk_result == VK_SUCCESS);
+
+                /* Set state */
+                m_shader_count      = shader_count;
+                m_shader_stage_mask = shader_stage_mask;
+                m_res_program       = res_program;
+
+                return;
+            }
+
             void Finalize() {
 
                 /* Delete shaders */
@@ -336,5 +541,7 @@ namespace awn::gfx {
                 *out_shader_stage_array = m_vk_shader_stage_flag_array;
                 return m_shader_count;
             }
+
+            u32 TryGetInterfaceSlot(u32 shader_stage, const char *key);
     };
 }

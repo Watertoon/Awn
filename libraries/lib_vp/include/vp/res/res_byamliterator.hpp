@@ -84,12 +84,19 @@ namespace vp::res {
                 /* Check for data container */
                 if (m_byaml->data_offset == 0) { return; }
 
-                /* Data offset */
-                const u32 data_offset = (m_byaml->IsReverseEndian() == false) ? m_byaml->data_offset : vp::util::SwapEndian(m_byaml->data_offset);
+                /* Get data offset */
+                const bool is_reverse_endian = m_byaml->IsReverseEndian();
+                const u32 data_offset        = (is_reverse_endian == false) ? m_byaml->data_offset : vp::util::SwapEndian(m_byaml->data_offset);
+
+                /* Get data type */
+                const u8 data_type = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(byaml_file) + data_offset)->data_type;
+
+                /* Check is single data */
+                const bool is_single_data = (IsContainerType(static_cast<ByamlDataType>(data_type)) == false && data_type != static_cast<u8>(ByamlDataType::Null));
 
                 /* Set data container */
-                m_container_data.u32_value = data_offset;
-                m_container_data.data_type = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(byaml_file) + data_offset)->data_type;
+                m_container_data.u32_value = (is_single_data == true) ? data_offset : (is_reverse_endian == false) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data_offset + sizeof(u32)) : vp::util::SwapEndian(*reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data_offset + sizeof(u32)));
+                m_container_data.data_type = data_type;
 
                 return;
             }
@@ -104,12 +111,21 @@ namespace vp::res {
                 /* Check for data container */
                 if (m_byaml->data_offset == 0) { return; }
 
-                /* Data offset */
-                const u32 data_offset = (m_byaml->IsReverseEndian() == false) ? m_byaml->data_offset : vp::util::SwapEndian(m_byaml->data_offset);
+                /* Get data offset */
+                const bool is_reverse_endian = m_byaml->IsReverseEndian();
+                const u32 data_offset        = (is_reverse_endian == false) ? m_byaml->data_offset : vp::util::SwapEndian(m_byaml->data_offset);
+
+                /* Get data type */
+                const u8 data_type = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(byaml_file) + data_offset)->data_type;
+
+                /* Check is single data */
+                const bool is_single_data = (IsContainerType(static_cast<ByamlDataType>(data_type)) == false && static_cast<ByamlDataType>(data_type) != ByamlDataType::Null);
 
                 /* Set data container */
-                m_container_data.u32_value = data_offset;
-                m_container_data.data_type = reinterpret_cast<const ResByamlContainer*>(reinterpret_cast<uintptr_t>(byaml_file) + data_offset)->data_type;
+                m_container_data.u32_value = (is_single_data == false) ? data_offset : (is_reverse_endian == false) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data_offset + sizeof(u32)) : vp::util::SwapEndian(*reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(m_byaml) + data_offset + sizeof(u32)));
+                m_container_data.data_type = data_type;
+    
+                return;
             }
 
             constexpr ALWAYS_INLINE ByamlIterator(const ByamlIterator& rhs) : m_byaml(rhs.m_byaml), m_container_data(rhs.m_container_data) {/*...*/}
@@ -122,8 +138,10 @@ namespace vp::res {
                 return *this;
             }
 
-            constexpr ALWAYS_INLINE bool IsValid()          { return m_byaml != nullptr; }
-            constexpr ALWAYS_INLINE bool IsContainerValid() { return (IsContainerType(static_cast<ByamlDataType>(m_container_data.data_type)) == true) & (m_container_data.u32_value != 0); }
+            constexpr ALWAYS_INLINE bool IsValid()          const { return m_byaml != nullptr; }
+            constexpr ALWAYS_INLINE bool IsContainerValid() const { return (IsContainerType(static_cast<ByamlDataType>(m_container_data.data_type)) == true) & (m_container_data.u32_value != 0); }
+
+            constexpr ALWAYS_INLINE ByamlData GetData() const { return m_container_data; }
 
             bool TryGetKeyByData(const char **out_key, ByamlData data) const {
 

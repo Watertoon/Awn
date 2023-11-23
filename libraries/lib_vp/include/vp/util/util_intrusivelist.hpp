@@ -257,6 +257,6 @@ namespace vp::util {
     template<class RP, auto M>
     struct IntrusiveListTraits {
         using Traits = IntrusiveListMemberTraits<RP, M>;
-        using List   = IntrusiveList<ParentType<M>, Traits>;
+        using List   = IntrusiveList<RP, Traits>;
     };
 }

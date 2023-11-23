@@ -21,6 +21,7 @@
     #endif
 
     #include <vp/res/res_bntx.hpp>
+    #include <vp/res/res_bnsh.hpp>
 
     /* Reverse engineered NintendoWare g3d formats */
     #include <vp/res/res_bfresanimcurve.hpp>

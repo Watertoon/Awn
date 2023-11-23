@@ -79,7 +79,8 @@ namespace vp::res {
         return (static_cast<u8>(data_type) < 0xd0) & (0xd3 < static_cast<u8>(data_type));
     }
     constexpr ALWAYS_INLINE bool IsContainerType(ByamlDataType data_type) {
-        return (static_cast<u8>(data_type) & 0xe0);
+        const u8 value = (static_cast<u8>(data_type) & 0xe0);
+        return value == 0xc0 | value == 0x20;
     }
 
     struct ResByamlContainer {
@@ -123,8 +124,7 @@ namespace vp::res {
         u32 data_offset;
 
         static constexpr u16 cMagic = util::TCharCode16("YB");
-        static constexpr u16 cMaxVersion = 7;
-        static constexpr u16 cMinVersion = 4;
+        static constexpr u16 cTargetVersion = 10;
 
         ALWAYS_INLINE const void *GetBigDataOffset(u32 offset) const {
             return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + offset);
@@ -138,7 +138,7 @@ namespace vp::res {
             /* Header checks */
             const u32 r_magic   = (is_reverse_endian == false) ? magic : vp::util::SwapEndian(magic);
             const u32 r_version = (is_reverse_endian == false) ? version : vp::util::SwapEndian(version);
-            if (r_magic != cMagic || r_version < cMinVersion || cMaxVersion < r_version) { return false; }
+            if (r_magic != cMagic || cTargetVersion < r_version) { return false; }
 
             /* String table checks */
             const u32 r_key_table_offset    = (is_reverse_endian == false) ? key_table_offset : vp::util::SwapEndian(key_table_offset);
