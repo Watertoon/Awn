@@ -34,7 +34,7 @@ namespace awn::ukern {
                 /* Acquire loop */
                 for (;;) {
                     /* Try to acquire the critical section */
-                    const UKernHandle other_waiter = ::InterlockedCompareExchange(std::addressof(m_handle), tag, 0);
+                    const UKernHandle other_waiter = vp::util::InterlockedCompareExchange(std::addressof(m_handle), static_cast<u32>(tag), 0u);
                     if (other_waiter == 0) { return; }
 
                     /* Set tag bit */
@@ -52,7 +52,7 @@ namespace awn::ukern {
             bool TryEnter() {
                 const ThreadType *current_thread = ukern::GetCurrentThread();
                 const UKernHandle tag            = current_thread->ukern_fiber_handle;
-                const UKernHandle other_waiter   = ::InterlockedCompareExchange(std::addressof(m_handle), tag, 0);
+                const UKernHandle other_waiter   = vp::util::InterlockedCompareExchange(std::addressof(m_handle), static_cast<u32>(tag), 0u);
                 return other_waiter == 0;
             }
 

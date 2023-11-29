@@ -52,14 +52,14 @@ namespace awn::gfx {
 
         /* Allocate descriptor memory */
         const size_t texture_descriptor_memory_size = vp::util::AlignUp(CalculateTextureDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
-        m_texture_descriptor_gpu_address = gpu_heap->TryAllocateGpuMemoryAddress(texture_descriptor_memory_size, Context::cTargetDescriptorBufferAlignment);
+        m_texture_descriptor_gpu_address = ::operator new(texture_descriptor_memory_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
 
         const size_t sampler_descriptor_memory_size = vp::util::AlignUp(CalculateSamplerDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
-        m_sampler_descriptor_gpu_address = gpu_heap->TryAllocateGpuMemoryAddress(sampler_descriptor_memory_size, Context::cTargetDescriptorBufferAlignment);
+        m_sampler_descriptor_gpu_address = ::operator new(sampler_descriptor_memory_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
 
         /* Create descriptor buffers */
-        m_texture_descriptor_vk_buffer = m_texture_descriptor_gpu_address.CreateBuffer(VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, texture_descriptor_memory_size);
-        m_sampler_descriptor_vk_buffer = m_sampler_descriptor_gpu_address.CreateBuffer(VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT, sampler_descriptor_memory_size);
+        m_texture_descriptor_vk_buffer = gfx::CreateVkBuffer(m_texture_descriptor_gpu_address, VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, texture_descriptor_memory_size);
+        m_sampler_descriptor_vk_buffer = gfx::CreateVkBuffer(m_sampler_descriptor_gpu_address, VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT, sampler_descriptor_memory_size);
 
         /* Get descriptor buffer device addresses */
         const VkBufferDeviceAddressInfo texture_device_address_info = {
@@ -148,12 +148,12 @@ namespace awn::gfx {
 
         /* Register texture descriptor to descriptor buffer */
         const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * vp::util::GetHandleIndex(texture_handle);
-        ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address.GetAddress()) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
+        ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
 
         return texture_handle;
     }
 
-    DescriptorSlot TextureSamplerManager::RegisterTextureView(mem::GpuMemoryAddress gpu_texture_memory, TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
+    DescriptorSlot TextureSamplerManager::RegisterTextureView(void *gpu_texture_memory, TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
 
         /* Integrity check infos */
         VP_ASSERT(texture_info != nullptr && texture_view_info != nullptr && texture_view_info->texture == nullptr);
@@ -192,7 +192,7 @@ namespace awn::gfx {
 
         /* Register texture descriptor to descriptor buffer */
         const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * vp::util::GetHandleIndex(texture_handle);
-        ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address.GetAddress()) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
+        ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
 
         return texture_handle;
     }
@@ -242,7 +242,7 @@ namespace awn::gfx {
                 .data  = std::addressof(vk_sampler)
             }; 
             ::pfn_vkGetDescriptorEXT(Context::GetInstance()->GetVkDevice(), std::addressof(descriptor_get_info), sizeof(descriptor_storage), descriptor_storage);
-            ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_sampler_descriptor_gpu_address.GetAddress()) + vp::util::AlignUp(Context::GetInstance()->GetSamplerDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment())), descriptor_storage, m_sampler_descriptor_size);
+            ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_sampler_descriptor_gpu_address) + vp::util::AlignUp(Context::GetInstance()->GetSamplerDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment())), descriptor_storage, m_sampler_descriptor_size);
 
             /* Allocate sampler handle */
             u32 sampler_handle = 0;

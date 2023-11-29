@@ -3,31 +3,26 @@
 namespace awn::mem {
 
     class GpuExpHeap : public ExpHeap {
-        protected:
-            GpuRootHeapContext *m_root_heap_context;
         public:
             VP_RTTI_DERIVED(GpuExpHeap, ExpHeap);
         public:
-            static GpuExpHeap *TryCreate(const char *name, mem::Heap *cpu_heap, GpuRootHeapContext *root_heap_context, void *address, size_t size) {
+            static GpuExpHeap *TryCreate(const char *name, mem::Heap *cpu_heap, void *gpu_address, size_t size) {
 
                 /* Integrity checks */
-                VP_ASSERT(address != nullptr && (sizeof(GpuExpHeap) + sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity) <= size);
+                VP_ASSERT(gpu_address != nullptr && (sizeof(GpuExpHeap) + sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity) <= size);
 
                 /* Contruct exp heap object */
-                GpuExpHeap *new_heap = new (cpu_heap, alignof(GpuExpHeap)) GpuExpHeap(name, nullptr, address, size);
+                GpuExpHeap *new_heap = new (cpu_heap, alignof(GpuExpHeap)) GpuExpHeap(name, nullptr, gpu_address, size);
                 new_heap->SetAllocationMode(AllocationMode::FirstFit);
 
                 /* Create and push free node spanning block */
-                ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(address);
+                ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(gpu_address);
                 std::construct_at(first_block);
 
                 first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
                 first_block->block_size  = size - (sizeof(ExpHeapMemoryBlock));
 
                 new_heap->m_free_block_list.PushBack(*first_block);
-
-                /* Set gpu root heap context */
-                new_heap->m_root_heap_context = root_heap_context;
 
                 return new_heap;
             }
@@ -77,10 +72,6 @@ namespace awn::mem {
                 return new_heap;
             }
 
-            virtual GpuMemoryAddress TryAllocateGpuMemoryAddress(size_t size, s32 alignment) override {
-                return { m_root_heap_context, this->TryAllocate(size, alignment) };
-            }
             virtual constexpr bool IsGpuHeap() const override { return true; }
-            virtual constexpr GpuRootHeapContext *GetGpuRootHeapContext() const override { return m_root_heap_context; }
     };
 }

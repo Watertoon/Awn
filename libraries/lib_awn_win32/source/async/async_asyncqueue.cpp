@@ -30,7 +30,7 @@ namespace awn::async {
 
 		/* Remove task from task list if not end */
 		AsyncTask *new_head = std::addressof(m_task_list.GetNext(*next_task));
-		if (new_head != std::addressof(*m_task_list.end())) {
+		if (new_head == std::addressof(*m_task_list.end())) {
 			new_head = nullptr;
 		}
 		priority_level->async_task_head = new_head;
@@ -127,13 +127,22 @@ namespace awn::async {
 		/* Try cancel task if running */
 		{
 			std::scoped_lock l(m_queue_mutex);
+            if (task->m_status == static_cast<u32>(AsyncTask::Status::Complete)) { return; }
+			if (task->m_status <= static_cast<u32>(AsyncTask::Status::Cancelled)) { return; }
 
-			if (task->m_status <= static_cast<u32>(AsyncTask::Status::Cancelled) || task->m_status == static_cast<u32>(AsyncTask::Status::Complete)) { return; }
+            if (task->m_status == static_cast<u32>(AsyncTask::Status::Queued)) {
+
+                VP_ASSERT(false);
+
+                return;
+            }
 
 			task->m_finish_event.Clear();
 		}
 
 		task->m_finish_event.Wait();
+
+        return;
 	}
 
 	void AsyncQueue::CancelPriorityLevel(u32 priority) {

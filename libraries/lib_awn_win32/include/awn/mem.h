@@ -2,7 +2,6 @@
 
 #include <awn/sys/sys_servicecriticalsection.win32.hpp>
 
-#include <awn/mem/mem_gpumemoryaddress.vk.hpp>
 #include <awn/mem/mem_heapmanager.h>
 #include <awn/mem/mem_idisposer.h>
 #include <awn/mem/mem_heap.hpp>

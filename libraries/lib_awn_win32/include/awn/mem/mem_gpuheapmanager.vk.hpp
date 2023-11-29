@@ -1,10 +1,8 @@
 #pragma once
 
-namespace awn::gfx {
-    using MemoryPropertyFlags = vp::res::GfxMemoryPoolFlags;
-}
-
 namespace awn::mem {
+
+    using GpuMemoryPropertyFlags = vp::res::GfxMemoryPoolFlags;
 
     constexpr inline size_t cMaxGpuRootHeapCount = 2;
 
@@ -31,10 +29,10 @@ namespace awn::mem {
     };
 
     struct GpuRootHeapContext {
-        gfx::MemoryPropertyFlags  memory_property_flags;
-        void                     *base_address;
-        VkDeviceMemory            vk_device_memory;
-        GpuExpHeap               *root_heap;
+        GpuMemoryPropertyFlags  memory_property_flags;
+        void                   *base_address;
+        VkDeviceMemory          vk_device_memory;
+        GpuExpHeap             *root_heap;
 
         ALWAYS_INLINE size_t GetVkDeviceMemoryOffset(void *address) {
             return reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(base_address);
@@ -57,7 +55,7 @@ namespace awn::mem {
         public:
             AWN_SINGLETON_TRAITS(GpuHeapManager);
         private:
-            bool AllocateContext(mem::Heap *heap, GpuRootHeapContext *heap_context, const char *name, size_t size, gfx::MemoryPropertyFlags memory_properties);
+            bool AllocateContext(mem::Heap *heap, GpuRootHeapContext *heap_context, const char *name, size_t size, GpuMemoryPropertyFlags memory_properties);
             void FreeContext(GpuRootHeapContext *heap_context);
         public:
             constexpr  GpuHeapManager() : m_host_uncached_heap_context_array(), m_host_cached_heap_context_array(), m_gpu_host_uncached_heap_context_array(), m_manager_info() {/*...*/}
@@ -65,6 +63,21 @@ namespace awn::mem {
 
             bool Initialize(mem::Heap *heap, const GpuHeapManagerInfo *gpu_heap_mgr_info);
             void Finalize();
+
+            GpuRootHeapContext *FindGpuRootHeapContextFromAddress(void *address) {
+
+                for (u32 i = 0; i < m_manager_info.host_uncached_root_heap_count; ++i) {
+                    if (m_host_uncached_heap_context_array[i].root_heap->IsAddressInHeap(address) == true) { return std::addressof(m_host_uncached_heap_context_array[i]); }
+                }
+                for (u32 i = 0; i < m_manager_info.host_cached_root_heap_count; ++i) {
+                    if (m_host_cached_heap_context_array[i].root_heap->IsAddressInHeap(address) == true) { return std::addressof(m_host_cached_heap_context_array[i]); }
+                }
+                for (u32 i = 0; i < m_manager_info.gpu_host_uncached_root_heap_count; ++i) {
+                    if (m_gpu_host_uncached_heap_context_array[i].root_heap->IsAddressInHeap(address) == true) { return std::addressof(m_gpu_host_uncached_heap_context_array[i]); }
+                }
+
+                return nullptr;
+            }
 
             constexpr ALWAYS_INLINE GpuRootHeapContext *GetGpuRootHeapContextHostUncached(u32 root_heap_index)    { return std::addressof(m_host_uncached_heap_context_array[root_heap_index]); }
             constexpr ALWAYS_INLINE GpuRootHeapContext *GetGpuRootHeapContextHostCached(u32 root_heap_index)      { return std::addressof(m_host_cached_heap_context_array[root_heap_index]); }
@@ -74,4 +87,9 @@ namespace awn::mem {
             constexpr ALWAYS_INLINE GpuExpHeap *GetGpuRootHeapHostCached(u32 root_heap_index)      { return m_host_cached_heap_context_array[root_heap_index].root_heap; }
             constexpr ALWAYS_INLINE GpuExpHeap *GetGpuRootHeapGpuHostUncached(u32 root_heap_index) { return m_gpu_host_uncached_heap_context_array[root_heap_index].root_heap; }
     };
+
+    ALWAYS_INLINE GpuRootHeapContext *FindGpuRootHeapContextFromAddress(void *address) {
+        GpuHeapManager *heap_manager = GpuHeapManager::GetInstance();
+        return heap_manager->FindGpuRootHeapContextFromAddress(address);
+    }
 }

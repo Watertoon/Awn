@@ -1,8 +1,8 @@
 #include <awn.hpp>
 
-namespace awn::mem {
+namespace awn::gfx {
 
-    VkBuffer GpuMemoryAddress::CreateBuffer(VkBufferUsageFlags usage_flags, size_t size) {
+    VkBuffer CreateVkBuffer(void *gpu_address, VkBufferUsageFlags usage_flags, size_t size) {
 
         /* Create VkBuffer */
         VkBuffer buffer = 0;
@@ -15,13 +15,14 @@ namespace awn::mem {
         VP_ASSERT(result0 == VK_SUCCESS);
 
         /* Bind gpu memory allocation to buffer from offset */
-        const u32 result1 = ::pfn_vkBindBufferMemory(gfx::Context::GetInstance()->GetVkDevice(), buffer, gpu_root_heap_context->vk_device_memory, gpu_root_heap_context->GetVkDeviceMemoryOffset(address));
+        mem::GpuRootHeapContext *gpu_root_heap_context = mem::FindGpuRootHeapContextFromAddress(gpu_address);
+        const u32 result1 = ::pfn_vkBindBufferMemory(gfx::Context::GetInstance()->GetVkDevice(), buffer, gpu_root_heap_context->vk_device_memory, gpu_root_heap_context->GetVkDeviceMemoryOffset(gpu_address));
         VP_ASSERT(result1 == VK_SUCCESS);
         
         return buffer;
     }
 
-    VkImage GpuMemoryAddress::CreateImage(VkImageUsageFlags image_usage_flags, gfx::TextureInfo *texture_info) {
+    VkImage CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, gfx::TextureInfo *texture_info) {
 
         /* Create VkImage */
         VkImage image = 0;
@@ -49,17 +50,25 @@ namespace awn::mem {
         VP_ASSERT(result0 == VK_SUCCESS);
 
         /* Bind gpu memory to image from offset */
-        const u32 result1 = ::pfn_vkBindImageMemory(gfx::Context::GetInstance()->GetVkDevice(), image, gpu_root_heap_context->vk_device_memory, gpu_root_heap_context->GetVkDeviceMemoryOffset(address));
+        mem::GpuRootHeapContext *gpu_root_heap_context = mem::FindGpuRootHeapContextFromAddress(gpu_address);
+        const u32 result1 = ::pfn_vkBindImageMemory(gfx::Context::GetInstance()->GetVkDevice(), image, gpu_root_heap_context->vk_device_memory, gpu_root_heap_context->GetVkDeviceMemoryOffset(gpu_address));
         VP_ASSERT(result1 == VK_SUCCESS);
 
         return image;
     }
 
-    void GpuMemoryAddress::FlushCpuCache(size_t size) {
-        gpu_root_heap_context->FlushCpuCache(address, size);
+	VkBuffer CreateVkBuffer(void *gpu_address, BufferInfo *buffer_info) {
+        return CreateVkBuffer(gpu_address, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
+    }
+	VkImage  CreateVkImage(void *gpu_address, TextureInfo *texture_info) {
+        return CreateVkImage(gpu_address, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info);
     }
 
-    void GpuMemoryAddress::InvalidateCpuCache(size_t size) {
-        gpu_root_heap_context->InvalidateCpuCache(address, size);
+    void FlushCpuCache(void *gpu_address, size_t size) {
+        mem::FindGpuRootHeapContextFromAddress(gpu_address)->FlushCpuCache(gpu_address, size);
+    }
+
+    void InvalidateCpuCache(void *gpu_address, size_t size) {
+        mem::FindGpuRootHeapContextFromAddress(gpu_address)->InvalidateCpuCache(gpu_address, size);
     }
 }

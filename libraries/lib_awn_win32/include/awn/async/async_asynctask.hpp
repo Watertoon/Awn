@@ -3,6 +3,7 @@
 namespace awn::async {
 
 	class AsyncTask;
+	class AsyncTaskWatcher;
     class AsyncQueue;
     class AsyncQueueThread;
 
@@ -22,12 +23,15 @@ namespace awn::async {
         void             *user_data;
         u32               priority;
         bool              is_sync;
+        
+        constexpr AsyncQueue *GetQueue();
     };
 
     class AsyncTask {
         public:
             friend class AsyncQueue;
             friend class AsyncQueueThread;
+            friend class AsyncTaskWatcher;
         public:
             enum class Status : u32 {
                 Uninitialized = 0,
@@ -40,8 +44,15 @@ namespace awn::async {
             };
         public:
             static constexpr u32 cInvalidPriorityLevel = 0xffff'ffff;
-        private:
-            u32                          m_priority;
+        protected:
+            u16                          m_priority;
+            union {
+                u16 m_state;
+                struct {
+                    u16 m_is_free_for_allocator : 1;
+                    u16 m_reserve0 : 15;
+                };
+            };                          
             u32                          m_status;
             AsyncQueue                  *m_queue;
             AsyncQueueThread            *m_queue_thread;
@@ -50,6 +61,8 @@ namespace awn::async {
             void                        *m_user_data;
             sys::ServiceEvent            m_finish_event;
             vp::util::IntrusiveListNode  m_queue_list_node;
+        public:
+            VP_RTTI_BASE(AsyncTask);
         protected:
             virtual void Execute() {
                 if (m_task_delegate == nullptr) { return; }
@@ -70,11 +83,11 @@ namespace awn::async {
 
             void Cancel();
         public:
-             AsyncTask() : m_priority(), m_status(), m_queue(), m_queue_thread(), m_task_delegate(), m_result_delegate(), m_user_data(), m_finish_event(), m_queue_list_node() { m_finish_event.Initialize(); }
+             AsyncTask() : m_priority(), m_state(), m_status(), m_queue(), m_queue_thread(), m_task_delegate(), m_result_delegate(), m_user_data(), m_finish_event(), m_queue_list_node() { m_finish_event.Initialize(); }
             ~AsyncTask() { m_finish_event.Finalize(); }
 
             Result PushTask(AsyncTaskPushInfo *push_info);
-            
+
             void Wait() {
                 m_finish_event.Wait();
             }

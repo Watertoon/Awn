@@ -27,5 +27,5 @@ namespace awn::gfx {
 
     void CalculatePrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, void *index_buffer, size_t index_buffer_size, PrimitiveShapeInfo *primitive_shape_info);
 
-    void CreatePrimitiveShapeQuad(mem::GpuMemoryAddress *out_vertex_buffer_address, mem::GpuMemoryAddress *out_index_buffer_address, mem::Heap *gpu_heap, PrimitiveShapeInfo *primitive_shape_info);
+    void CreatePrimitiveShapeQuad(void **out_vertex_buffer_address, void **out_index_buffer_address, mem::Heap *gpu_heap, PrimitiveShapeInfo *primitive_shape_info);
 }

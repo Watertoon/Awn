@@ -71,11 +71,7 @@ namespace awn::mem {
 
             constexpr ALWAYS_INLINE bool IsThreadSafe() { return m_is_thread_safe; }
 
-            virtual GpuMemoryAddress TryAllocateGpuMemoryAddress([[maybe_unused]] size_t size, [[maybe_unused]] s32 alignment) {
-                return { nullptr, nullptr };
-            }
             virtual constexpr bool IsGpuHeap() const { return false; }
-            virtual constexpr GpuRootHeapContext *GetGpuRootHeapContext() const { return nullptr; }
     };
 
     constexpr ScopedHeapLock::ScopedHeapLock(Heap *heap) : m_heap(heap) {

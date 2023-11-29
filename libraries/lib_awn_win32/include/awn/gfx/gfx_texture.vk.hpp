@@ -10,13 +10,13 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE Texture() : m_vk_image(VK_NULL_HANDLE), m_texture_info() {/*...*/}
             constexpr ALWAYS_INLINE ~Texture() {/*...*/}
 
-            void Initialize(mem::GpuMemoryAddress gpu_memory_address, TextureInfo *texture_info) {
+            void Initialize(void *gpu_memory_address, TextureInfo *texture_info) {
 
                 /* Integrity check */
                 VP_ASSERT(texture_info != nullptr);
 
                 /* Create image by gpu memory address */
-                m_vk_image     = gpu_memory_address.CreateImage(texture_info);
+                m_vk_image     = gfx::CreateVkImage(gpu_memory_address, texture_info);
                 m_texture_info = *texture_info;
 
                 return;

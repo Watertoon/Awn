@@ -142,7 +142,7 @@ namespace awn::gfx {
             };
         private:
             void TransitionRenderTargetsImpl(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target, SyncScopeInfo *sync_scope, VkImageLayout image_layout) {
-                
+
                 VkImageMemoryBarrier2 barrier_array[Context::cTargetMaxBoundRenderTargetColorCount + 1] = {};
 
                 /* Setup color target barriers */

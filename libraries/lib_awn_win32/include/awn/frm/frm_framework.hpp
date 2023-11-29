@@ -297,8 +297,8 @@ namespace awn::frm {
 	class JobListFramework : public Framework {
         public:
             using JobList         = vp::util::IntrusiveListTraits<ListNodeJob, &ListNodeJob::m_list_node>::List;
-            using PresentThread   = sys::DelegateServiceThread<JobListFramework>;
-            using PresentDelegate = PresentThread::ThreadDelegate;
+            using PresentThread   = sys::DelegateServiceThread;
+            using PresentDelegate = sys::ThreadDelegate<JobListFramework>;
         protected:
             JobList                       m_calc_job_list;
             JobList                       m_draw_job_list;

@@ -4,6 +4,7 @@ namespace awn::async {
 
     class AsyncQueueThread : public sys::ServiceThread {
         public:
+            friend struct AsyncTaskPushInfo;
             friend class AsyncTask;
             friend class AsyncQueue;
         public:
@@ -20,7 +21,7 @@ namespace awn::async {
             AsyncQueue        *m_queue;
             sys::ServiceEvent  m_execute_event;
         public:
-             AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, sys::ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, s32 priority) : ServiceThread(name, thread_heap, run_mode, exit_code, max_messages, stack_size, priority), m_is_finished(true), m_requests_per_yield(), m_current_task(), m_queue(), m_execute_event() { 
+             AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, sys::ThreadRunMode run_mode, u32 max_messages, u32 stack_size, s32 priority) : ServiceThread(name, thread_heap, run_mode, 0x7fff'ffff, max_messages, stack_size, priority), m_is_finished(true), m_requests_per_yield(), m_current_task(), m_queue(async_queue), m_execute_event() { 
 
                 async_queue->m_task_thread_array.PushPointer(this);
 
@@ -80,4 +81,11 @@ namespace awn::async {
                 m_execute_event.Wait();
             }
     };
+    
+    constexpr AsyncQueue *AsyncTaskPushInfo::GetQueue() {
+        VP_ASSERT(queue != nullptr || queue_thread != nullptr);
+        AsyncQueue *out_queue = (queue != nullptr) ? queue : queue_thread->m_queue;
+        VP_ASSERT(out_queue != nullptr);
+        return out_queue;
+    }
 }

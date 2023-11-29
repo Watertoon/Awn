@@ -17,7 +17,7 @@ namespace awn::gfx {
                 this->ReleaseTexture();
                 m_texture_slot = TextureSamplerManager::GetInstance()->RegisterTextureView(texture_info, texture_view_info);
             }
-            void BindTexture(mem::GpuMemoryAddress texture_gpu_memory_address, TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
+            void BindTexture(void *texture_gpu_memory_address, TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
                 this->ReleaseTexture();
                 m_texture_slot = TextureSamplerManager::GetInstance()->RegisterTextureView(texture_gpu_memory_address, texture_info, texture_view_info);
             }
@@ -93,7 +93,7 @@ namespace awn::gfx {
                 m_texture_binder.BindTexture(texture_sampler_info->texture_info, texture_sampler_info->texture_view_info);
                 m_sampler_binder.BindSampler(texture_sampler_info->sampler_info);
             }
-            void BindTextureSampler(mem::GpuMemoryAddress texture_gpu_memory_address, TextureSamplerInfo *texture_sampler_info) {
+            void BindTextureSampler(void *texture_gpu_memory_address, TextureSamplerInfo *texture_sampler_info) {
                 m_texture_binder.BindTexture(texture_gpu_memory_address, texture_sampler_info->texture_info, texture_sampler_info->texture_view_info);
                 m_sampler_binder.BindSampler(texture_sampler_info->sampler_info);
             }

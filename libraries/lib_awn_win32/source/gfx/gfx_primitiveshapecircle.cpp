@@ -95,14 +95,14 @@ namespace awn::gfx {
         return;
     }
 
-    void CreatePrimitiveShapeCircle(mem::GpuMemoryAddress *out_vertex_buffer_address, mem::GpuMemoryAddress *out_index_buffer_address, mem::Heap *gpu_heap, PrimitiveShapeInfo *primitive_shape_info) {
+    void CreatePrimitiveShapeCircle(void **out_vertex_buffer_address, void **out_index_buffer_address, mem::Heap *gpu_heap, PrimitiveShapeInfo *primitive_shape_info) {
 
         /* Allocate gpu memory */
-        mem::GpuMemoryAddress vbo_address = gpu_heap->TryAllocateGpuMemoryAddress(primitive_shape_info->vertex_buffer_size, Context::cTargetVertexBufferAlignment);
-        mem::GpuMemoryAddress ibo_address = gpu_heap->TryAllocateGpuMemoryAddress(primitive_shape_info->index_buffer_size, Context::cTargetIndexBufferAlignment);
+        void *vbo_address = ::operator new(primitive_shape_info->vertex_buffer_size, gpu_heap, Context::cTargetVertexBufferAlignment);
+        void *ibo_address = ::operator new(primitive_shape_info->index_buffer_size, gpu_heap, Context::cTargetIndexBufferAlignment);
 
         /* Calculate shape */
-        CalculatePrimitiveShapeCircle(vbo_address.GetAddress(), primitive_shape_info->vertex_buffer_size, ibo_address.GetAddress(), primitive_shape_info->index_buffer_size, primitive_shape_info);
+        CalculatePrimitiveShapeCircle(vbo_address, primitive_shape_info->vertex_buffer_size, ibo_address, primitive_shape_info->index_buffer_size, primitive_shape_info);
 
         /* Set memory addresses */
         *out_vertex_buffer_address = vbo_address;

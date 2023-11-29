@@ -6,9 +6,15 @@ namespace awn::async {
         u32 priority_level_count;
         u32 queue_thread_count;
     };
+
+    class AsyncTaskForAllocator;
+    class AsyncTaskWatcher;
+
     class AsyncQueue {
         public:
             friend class AsyncTask;
+            friend class AsyncTaskForAllocator;
+            friend class AsyncTaskWatcher;
             friend class AsyncQueueThread;
         public:
             static constexpr u32 cInvalidPriorityLevel = 0xffff'ffff;

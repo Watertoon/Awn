@@ -50,8 +50,8 @@ namespace awn::gfx {
             VkBuffer                     m_sampler_descriptor_vk_buffer;
             VkDeviceAddress              m_texture_vk_device_address;
             VkDeviceAddress              m_sampler_vk_device_address;
-            mem::GpuMemoryAddress        m_texture_descriptor_gpu_address;
-            mem::GpuMemoryAddress        m_sampler_descriptor_gpu_address;
+            void                        *m_texture_descriptor_gpu_address;
+            void                        *m_sampler_descriptor_gpu_address;
             u16                          m_texture_descriptor_size;
             u16                          m_sampler_descriptor_size;
             u16                          m_texture_descriptor_stride;
@@ -74,7 +74,7 @@ namespace awn::gfx {
             void Finalize();
 
             DescriptorSlot RegisterTextureView(TextureInfo *texture_info, TextureViewInfo *texture_view);
-            DescriptorSlot RegisterTextureView(mem::GpuMemoryAddress gpu_texture_memory, TextureInfo *texture_info, TextureViewInfo *texture_view);
+            DescriptorSlot RegisterTextureView(void *gpu_texture_memory, TextureInfo *texture_info, TextureViewInfo *texture_view);
             DescriptorSlot ReferenceTextureView(DescriptorSlot texture_slot);
             void           UnregisterTextureView(DescriptorSlot texture_slot);
 

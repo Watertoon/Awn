@@ -2,6 +2,7 @@
 
 #include <awn/gfx/gfx_proc.vk.h>
 #include <awn/gfx/gfx_nngfxinteroperation.h>
+#include <awn/gfx/gfx_memoryapi.vk.h>
 
 #include <awn/gfx/gfx_sync.vk.h>
 #include <awn/gfx/gfx_context.vk.hpp>

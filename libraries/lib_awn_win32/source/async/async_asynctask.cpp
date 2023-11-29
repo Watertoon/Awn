@@ -70,11 +70,10 @@ namespace awn::async {
     Result AsyncTask::PushTask(AsyncTaskPushInfo *push_info) {
 
         /* Integrity checks */
-        VP_ASSERT(push_info->queue != nullptr || push_info->queue_thread != nullptr);
         RESULT_RETURN_UNLESS(m_queue_list_node.IsLinked() == false, ResultAlreadyQueued);
 
         /* Get queue */
-        AsyncQueue *queue = (push_info->queue != nullptr) ? push_info->queue : push_info->queue_thread->m_queue;
+        AsyncQueue *queue = push_info->GetQueue();
         RESULT_RETURN_UNLESS(push_info->priority <= queue->m_priority_level_array.GetCount(), ResultInvalidPriority);
 
         /* Setup task */

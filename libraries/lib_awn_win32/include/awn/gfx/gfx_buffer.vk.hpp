@@ -9,20 +9,20 @@ namespace awn::gfx {
 
 	class Buffer {
 		private:
-            VkBuffer              m_vk_buffer;
-            VkDeviceAddress       m_vk_device_address;
-            mem::GpuMemoryAddress m_buffer_gpu_memory_address;
+            VkBuffer         m_vk_buffer;
+            VkDeviceAddress  m_vk_device_address;
+            void            *m_buffer_gpu_memory_address;
 		public:
 			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(VK_NULL_HANDLE), m_vk_device_address(0), m_buffer_gpu_memory_address() {/*...*/}
             constexpr ALWAYS_INLINE ~Buffer() {/*...*/}
 
-			void Initialize(mem::GpuMemoryAddress gpu_memory_address, BufferInfo *buffer_info) {
+			void Initialize(void *gpu_memory_address, BufferInfo *buffer_info) {
 
                 /* Set gpu address */
                 m_buffer_gpu_memory_address = gpu_memory_address;
 
                 /* Create vk buffer  */
-                m_vk_buffer = gpu_memory_address.CreateBuffer(buffer_info);
+                m_vk_buffer = gfx::CreateVkBuffer(gpu_memory_address, buffer_info);
 
                 /* Query VkDeviceAddress */
                 const VkBufferDeviceAddressInfo device_address_info = {
@@ -91,7 +91,9 @@ namespace awn::gfx {
                 return { memory_requirements_2.memoryRequirements.size, memory_requirements_2.memoryRequirements.alignment };
             }
 
-            constexpr ALWAYS_INLINE mem::GpuMemoryAddress GetGpuMemoryAddress() const { return m_buffer_gpu_memory_address; } 
+            constexpr ALWAYS_INLINE void *Map()                { return m_buffer_gpu_memory_address; }
+            constexpr ALWAYS_INLINE void  Unmap(void *address) {/*...*/}
+
             constexpr ALWAYS_INLINE VkDeviceAddress       GetVkDeviceAddress()  const { return m_vk_device_address; } 
             constexpr ALWAYS_INLINE VkBuffer              GetVkBuffer()         const { return m_vk_buffer; } 
 	};
