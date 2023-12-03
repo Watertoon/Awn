@@ -1,4 +1,4 @@
- /*
+/*
  *  Copyright (C) W. Michael Knudson
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -9,7 +9,7 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along with this program; 
  *  if not, see <https://www.gnu.org/licenses/>.
  */
@@ -18,6 +18,7 @@
 #include <vp/util/util_includes.h>
 #include <vp/util/util_typedefs.h>
 #include <vp/util/util_defines.h>
+#include <vp/util/util_scopeguard.hpp>
 
 #include <vp/util/util_new.h>
 

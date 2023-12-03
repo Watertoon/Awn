@@ -1,4 +1,4 @@
- /*
+/*
  *  Copyright (C) W. Michael Knudson
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -9,13 +9,14 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along with this program; 
  *  if not, see <https://www.gnu.org/licenses/>.
  */
 #pragma once
 
 #define ALWAYS_INLINE __attribute__((always_inline)) inline
+#define ALWAYS_INLINE_LAMBDA __attribute__((always_inline))
 #define NO_INLINE __attribute__((noinline))
 #define NO_CONSTANT_PROPAGATION __attribute__((optimize("-fno-ipa-cp")))
 #define NO_RETURN __attribute__((noreturn))
@@ -24,8 +25,13 @@
 #define VP_UNLIKELY(expression) __builtin_expect((expression), 0)
 #define VP_LIKELY(expression)   __builtin_expect((expression), 1)
 
-
 #define TOSTRING(var) #var
+
+#define _CONCAT_IMPL(left, right) left ## right
+#define CONCAT(left, right) _CONCAT_IMPL(left, right)
+
+#define ANONYMOUS_NAME(head_name) \
+    CONCAT(head_name, __LINE__ )
 
 namespace vp::impl {
     

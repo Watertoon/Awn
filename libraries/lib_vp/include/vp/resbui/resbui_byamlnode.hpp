@@ -1,3 +1,18 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 namespace vp::resbui {
@@ -34,13 +49,13 @@ namespace vp::resbui {
             constexpr u32                          GetIndex() const { return m_index; }
 
             virtual void PushKeys(ByamlStringPoolBuilder *pool_builder) {
-                if (*m_key.GetString() == '/0') { return; }
+                if (*m_key.GetString() == '\0') { return; }
                 pool_builder->AddString(std::addressof(m_key));
             }
             virtual void PushStrings([[maybe_unused]] ByamlStringPoolBuilder *pool_builder) {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const { return res::ByamlDataType::Null; }
-            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) {
+            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) {
                 /* Write null */
                 *reinterpret_cast<u32*>(data_offset) = 0;
             }
@@ -80,7 +95,7 @@ namespace vp::resbui {
             virtual constexpr ~ByamlNodeU32() {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::U32; }
-            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
                 *reinterpret_cast<u32*>(data_offset) = m_value;
             }
 
@@ -97,7 +112,7 @@ namespace vp::resbui {
             virtual constexpr ~ByamlNodeS32() {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::S32; }
-            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
                 *reinterpret_cast<s32*>(data_offset) = m_value;
             }
 
@@ -114,7 +129,7 @@ namespace vp::resbui {
             virtual constexpr ~ByamlNodeFloat() {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::F32; }
-            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
                 *reinterpret_cast<float*>(data_offset) = m_value;
             }
 
@@ -131,7 +146,7 @@ namespace vp::resbui {
             virtual constexpr ~ByamlNodeBool() {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::Bool; }
-            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
                 *reinterpret_cast<bool*>(data_offset) = m_value;
             }
 
@@ -149,7 +164,7 @@ namespace vp::resbui {
 
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::StringIndex; }
-            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
                 *reinterpret_cast<u32*>(data_offset) = m_string.GetKeyIndex();
             }
 

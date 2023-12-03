@@ -1,3 +1,18 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 namespace vp::resbui {
@@ -98,7 +113,7 @@ namespace vp::resbui {
                 RESULT_RETURN_SUCCESS;
             }
 
-            void Serialize(void *output_buffer, size_t buffer_size, ByamlStringPoolBuilderMemoryInfo *memory_info) {
+            void Serialize(void *output_buffer, [[maybe_unused]] size_t buffer_size, ByamlStringPoolBuilderMemoryInfo *memory_info) {
 
                 /* Nothing to serialize if no strings */
                 if (m_string_list.IsEmpty() == true) { return; }
@@ -124,7 +139,7 @@ namespace vp::resbui {
 
                     /* Serialize string */
                     ::memcpy(string_base, string.GetString(), size);
-                    string_base[size] = '/0';
+                    string_base[size] = '\0';
 
                     /* Serialize container offset to string */
                     offset_array[i]   = static_cast<u32>(reinterpret_cast<uintptr_t>(string_base) - reinterpret_cast<uintptr_t>(header));

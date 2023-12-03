@@ -1,17 +1,31 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 namespace vp::util {
 
-    namespace {
-        constexpr ALWAYS_INLINE float ConvertUnormToFloat(u8 value) {
-            return static_cast<float>(value) / 255.0f;
-        }
-        constexpr ALWAYS_INLINE u8 ConvertFloatToUnorm(float value) {
-            const float clamp0 = (1.0f < value) ? 1.0f : value;
-            const float clamp1 = (clamp0 < 0.0f) ? 0.0f : clamp0;
-            return static_cast<u8>((clamp1 * 255.0f) + 0.5f);
-        }
+    constexpr ALWAYS_INLINE float ConvertUnormToFloat(u8 value) {
+        return static_cast<float>(value) / 255.0f;
     }
+    constexpr ALWAYS_INLINE u8 ConvertFloatToUnorm(float value) {
+        const float clamp0 = (1.0f < value) ? 1.0f : value;
+        const float clamp1 = (clamp0 < 0.0f) ? 0.0f : clamp0;
+        return static_cast<u8>((clamp1 * 255.0f) + 0.5f);
+    }
+
 
     class Color4f;
 

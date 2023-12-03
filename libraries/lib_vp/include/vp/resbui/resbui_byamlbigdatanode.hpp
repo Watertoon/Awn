@@ -1,3 +1,18 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 namespace vp::resbui {
@@ -62,7 +77,7 @@ namespace vp::resbui {
         protected:
             ByamlArrayDataTypeMode m_data_type_mode;
         private:
-            bool CheckMonoTyped() const {
+            constexpr bool CheckMonoTyped() const {
                 if (m_data_type_mode != ByamlArrayDataTypeMode::Auto) { return (m_data_type_mode == ByamlArrayDataTypeMode::MonoTyped); }
                 const res::ByamlDataType ref_data_type = (m_node_list.IsEmpty() == false) ? m_node_list.Front().GetByamlDataType() : res::ByamlDataType::Null;
                 for (ByamlNodeBase &node : m_node_list) {
@@ -178,7 +193,7 @@ namespace vp::resbui {
             bool AddNode(ByamlNodeBase *node, const char *key, u32 index = ByamlNodeBase::cInvalidIndex) {
 
                 /* Key check */
-                if (key == nullptr || *key == '/0') { return false; }
+                if (key == nullptr || *key == '\0') { return false; }
 
                 /* Set key and index */
                 node->m_key.SetString(key);
@@ -465,7 +480,7 @@ namespace vp::resbui {
             constexpr void SetValue(u64 value) { m_value = value; }
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::U64; }
-            virtual void Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
 
                 /* Write big data */
                 *reinterpret_cast<u64*>(*big_data_offset) = m_value;
@@ -476,7 +491,7 @@ namespace vp::resbui {
                 return;
             }
             
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override {
+            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override {
 
                 /* Update big data size */
                 *big_data_offset_iter = vp::util::AlignUp(*big_data_offset_iter + sizeof(u64), alignof(u64));
@@ -496,7 +511,7 @@ namespace vp::resbui {
             constexpr void SetValue(s64 value) { m_value = value; }
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::S64; }
-            virtual void Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
 
                 /* Write big data */
                 *reinterpret_cast<s64*>(*big_data_offset) = m_value;
@@ -507,7 +522,7 @@ namespace vp::resbui {
                 return;
             }
             
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override {
+            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override {
 
                 /* Update big data size */
                 *big_data_offset_iter = vp::util::AlignUp(*big_data_offset_iter + sizeof(s64), alignof(s64));
@@ -527,7 +542,7 @@ namespace vp::resbui {
             constexpr void SetValue(double value) { m_value = value; }
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::F64; }
-            virtual void Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
 
                 /* Write big data */
                 *reinterpret_cast<double*>(*big_data_offset) = m_value;
@@ -538,7 +553,7 @@ namespace vp::resbui {
                 return;
             }
             
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override {
+            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override {
 
                 /* Update big data size */
                 *big_data_offset_iter = vp::util::AlignUp(*big_data_offset_iter + sizeof(double), alignof(double));
@@ -565,7 +580,7 @@ namespace vp::resbui {
             }
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return (m_data_alignment == cInvalidAlignment) ? res::ByamlDataType::BinaryData : res::ByamlDataType::BinaryDataWithAlignment; }
-            virtual void Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) override {
+            virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, vp::res::ResByaml *head) override {
 
                 /* Nothing to write if no data */
                 if (m_data == nullptr || m_data_size == 0) { return; }
@@ -600,7 +615,7 @@ namespace vp::resbui {
                 return;
             }
 
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override {
+            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override {
 
                 /* No size if no data */
                 if (m_data == nullptr || m_data_size == 0) { return; }

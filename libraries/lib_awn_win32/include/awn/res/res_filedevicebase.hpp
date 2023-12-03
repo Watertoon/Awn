@@ -1,3 +1,18 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 namespace awn::res {
@@ -11,11 +26,9 @@ namespace awn::res {
         Auto        = (1 << 1),
         Szs         = (1 << 2),
         Zstandard   = (1 << 3),
-        MeshCodec   = (1 << 4),
-        Zlib        = (1 << 5),
     };
     VP_ENUM_FLAG_TRAITS(CompressionType);
-    
+
     constexpr CompressionType GetCompressionType(MaxExtensionString *extension) {
         const MaxExtensionString zs_ext(".zs");
         if (*extension == zs_ext) {
@@ -24,10 +37,6 @@ namespace awn::res {
         const MaxExtensionString szs_ext(".szs");
         if (*extension == szs_ext) {
             return CompressionType::Szs;
-        }
-        const MaxExtensionString mc_ext(".mc");
-        if (*extension == mc_ext) {
-            return CompressionType::MeshCodec;
         }
         return CompressionType::None;
     }
@@ -59,35 +68,36 @@ namespace awn::res {
     static_assert(cInvalidEntryIndex == vp::res::SarcExtractor::cInvalidEntryIndex);
     static_assert(cInvalidEntryIndex == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex);
 
+    class FileDeviceBase;
+
     struct FileHandle {
-        void     *handle;
-        u32       archive_entry_index;
-        u32       open_mode;
-        size_t    file_offset;
-        size_t    file_size;
+        void           *handle;
+        FileDeviceBase *file_device;
+        u32             archive_entry_index;
+        u32             open_mode;
+        size_t          file_offset;
+        size_t          file_size;
 
         constexpr void SetDefaults() {
             handle              = INVALID_HANDLE_VALUE;
+            file_device         = nullptr;
             archive_entry_index = cInvalidEntryIndex;
             file_offset         = 0;
             file_size           = 0;
             open_mode           = static_cast<u32>(OpenMode::Read);
         }
+
+        ALWAYS_INLINE Result Close();
     };
 
-    class FileDeviceBase;
-
     struct FileLoadContext {
-        void            *out_file;
-        size_t           out_file_size;
-        s32              out_file_alignment;
-        size_t           compressed_file_size;
-        CompressionType  compression_type;
-        bool             is_heap_allocated;
-        mem::Heap       *heap;
-        const char      *file_path;
-        u32              read_div;
-        s32              alignment;
+        void       *file;
+        size_t      file_size;
+        s32         file_alignment;
+        mem::Heap  *heap;
+        const char *file_path;
+        u32         read_div;
+        bool        out_is_file_memory_allocated;
     };
 
     class FileDeviceBase {
@@ -101,7 +111,61 @@ namespace awn::res {
         public:
             VP_RTTI_BASE(FileDeviceBase);
         protected:
-            virtual Result LoadFileImpl([[maybe_unused]] FileLoadContext *file_load_context) {
+            virtual Result LoadFileImpl(FileLoadContext *file_load_context);
+            virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) { VP_ASSERT(false); VP_UNUSED(out_file_handle, path, open_mode); }
+            virtual Result CloseFileImpl(FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(file_handle); }
+            virtual Result ReadFileImpl(void *out_read_buffer, FileHandle *file_handle, u32 read_size) { VP_ASSERT(false); VP_UNUSED(out_read_buffer, file_handle, read_size); }
+            virtual Result WriteFileImpl(FileHandle *file_handle, void *write_buffer, u32 write_size) { VP_ASSERT(false); VP_UNUSED(file_handle, write_buffer, write_size); }
+            virtual Result FlushFileImpl(FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(file_handle); }
+
+            virtual Result GetFileSizeImpl(size_t *out_size, FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(out_size, file_handle); }
+            virtual Result GetFileSizeImpl(size_t *out_size, const char *path) { VP_ASSERT(false); VP_UNUSED(out_size, path); }
+
+            virtual Result CheckFileExistsImpl(const char *path) { VP_ASSERT(false); VP_UNUSED(path); }
+
+            virtual Result OpenDirectoryImpl(DirectoryHandle *out_directory_handle, const char *path)                         { VP_ASSERT(false); VP_UNUSED(out_directory_handle, path); }
+            virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle)                                              { VP_ASSERT(false); VP_UNUSED(directory_handle); }
+            virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { VP_ASSERT(false); VP_UNUSED(directory_handle, entry_array, entry_count); }
+
+            virtual bool CheckDirectoryExistsImpl(const char *path) { VP_UNUSED(path); return false; }
+
+            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { VP_ASSERT(false); VP_UNUSED(out_formatted_path, path); }
+        public:
+            explicit constexpr ALWAYS_INLINE FileDeviceBase() : m_manager_tree_node(), m_device_name() {/*...*/}
+            explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *device_name) : m_manager_tree_node(), m_device_name(device_name) {
+                const u32 hash = vp::util::HashCrc32b(device_name);
+                m_manager_tree_node.SetKey(hash);
+            }
+            constexpr virtual ALWAYS_INLINE ~FileDeviceBase() {/*...*/}
+
+            ALWAYS_INLINE Result TryLoadFile(FileLoadContext *file_load_context)                                { return this->LoadFileImpl(file_load_context); }
+            ALWAYS_INLINE Result TryOpenFile(FileHandle *out_file_handle, const char *path, OpenMode open_mode) { return this->OpenFileImpl(out_file_handle, path, open_mode); }
+            ALWAYS_INLINE Result TryCloseFile(FileHandle *file_handle)                                          { return this->CloseFileImpl(file_handle); }
+            ALWAYS_INLINE Result TryReadFile(void *out_read_buffer, FileHandle *file_handle, u32 read_size)     { return this->ReadFileImpl(out_read_buffer, file_handle, read_size); }
+            ALWAYS_INLINE Result TryWriteFile(FileHandle *file_handle, void *write_buffer, u32 write_size)      { return this->WriteFileImpl(file_handle, write_buffer, write_size); }
+            ALWAYS_INLINE Result TryFlushFile(FileHandle *file_handle)                                          { return this->FlushFileImpl(file_handle); }
+
+            ALWAYS_INLINE Result GetFileSize(size_t *out_size, FileHandle *file_handle) { return this->GetFileSizeImpl(out_size, file_handle); }
+            ALWAYS_INLINE Result GetFileSize(size_t *out_size, const char *path)        { return this->GetFileSizeImpl(out_size, path); }
+
+            ALWAYS_INLINE Result CheckFileExists(const char *path) { return CheckFileExistsImpl(path); }
+
+            ALWAYS_INLINE Result OpenDirectory(DirectoryHandle *out_directory_handle, const char *path)                         { return this->OpenDirectoryImpl(out_directory_handle, path); }
+            ALWAYS_INLINE Result CloseDirectory(DirectoryHandle *directory_handle)                                              { return this->CloseDirectoryImpl(directory_handle); }
+            ALWAYS_INLINE Result ReadDirectory(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { return this->ReadDirectoryImpl(directory_handle, entry_array, entry_count); }
+
+            ALWAYS_INLINE Result CheckDirectoryExists(const char *path) { return this->CheckDirectoryExistsImpl(path); }
+
+            constexpr ALWAYS_INLINE const char *GetDeviceName() const { return m_device_name.GetString(); }
+    };
+
+    ALWAYS_INLINE Result FileHandle::Close() {
+        if (file_device == nullptr) { RESULT_RETURN_SUCCESS; }
+        const Result result = file_device->TryCloseFile(this);
+        file_device         = nullptr;
+        return result;
+    }
+}
 
            //     /* Integrity checks */
            //     RESULT_RETURN_UNLESS(file_load_context->out_file != nullptr && file_load_context->out_file_size == 0, ResultInvalidFileBufferSize);
@@ -214,53 +278,3 @@ namespace awn::res {
            //     /* Close file handle */
            //     const Result close_result = this->TryCloseFile(std::addressof(handle));
            //     RESULT_RETURN_UNLESS(close_result == ResultSuccess, close_result);
-
-                RESULT_RETURN_SUCCESS;
-            }
-            virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) { VP_ASSERT(false); VP_UNUSED(out_file_handle, path, open_mode); }
-            virtual Result CloseFileImpl(FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(file_handle); }
-            virtual Result ReadFileImpl(void *out_read_buffer, FileHandle *file_handle, u32 read_size) { VP_ASSERT(false); VP_UNUSED(out_read_buffer, file_handle, read_size); }
-            virtual Result WriteFileImpl(FileHandle *file_handle, void *write_buffer, u32 write_size) { VP_ASSERT(false); VP_UNUSED(file_handle, write_buffer, write_size); }
-            virtual Result FlushFileImpl(FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(file_handle); }
-
-            virtual Result GetFileSizeImpl(size_t *out_size, FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(out_size, file_handle); }
-            virtual Result GetFileSizeImpl(size_t *out_size, const char *path) { VP_ASSERT(false); VP_UNUSED(out_size, path); }
-
-            virtual Result CheckFileExistsImpl(const char *path) { VP_ASSERT(false); VP_UNUSED(path); }
-
-            virtual Result OpenDirectoryImpl(DirectoryHandle *out_directory_handle, const char *path)                         { VP_ASSERT(false); VP_UNUSED(out_directory_handle, path); }
-            virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle)                                              { VP_ASSERT(false); VP_UNUSED(directory_handle); }
-            virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { VP_ASSERT(false); VP_UNUSED(directory_handle, entry_array, entry_count); }
-
-            virtual bool CheckDirectoryExistsImpl(const char *path) { VP_UNUSED(path); return false; }
-
-            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { VP_ASSERT(false); VP_UNUSED(out_formatted_path, path); }
-        public:
-            explicit constexpr ALWAYS_INLINE FileDeviceBase() : m_manager_tree_node(), m_device_name() {/*...*/}
-            explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *device_name) : m_manager_tree_node(), m_device_name(device_name) {
-                const u32 hash = vp::util::HashCrc32b(device_name);
-                m_manager_tree_node.SetKey(hash);
-            }
-            constexpr virtual ALWAYS_INLINE ~FileDeviceBase() {/*...*/}
-
-            ALWAYS_INLINE Result TryLoadFile(FileLoadContext *file_load_context)                                { return this->LoadFileImpl(file_load_context); }
-            ALWAYS_INLINE Result TryOpenFile(FileHandle *out_file_handle, const char *path, OpenMode open_mode) { return this->OpenFileImpl(out_file_handle, path, open_mode); }
-            ALWAYS_INLINE Result TryCloseFile(FileHandle *file_handle)                                          { return this->CloseFileImpl(file_handle); }
-            ALWAYS_INLINE Result TryReadFile(void *out_read_buffer, FileHandle *file_handle, u32 read_size)     { return this->ReadFileImpl(out_read_buffer, file_handle, read_size); }
-            ALWAYS_INLINE Result TryWriteFile(FileHandle *file_handle, void *write_buffer, u32 write_size)      { return this->WriteFileImpl(file_handle, write_buffer, write_size); }
-            ALWAYS_INLINE Result TryFlushFile(FileHandle *file_handle)                                          { return this->FlushFileImpl(file_handle); }
-
-            ALWAYS_INLINE Result GetFileSize(size_t *out_size, FileHandle *file_handle) { return this->GetFileSizeImpl(out_size, file_handle); }
-            ALWAYS_INLINE Result GetFileSize(size_t *out_size, const char *path)        { return this->GetFileSizeImpl(out_size, path); }
-
-            ALWAYS_INLINE Result CheckFileExists(const char *path) { return CheckFileExistsImpl(path); }
-
-            ALWAYS_INLINE Result OpenDirectory(DirectoryHandle *out_directory_handle, const char *path)                         { return this->OpenDirectoryImpl(out_directory_handle, path); }
-            ALWAYS_INLINE Result CloseDirectory(DirectoryHandle *directory_handle)                                              { return this->CloseDirectoryImpl(directory_handle); }
-            ALWAYS_INLINE Result ReadDirectory(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { return this->ReadDirectoryImpl(directory_handle, entry_array, entry_count); }
-
-            ALWAYS_INLINE Result CheckDirectoryExists(const char *path) { return this->CheckDirectoryExistsImpl(path); }
-
-            constexpr ALWAYS_INLINE const char *GetDeviceName() const { return m_device_name.GetString(); }
-    };
-}

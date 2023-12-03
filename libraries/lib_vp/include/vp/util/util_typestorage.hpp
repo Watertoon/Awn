@@ -1,4 +1,4 @@
- /*
+/*
  *  Copyright (C) W. Michael Knudson
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -9,13 +9,13 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along with this program; 
  *  if not, see <https://www.gnu.org/licenses/>.
  */
 #pragma once
 
-/* While the initial idea of some elements were inspired by Atmosphère, for this implementation I only used cppreference and vague mental notes from months ago */
+/* While the initial idea of some elements were inspired by Atmosphère-NX (https://github.com/Atmosphere-NX/Atmosphere), for this implementation I only used cppreference and vague mental notes from months ago */
 /* If you can make a case for infringement please let me know and I'll correct it */
 
 namespace vp::util {
