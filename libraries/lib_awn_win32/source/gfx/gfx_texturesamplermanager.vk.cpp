@@ -63,7 +63,7 @@ namespace awn::gfx {
         /* Create texture memory separate heap */
         const size_t separate_heap_size = sizeof(mem::SeparateHeap) + mem::SeparateHeap::CalculateManagementAreaSize(Context::cTargetMaxTextureDescriptorCount);
         void *separate_heap_start       = ::operator new(separate_heap_size, heap, alignof(mem::SeparateHeap));
-        m_separate_heap                 = mem::SeparateHeap::Create("awn::gfx::TextureMemory", separate_heap_start, separate_heap_size, gpu_memory_size, true);
+        m_separate_heap                 = mem::SeparateHeap::Create("awn::gfx::TextureMemoryHeap", separate_heap_start, separate_heap_size, gpu_memory_size, true);
 
         /* Allocate descriptor memory */
         const size_t texture_descriptor_memory_size = vp::util::AlignUp(CalculateTextureDescriptorSetLayoutGpuSize(), Context::cTargetDescriptorBufferAlignment);
@@ -128,23 +128,19 @@ namespace awn::gfx {
         VP_ASSERT(separate_address != nullptr);
         const size_t offset = reinterpret_cast<uintptr_t>(separate_address) - mem::SeparateHeap::cOffsetBase;
 
-        /* Texture allocator lock */
-        std::scoped_lock l(m_texture_allocator_critical_section);
+        /* Allocate texture handle */
+        const u32 texture_handle = m_texture_handle_table.Allocate();
+        VP_ASSERT(texture_handle != TextureHandleTable::cInvalidHandle);
 
-        /* Allocate texture node */
-        TextureNode *new_texture_node = m_texture_allocator.Allocate();
-        VP_ASSERT(new_texture_node != nullptr);
+        /* Get texture node */
+        TextureNode *new_texture_node = std::addressof(m_texture_array[texture_handle]);
 
         /* Initialize texture objects */
+        new_texture_node->reference_count = 1;
         new_texture_node->separate_memory = offset;
         new_texture_node->texture.Initialize(m_vk_device_memory_texture, offset, texture_info);
         texture_view_info->texture = std::addressof(new_texture_node->texture);
         new_texture_node->texture_view.Initialize(texture_view_info);
-
-        /* Allocate texture handle */
-        u32 texture_handle = 0;
-        bool result = m_texture_handle_table.ReserveHandle(std::addressof(texture_handle), new_texture_node);
-        VP_ASSERT(result == true);
 
         /* Get texture descriptor */
         char descriptor_storage[Context::cTargetMaxTextureDescriptorSize] = {};
@@ -162,7 +158,7 @@ namespace awn::gfx {
         ::pfn_vkGetDescriptorEXT(Context::GetInstance()->GetVkDevice(), std::addressof(descriptor_get_info), sizeof(descriptor_storage), descriptor_storage);
 
         /* Register texture descriptor to descriptor buffer */
-        const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * vp::util::GetHandleIndex(texture_handle);
+        const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * texture_handle;
         ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
 
         return texture_handle;
@@ -173,22 +169,18 @@ namespace awn::gfx {
         /* Integrity check infos */
         VP_ASSERT(texture_info != nullptr && texture_view_info != nullptr && texture_view_info->texture == nullptr);
 
-        /* Texture allocator lock */
-        std::scoped_lock l(m_texture_allocator_critical_section);
+        /* Allocate texture handle */
+        const u32 texture_handle = m_texture_handle_table.Allocate();
+        VP_ASSERT(texture_handle != TextureHandleTable::cInvalidHandle);
 
-        /* Allocate texture node */
-        TextureNode *new_texture_node = m_texture_allocator.Allocate();
-        VP_ASSERT(new_texture_node != nullptr);
+        /* Get texture node */
+        TextureNode *new_texture_node = std::addressof(m_texture_array[texture_handle]);
 
         /* Initialize texture objects */
+        new_texture_node->reference_count = 1;
         new_texture_node->texture.Initialize(gpu_texture_memory, texture_info);
         texture_view_info->texture = std::addressof(new_texture_node->texture);
         new_texture_node->texture_view.Initialize(texture_view_info);
-
-        /* Allocate texture handle */
-        u32 texture_handle = 0;
-        bool result = m_texture_handle_table.ReserveHandle(std::addressof(texture_handle), new_texture_node);
-        VP_ASSERT(result == true);
 
         /* Get texture descriptor */
         char descriptor_storage[Context::cTargetMaxTextureDescriptorSize] = {};
@@ -206,7 +198,7 @@ namespace awn::gfx {
         ::pfn_vkGetDescriptorEXT(Context::GetInstance()->GetVkDevice(), std::addressof(descriptor_get_info), sizeof(descriptor_storage), descriptor_storage);
 
         /* Register texture descriptor to descriptor buffer */
-        const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * vp::util::GetHandleIndex(texture_handle);
+        const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * texture_handle;
         ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
 
         return texture_handle;
@@ -215,11 +207,10 @@ namespace awn::gfx {
     DescriptorSlot TextureSamplerManager::ReferenceTextureView(DescriptorSlot texture_slot) {
 
         /* Get texture node */
-        TextureNode *texture_node = reinterpret_cast<TextureNode*>(m_texture_handle_table.GetObjectByHandle(texture_slot));
-        VP_ASSERT(texture_node != nullptr);
+        TextureNode *texture_node = std::addressof(m_texture_array[texture_slot]);
 
         /* Increment reference count */
-        const u32 last_value = ::InterlockedIncrement(std::addressof(texture_node->reference_count));
+        const u32 last_value = vp::util::InterlockedIncrement(std::addressof(texture_node->reference_count));
         VP_ASSERT(last_value != 0);
         
         return texture_slot;
@@ -233,22 +224,30 @@ namespace awn::gfx {
         /* Hash sampler info */
         const u32 sampler_hash = HashSampler(sampler_info);
 
-        /* Sampler allocator lock */
-        std::scoped_lock l(m_sampler_allocator_critical_section);
+        SamplerNode *sampler_node = nullptr;
+        {            
+            /* Sampler tree lock */
+            std::scoped_lock l(m_sampler_tree_cs);
 
-        /* Try to find existing sampler */
-        SamplerNode *sampler_node = m_sampler_map.Find(sampler_hash);
+            /* Try to find existing sampler */
+            sampler_node = m_sampler_map.Find(sampler_hash);
+        }
 
         if (sampler_node == nullptr) {
 
-            /* Allocate new sampler */
-            sampler_node = m_sampler_allocator.Allocate();
-            VP_ASSERT(sampler_node != nullptr);
+            /* Allocate sampler handle */
+            u32 sampler_handle = m_sampler_handle_table.Allocate();
+            VP_ASSERT(sampler_handle == SamplerHandleTable::cInvalidHandle);
+            sampler_node->handle = sampler_handle;
+
+            /* Get new sampler */
+            sampler_node = std::addressof(m_sampler_array[sampler_handle]);
 
             /* Initialize sampler */
+            sampler_node->reference_count = 0;
             sampler_node->sampler.Initialize(sampler_info);
 
-            /* Register sampler node to descriptor buffer */
+            /* Get Sampler descriptor */
             char descriptor_storage[Context::cTargetMaxSamplerDescriptorSize] = {};
             const VkSampler vk_sampler = sampler_node->sampler.GetVkSampler();
             const VkDescriptorGetInfoEXT descriptor_get_info = {
@@ -257,21 +256,21 @@ namespace awn::gfx {
                 .data  = std::addressof(vk_sampler)
             }; 
             ::pfn_vkGetDescriptorEXT(Context::GetInstance()->GetVkDevice(), std::addressof(descriptor_get_info), sizeof(descriptor_storage), descriptor_storage);
-            ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_sampler_descriptor_gpu_address) + vp::util::AlignUp(Context::GetInstance()->GetSamplerDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment())), descriptor_storage, m_sampler_descriptor_size);
 
-            /* Allocate sampler handle */
-            u32 sampler_handle = 0;
-            bool result = m_texture_handle_table.ReserveHandle(std::addressof(sampler_handle), sampler_node);
-            VP_ASSERT(result == true);
-            sampler_node->handle = sampler_handle;
+            /* Register sampler descriptor to descritptor buffer */
+            const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetSamplerDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * sampler_handle;
+            ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_sampler_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_sampler_descriptor_size);
 
-            /* Insert sampler node */
+            /* Insert sampler node to tree */
             sampler_node->rb_node.SetKey(sampler_hash);
-            m_sampler_map.Insert(sampler_node);
+            {
+                std::scoped_lock l(m_sampler_tree_cs);
+                m_sampler_map.Insert(sampler_node);
+            }
         }
 
         /* Increment reference count */
-        ::InterlockedIncrement(std::addressof(sampler_node->reference_count));
+        vp::util::InterlockedIncrement(std::addressof(sampler_node->reference_count));
 
         return sampler_node->handle;
     }
@@ -279,11 +278,11 @@ namespace awn::gfx {
     DescriptorSlot TextureSamplerManager::ReferenceSampler(DescriptorSlot sampler_slot) {
 
         /* Get sampler node */
-        SamplerNode *sampler_node = reinterpret_cast<SamplerNode*>(m_sampler_handle_table.GetObjectByHandle(sampler_slot));
+        SamplerNode *sampler_node = std::addressof(m_sampler_array[sampler_slot]);
         VP_ASSERT(sampler_node != nullptr);
 
         /* Increment reference count */
-        const u32 last_value = ::InterlockedIncrement(std::addressof(sampler_node->reference_count));
+        const u32 last_value = vp::util::InterlockedIncrement(std::addressof(sampler_node->reference_count));
         VP_ASSERT(last_value != 0);
 
         return sampler_slot;
@@ -292,36 +291,26 @@ namespace awn::gfx {
     void TextureSamplerManager::UnregisterTextureView(DescriptorSlot texture_slot) {
 
         /* Get texture node */
-        TextureNode *texture_node = reinterpret_cast<TextureNode*>(m_texture_handle_table.GetObjectByHandle(texture_slot));
-        VP_ASSERT(texture_node != nullptr);
+        TextureNode *texture_node = std::addressof(m_texture_array[texture_slot]);
 
         /* Decrement ref count */
-        const u32 last_value = ::InterlockedDecrement(std::addressof(texture_node->reference_count));
+        const u32 last_value = vp::util::InterlockedDecrement(std::addressof(texture_node->reference_count));
 
         /* Destruct if value is now 0 */
         if (last_value != 1) { return; }
 
-        {
-            /* Texture allocator lock */
-            std::scoped_lock l(m_texture_allocator_critical_section);
+        /* Finalize texture objects */
+        texture_node->texture_view.Finalize();
+        texture_node->texture.Finalize();
 
-            /* Finalize texture objects */
-            texture_node->texture_view.Finalize();
-            texture_node->texture.Finalize();
-
-            /* Free separate memory if necessary */
-            if (texture_node->separate_memory != TextureNode::cInvalidMemoryOffset) {
-                void *separate_address = reinterpret_cast<void*>(texture_node->separate_memory + mem::SeparateHeap::cOffsetBase);
-                m_separate_heap->Free(separate_address);
-            }
-
-            /* Free texture node to allocator */
-            m_texture_allocator.Free(texture_node);
+        /* Free separate memory if necessary */
+        if (texture_node->separate_memory != TextureNode::cInvalidMemoryOffset) {
+            void *separate_address = reinterpret_cast<void*>(texture_node->separate_memory + mem::SeparateHeap::cOffsetBase);
+            m_separate_heap->Free(separate_address);
         }
 
         /* Free texture handle */
-        const bool result = m_texture_handle_table.FreeHandle(texture_slot);
-        VP_ASSERT(result == true);
+        m_texture_handle_table.Free(texture_slot);
 
         return;
     }
@@ -329,32 +318,27 @@ namespace awn::gfx {
     void TextureSamplerManager::UnregisterSampler(DescriptorSlot sampler_slot) {
 
         /* Get sampler node */
-        SamplerNode *sampler_node = reinterpret_cast<SamplerNode*>(m_sampler_handle_table.GetObjectByHandle(sampler_slot));
-        VP_ASSERT(sampler_node != nullptr);
+        SamplerNode *sampler_node = std::addressof(m_sampler_array[sampler_slot]);
 
         /* Decrement ref count */
-        const u32 last_value = ::InterlockedDecrement(std::addressof(sampler_node->reference_count));
+        const u32 last_value = vp::util::InterlockedDecrement(std::addressof(sampler_node->reference_count));
 
         /* Destruct on finish */
         if (last_value != 1) { return; }
 
-        {
-            /* Sampler allocator lock */
-            std::scoped_lock l(m_sampler_allocator_critical_section);
+        /* Finalize sampler */
+        sampler_node->sampler.Finalize();
 
-            /* Finalize sampler */
-            sampler_node->sampler.Finalize();
+        {
+            /* Sampler tree lock */
+            std::scoped_lock l(m_sampler_tree_cs);
 
             /* Remove sampler from tree */
             m_sampler_map.Remove(std::addressof(sampler_node->rb_node));
-
-            /* Free sampler to allocator */
-            m_sampler_allocator.Free(sampler_node);
         }
 
         /* Free sampler handle */
-        const bool result = m_sampler_handle_table.FreeHandle(sampler_slot);
-        VP_ASSERT(result == true);
+        m_sampler_handle_table.Free(sampler_slot);
 
         return;
     }
@@ -380,23 +364,14 @@ namespace awn::gfx {
     }
 
     Texture *TextureSamplerManager::TryGetTextureByHandle(DescriptorSlot texture_slot) {
-
-        /* Lookup by handle table */
-        TextureNode *texture_node = reinterpret_cast<TextureNode*>(m_texture_handle_table.GetObjectByHandle(texture_slot));
-        return (texture_node != nullptr) ? std::addressof(texture_node->texture) : nullptr;
+        return std::addressof(m_texture_array[texture_slot].texture);
     }
 
     TextureView *TextureSamplerManager::TryGetTextureViewByHandle(DescriptorSlot texture_slot) {
-
-        /* Lookup by handle table */
-        TextureNode *texture_node = reinterpret_cast<TextureNode*>(m_texture_handle_table.GetObjectByHandle(texture_slot));
-        return (texture_node != nullptr) ? std::addressof(texture_node->texture_view) : nullptr;
+        return std::addressof(m_texture_array[texture_slot].texture_view);
     }
 
     Sampler *TextureSamplerManager::TryGetSamplerByHandle(DescriptorSlot sampler_slot) {
-
-        /* Lookup by handle table */
-        SamplerNode *sampler_node = reinterpret_cast<SamplerNode*>(m_sampler_handle_table.GetObjectByHandle(sampler_slot));
-        return (sampler_node != nullptr) ? std::addressof(sampler_node->sampler) : nullptr;
+        return std::addressof(m_sampler_array[sampler_slot].sampler);
     }
 }

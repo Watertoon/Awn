@@ -81,7 +81,7 @@ namespace vp::util {
     constexpr inline u32 cMurmur32Finish1   = 0x85ebca6b;
     constexpr inline u32 cMurmur32Finish2   = 0xc2b2ae35;
 
-    constexpr ALWAYS_INLINE u32 HashMurmur3(const char *string, u32 seed = 0xffff'ffff) {
+    constexpr ALWAYS_INLINE u32 HashMurmur3WithSeed(const char *string, u32 seed) {
 
         u32 state = static_cast<u32>(*string);
         u32 iter = 0;
@@ -131,5 +131,9 @@ namespace vp::util {
         state = state ^ (state >> 13);
         state = state * cMurmur32Finish2;
         return state ^ (state >> 16);
+    }
+
+    constexpr ALWAYS_INLINE u32 HashMurmur3(const char *string) {
+        return HashMurmur3WithSeed(string, 0xffff'ffff);
     }
 }

@@ -53,10 +53,8 @@ namespace awn::gfx {
                 constexpr ~TextureNode() {/*...*/}
             };
         public:
-            using TextureHandleTable = vp::util::FixedHandleTable<Context::cTargetMaxTextureDescriptorCount>;
-            using SamplerHandleTable = vp::util::FixedHandleTable<Context::cTargetMaxSamplerDescriptorCount>;
-            using TextureAllocator   = vp::util::FixedObjectAllocator<TextureNode, Context::cTargetMaxTextureDescriptorCount>;
-            using SamplerAllocator   = vp::util::FixedObjectAllocator<SamplerNode, Context::cTargetMaxSamplerDescriptorCount>;
+            using TextureHandleTable = vp::util::FixedAtomicIndexAllocator<u32, Context::cTargetMaxTextureDescriptorCount>;
+            using SamplerHandleTable = vp::util::FixedAtomicIndexAllocator<u16, Context::cTargetMaxSamplerDescriptorCount>;
             using SamplerMap         = vp::util::IntrusiveRedBlackTreeTraits<SamplerNode, &SamplerNode::rb_node>::Tree;
         private:
             VkDeviceMemory               m_vk_device_memory_texture;
@@ -72,17 +70,16 @@ namespace awn::gfx {
             u16                          m_texture_descriptor_stride;
             u16                          m_sampler_descriptor_stride;
             TextureHandleTable           m_texture_handle_table;
-            SamplerHandleTable           m_sampler_handle_table;
+            TextureNode                  m_texture_array[Context::cTargetMaxTextureDescriptorCount];
             SamplerMap                   m_sampler_map;
-            TextureAllocator             m_texture_allocator;
-            SamplerAllocator             m_sampler_allocator;
-            sys::ServiceCriticalSection  m_texture_allocator_critical_section;
-            sys::ServiceCriticalSection  m_sampler_allocator_critical_section;
+            SamplerHandleTable           m_sampler_handle_table;
+            SamplerNode                  m_sampler_array[Context::cTargetMaxSamplerDescriptorCount];
+            sys::ServiceCriticalSection  m_sampler_tree_cs;
         public:
             AWN_SINGLETON_TRAITS(TextureSamplerManager);
         public:
             constexpr  TextureSamplerManager() : m_vk_device_memory_texture(VK_NULL_HANDLE), m_separate_heap(nullptr), m_texture_descriptor_vk_buffer(), m_sampler_descriptor_vk_buffer(), m_texture_vk_device_address(), m_sampler_vk_device_address(), m_texture_descriptor_gpu_address{}, m_sampler_descriptor_gpu_address{},
-                                                 m_texture_descriptor_size(), m_sampler_descriptor_size(), m_texture_descriptor_stride(), m_sampler_descriptor_stride(), m_texture_handle_table(), m_sampler_handle_table(), m_sampler_map(), m_texture_allocator(), m_sampler_allocator(), m_texture_allocator_critical_section(), m_sampler_allocator_critical_section() {/*...*/}
+                                                 m_texture_descriptor_size(), m_sampler_descriptor_size(), m_texture_descriptor_stride(), m_sampler_descriptor_stride(), m_texture_handle_table(), m_texture_array{}, m_sampler_map(), m_sampler_handle_table(), m_sampler_array{}, m_sampler_tree_cs() {/*...*/}
             constexpr ~TextureSamplerManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, const TextureSamplerManagerInfo *manager_info);

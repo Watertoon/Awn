@@ -138,7 +138,7 @@ namespace vp::res {
         u32 string_table_offset;
         u32 data_offset;
 
-        static constexpr u16 cMagic = util::TCharCode16("YB");
+        static constexpr u16 cMagic         = util::TCharCode16("YB");
         static constexpr u16 cTargetVersion = 10;
 
         ALWAYS_INLINE const void *GetBigDataOffset(u32 offset) const {

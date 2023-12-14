@@ -186,6 +186,14 @@ namespace vp::resbui {
     class ByamlBigDataNodeDictionary : public ByamlBigDataNodeContainerBase {
         private:
             bool m_is_index_remap;
+        private:
+            constexpr u32 CalculateRemapSize() const {
+
+                if (m_is_index_remap == false) { return 0; }
+                if (m_node_count < 0x100)      { return sizeof(u8) * m_node_count; }
+                if (m_node_count < 0x10000)    { return sizeof(u16) * m_node_count; }
+                return sizeof(u32) * m_node_count;
+            }
         public:
             constexpr ByamlBigDataNodeDictionary() : ByamlBigDataNodeContainerBase(), m_is_index_remap(false) {/*...*/}
             virtual ~ByamlBigDataNodeDictionary() override {/*...*/}
@@ -235,13 +243,13 @@ namespace vp::resbui {
                 m_offset = static_cast<u32>(*container_offset - reinterpret_cast<uintptr_t>(head));
 
                 /* Calculate sizes */
-                const u32 remap_size            = (m_is_index_remap == false) ? 0 : sizeof(u32) * m_node_count;
+                const u32 remap_size            = this->CalculateRemapSize();
                 const u32 next_container_offset = sizeof(vp::res::ResByamlContainer) + remap_size + sizeof(vp::res::ResByamlDictionaryPair) * m_node_count;
 
                 /* Get container regions */
                 vp::res::ResByamlContainer      *container   = reinterpret_cast<vp::res::ResByamlContainer*>(*container_offset);
                 vp::res::ResByamlDictionaryPair *pair_array  = reinterpret_cast<vp::res::ResByamlDictionaryPair*>(*container_offset + sizeof(vp::res::ResByamlContainer));
-                u32                             *remap_array = reinterpret_cast<u32*>(*container_offset + sizeof(vp::res::ResByamlContainer) + sizeof(vp::res::ResByamlDictionaryPair) * m_node_count);
+                void                            *remap_array = reinterpret_cast<u32*>(*container_offset + sizeof(vp::res::ResByamlContainer) + sizeof(vp::res::ResByamlDictionaryPair) * m_node_count);
 
                 /* Advance container offset*/
                 *container_offset = *container_offset + next_container_offset;
@@ -253,6 +261,7 @@ namespace vp::resbui {
                 if (m_is_index_remap == true) {
 
                     /* Stream out remapped container */
+                    u32 remap_size = (m_node_count < 0x100) ? 1 : (m_node_count < 0x10000) ? 2 : 3;
                     u32 i = 0;
                     for (ByamlNodeBase &node : m_node_list) {
 
@@ -271,7 +280,13 @@ namespace vp::resbui {
                         node.Serialize(reinterpret_cast<void*>(std::addressof(pair_array[i].u32_value)), head);
                         
                         /* Write index */
-                        remap_array[i] = node.GetIndex();
+                        if (remap_size == 1) {
+                            reinterpret_cast<u8*>(remap_array)[i] = static_cast<u8>(node.GetIndex());
+                        } else if (remap_size == 2) {
+                            reinterpret_cast<u16*>(remap_array)[i] = static_cast<u16>(node.GetIndex());
+                        } else if (remap_size == 3) {                            
+                            reinterpret_cast<u32*>(remap_array)[i] = static_cast<u32>(node.GetIndex());
+                        }
 
                         ++i;
                     }
@@ -307,7 +322,7 @@ namespace vp::resbui {
             virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override {
 
                 /* Update container size */
-                const u32 remap_size   = (m_is_index_remap == false) ? 0 : sizeof(u32) * m_node_count;
+                const u32 remap_size   = this->CalculateRemapSize();
                 *container_offset_iter = vp::util::AlignUp(*container_offset_iter + sizeof(vp::res::ResByamlContainer) + remap_size + sizeof(vp::res::ResByamlDictionaryPair) * m_node_count, alignof(u32));
 
                 /* Calculate sub nodes */
@@ -324,6 +339,14 @@ namespace vp::resbui {
         private:
             bool m_is_index_remap;
             u32  m_key_size;
+        private:
+            constexpr u32 CalculateRemapSize() const {
+
+                if (m_is_index_remap == false) { return 0; }
+                if (m_node_count < 0x100)      { return sizeof(u8) * m_node_count; }
+                if (m_node_count < 0x10000)    { return sizeof(u16) * m_node_count; }
+                return sizeof(u32) * m_node_count;
+            }
         public:
             constexpr ByamlBigDataNodeHashArray() : ByamlBigDataNodeContainerBase(), m_is_index_remap(false), m_key_size(sizeof(u32)) {/*...*/}
             virtual ~ByamlBigDataNodeHashArray() override {/*...*/}
@@ -373,7 +396,7 @@ namespace vp::resbui {
                 m_offset = static_cast<u32>(*container_offset - reinterpret_cast<uintptr_t>(head));
 
                 /* Calculate sizes */
-                const u32 remap_size            = (m_is_index_remap == false) ? 0 : sizeof(u32) * m_node_count;
+                const u32 remap_size            = this->CalculateRemapSize();
                 const u32 next_container_offset = sizeof(vp::res::ResByamlContainer) + (m_key_size + sizeof(u32)) * m_node_count + sizeof(u8) * m_node_count + remap_size;
 
                 /* Get container regions */
@@ -392,6 +415,7 @@ namespace vp::resbui {
                 if (m_is_index_remap == true) {
 
                     /* Stream out remapped container */
+                    u32 remap_size = (m_node_count < 0x100) ? 1 : (m_node_count < 0x10000) ? 2 : 3;
                     u32 i = 0;
                     for (ByamlNodeBase &node : m_node_list) {
 
@@ -415,7 +439,13 @@ namespace vp::resbui {
                         data_type_array[i] = static_cast<u8>(node.GetByamlDataType());
 
                         /* Write index */
-                        remap_array[i] = node.GetIndex();
+                        if (remap_size == 1) {
+                            reinterpret_cast<u8*>(remap_array)[i] = static_cast<u8>(node.GetIndex());
+                        } else if (remap_size == 2) {
+                            reinterpret_cast<u16*>(remap_array)[i] = static_cast<u16>(node.GetIndex());
+                        } else if (remap_size == 3) {                            
+                            reinterpret_cast<u32*>(remap_array)[i] = static_cast<u32>(node.GetIndex());
+                        }
 
                         ++i;
                     }
@@ -456,7 +486,7 @@ namespace vp::resbui {
             virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override {
 
                 /* Update container size */
-                const u32 remap_size   = (m_is_index_remap == false) ? 0 : sizeof(u32) * m_node_count;
+                const u32 remap_size   = this->CalculateRemapSize();
                 *container_offset_iter = vp::util::AlignUp(*container_offset_iter + sizeof(vp::res::ResByamlContainer) + remap_size + (m_key_size + sizeof(u32)) * m_node_count + sizeof(u8) * m_node_count, alignof(u32));
 
                 /* Calculate sub nodes */

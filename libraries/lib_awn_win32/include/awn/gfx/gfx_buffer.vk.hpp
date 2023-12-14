@@ -106,8 +106,8 @@ namespace awn::gfx {
                 return { memory_requirements_2.memoryRequirements.size, memory_requirements_2.memoryRequirements.alignment };
             }
 
-            constexpr ALWAYS_INLINE void *Map()                { return m_buffer_gpu_memory_address; }
-            constexpr ALWAYS_INLINE void  Unmap(void *address) {/*...*/}
+            constexpr ALWAYS_INLINE void *Map() { return m_buffer_gpu_memory_address; }
+            constexpr ALWAYS_INLINE void  Unmap([[maybe_unused]] void *address) {/*...*/}
 
             constexpr ALWAYS_INLINE VkDeviceAddress       GetVkDeviceAddress()  const { return m_vk_device_address; } 
             constexpr ALWAYS_INLINE VkBuffer              GetVkBuffer()         const { return m_vk_buffer; } 

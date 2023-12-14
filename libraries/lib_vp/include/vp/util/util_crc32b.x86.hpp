@@ -98,10 +98,14 @@ namespace vp::util {
             }
             
             /* Fallback for rest of string */
-            while (*string_leftover != '\0') {
-                seed = cCrc32bTable[(*string_leftover ^ seed) & 0xff] ^ seed >> 8;
-                
-                string_leftover = string_leftover + 1;
+            if (string_leftover[0] != '\0') {
+                seed = cCrc32bTable[(string_leftover[0] ^ seed) & 0xff] ^ seed >> 8;
+            }
+            if (string_leftover[1] != '\0') {
+                seed = cCrc32bTable[(string_leftover[1] ^ seed) & 0xff] ^ seed >> 8;
+            }
+            if (string_leftover[2] != '\0') {
+                seed = cCrc32bTable[(string_leftover[2] ^ seed) & 0xff] ^ seed >> 8;
             }
             
             return ~seed;
@@ -155,11 +159,14 @@ namespace vp::util {
 
         /* Fallback for rest of string */
         u32 count = (data_size & 3);
-        while (count != 0) {
-            seed = cCrc32bTable[(*leftover_iter ^ seed) & 0xff] ^ seed >> 8;
-
-            leftover_iter = leftover_iter + 1;
-            count = count - 1;
+        if (0 < count) {
+            seed = cCrc32bTable[(leftover_iter[0] ^ seed) & 0xff] ^ seed >> 8;
+        }
+        if (1 < count) {
+            seed = cCrc32bTable[(leftover_iter[1] ^ seed) & 0xff] ^ seed >> 8;
+        }
+        if (2 < count) {
+            seed = cCrc32bTable[(leftover_iter[2] ^ seed) & 0xff] ^ seed >> 8;
         }
 
         return ~seed;

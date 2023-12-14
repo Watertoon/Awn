@@ -99,7 +99,7 @@ namespace awn::async {
             void Cancel();
         public:
              AsyncTask() : m_priority(), m_state(), m_status(), m_queue(), m_queue_thread(), m_task_delegate(), m_result_delegate(), m_user_data(), m_finish_event(), m_queue_list_node() { m_finish_event.Initialize(); }
-            ~AsyncTask() { m_finish_event.Finalize(); }
+            virtual ~AsyncTask() { m_finish_event.Finalize(); }
 
             Result PushTask(AsyncTaskPushInfo *push_info);
 

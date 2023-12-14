@@ -57,6 +57,6 @@ namespace awn::async {
             virtual void OnFinishExecute() {/*...*/}
         public:
             AsyncTaskForAllocator() : AsyncTask(), m_task_allocator(), m_watcher() { m_is_free_for_allocator = true; }
-            ~AsyncTaskForAllocator() {/*...*/}
+            virtual ~AsyncTaskForAllocator() override {/*...*/}
     };
 }

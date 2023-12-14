@@ -844,7 +844,7 @@ namespace vp::res {
 
             template <typename T>
                 requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
-            bool TryGetValueByKey(T *out_value, const char *key) const {
+            ALWAYS_INLINE bool TryGetValueByKey(T *out_value, const char *key) const {
 
                 /* Lookup required function at compile time */
                 const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
@@ -870,7 +870,7 @@ namespace vp::res {
     
             template <typename T>
                 requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
-            bool TryGetValueByIndex(T *out_value, u32 index) const {
+            ALWAYS_INLINE bool TryGetValueByIndex(T *out_value, u32 index) const {
 
                 /* Lookup required function at compile time */
                 const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
@@ -896,7 +896,7 @@ namespace vp::res {
 
             template <typename T>
                 requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
-            bool TryGetValueByHash(T *out_value, u32 hash) const {
+            ALWAYS_INLINE bool TryGetValueByHash(T *out_value, u32 hash) const {
 
                 /* Lookup required function at compile time */
                 const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
@@ -922,7 +922,7 @@ namespace vp::res {
 
             template <typename T>
                 requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
-            bool TryGetValueByHash(T *out_value, u64 hash) const {
+            ALWAYS_INLINE bool TryGetValueByHash(T *out_value, u64 hash) const {
 
                 /* Lookup required function at compile time */
                 const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
@@ -948,7 +948,7 @@ namespace vp::res {
 
             template <typename T>
                 requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
-            bool TryGetValueByData(T *out_value, ByamlData data) const {
+            ALWAYS_INLINE bool TryGetValueByData(T *out_value, ByamlData data) const {
 
                 /* Lookup required function at compile time */
                 const ByamlDataType data_type = TGetByamlDataTypeValue<T>();
@@ -970,6 +970,12 @@ namespace vp::res {
                 } else if constexpr (data_type == ByamlDataType::StringIndex) {
                     return this->TryGetStringByData(out_value, data);
                 }
+            }
+
+            template <typename T>
+                requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
+            ALWAYS_INLINE bool TryGetValueByIter(T *out_value) const {
+                return this->TryGetValueByData(out_value, m_container_data);
             }
     };
 }
