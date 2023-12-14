@@ -64,6 +64,25 @@ namespace awn::mem {
             constexpr ALWAYS_INLINE void UnlockHeapIfSafe() {
                 if (this->IsThreadSafe() == true) { m_heap_cs.Leave(); }
             }
+
+            void DisposeAll() {
+
+                auto disposer_iter = m_disposer_list.begin();
+                while (disposer_iter != m_disposer_list.end()) {
+
+                    /* Advance disposer iter*/
+                    IDisposer *disposer = std::addressof(*disposer_iter);
+                    ++disposer_iter;
+
+                    /* Remove disposer from heap */
+                    disposer->RemoveContainedHeapUnsafe();
+
+                    /* Destruct disposer */
+                    std::destroy_at(disposer);
+                }
+
+                return;
+            }
         public:
             void PushBackChild(Heap *child) {
                 std::scoped_lock l(*GetHeapManagerLock());
@@ -84,19 +103,7 @@ namespace awn::mem {
                 /* Destroy disposers */
                 {
                     ScopedHeapLock l(this);
-                    auto disposer_iter = m_disposer_list.begin();
-                    while (disposer_iter != m_disposer_list.end()) {
-
-                        /* Advance disposer iter*/
-                        IDisposer *disposer = std::addressof(*disposer_iter);
-                        ++disposer_iter;
-
-                        /* Remove disposer from heap */
-                        disposer->RemoveContainedHeapUnsafe();
-
-                        /* Destruct disposer */
-                        std::destroy_at(disposer);
-                    }
+                    this->DisposeAll();
                 }
 
                 /* Remove parent heap */

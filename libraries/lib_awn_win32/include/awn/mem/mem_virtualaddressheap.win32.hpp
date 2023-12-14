@@ -308,6 +308,85 @@ namespace awn::mem {
                 return;
             }
 
+            virtual size_t AdjustAllocation(void *address, size_t new_size) override {
+
+                /* Lock heap */
+                ScopedHeapLock l(this);
+
+                /* Large memory resize impl */
+                uintptr_t address_t = reinterpret_cast<uintptr_t>(address);
+                if ((address_t & (cSmallMemoryRegionSize - 1)) == 0) {
+
+                    /* Get large block */
+                    VirtualHeapLargeMemoryBlock *large_block = m_large_memory_map.Find(address_t);
+                    const size_t old_size = large_block->memory_size;
+
+                    /* Ensure new size is smaller and valid */
+                    const size_t aligned_new_size = vp::util::AlignUp(new_size + sizeof(VirtualHeapLargeMemoryBlock), vp::util::c4KB);
+                    if (old_size <= aligned_new_size && (old_size - aligned_new_size) != 0) { return old_size; }
+
+                    /* Construct new large block */
+                    VirtualHeapLargeMemoryBlock *new_large_block = reinterpret_cast<VirtualHeapLargeMemoryBlock*>(address_t + aligned_new_size - sizeof(VirtualHeapLargeMemoryBlock));
+                    std::construct_at(new_large_block);
+                    new_large_block->tree_node.SetKey(address_t);
+                    new_large_block->memory_size = aligned_new_size;
+
+                    /* Remove old large block */
+                    m_large_memory_map.Remove(large_block);
+
+                    /* Insert new large block */
+                    m_large_memory_map.Insert(new_large_block);
+
+                    /* Destroy old block */
+                    std::destroy_at(large_block);
+
+                    /* Free memory pages */
+                    const bool result = ::VirtualFree(reinterpret_cast<void*>(address_t + aligned_new_size), (old_size - aligned_new_size), MEM_DECOMMIT);
+                    VP_ASSERT(result == true);
+
+                    return new_size;
+                }
+
+                /* Small memory resize impl */
+                uintptr_t                    base_address = address_t & ~(cSmallMemoryRegionSize - 1);
+                VirtualHeapSmallMemoryBlock *small_block  = reinterpret_cast<VirtualHeapSmallMemoryBlock*>(base_address);
+
+                const u32  base_offset = (address_t >> 0xc) & 0xf;
+                u8        *page_count  = std::addressof(small_block->allocation_size_array[((address_t >> 0xc) >> 1) & 7]);
+                const u32  alloc_size  = (*page_count >> ((address_t >> 0xa) & 0x4)) & 0xf;
+                
+                /* Ensure the allocation is valid */
+                if (alloc_size == 0 || 0x10 < base_offset + alloc_size) { return alloc_size << 0xc; }
+
+                /* Calculate new small block count */
+                const u32 new_block_count = vp::util::AlignUp(new_size, vp::util::c4KB) >> 0xc;
+                if (new_block_count == 0) { return {}; }
+
+                /* Calculate free count */
+                const u32 free_count = alloc_size - new_block_count;
+                if (free_count == 0 || alloc_size < new_block_count) { return alloc_size << 0xc; }
+
+                /* Free memory pages */
+                const bool result = ::VirtualFree(reinterpret_cast<void*>(address_t + ((base_offset + new_block_count) << 0xc)), free_count << 0xc, MEM_DECOMMIT);
+                VP_ASSERT(result == true);
+
+                /* Update allocated small block count */
+                const u32 adj_new_count = (((address_t >> 0xc) & 1) == 0) ? (*page_count & 0xf0) | new_block_count : (*page_count & 0xf) | (new_block_count << 0x4);
+                *page_count             = adj_new_count;
+
+                /* Update page mask */
+                const PageMask last_page_mask = small_block->page_mask;
+                small_block->page_mask        = last_page_mask & ((~(-1 << (free_count & 0x1f)) << ((base_offset + new_block_count) & 0x1f)) ^ 0xffff);
+
+                /* Transfer small block from filled to free list if necessary */
+                if (last_page_mask == 0xffff) {
+                    m_filled_small_memory_list.Remove(*small_block); 
+                    m_free_small_memory_list.PushBack(*small_block);
+                }
+
+                return new_size;
+            }
+
             virtual size_t GetTotalFreeSize() override {
 
                 /* Query memory size */
@@ -324,9 +403,10 @@ namespace awn::mem {
                 const size_t total_free_size = this->GetTotalFreeSize();
                 if (cSmallMemoryRegionSize <= total_free_size) { return total_free_size - sizeof(VirtualHeapLargeMemoryBlock); }
 
-                /* Desperate check for a commited small memory block head that is free */
+                /* Lock heap */
                 ScopedHeapLock l(this);
 
+                /* Desperate check for a committed small memory block head that is free */
                 const size_t adjusted_alignment = vp::util::AlignUp(sizeof(VirtualHeapSmallMemoryBlock), alignment);
                 for (VirtualHeapSmallMemoryBlock &small_memory_block : m_free_small_memory_list) {
                     if ((small_memory_block.page_mask & 1) != 0) { continue; }

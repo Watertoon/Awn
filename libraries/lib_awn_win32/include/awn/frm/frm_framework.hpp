@@ -28,6 +28,25 @@ namespace awn::frm {
             out_of_memory_resize_alignment = vp::util::c4KB;
         }
     };
+
+    struct FrameworkGraphicsInfo {
+        size_t host_uncached_memory_size;
+        size_t host_cached_memory_size;
+        size_t gpu_host_uncached_memory_size;
+        size_t texture_memory_size;
+        u32    texture_handle_count;
+        u32    sampler_handle_count;
+
+        constexpr void SetDefaults() {
+            host_uncached_memory_size     = vp::util::c32MB;
+            host_cached_memory_size       = vp::util::c32MB;
+            gpu_host_uncached_memory_size = vp::util::c32MB;
+            texture_memory_size           = vp::util::c32MB;
+            texture_handle_count          = 0x100;
+            sampler_handle_count          = 0x100;
+        }
+    };
+
     struct FrameworkRunInfo {
         mem::Heap   *heap;
         int          argc;
@@ -134,51 +153,6 @@ namespace awn::frm {
                 /* Initialize input */
                 hid::InitializeRawInputThread(awn_library_heap);
 
-                /* Initialize graphics context */
-                gfx::Context *context = gfx::Context::CreateInstance(awn_library_heap);
-
-                gfx::ContextInfo context_info = {};
-                context_info.SetDefaults();
-
-                context->Initialize(std::addressof(context_info));
-
-                /* Initialize gpu heap mgr */
-                mem::GpuHeapManager *gpu_heap_mgr = mem::GpuHeapManager::CreateInstance(awn_library_heap);
-                const mem::GpuHeapManagerInfo gpu_heap_mgr_info = {
-                    .host_uncached_root_heap_count     = 1,
-                    .host_cached_root_heap_count       = 1,
-                    .gpu_host_uncached_root_heap_count = 1,
-                    .host_uncached_size_array          = { vp::util::c8MB },
-                    .host_cached_size_array            = { vp::util::c16MB },
-                    .gpu_host_uncached_size_array      = { vp::util::c32MB },
-                };
-                gpu_heap_mgr->Initialize(awn_library_heap, std::addressof(gpu_heap_mgr_info));
-
-                /* Initialize command pool mgr */
-                gfx::CommandPoolManager *cmd_pool_mgr = gfx::CommandPoolManager::CreateInstance(awn_library_heap);
-                cmd_pool_mgr->Initialize();
-
-                /* Initialize texture sampler mgr */
-                mem::Heap *gpu_heap_gpu_host_uncached = gpu_heap_mgr->GetGpuRootHeapGpuHostUncached(0);
-                gfx::TextureSamplerManager *tex_samp_mgr = gfx::TextureSamplerManager::CreateInstance(awn_library_heap);
-                const gfx::TextureSamplerManagerInfo texture_sampler_mgr_info = {
-                    .max_texture_handles = 256,
-                    .max_sampler_handles = 256,
-                    .texture_memory_size = vp::util::c32MB,
-                };
-                tex_samp_mgr->Initialize(awn_library_heap, gpu_heap_gpu_host_uncached, std::addressof(texture_sampler_mgr_info));
-
-                /* Register framework window class */
-                const WNDCLASSEX wnd_class = {
-                    .cbSize        = sizeof(WNDCLASSEX),
-                    .style         = CS_OWNDC,
-                    .lpfnWndProc   = FrameworkWindowFunction,
-                    .hInstance     = ::GetModuleHandle(nullptr),
-                    .lpszClassName = "AwnFramework"
-                };
-                u32 result7 = ::RegisterClassExA(std::addressof(wnd_class));
-                RESULT_RETURN_UNLESS(result7 != 0, ResultFailedToInitializeWindow);
-
                 /* Adjust library heap size */
                 awn_library_heap->AdjustHeap();
 
@@ -192,18 +166,6 @@ namespace awn::frm {
                 VP_ASSERT(lib_heap != nullptr);
                 {
                     mem::ScopedCurrentThreadHeap heap_scope(lib_heap);
-
-                    gfx::TextureSamplerManager::GetInstance()->Finalize();
-                    gfx::TextureSamplerManager::DeleteInstance();
-
-                    gfx::CommandPoolManager::GetInstance()->Finalize();
-                    gfx::CommandPoolManager::DeleteInstance();
-
-                    mem::GpuHeapManager::GetInstance()->Finalize();
-                    mem::GpuHeapManager::DeleteInstance();
-
-                    gfx::Context::GetInstance()->Finalize();
-                    gfx::Context::DeleteInstance();
 
                     hid::FinalizeRawInputThread();
 
@@ -219,15 +181,100 @@ namespace awn::frm {
                 mem::Heap *root_heap = mem::GetRootHeap(0);
                 root_heap->Free(lib_heap);
 
-                /* Unregister framework window class */
-                const bool result0 = ::UnregisterClassA("AwnFramework", ::GetModuleHandle(nullptr));
-                VP_ASSERT(result0 == true);
-
                 //size_t     total_heap_size = mem::GetRootHeapTotalSize(0);
                 mem::FinalizeHeapManager();
 
                 const bool result1 = ::VirtualFree(root_heap, 0, MEM_RELEASE);
                 VP_ASSERT(result1 == true);
+
+                return;
+            }
+
+            static Result InitializeGraphics(FrameworkGraphicsInfo *graphics_info) {
+
+                /* Create library heap */
+                mem::Heap *root_heap = mem::GetRootHeap(0);
+                mem::Heap *awn_graphics_heap = mem::ExpHeap::TryCreate("awn::frm::Framework Graphics", root_heap, mem::Heap::cWholeSize, 8, false);
+
+                /* Initialize graphics context */
+                gfx::Context *context = gfx::Context::CreateInstance(awn_graphics_heap);
+
+                gfx::ContextInfo context_info = {};
+                context_info.SetDefaults();
+
+                context->Initialize(std::addressof(context_info));
+
+                /* Initialize gpu heap mgr */
+                mem::GpuHeapManager *gpu_heap_mgr = mem::GpuHeapManager::CreateInstance(awn_graphics_heap);
+                const mem::GpuHeapManagerInfo gpu_heap_mgr_info = {
+                    .host_uncached_root_heap_count     = 1,
+                    .host_cached_root_heap_count       = 1,
+                    .gpu_host_uncached_root_heap_count = 1,
+                    .host_uncached_size_array          = { graphics_info->host_uncached_memory_size },
+                    .host_cached_size_array            = { graphics_info->host_cached_memory_size },
+                    .gpu_host_uncached_size_array      = { graphics_info->gpu_host_uncached_memory_size },
+                };
+                gpu_heap_mgr->Initialize(awn_graphics_heap, std::addressof(gpu_heap_mgr_info));
+
+                /* Initialize command pool mgr */
+                gfx::CommandPoolManager *cmd_pool_mgr = gfx::CommandPoolManager::CreateInstance(awn_graphics_heap);
+                cmd_pool_mgr->Initialize();
+
+                /* Initialize texture sampler mgr */
+                mem::Heap *gpu_heap_gpu_host_uncached = gpu_heap_mgr->GetGpuRootHeapGpuHostUncached(0);
+                gfx::TextureSamplerManager *tex_samp_mgr = gfx::TextureSamplerManager::CreateInstance(awn_graphics_heap);
+                const gfx::TextureSamplerManagerInfo texture_sampler_mgr_info = {
+                    .max_texture_handles = graphics_info->texture_handle_count,
+                    .max_sampler_handles = graphics_info->sampler_handle_count,
+                    .texture_memory_size = graphics_info->texture_memory_size,
+                };
+                tex_samp_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, std::addressof(texture_sampler_mgr_info));
+
+                /* Register framework window class */
+                const WNDCLASSEX wnd_class = {
+                    .cbSize        = sizeof(WNDCLASSEX),
+                    .style         = CS_OWNDC,
+                    .lpfnWndProc   = FrameworkWindowFunction,
+                    .hInstance     = ::GetModuleHandle(nullptr),
+                    .lpszClassName = "AwnFramework"
+                };
+                u32 result7 = ::RegisterClassExA(std::addressof(wnd_class));
+                RESULT_RETURN_UNLESS(result7 != 0, ResultFailedToInitializeWindow);
+
+                /* Adjust graphics heap size */
+                awn_graphics_heap->AdjustHeap();
+
+                RESULT_RETURN_SUCCESS;
+            }
+
+            static void FinalizeGraphics() {
+
+                /* Finalize graphics */
+                mem::Heap *gfx_heap = mem::FindHeapByName("awn::frm::Framework Graphics");
+                VP_ASSERT(gfx_heap != nullptr);
+                {
+                    mem::ScopedCurrentThreadHeap heap_scope(gfx_heap);
+
+                    gfx::TextureSamplerManager::GetInstance()->Finalize();
+                    gfx::TextureSamplerManager::DeleteInstance();
+
+                    gfx::CommandPoolManager::GetInstance()->Finalize();
+                    gfx::CommandPoolManager::DeleteInstance();
+
+                    mem::GpuHeapManager::GetInstance()->Finalize();
+                    mem::GpuHeapManager::DeleteInstance();
+
+                    gfx::Context::GetInstance()->Finalize();
+                    gfx::Context::DeleteInstance();
+                }
+
+                /* Free library heap */
+                mem::Heap *root_heap = mem::GetRootHeap(0);
+                root_heap->Free(gfx_heap);
+
+                /* Unregister framework window class */
+                const bool result0 = ::UnregisterClassA("AwnFramework", ::GetModuleHandle(nullptr));
+                VP_ASSERT(result0 == true);
 
                 return;
             }
