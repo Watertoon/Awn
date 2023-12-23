@@ -515,8 +515,11 @@ namespace vp::resbui {
                 /* Write big data */
                 *reinterpret_cast<u64*>(*big_data_offset) = m_value;
 
+                /* Set file offset */
+                m_offset = static_cast<u32>(*big_data_offset - reinterpret_cast<uintptr_t>(head));
+
                 /* Advance big data offset */
-                *big_data_offset = vp::util::AlignUp(*big_data_offset + sizeof(u64), alignof(u64));
+                *big_data_offset = *big_data_offset + sizeof(u64);
 
                 return;
             }
@@ -524,7 +527,7 @@ namespace vp::resbui {
             virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override {
 
                 /* Update big data size */
-                *big_data_offset_iter = vp::util::AlignUp(*big_data_offset_iter + sizeof(u64), alignof(u64));
+                *big_data_offset_iter = *big_data_offset_iter + sizeof(u64);
 
                 return;
             }
@@ -546,8 +549,11 @@ namespace vp::resbui {
                 /* Write big data */
                 *reinterpret_cast<s64*>(*big_data_offset) = m_value;
 
+                /* Set file offset */
+                m_offset = static_cast<u32>(*big_data_offset - reinterpret_cast<uintptr_t>(head));
+
                 /* Advance big data offset */
-                *big_data_offset = vp::util::AlignUp(*big_data_offset + sizeof(s64), alignof(s64));
+                *big_data_offset = *big_data_offset + sizeof(s64);
 
                 return;
             }
@@ -555,7 +561,7 @@ namespace vp::resbui {
             virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override {
 
                 /* Update big data size */
-                *big_data_offset_iter = vp::util::AlignUp(*big_data_offset_iter + sizeof(s64), alignof(s64));
+                *big_data_offset_iter = *big_data_offset_iter + sizeof(s64);
 
                 return;
             }
@@ -572,13 +578,17 @@ namespace vp::resbui {
             constexpr void SetValue(double value) { m_value = value; }
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::F64; }
-            virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
+            virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, vp::res::ResByaml *head) override {
 
                 /* Write big data */
                 *reinterpret_cast<double*>(*big_data_offset) = m_value;
 
+                /* Set file offset */
+                m_offset = static_cast<u32>(*big_data_offset - reinterpret_cast<uintptr_t>(head));
+
                 /* Advance big data offset */
-                *big_data_offset = vp::util::AlignUp(*big_data_offset + sizeof(double), alignof(double));
+                *big_data_offset = *big_data_offset + sizeof(double);
+
 
                 return;
             }
@@ -586,7 +596,7 @@ namespace vp::resbui {
             virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override {
 
                 /* Update big data size */
-                *big_data_offset_iter = vp::util::AlignUp(*big_data_offset_iter + sizeof(double), alignof(double));
+                *big_data_offset_iter = *big_data_offset_iter + sizeof(double);
 
                 return;
             }

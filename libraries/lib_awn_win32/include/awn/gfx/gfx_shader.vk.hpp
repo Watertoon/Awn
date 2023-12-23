@@ -17,7 +17,7 @@
 
 namespace awn::gfx {
 
-    enum class ShaderStage {
+    enum class ShaderStage : u32 {
         Vertex                 = (1 << 1),
         TessellationEvaluation = (1 << 2),
         TessellationControl    = (1 << 3),

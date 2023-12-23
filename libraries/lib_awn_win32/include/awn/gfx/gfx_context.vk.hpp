@@ -91,26 +91,24 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxSamplerDescriptorSize = 0x20;
 
             /* Global descriptor resource limits */
-            static constexpr size_t cTargetMaxDescriptorCount                = 0x4fa0;
-            static constexpr size_t cTargetMaxTextureDescriptorCount         = 0x4000;
-            static constexpr size_t cTargetMaxSamplerDescriptorCount         = 0xfa0;
-            static constexpr size_t cTargetMaxUniformBufferDescriptorCount   = 16;
-            static constexpr size_t cTargetMaxPushDescriptorCount            = cTargetMaxUniformBufferDescriptorCount;
-            static constexpr size_t cTargetDescriptorSetLayoutCount          = 3;
-            static constexpr size_t cTargetTextureSamplerDescriptorIndexSize = sizeof(u32);
-            static constexpr size_t cTargetTextureDescriptorIndexBits        = 20;
-            static constexpr size_t cTargetSamplerDescriptorIndexBits        = 12;
+            static constexpr size_t cTargetMaxTextureDescriptorCount = 0x4000;
+            static constexpr size_t cTargetMaxSamplerDescriptorCount = 0xfa0;
+            static constexpr size_t cTargetMaxDescriptorCount        = cTargetMaxTextureDescriptorCount + cTargetMaxSamplerDescriptorCount;
+            static constexpr size_t cTargetMaxSetUniformBufferCount  = 14;
+            static constexpr size_t cTargetMaxSetStorageBufferCount  = 16;
+            static constexpr size_t cTargetMaxPushDescriptorCount    = cTargetMaxSetUniformBufferCount + cTargetMaxSetStorageBufferCount;
+            static constexpr size_t cTargetDescriptorSetLayoutCount  = 3;
 
-            /* Texture descriptor binding */
-            static constexpr size_t cTargetTextureDescriptorBinding       = 0;
-            static constexpr size_t cTargetSamplerDescriptorBinding       = 0;
-            static constexpr size_t cTargetUniformBufferDescriptorBinding = 0;
-            static constexpr size_t cTargetStorageBufferDescriptorBinding = 0;
+            /* Layout bindings */
+            static constexpr size_t cTargetTextureLayoutBinding       = 0;
+            static constexpr size_t cTargetSamplerLayoutBinding       = 0;
+            static constexpr size_t cTargetUniformBufferLayoutBinding = 0;
+            static constexpr size_t cTargetStorageBufferLayoutBinding = 0;
             
             /* Push constant ranges */
             static constexpr size_t cTargetAllStagePushConstantRangeCount = 1;
             static constexpr size_t cTargetPushConstantOffset             = 0;
-            static constexpr size_t cTargetPushConstantSize               = 256;
+            static constexpr size_t cTargetPushConstantSize               = 128;
 
             /* Per Shader stage resource limits */
             static constexpr size_t cTargetMaxSimultaneousShaderStageCount = 5;
@@ -145,6 +143,7 @@ namespace awn::gfx {
             VkQueue                                                      m_vk_optical_flow_queue;
             VkDescriptorSetLayout                                        m_vk_texture_descriptor_set_layout;
             VkDescriptorSetLayout                                        m_vk_sampler_descriptor_set_layout;
+            VkDescriptorSetLayout                                        m_vk_storage_buffer_descriptor_set_layout;
             VkDescriptorSetLayout                                        m_vk_uniform_buffer_descriptor_set_layout;
             VkPipelineLayout                                             m_vk_pipeline_layout;
             VkPushConstantRange                                          m_vk_push_constant_range;
@@ -177,6 +176,7 @@ namespace awn::gfx {
             VkPhysicalDeviceMaintenance5FeaturesKHR                      m_vk_physical_device_maintenance_5_features;
             VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT m_vk_physical_device_dynamic_rendering_unused_attachments_features;
             VkPhysicalDeviceNestedCommandBufferFeaturesEXT               m_vk_physical_device_nested_command_buffer_features;
+            VkPhysicalDeviceMaintenance6FeaturesKHR                      m_vk_physical_device_maintenance_6_features;
 
             VkPhysicalDeviceMemoryProperties                             m_vk_physical_device_memory_properties;
 
@@ -293,6 +293,10 @@ namespace awn::gfx {
             },
             m_vk_physical_device_nested_command_buffer_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_maintenance_6_features),
+            },
+            m_vk_physical_device_maintenance_6_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES_KHR,
             }
             {/*...*/}
 

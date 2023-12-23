@@ -111,11 +111,13 @@ namespace vp::resbui {
                     reinterpret_cast<ByamlNodeBigData*>(m_root_node)->SerializeForBigData(std::addressof(big_data_iter), std::addressof(container_iter), head);
                 }
 
+                /* Set head */
+                head->data_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(container_base) - reinterpret_cast<uintptr_t>(head));
+
                 /* Write single data type for non container */
-                void *root_value_offset           = std::addressof(head->data_offset);
+                void *root_value_offset           = container_base;
                 res::ByamlDataType root_data_type = m_root_node->GetByamlDataType();
                 if (res::IsContainerType(root_data_type) == false && root_data_type != res::ByamlDataType::Null) {
-                    head->data_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(container_base) - reinterpret_cast<uintptr_t>(head));
 
                     u8 *data_type     = reinterpret_cast<u8*>(container_base);
                     *data_type        = static_cast<u8>(root_data_type);
@@ -175,7 +177,7 @@ namespace vp::resbui {
                 out_memory_info->location_string_pool.alignment = string_pool_memory_info.max_alignment;
 
                 const size_t big_data_base = out_memory_info->location_string_pool.offset + out_memory_info->location_string_pool.size;
-                uintptr_t container_iter  = big_data_base + sizeof(u32) * 2;
+                uintptr_t container_iter  = big_data_base;
                 uintptr_t big_data_iter   = big_data_base;
                 if (ByamlNodeBigData::CheckRuntimeTypeInfo(m_root_node) == true) {
 
@@ -194,7 +196,7 @@ namespace vp::resbui {
 
                 /* Set container location */
                 out_memory_info->location_container.offset    = big_data_iter;
-                out_memory_info->location_container.size      = container_iter - big_data_iter;
+                out_memory_info->location_container.size      = (container_iter - big_data_iter == 0) ? (sizeof(u32) * 2) : container_iter - big_data_iter;
                 out_memory_info->location_container.alignment = alignof(u32);
 
                 /* Set totals */

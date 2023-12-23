@@ -156,7 +156,7 @@ namespace vp::res {
             constexpr ALWAYS_INLINE bool IsValid()          const { return m_byaml != nullptr; }
             constexpr ALWAYS_INLINE bool IsContainerValid() const { return (IsContainerType(static_cast<ByamlDataType>(m_container_data.data_type)) == true) & (m_container_data.u32_value != 0); }
 
-            constexpr ALWAYS_INLINE ByamlData GetData() const { return m_container_data; }
+            constexpr ALWAYS_INLINE ByamlData GetDataByIterator() const { return m_container_data; }
 
             bool TryGetKeyByData(const char **out_key, ByamlData data) const {
 
@@ -974,8 +974,36 @@ namespace vp::res {
 
             template <typename T>
                 requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
-            ALWAYS_INLINE bool TryGetValueByIter(T *out_value) const {
+            ALWAYS_INLINE bool TryGetValueByIterator(T *out_value) const {
                 return this->TryGetValueByData(out_value, m_container_data);
+            }
+
+            ALWAYS_INLINE bool TryGetBoolByIterator(bool *out_value) const {
+                return this->TryGetBoolByData(out_value, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetS32ByIterator(s32 *out_value) const {
+                return this->TryGetS32ByData(out_value, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetF32ByIterator(float *out_value) const {
+                return this->TryGetF32ByData(out_value, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetU32ByIterator(u32 *out_value) const {
+                return this->TryGetU32ByData(out_value, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetS64ByIterator(s64 *out_value) const {
+                return this->TryGetS64ByData(out_value, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetF64ByIterator(double *out_value) const {
+                return this->TryGetF64ByData(out_value, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetU64ByIterator(u64 *out_value) const {
+                return this->TryGetU64ByData(out_value, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetStringByIterator(const char **out_value) const {
+                return this->TryGetStringByData(out_value, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetBinaryDataByIterator(void **out_value, u32 *out_size, u32 *out_alignment) const {
+                return this->TryGetBinaryDataByData(out_value, out_size, out_alignment, m_container_data);
             }
     };
 }

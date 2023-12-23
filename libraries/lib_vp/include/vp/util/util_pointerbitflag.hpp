@@ -52,8 +52,9 @@ namespace vp::util {
             ALWAYS_INLINE       T *GetPointer()       { return reinterpret_cast<T*>(m_pointer & cPointerMask); }
             ALWAYS_INLINE const T *GetPointer() const { return reinterpret_cast<const T*>(m_pointer & cPointerMask); }
 
-            constexpr ALWAYS_INLINE void SetBitMask(u32 bit_mask)  { m_pointer = (m_pointer & cPointerMask) | (bit_mask & cValueMask); }
-            ALWAYS_INLINE void SetPointer(T *pointer)              { m_pointer = reinterpret_cast<uintptr_t>(pointer) | (m_pointer & cValueMask); }
-            ALWAYS_INLINE void SetPointerAndClearFlags(T *pointer) { m_pointer = reinterpret_cast<uintptr_t>(pointer); }
+            constexpr ALWAYS_INLINE void SetBitMask(u32 bit_mask)              { m_pointer = (m_pointer & cPointerMask) | (bit_mask & cValueMask); }
+            constexpr ALWAYS_INLINE void SetFlagsAndClearPointer(u32 bit_mask) { m_pointer = bit_mask; }
+            ALWAYS_INLINE void SetPointer(T *pointer)                          { m_pointer = reinterpret_cast<uintptr_t>(pointer) | (m_pointer & cValueMask); }
+            ALWAYS_INLINE void SetPointerAndClearFlags(T *pointer)             { m_pointer = reinterpret_cast<uintptr_t>(pointer); }
 	};
 }

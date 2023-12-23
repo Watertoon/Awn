@@ -262,6 +262,9 @@ namespace awn::gfx {
         if (m_vk_physical_device_nested_command_buffer_features.nestedCommandBufferRendering == false)       { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_nested_command_buffer_features.nestedCommandBufferSimultaneousUse == false) { VP_ASSERT(false); return false; }
 
+        /* Maintenance 6 feature checks */
+        if (m_vk_physical_device_maintenance_6_features.maintenance6 == false) { VP_ASSERT(false); return false; }
+
         m_vk_physical_device = vk_physical_device;
 
         /* Find queue families */
@@ -487,8 +490,13 @@ namespace awn::gfx {
 		/* Initialize device */
         {
             /* VkDevice feature enables */
+            VkPhysicalDeviceMaintenance6FeaturesKHR maintenance_6_features = {
+                .sType        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES_KHR,
+                .maintenance6 = VK_TRUE,
+            };
             VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
                 .sType                              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+                .pNext                              = std::addressof(maintenance_6_features),
                 .nestedCommandBuffer                = VK_TRUE,
                 .nestedCommandBufferRendering       = VK_TRUE,
                 .nestedCommandBufferSimultaneousUse = VK_TRUE,
@@ -628,6 +636,7 @@ namespace awn::gfx {
                 VK_EXT_HOST_IMAGE_COPY_EXTENSION_NAME,
                 VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME,
                 VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
+                VK_KHR_MAINTENANCE_6_EXTENSION_NAME,
             };
             const u32 device_extension_count = sizeof(device_extension_array) / sizeof(const char*);
             
@@ -709,7 +718,7 @@ namespace awn::gfx {
 
             const VkDescriptorSetLayoutBinding texture_set_binding_array[] = { 
                 {
-                    .binding         = cTargetTextureDescriptorBinding,
+                    .binding         = cTargetTextureLayoutBinding,
                     .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
                     .descriptorCount = cTargetMaxTextureDescriptorCount,
                     .stageFlags      = VK_SHADER_STAGE_ALL,
@@ -740,7 +749,7 @@ namespace awn::gfx {
 
             const VkDescriptorSetLayoutBinding sampler_set_binding_array[] = { 
                 {
-                    .binding         = cTargetSamplerDescriptorBinding,
+                    .binding         = cTargetSamplerLayoutBinding,
                     .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
                     .descriptorCount = cTargetMaxSamplerDescriptorCount,
                     .stageFlags      = VK_SHADER_STAGE_ALL,
@@ -758,6 +767,37 @@ namespace awn::gfx {
             VP_ASSERT(result6 == VK_SUCCESS);
         }
 
+        /* Initialize storage buffer descriptor layout */
+        {
+            const VkDescriptorBindingFlags  storage_buffer_set_binding_flag_array[] = {
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
+            };
+            const VkDescriptorSetLayoutBindingFlagsCreateInfo storage_buffer_set_binding_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+                .bindingCount = sizeof(storage_buffer_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
+                .pBindingFlags = storage_buffer_set_binding_flag_array
+            };
+
+            const VkDescriptorSetLayoutBinding storage_buffer_set_binding_array[] = { 
+                {
+                    .binding         = cTargetStorageBufferLayoutBinding,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = cTargetMaxSetStorageBufferCount,
+                    .stageFlags      = VK_SHADER_STAGE_ALL,
+                }
+            };
+
+            const VkDescriptorSetLayoutCreateInfo storage_buffer_set_layout_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+                .pNext = std::addressof(storage_buffer_set_binding_info),
+                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
+                .bindingCount = sizeof(storage_buffer_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
+                .pBindings = storage_buffer_set_binding_array
+            };
+            const u32 result6 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(storage_buffer_set_layout_info), nullptr, std::addressof(m_vk_storage_buffer_descriptor_set_layout));
+            VP_ASSERT(result6 == VK_SUCCESS);
+        }
+
         /* Initialize uniform buffer descriptor layout */
         {
             const VkDescriptorBindingFlags  uniform_buffer_set_binding_flag_array[] = {
@@ -771,9 +811,9 @@ namespace awn::gfx {
 
             const VkDescriptorSetLayoutBinding uniform_buffer_set_binding_array[] = { 
                 {
-                    .binding         = cTargetSamplerDescriptorBinding,
+                    .binding         = cTargetUniformBufferLayoutBinding,
                     .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                    .descriptorCount = cTargetMaxUniformBufferDescriptorCount,
+                    .descriptorCount = cTargetMaxSetUniformBufferCount,
                     .stageFlags      = VK_SHADER_STAGE_ALL,
                 }
             };
@@ -794,6 +834,7 @@ namespace awn::gfx {
             const VkDescriptorSetLayout descriptor_set_layout_array[] = {
                 m_vk_texture_descriptor_set_layout,
                 m_vk_sampler_descriptor_set_layout,
+                m_vk_storage_buffer_descriptor_set_layout,
                 m_vk_uniform_buffer_descriptor_set_layout,
             };
 
@@ -801,7 +842,7 @@ namespace awn::gfx {
                 {
                     .stageFlags = VK_SHADER_STAGE_ALL,
                     .offset = cTargetPushConstantOffset,
-                    .size   = cTargetPushConstantSize
+                    .size   = cTargetPushConstantSize,
                 }
             };
 
@@ -834,6 +875,7 @@ namespace awn::gfx {
         ::pfn_vkDestroyPipelineLayout(m_vk_device, m_vk_pipeline_layout, nullptr);
         ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_texture_descriptor_set_layout, nullptr);
         ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_sampler_descriptor_set_layout, nullptr);
+        ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_storage_buffer_descriptor_set_layout, nullptr);
         ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_uniform_buffer_descriptor_set_layout, nullptr);
 
         ::pfn_vkDestroyDevice(m_vk_device, nullptr);

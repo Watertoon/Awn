@@ -159,7 +159,7 @@ namespace vp::util {
             void InsertFixup(node_type *insert, TreeNodeTrace node_trace) {
 
                 /* Nothing to do if no traversal count */
-                if (node_trace.traversal_count < 1) { return; }
+                if (node_trace.traversal_count < 2) { return; }
 
                 /* Setup trace iterators */
                 u32 traversal_iter = node_trace.traversal_count;
@@ -205,7 +205,7 @@ namespace vp::util {
                     node_type *original_side = nullptr;
                     if (((next_side_iter & 1) == 0) == ((side_iter & 1) == 0)) {
                         /* Dual black left rotation or red right rotation */
-                        if (side_iter == 0) { original_side = this->RotateRight(parent_parent_iter); }
+                        if ((side_iter & 1) == 0) { original_side = this->RotateRight(parent_parent_iter); }
                         else                { original_side = this->RotateLeft(parent_parent_iter); }
                     } else if ((side_iter & 1) == 0) {
                         /* Red black, right rotate, left rotate */
@@ -248,6 +248,7 @@ namespace vp::util {
                     traversal_count = traversal_count + 1;
                     next_node       = std::addressof(node_iter->m_left)[side];
                 } while(next_node != nullptr);
+                VP_ASSERT(traversal_count < 0x40);
 
                 /* Insert node */
                 std::addressof(node_iter->m_left)[side] = insert;
@@ -556,14 +557,10 @@ namespace vp::util {
             static constexpr ALWAYS_INLINE node_type *FindImpl(node_type *iter, key_type key) {
 
                 /* Binary iterate */
-                for (; iter != nullptr; iter = iter->m_right) {
-                    while (key < iter->m_key) {
-                        iter = iter->m_left;
-                        if (iter == nullptr) { return nullptr; } 
-                    }
-                    if (key <= iter->m_key) {
-                        return iter;
-                    }
+                while (iter != nullptr) {
+                    if (iter->m_key == key) { return iter; }
+                    const bool side = (iter->m_key <= key);
+                    iter = std::addressof(iter->m_left)[side];
                 }
 
                 return nullptr;
@@ -578,7 +575,7 @@ namespace vp::util {
                 this->InsertImpl(Traits::GetTreeNode(node));
 
                 /* Paint root black */
-                m_root->m_parent_color.SetBit(0);
+                m_root->m_parent_color.SetFlagsAndClearPointer(1);
 
                 return;
             }
@@ -588,22 +585,22 @@ namespace vp::util {
                 this->InsertImpl(node);
 
                 /* Paint root black */
-                m_root->m_parent_color.SetBit(0);
+                m_root->m_parent_color.SetFlagsAndClearPointer(1);
 
                 return;
             }
 
             ALWAYS_INLINE void Remove(pointer node) {
                 this->RemoveImpl(Traits::GetTreeNode(node)->GetKey());
-                if (m_root != nullptr) { m_root->m_parent_color.SetBit(0); }
+                if (m_root != nullptr) { m_root->m_parent_color.SetFlagsAndClearPointer(1); }
             }
             ALWAYS_INLINE void Remove(node_type *node) {
                 this->RemoveImpl(node->GetKey());
-                if (m_root != nullptr) { m_root->m_parent_color.SetBit(0); }
+                if (m_root != nullptr) { m_root->m_parent_color.SetFlagsAndClearPointer(1); }
             }
             ALWAYS_INLINE void Remove(key_type hash) {
                 this->RemoveImpl(hash);
-                if (m_root != nullptr) { m_root->m_parent_color.SetBit(0); }
+                if (m_root != nullptr) { m_root->m_parent_color.SetFlagsAndClearPointer(1); }
             }
 
             ALWAYS_INLINE pointer Find(key_type hash) {
@@ -611,8 +608,8 @@ namespace vp::util {
                 if (node == nullptr) { return nullptr; }
                 return Traits::GetParent(node);
             }
-            
-                        pointer Start() {
+
+            pointer Start() {
 
                 if (m_root == nullptr) { return nullptr; }
 

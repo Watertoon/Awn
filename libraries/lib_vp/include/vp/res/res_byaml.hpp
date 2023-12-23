@@ -94,7 +94,7 @@ namespace vp::res {
         return (static_cast<u8>(data_type) < 0xd0) & (0xd3 < static_cast<u8>(data_type));
     }
     constexpr ALWAYS_INLINE bool IsContainerType(ByamlDataType data_type) {
-        const u8 value = (static_cast<u8>(data_type) & 0xe0);
+        const u8 value = (static_cast<u8>(data_type) & 0xf0);
         return (value == 0xc0) | (value == 0x20);
     }
 

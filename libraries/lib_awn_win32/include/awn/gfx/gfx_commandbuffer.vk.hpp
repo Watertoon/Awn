@@ -18,8 +18,8 @@
 namespace awn::gfx {
 
     struct GpuBufferAddress {
-        VkBuffer        vk_buffer;
-        VkDeviceAddress vk_device_address;
+        gfx::Buffer *buffer;
+        size_t       offset;
     };
 
     struct CommandList {
@@ -218,12 +218,12 @@ namespace awn::gfx {
             }
             void DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex) {
                 ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
-                ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.vk_buffer, 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
+                ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.buffer->GetVkBuffer(), 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
                 ::pfn_vkCmdDrawIndexed(m_command_list.vk_command_buffer, index_count, 0, base_index, base_vertex, 0);
             }
             void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count) {
                 ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
-                ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.vk_buffer, 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
+                ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.buffer->GetVkBuffer(), 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
                 ::pfn_vkCmdDrawIndexed(m_command_list.vk_command_buffer, index_count, instance_count, base_index, base_vertex, base_instance);
             }
             void DrawMeshTasks(u32 x, u32 y, u32 z) {
@@ -238,7 +238,8 @@ namespace awn::gfx {
                 const VkDeviceSize device_offset = 0;
                 const VkDeviceSize device_size   = size;
                 const VkDeviceSize device_stride = stride;
-                ::pfn_vkCmdBindVertexBuffers2(m_command_list.vk_command_buffer, binding, 1, std::addressof(vertex_buffer_address.vk_buffer), std::addressof(device_offset), std::addressof(device_size), std::addressof(device_stride));
+                VkBuffer           vk_buffer     = vertex_buffer_address.buffer->GetVkBuffer();
+                ::pfn_vkCmdBindVertexBuffers2(m_command_list.vk_command_buffer, binding, 1, std::addressof(vk_buffer), std::addressof(device_offset), std::addressof(device_size), std::addressof(device_stride));
             }
 
             void TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
@@ -341,13 +342,57 @@ namespace awn::gfx {
                 ::pfn_vkCmdEndRendering(m_command_list.vk_command_buffer);
             }
 
-            void SetStorageBuffer(u32 location, GpuBufferAddress storage_buffer_address) {
+            void SetUniformBuffer(u32 location, gfx::ShaderStage shader_stage_flags, GpuBufferAddress constant_buffer_address, size_t size) {
 
-                /* Push 8-byte buffer address to location in push constant range 128-256 */
-                ::pfn_vkCmdPushConstants(m_command_list.vk_command_buffer, Context::GetInstance()->GetVkPipelineLayout(), VK_SHADER_STAGE_ALL, location * sizeof(VkDeviceAddress), sizeof(VkDeviceAddress), std::addressof(storage_buffer_address.vk_device_address));
+                const VkDescriptorBufferInfo vk_buffer_info = {
+                    .buffer = constant_buffer_address.buffer->GetVkBuffer(),
+                    .offset = constant_buffer_address.offset,
+                    .range  = size,
+                };
+                const VkWriteDescriptorSet vk_write_set = {
+                    .sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .dstBinding      = 0,
+                    .dstArrayElement = location,
+                    .descriptorCount = 1,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .pBufferInfo     = std::addressof(vk_buffer_info),
+                };
+                const VkPushDescriptorSetInfoKHR vk_push_set_info = {
+                    .sType                = VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_INFO_KHR,
+                    .stageFlags           = static_cast<VkShaderStageFlags>(shader_stage_flags),
+                    .layout               = gfx::Context::GetInstance()->GetVkPipelineLayout(),
+                    .descriptorWriteCount = 1,
+                    .pDescriptorWrites    = std::addressof(vk_write_set),
+                };
+                ::pfn_vkCmdPushDescriptorSet2KHR(m_command_list.vk_command_buffer, std::addressof(vk_push_set_info));
             }
 
-            void SetTextureAndSampler(u32 location, DescriptorSlot texture_slot, DescriptorSlot sampler_slot) {
+            void SetStorageBuffer(u32 location, gfx::ShaderStage shader_stage_flags, GpuBufferAddress storage_buffer_address, size_t size) {
+
+                const VkDescriptorBufferInfo vk_buffer_info = {
+                    .buffer = storage_buffer_address.buffer->GetVkBuffer(),
+                    .offset = storage_buffer_address.offset,
+                    .range  = size,
+                };
+                const VkWriteDescriptorSet vk_write_set = {
+                    .sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .dstBinding      = 0,
+                    .dstArrayElement = location,
+                    .descriptorCount = 1,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .pBufferInfo     = std::addressof(vk_buffer_info),
+                };
+                const VkPushDescriptorSetInfoKHR vk_push_set_info = {
+                    .sType                = VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_INFO_KHR,
+                    .stageFlags           = static_cast<VkShaderStageFlags>(shader_stage_flags),
+                    .layout               = gfx::Context::GetInstance()->GetVkPipelineLayout(),
+                    .descriptorWriteCount = 1,
+                    .pDescriptorWrites    = std::addressof(vk_write_set),
+                };
+                ::pfn_vkCmdPushDescriptorSet2KHR(m_command_list.vk_command_buffer, std::addressof(vk_push_set_info));
+            }
+
+            void SetTextureAndSampler(u32 location, gfx::ShaderStage shader_stage_flags, DescriptorSlot texture_slot, DescriptorSlot sampler_slot) {
 
                 /* (Not yet viable) Get texture sampler handle */
                 /*const VkImageViewHandleInfoNVX image_handle_info = {
@@ -358,9 +403,17 @@ namespace awn::gfx {
                 };
                 const u32 view_handle = ::pfn_vkGetImageViewHandleNVX(Context::GetInstance()->GetVkDevice(), std::addressof(image_handle_info));*/
 
-                /* Push 4-byte packed 20:12 TextureIndex:SamplerIndex to location in push constant range 0-128 */
-                const u32 view_handle = ((sampler_slot & 0xfff) << Context::cTargetTextureDescriptorIndexBits) | (texture_slot & 0xf'ffff);
-                ::pfn_vkCmdPushConstants(m_command_list.vk_command_buffer, Context::GetInstance()->GetVkPipelineLayout(), VK_SHADER_STAGE_ALL, location * sizeof(u32), sizeof(u32), std::addressof(view_handle));
+                /* Push 2-byte texture sampler descriptor indices */
+                const u32 view_handle = ((sampler_slot & 0xffff) << 0x10) | (texture_slot & 0xffff);
+                const VkPushConstantsInfoKHR vk_push_info = {
+                    .sType      = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
+                    .layout     = gfx::Context::GetInstance()->GetVkPipelineLayout(),
+                    .stageFlags = static_cast<VkShaderStageFlags>(shader_stage_flags),
+                    .offset     = location * sizeof(u32),
+                    .size       = sizeof(u32),
+                    .pValues    = std::addressof(view_handle),
+                };
+                ::pfn_vkCmdPushConstants2KHR(m_command_list.vk_command_buffer, std::addressof(vk_push_info));
             }
 
             void SetShader(Shader *shader) {

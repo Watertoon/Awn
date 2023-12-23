@@ -6,7 +6,8 @@ namespace vp::util {
         requires (sizeof(T) <= sizeof(u32))
     class AtomicIndexAllocator {
         public:
-            static constexpr u32 cInvalidHandle = 0xffff'ffff;
+            static constexpr T   cInvalidHandle = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr u32 cMaxSize       = ~T(0);
         private:
             u32  m_next_index;
             u32  m_max_count;
@@ -16,6 +17,9 @@ namespace vp::util {
             constexpr ~AtomicIndexAllocator() {/*...*/}
 
             void Initialize(imem::IHeap *heap, u32 max_index_count) {
+
+                /* Integrity check size */
+                VP_ASSERT(max_index_count < cMaxSize);
 
                 /* Allocate array */
                 m_handle_array = new (heap, alignof(T)) T[max_index_count];
@@ -58,21 +62,21 @@ namespace vp::util {
                 return;
             }
 
-            ALWAYS_INLINE T Allocate() {
+            T Allocate() {
 
                 /* Try to atomicly acquire an index */
                 u32 handle_value      = 0;
                 u32 last_handle_value = static_cast<u32>(m_next_index);
                 while (last_handle_value != cInvalidHandle) {
                     handle_value      = static_cast<u32>(m_next_index);
-                    last_handle_value = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), handle_value, static_cast<u32>(m_handle_array[handle_value]));
-                    if (last_handle_value == handle_value) { return static_cast<T>(cInvalidHandle); }
+                    last_handle_value = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle_value]), handle_value);
+                    if (last_handle_value == handle_value) { return static_cast<T>(handle_value); }
                 }
 
                 return static_cast<T>(cInvalidHandle);
             }
 
-            ALWAYS_INLINE void Free(T index) {
+            void Free(T index) {
 
                 /* Atomicly release an index */
                 u32 handle     = 0;
@@ -80,7 +84,7 @@ namespace vp::util {
                 do {
                     handle                = m_next_index;
                     m_handle_array[index] = handle;
-                    last_index            = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), handle, static_cast<u32>(index));
+                    last_index            = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle]), handle);
                 } while (last_index != handle);
 
                 return;
@@ -93,7 +97,7 @@ namespace vp::util {
         requires (sizeof(T) <= sizeof(u32)) && (Count <= (~T(0)))
     class FixedAtomicIndexAllocator {
         public:
-            static constexpr u32 cInvalidHandle = 0xffff'ffff;
+            static constexpr T   cInvalidHandle = static_cast<T>(0xffff'ffff'ffff'ffff);
         private:
             u32  m_next_index;
             T    m_handle_array[Count];
@@ -120,8 +124,8 @@ namespace vp::util {
                 u32 last_handle_value = static_cast<u32>(m_next_index);
                 while (last_handle_value != cInvalidHandle) {
                     handle_value      = static_cast<u32>(m_next_index);
-                    last_handle_value = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), handle_value, static_cast<u32>(m_handle_array[handle_value]));
-                    if (last_handle_value == handle_value) { return static_cast<T>(cInvalidHandle); }
+                    last_handle_value = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle_value]), handle_value);
+                    if (last_handle_value == handle_value) { return static_cast<T>(handle_value); }
                 }
 
                 return static_cast<T>(cInvalidHandle);
@@ -135,7 +139,7 @@ namespace vp::util {
                 do {
                     handle                = m_next_index;
                     m_handle_array[index] = handle;
-                    last_index            = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), handle, static_cast<u32>(index));
+                    last_index            = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle]), handle);
                 } while (last_index != handle);
 
                 return;
