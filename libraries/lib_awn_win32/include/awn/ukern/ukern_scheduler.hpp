@@ -32,7 +32,7 @@ namespace awn::ukern::impl {
             friend class WaitAddressArbiter;
         private:
             using ThreadQueue           = vp::util::FixedPriorityQueue<FiberLocalStorage, &FiberLocalStorage::priority, cMaxThreadCount>;
-            using LocalThreadRingBuffer = vp::util::FixedRingBuffer<FiberLocalStorage, cMaxThreadCount>;
+            using LocalThreadRingBuffer = vp::util::FixedRingBuffer<FiberLocalStorage*, cMaxThreadCount>;
             using WaitList              = vp::util::IntrusiveListTraits<FiberLocalStorage, &FiberLocalStorage::wait_list_node>::List;
         protected:
             SRWLOCK                   m_scheduler_lock;

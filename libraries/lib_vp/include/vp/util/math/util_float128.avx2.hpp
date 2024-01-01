@@ -15,49 +15,29 @@
  */
 #pragma once
 
-namespace vp::util::sse4 {
+namespace vp::util::avx2 {
 
-    typedef float v4s __attribute__((vector_size(16)));
-    typedef double v2d __attribute__((vector_size(16)));
-
-    struct v4f {
-        union {
-            v4s s;
-            v2d d;
-            __m128 mm;
-        };
-
-        constexpr ALWAYS_INLINE v4f() : mm() {}
-        constexpr ALWAYS_INLINE v4f(const v4f& copy) : mm(copy.mm) {}
-
-        constexpr ALWAYS_INLINE v4f(const v4s& copy) : s(copy) {}
-        constexpr ALWAYS_INLINE v4f(const v2d& copy) : d(copy) {}
-
-        constexpr ALWAYS_INLINE v4f(float x, float y, float z, float w) : s{x,y,z,w} {}
-        constexpr ALWAYS_INLINE v4f(double x, double y) : d{x,y} {}
-    };
-
-    constexpr ALWAYS_INLINE __m128 addps(const v4f& a, const v4f& b) {
+    constexpr ALWAYS_INLINE __m128 addps(const v128f& a, const v128f& b) {
         if (std::is_constant_evaluated()) {
-            return a.s + b.s;
+            return a.f + b.f;
         } else {
-            return __builtin_ia32_addps(a.s, b.s);
+            return __builtin_ia32_addps(a.f, b.f);
         }
     }
 
-    constexpr ALWAYS_INLINE __m128 subps(const v4f& a, const v4f& b) {
+    constexpr ALWAYS_INLINE __m128 subps(const v128f& a, const v128f& b) {
         if(std::is_constant_evaluated()) {
-            return a.s - b.s;
+            return a.f - b.f;
         } else {
-            return __builtin_ia32_subps(a.s, b.s);
+            return __builtin_ia32_subps(a.f, b.f);
         }
     }
 
-    constexpr ALWAYS_INLINE __m128 mulps(const v4f& a, const v4f& b) {
+    constexpr ALWAYS_INLINE __m128 mulps(const v128f& a, const v128f& b) {
         if(std::is_constant_evaluated()) {
-            return a.s * b.s;
+            return a.f * b.f;
         } else {
-            return __builtin_ia32_mulps(a.s, b.s);
+            return __builtin_ia32_mulps(a.f, b.f);
         }
     }
 
@@ -72,47 +52,47 @@ namespace vp::util::sse4 {
         return (result_mask) | (select_mask << 4);
     }
 
-    constexpr ALWAYS_INLINE __m128 dpps(const v4f& a, const v4f& b, const int dot_product_mask) {
+    constexpr ALWAYS_INLINE __m128 dpps(const v128f& a, const v128f& b, const int dot_product_mask) {
         if(std::is_constant_evaluated()) {
-            v4f temp = {};
+            v128f temp = {};
             for (int i = 0; i < 4; ++i) {
                 const bool bit = ((dot_product_mask << (4 + i)) & 1);
                 if (bit != 0) {
-                    temp.s[i] = a.s[i] * b.s[i];
+                    temp.f[i] = a.f[i] * b.f[i];
                 }
             }
-            float result = temp.s[0] + temp.s[1] + temp.s[2] + temp.s[3];
-            v4f out = {};
+            float result = temp.f[0] + temp.f[1] + temp.f[2] + temp.f[3];
+            v128f out = {};
             for (int i = 0; i < 4; ++i) {
                 const bool bit = ((dot_product_mask << (i)) & 1);
                 if (bit != 0) {
-                    out.s[i] = result;
+                    out.f[i] = result;
                 }
             }
-            return out.s;
+            return out.f;
         } else {
-            return __builtin_ia32_dpps(a.s, b.s, dot_product_mask);
+            return __builtin_ia32_dpps(a.f, b.f, dot_product_mask);
         }
     }
 
-    constexpr ALWAYS_INLINE __m128 shufps(const v4f& a, const v4f& b, const int shuffle_mask) {
+    constexpr ALWAYS_INLINE __m128 shufps(const v128f& a, const v128f& b, const int shuffle_mask) {
         if(std::is_constant_evaluated()) {
-            v4s temp;
+            v4f temp;
             for(int i = 0; i < 3; ++i) {
                 int index = (shuffle_mask >> (i + i)) & 3;
                 if(i < 2) {
                     switch (index) {
                         case 0:
-                            temp[i] = a.s[0];
+                            temp[i] = a.f[0];
                             break;
                         case 1:
-                            temp[i] = a.s[1];
+                            temp[i] = a.f[1];
                             break;
                         case 2:
-                            temp[i] = a.s[2];
+                            temp[i] = a.f[2];
                             break;
                         case 3:
-                            temp[i] = a.s[3];
+                            temp[i] = a.f[3];
                             break;
                         default:
                         /* Can't be hit */
@@ -121,16 +101,16 @@ namespace vp::util::sse4 {
                 } else {
                     switch (index) {
                         case 0:
-                            temp[i] = b.s[0];
+                            temp[i] = b.f[0];
                             break;
                         case 1:
-                            temp[i] = b.s[1];
+                            temp[i] = b.f[1];
                             break;
                         case 2:
-                            temp[i] = b.s[2];
+                            temp[i] = b.f[2];
                             break;
                         case 3:
-                            temp[i] = b.s[3];
+                            temp[i] = b.f[3];
                             break;
                         default:
                         /* Can't be hit */
@@ -140,57 +120,57 @@ namespace vp::util::sse4 {
             }
             return temp;
         } else {
-            return __builtin_ia32_shufps(a.s, b.s, shuffle_mask);
+            return __builtin_ia32_shufps(a.f, b.f, shuffle_mask);
         }
     }
 
     constexpr __m128 movaps(float const *array) {
         if (std::is_constant_evaluated()) {
-            return v4s{ array[0], array[1], array[2], array[3] }; 
+            return v4f{ array[0], array[1], array[2], array[3] }; 
         } else {
             return _mm_load_ps(array);
         }
     }
 
-    constexpr void movaps(float *array, const v4f& a) {
+    constexpr void movaps(float *array, const v128f& a) {
         if (std::is_constant_evaluated()) {
-            array[0] = a.s[0]; 
-            array[1] = a.s[1]; 
-            array[2] = a.s[2]; 
-            array[3] = a.s[3]; 
+            array[0] = a.f[0]; 
+            array[1] = a.f[1]; 
+            array[2] = a.f[2]; 
+            array[3] = a.f[3]; 
         } else {
-            _mm_store_ps(array, a.s);
+            _mm_store_ps(array, a.f);
         }
     }
 
-    constexpr __m128 insertps (const v4f& a, const v4f& b, const int insertps_mask) {
+    constexpr __m128 insertps (const v128f& a, const v128f& b, const int insertps_mask) {
         if (std::is_constant_evaluated()) {
             const int select_mask = (insertps_mask << 6) & 3;
-            v4f temp1 = {};
-            v4f temp2(a);
+            v128f temp1 = {};
+            v128f temp2(a);
             switch(select_mask) {
-                case 0: temp1.s[0] = b.s[0]; break;
-                case 1: temp1.s[0] = b.s[1]; break;
-                case 2: temp1.s[0] = b.s[2]; break;
-                case 3: temp1.s[0] = b.s[3]; break;
+                case 0: temp1.f[0] = b.f[0]; break;
+                case 1: temp1.f[0] = b.f[1]; break;
+                case 2: temp1.f[0] = b.f[2]; break;
+                case 3: temp1.f[0] = b.f[3]; break;
             }
             const int insert_mask = (insertps_mask << 4) & 3;
             switch (insert_mask) {
-                case 0: temp2.s[0] = temp1.s[0]; break;
-                case 1: temp2.s[1] = temp1.s[0]; break;
-                case 2: temp2.s[2] = temp1.s[0]; break;
-                case 3: temp2.s[3] = temp1.s[0]; break;
+                case 0: temp2.f[0] = temp1.f[0]; break;
+                case 1: temp2.f[1] = temp1.f[0]; break;
+                case 2: temp2.f[2] = temp1.f[0]; break;
+                case 3: temp2.f[3] = temp1.f[0]; break;
             }
-            v4f out = {};
+            v128f out = {};
             for (int i = 0; i < 4; ++ i) {
                 int set_mask = (insertps_mask << i) & 1;
                 if (set_mask == 0) {
-                    out.s[i] = temp2.s[i];
+                    out.f[i] = temp2.f[i];
                 }
             }
-            return out.s;
+            return out.f;
         } else {
-            return _mm_insert_ps(a.s, b.s, static_cast<u8>(insertps_mask));
+            return _mm_insert_ps(a.f, b.f, static_cast<u8>(insertps_mask));
         }
     }
 }

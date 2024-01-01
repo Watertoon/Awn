@@ -28,11 +28,11 @@ namespace awn::res {
     DECLARE_RESULT(InvalidBufferSize,          8);
     DECLARE_RESULT(InvalidReadDivAlignment,    9);
     DECLARE_RESULT(InvalidFileBufferSize,      10);
-    DECLARE_RESULT(InvalidHandle,              11);
+    DECLARE_RESULT(InvalidFileHandle,          11);
     DECLARE_RESULT(InvalidNullPath,            12);
     DECLARE_RESULT(InvalidOpenMode,            13);
     DECLARE_RESULT(InvalidSize,                14);
-    DECLARE_RESULT(NullHandle,                 15);
+    DECLARE_RESULT(NullFileHandle,             15);
     DECLARE_RESULT(NullOutBuffer,              16);
     DECLARE_RESULT(NullPath,                   17);
     DECLARE_RESULT(FileSizeRetrievalFailed,    18);
@@ -42,4 +42,10 @@ namespace awn::res {
     DECLARE_RESULT(FailedToOpenFile,           22);
     DECLARE_RESULT(ExhaustedDirectoryDepth,    23);
     DECLARE_RESULT(FailedToAllocateFileMemory, 24);
+    DECLARE_RESULT(InvalidDecompressor,        25);
+    DECLARE_RESULT(InvalidFileOffset,          26);
+    DECLARE_RESULT(NullDirectoryHandle,        27);
+    DECLARE_RESULT(InvalidFile,                28);
+    DECLARE_RESULT(NullOutputResource,         29);
+    DECLARE_RESULT(NullResourceFactory,        30);
 }

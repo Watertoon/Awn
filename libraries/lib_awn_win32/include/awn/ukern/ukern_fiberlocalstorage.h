@@ -17,8 +17,8 @@
 
 namespace awn::ukern {
 
-    typedef u32 UKernHandle;
-    typedef u64 UKernCoreMask;
+    typedef u32    UKernHandle;
+    typedef size_t UKernCoreMask;
 
     using ThreadFunction = void (*)(void *);
 

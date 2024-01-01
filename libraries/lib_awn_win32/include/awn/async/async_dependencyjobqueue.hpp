@@ -62,7 +62,7 @@ namespace awn::async {
             static constexpr size_t       cMaxLocalJobCount = 8;
             static constinit inline void *cIsBlocked        = reinterpret_cast<void*>(0x1);
         public:
-            using LocalJobRingBuffer = vp::util::FixedRingBuffer<JobQueueNode, cMaxLocalJobCount>;
+            using LocalJobRingBuffer = vp::util::FixedRingBuffer<JobQueueNode*, cMaxLocalJobCount>;
         private:
             JobQueueNode       *m_next_job;
             LocalJobRingBuffer  m_local_job_ring;

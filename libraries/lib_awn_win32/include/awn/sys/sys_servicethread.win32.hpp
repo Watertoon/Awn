@@ -69,7 +69,7 @@ namespace awn::sys {
                 VP_ASSERT(result0 == true);
                 m_priority = priority;
             }
-            virtual void SetCoreMask(u64 core_mask) {
+            virtual void SetCoreMask(CoreMask core_mask) {
                 bool result0 = ::SetThreadAffinityMask(m_handle, core_mask);
                 VP_ASSERT(result0 == true);
                 m_core_mask = core_mask;

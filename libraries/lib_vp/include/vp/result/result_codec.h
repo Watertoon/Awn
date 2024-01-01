@@ -15,7 +15,10 @@
  */
 #pragma once
 
-#include <vp/result/result.hpp>
-#include <vp/result/result_trace.h>
-#include <vp/result/result_resbui.h>
-#include <vp/result/result_codec.h>
+namespace vp::codec {
+
+    DECLARE_RESULT_MODULE(2);
+    DECLARE_RESULT(ZstdError,             1);
+    DECLARE_RESULT(OutputBufferTooSmall,  2);
+    DECLARE_RESULT(InvalidZstdDictionary, 3);
+}

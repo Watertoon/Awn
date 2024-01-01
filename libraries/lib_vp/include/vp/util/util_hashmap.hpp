@@ -106,9 +106,23 @@ namespace vp::util {
 
                 return nullptr;
             }
+
+            constexpr ALWAYS_INLINE void Clear() {
+
+                /* Destroy all */
+                for (u32 i = 0; i < m_max; ++i) {
+                    if (m_array[i].*HashMemberPtr == 0) { continue; }
+                    m_array[i].*HashMemberPtr = 0;
+                    std::destroy_at(std::addressof(m_array[i]));
+                }
+
+                m_count = 0;
+
+                return;
+            }
 	};
 
-	template <auto HashMemberPtr, size_t Size>
+	template <auto HashMemberPtr, u32 Size>
         requires (std::is_integral<vp::util::MemberType<HashMemberPtr>>::value == true) && (std::is_standard_layout<vp::util::ParentType<HashMemberPtr>>::value == true)
 	class FixedHashMap {
         public:
@@ -167,6 +181,20 @@ namespace vp::util {
                 } while (i != base_index);
 
                 return nullptr;
+            }
+
+            constexpr ALWAYS_INLINE void Clear() {
+
+                /* Destroy all */
+                for (u32 i = 0; i < Size; ++i) {
+                    if (m_array[i].*HashMemberPtr == 0) { continue; }
+                    m_array[i].*HashMemberPtr = 0;
+                    std::destroy_at(std::addressof(m_array[i]));
+                }
+
+                m_count = 0;
+
+                return;
             }
 	};
 }

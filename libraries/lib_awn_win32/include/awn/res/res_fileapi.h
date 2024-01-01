@@ -15,7 +15,9 @@
  */
 #pragma once
 
-#include <vp/result/result.hpp>
-#include <vp/result/result_trace.h>
-#include <vp/result/result_resbui.h>
-#include <vp/result/result_codec.h>
+namespace awn::res {
+
+    Result LoadFile(const char *path, FileLoadContext *file_load_context);
+    Result LoadResource(const char *path, ResourceLoadContext *resource_load_context);
+    Result LoadResourceWithDecompressor(const char *path, ResourceLoadContext *resource_load_context);
+}

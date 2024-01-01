@@ -17,11 +17,6 @@
 
 namespace vp::util {
 
-    typedef float v4f __attribute__((vector_size(16)));
-    typedef int v4si __attribute__((vector_size(16)));
-    typedef unsigned int v4ui __attribute__((vector_size(16)));
-    typedef double v4d __attribute__((vector_size(32)));
-
     template<typename T>
         requires std::is_integral<T>::value || std::is_floating_point<T>::value
     class Vector4Type {
@@ -177,42 +172,42 @@ namespace vp::util {
 #ifdef VP_TARGET_ARCHITECTURE_x86
             template<typename A = T> requires std::is_floating_point<A>::value && (sizeof(Vector3Type<A>) == sizeof(float) * 3)
             constexpr Vector4Type Cross(const Vector4Type& rhs) {
-                const v4 a = sse4::shufps(this->GetVectorType(), this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
-                const v4 b = sse4::shufps(rhs.GetVectorType(), rhs.GetVectorType(), sse4::ShuffleToOrder(2,0,1,3));
-                const v4 c = sse4::mulps(a, rhs.GetVectorType());
-                const v4 d = sse4::mulps(a, b);
-                const v4 e = sse4::shufps(c, c, sse4::ShuffleToOrder(1, 2, 0, 3));
-                return Vector4Type(sse4::subps(d, e));
+                const v4 a = avx2::shufps(this->GetVectorType(), this->GetVectorType(), avx2::ShuffleToOrder(1,2,0,3));
+                const v4 b = avx2::shufps(rhs.GetVectorType(), rhs.GetVectorType(), avx2::ShuffleToOrder(2,0,1,3));
+                const v4 c = avx2::mulps(a, rhs.GetVectorType());
+                const v4 d = avx2::mulps(a, b);
+                const v4 e = avx2::shufps(c, c, avx2::ShuffleToOrder(1, 2, 0, 3));
+                return Vector4Type(avx2::subps(d, e));
             }
 
             template<typename A = T> requires std::is_floating_point<A>::value && (sizeof(Vector3Type<A>) == sizeof(float) * 3)
             constexpr Vector4Type Cross(const Vector4Type& rhs) const {
-                const v4 a = sse4::shufps(this->GetVectorType(), this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
-                const v4 b = sse4::shufps(rhs.GetVectorType(), rhs.GetVectorType(), sse4::ShuffleToOrder(2,0,1,3));
-                const v4 c = sse4::mulps(a, rhs.GetVectorType());
-                const v4 d = sse4::mulps(a, b);
-                const v4 e = sse4::shufps(c, c, sse4::ShuffleToOrder(1, 2, 0, 3));
-                return Vector4Type(sse4::subps(d, e));
+                const v4 a = avx2::shufps(this->GetVectorType(), this->GetVectorType(), avx2::ShuffleToOrder(1,2,0,3));
+                const v4 b = avx2::shufps(rhs.GetVectorType(), rhs.GetVectorType(), avx2::ShuffleToOrder(2,0,1,3));
+                const v4 c = avx2::mulps(a, rhs.GetVectorType());
+                const v4 d = avx2::mulps(a, b);
+                const v4 e = avx2::shufps(c, c, avx2::ShuffleToOrder(1, 2, 0, 3));
+                return Vector4Type(avx2::subps(d, e));
             }
 
             template<typename A = T> requires std::is_integral<A>::value && (sizeof(Vector3Type<A>) == sizeof(s32) * 3)
             constexpr Vector4Type Cross(const Vector4Type& rhs) {
-                const v4 a = sse4::pshufd(this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
-                const v4 b = sse4::pshufd(rhs.GetVectorType(), sse4::ShuffleToOrder(2,0,1,3));
-                const v4 c = sse4::pmuld(a, rhs.GetVectorType());
-                const v4 d = sse4::pmuld(a, b);
-                const v4 e = sse4::pshufd(c, sse4::ShuffleToOrder(1, 2, 0, 3));
-                return Vector4Type(sse4::psubd(d, e));
+                const v4 a = avx2::pshufd(this->GetVectorType(), avx2::ShuffleToOrder(1,2,0,3));
+                const v4 b = avx2::pshufd(rhs.GetVectorType(), avx2::ShuffleToOrder(2,0,1,3));
+                const v4 c = avx2::pmuld(a, rhs.GetVectorType());
+                const v4 d = avx2::pmuld(a, b);
+                const v4 e = avx2::pshufd(c, avx2::ShuffleToOrder(1, 2, 0, 3));
+                return Vector4Type(avx2::psubd(d, e));
             }
 
             template<typename A = T> requires std::is_integral<A>::value && (sizeof(Vector3Type<A>) == sizeof(s32) * 3)
             constexpr ALWAYS_INLINE Vector4Type Cross(const Vector4Type& rhs) const {
-                const v4 a = sse4::pshufd(this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
-                const v4 b = sse4::pshufd(rhs.GetVectorType(), sse4::ShuffleToOrder(2,0,1,3));
-                const v4 c = sse4::pmuld(a, rhs.GetVectorType());
-                const v4 d = sse4::pmuld(a, b);
-                const v4 e = sse4::pshufd(c, sse4::ShuffleToOrder(1, 2, 0, 3));
-                return Vector4Type(sse4::psubd(d, e));
+                const v4 a = avx2::pshufd(this->GetVectorType(), avx2::ShuffleToOrder(1,2,0,3));
+                const v4 b = avx2::pshufd(rhs.GetVectorType(), avx2::ShuffleToOrder(2,0,1,3));
+                const v4 c = avx2::pmuld(a, rhs.GetVectorType());
+                const v4 d = avx2::pmuld(a, b);
+                const v4 e = avx2::pshufd(c, avx2::ShuffleToOrder(1, 2, 0, 3));
+                return Vector4Type(avx2::psubd(d, e));
             }
 #endif
 

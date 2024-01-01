@@ -17,31 +17,18 @@
 
 namespace awn::res {
 
-    struct StreamState {};
+    struct ResourceLoadContext;
 
-    struct DecompSize {
-        u32             size;
-        u32             alignment;
-    };
-
-    class DecompressorBase {
+    class IDecompressor {
         public:
-            VP_RTTI_BASE(DecompressorBase);
+            VP_RTTI_BASE(IDecompressor);
         public:
-            constexpr DecompressorBase() {/*...*/}
-            constexpr virtual ~DecompressorBase() {/*...*/}
+            constexpr IDecompressor() {/*...*/}
+            constexpr virtual ~IDecompressor() {/*...*/}
 
-            virtual DecompSize GetDecompressedSize([[maybe_unused]] void *file, [[maybe_unused]] size_t file_size) {
-                return DecompSize{};
-            }
+            virtual void SetPriority([[maybe_unused]] u32 priority) {/*...*/}
+            virtual void SetCoreMask([[maybe_unused]] sys::CoreMask core_mask) {/*...*/}
 
-            virtual Result TryStreamDecompress([[maybe_unused]] StreamState *stream_state, [[maybe_unused]] void *stream, [[maybe_unused]] size_t stream_size) {
-                RESULT_RETURN_SUCCESS;
-            }
-            
-            virtual Result TryDecompress([[maybe_unused]] void *output, [[maybe_unused]] size_t output_size, [[maybe_unused]] void *stream, [[maybe_unused]] size_t stream_size) {
-                RESULT_RETURN_SUCCESS;
-            }
+            virtual Result TryLoadDecompress(u32 *out_size, u32 *out_alignment, const char *path, ResourceLoadContext *resource_load_context) { RESULT_RETURN_SUCCESS; }
     };
 }
-    

@@ -144,43 +144,43 @@ namespace vp::util {
             template<typename A = T> 
                 requires std::is_floating_point<A>::value && (sizeof(Vector3Type<A>) == sizeof(float) * 3)
             constexpr ALWAYS_INLINE Vector3Type Cross(const Vector3Type& rhs) {
-                const v3 a = sse4::shufps(this->GetVectorType(), this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
-                const v3 b = sse4::shufps(rhs.GetVectorType(), rhs.GetVectorType(), sse4::ShuffleToOrder(2,0,1,3));
-                const v3 c = sse4::mulps(a, rhs.GetVectorType());
-                const v3 d = sse4::mulps(a, b);
-                const v3 e = sse4::shufps(c, c, sse4::ShuffleToOrder(1, 2, 0, 3));
-                return Vector3Type(sse4::subps(d, e));
+                const v3 a = avx2::shufps(this->GetVectorType(), this->GetVectorType(), avx2::ShuffleToOrder(1,2,0,3));
+                const v3 b = avx2::shufps(rhs.GetVectorType(), rhs.GetVectorType(), avx2::ShuffleToOrder(2,0,1,3));
+                const v3 c = avx2::mulps(a, rhs.GetVectorType());
+                const v3 d = avx2::mulps(a, b);
+                const v3 e = avx2::shufps(c, c, avx2::ShuffleToOrder(1, 2, 0, 3));
+                return Vector3Type(avx2::subps(d, e));
             }
 
             template<typename A = T> 
                 requires std::is_floating_point<A>::value && (sizeof(Vector3Type<A>) == sizeof(float) * 3)
             constexpr ALWAYS_INLINE Vector3Type Cross(const Vector3Type& rhs) const {
-                const v3 a = sse4::shufps(this->GetVectorType(), this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
-                const v3 b = sse4::shufps(rhs.GetVectorType(), rhs.GetVectorType(), sse4::ShuffleToOrder(2,0,1,3));
-                const v3 c = sse4::mulps(a, rhs.GetVectorType());
-                const v3 d = sse4::mulps(a, b);
-                const v3 e = sse4::shufps(c, c, sse4::ShuffleToOrder(1, 2, 0, 3));
-                return Vector3Type(sse4::subps(d, e));
+                const v3 a = avx2::shufps(this->GetVectorType(), this->GetVectorType(), avx2::ShuffleToOrder(1,2,0,3));
+                const v3 b = avx2::shufps(rhs.GetVectorType(), rhs.GetVectorType(), avx2::ShuffleToOrder(2,0,1,3));
+                const v3 c = avx2::mulps(a, rhs.GetVectorType());
+                const v3 d = avx2::mulps(a, b);
+                const v3 e = avx2::shufps(c, c, avx2::ShuffleToOrder(1, 2, 0, 3));
+                return Vector3Type(avx2::subps(d, e));
             }
 
             template<typename A = T> requires std::is_integral<A>::value && (sizeof(Vector3Type<A>) == sizeof(s32) * 3)
             constexpr ALWAYS_INLINE Vector3Type Cross(const Vector3Type& rhs) {
-                const v3 a = sse4::pshufd(this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
-                const v3 b = sse4::pshufd(rhs.GetVectorType(), sse4::ShuffleToOrder(2,0,1,3));
-                const v3 c = sse4::pmuld(a, rhs.GetVectorType());
-                const v3 d = sse4::pmuld(a, b);
-                const v3 e = sse4::pshufd(c, sse4::ShuffleToOrder(1, 2, 0, 3));
-                return Vector3Type(sse4::psubd(d, e));
+                const v3 a = avx2::pshufd(this->GetVectorType(), avx2::ShuffleToOrder(1,2,0,3));
+                const v3 b = avx2::pshufd(rhs.GetVectorType(), avx2::ShuffleToOrder(2,0,1,3));
+                const v3 c = avx2::pmuld(a, rhs.GetVectorType());
+                const v3 d = avx2::pmuld(a, b);
+                const v3 e = avx2::pshufd(c, avx2::ShuffleToOrder(1, 2, 0, 3));
+                return Vector3Type(avx2::psubd(d, e));
             }
 
             template<typename A = T> requires std::is_integral<A>::value && (sizeof(Vector3Type<A>) == sizeof(s32) * 3)
             constexpr ALWAYS_INLINE Vector3Type Cross(const Vector3Type& rhs) const {
-                const v3 a = sse4::pshufd(this->GetVectorType(), sse4::ShuffleToOrder(1,2,0,3));
-                const v3 b = sse4::pshufd(rhs.GetVectorType(), sse4::ShuffleToOrder(2,0,1,3));
-                const v3 c = sse4::pmuld(a, rhs.GetVectorType());
-                const v3 d = sse4::pmuld(a, b);
-                const v3 e = sse4::pshufd(c, sse4::ShuffleToOrder(1, 2, 0, 3));
-                return Vector3Type(sse4::psubd(d, e));
+                const v3 a = avx2::pshufd(this->GetVectorType(), avx2::ShuffleToOrder(1,2,0,3));
+                const v3 b = avx2::pshufd(rhs.GetVectorType(), avx2::ShuffleToOrder(2,0,1,3));
+                const v3 c = avx2::pmuld(a, rhs.GetVectorType());
+                const v3 d = avx2::pmuld(a, b);
+                const v3 e = avx2::pshufd(c, avx2::ShuffleToOrder(1, 2, 0, 3));
+                return Vector3Type(avx2::psubd(d, e));
             }
 #else
             /* TODO; generic impl */
@@ -278,8 +278,8 @@ namespace vp::util {
     constexpr Vector3Type<T> cEZVector3(0, 0, 1);
 
 #ifdef VP_TARGET_ARCHITECTURE_x86
-    static_assert((Vector3u(sse4::v4ui{2,2,2}) + Vector3u(sse4::v4ui{2,4,2})) != Vector3u(sse4::v4ui{2,2,2}));
-    static_assert((Vector3f(sse4::v4s{1.0f,1.0f,1.0f}) + Vector3f(sse4::v4s{1.0f,1.0f,1.0f})) == Vector3f(sse4::v4s{2.0f,2.0f,2.0f}));
-    static_assert(Vector3f(sse4::v4s{1.0f,0.0f,1.0f}).Dot(Vector3f(sse4::v4s{1.0f,1.0f,0.0f})) == 1.0f);
+    static_assert((Vector3u(v4ui{2,2,2}) + Vector3u(v4ui{2,4,2})) != Vector3u(v4ui{2,2,2}));
+    static_assert((Vector3f(v4f{1.0f,1.0f,1.0f}) + Vector3f(v4f{1.0f,1.0f,1.0f})) == Vector3f(v4f{2.0f,2.0f,2.0f}));
+    static_assert(Vector3f(v4f{1.0f,0.0f,1.0f}).Dot(Vector3f(v4f{1.0f,1.0f,0.0f})) == 1.0f);
 #endif
 }

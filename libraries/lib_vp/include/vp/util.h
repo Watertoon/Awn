@@ -69,12 +69,14 @@
 #include <vp/util/util_job.hpp>
 #include <vp/util/util_enumtraits.h>
 #include <vp/util/util_priorityqueue.hpp>
+#include <vp/util/util_indexallocator.hpp>
 #include <vp/util/util_atomicindexallocator.hpp>
 #include <vp/util/util_ifunction.hpp>
 
+#include <vp/util/math/util_vectortypes.hpp>
 #ifdef VP_TARGET_ARCHITECTURE_x86
-    #include <vp/util/math/util_int128.sse4.hpp>
-    #include <vp/util/math/util_float128.sse4.hpp>
+    #include <vp/util/math/util_int128.avx2.hpp>
+    #include <vp/util/math/util_float128.avx2.hpp>
     #include <vp/util/util_crc32b.x86.hpp>
 #elif VP_TARGET_ARCHITECTURE_aarch64
     #include <vp/util/util_crc32b.aarch64.hpp>

@@ -46,24 +46,28 @@ namespace awn::res {
                 return m_resource_factory_map.Find(ext_hash);
             }
 
-            void CreateResource();
-
-            void TryLoad(ResourceLoadContext *load_arg) {
-
-                
+            Result LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context) {
 
                 /* Find factory */
-                ResourceFactoryBase *factory = load_arg->resource_factory;
+                ResourceFactoryBase *factory = resource_load_context->resource_factory;
                 if (factory == nullptr) {
                     MaxExtensionString extension;
-                    vp::util::GetExtension(std::addressof(extension), load_arg->file_load_context.file_path);
+                    vp::util::GetExtension(std::addressof(extension), path);
                     factory = this->FindResourceFactory(extension.GetString());
                 }
+                RESULT_RETURN_IF(factory == nullptr, ResultNullResourceFactory);
 
                 /* Load file with factory */
-                RESULT_ABORT_UNLESS(factory->TryLoad(nullptr, load_arg));
+                return factory->LoadResource(out_resource, path, resource_load_context);
+            }
+            Result LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor) {
 
-                
+                /* Get factory */
+                ResourceFactoryBase *factory = resource_load_context->resource_factory;
+                RESULT_RETURN_IF(factory == nullptr, ResultNullResourceFactory);
+
+                /* Load file with factory */
+                return factory->LoadResourceWithDecompressor(out_resource, path, resource_load_context, decompressor);
             }
     };
 }

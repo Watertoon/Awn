@@ -23,7 +23,8 @@
 #include <awn/res/res_archiveresource.hpp>
 #include <awn/res/res_archivefiledevice.hpp>
 #include <awn/res/res_resourcefactory.hpp>
-#include <awn/res/res_resourcemanager.hpp>
+#include <awn/res/res_resourcefactorymanager.hpp>
+#include <awn/res/res_fileapi.h>
 
 #include <awn/res/res_sarcarchiveresource.hpp>
 #include <awn/res/res_beaarchiveresource.hpp>

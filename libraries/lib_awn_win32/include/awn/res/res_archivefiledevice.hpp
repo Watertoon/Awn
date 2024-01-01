@@ -23,36 +23,11 @@ namespace awn::res {
         public:
             VP_RTTI_DERIVED(ArchiveFileDevice, FileDeviceBase);
         protected:
-            //virtual Result LoadFileImpl(FileLoadContext *file_load_context) override {
-            //
-            //    /* Load file into user buffer if necessary */
-            //    if (file_load_context->compression_type == CompressionType::None && file_load_context->out_file != nullptr) {
-            //        return this->FileDeviceBase::LoadFileImpl(file_load_context);
-            //    }
-            //
-            //    /* Get reference to file */
-            //    ArchiveFileReturn file_return = {};
-            //    const bool result = m_archive_resource->TryGetFileByPath(std::addressof(file_return), file_path);
-            //    RESULT_RETURN_IF(result == false, ResultFileNotFound);
-            //
-            //    /* Handle compression */
-            //    if (file_load_context->compression_type != CompressionType::None) {
-            //
-            //        file_load_context->out_file = ::operator new();
-            //
-            //        Decompressor *decompressor = DecompressorManager::GetInstance()->GetDecompressor(file_load_context->compression_type);
-            //        decompresssor->TryDecompressFile();
-            //
-            //        file_load_context->out_file_size = ;
-            //    }
-            //
-            //    return ;
-            //}
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) override {
 
                 /* Integrity checks */
-                RESULT_RETURN_UNLESS(out_file_handle != nullptr, ResultNullHandle);
-                RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
+                RESULT_RETURN_UNLESS(out_file_handle != nullptr,                     ResultNullFileHandle);
+                RESULT_RETURN_UNLESS(path != nullptr,                                ResultNullPath);
                 RESULT_RETURN_UNLESS((open_mode & OpenMode::Read) != OpenMode::Read, ResultInvalidOpenMode);
 
                 /* Get entry index */
@@ -72,7 +47,9 @@ namespace awn::res {
             virtual Result CloseFileImpl(FileHandle *file_handle) override {
 
                 /* Integrity checks */
-                RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullHandle);
+                RESULT_RETURN_UNLESS(file_handle != nullptr,           ResultNullFileHandle);
+                RESULT_RETURN_UNLESS(file_handle->handle != nullptr,   ResultInvalidFileHandle);
+                RESULT_RETURN_UNLESS(file_handle->file_device != this, ResultInvalidFileHandle);
 
                 /* Clear handle state */
                 file_handle->handle              = nullptr;
@@ -80,35 +57,45 @@ namespace awn::res {
 
                 RESULT_RETURN_SUCCESS;
             }
-            virtual Result ReadFileImpl(void *out_read_buffer, FileHandle *file_handle, u32 read_size) override {
+            virtual Result ReadFileImpl(void *read_buffer, size_t *out_read_size, FileHandle *file_handle, size_t read_size, size_t file_offset) override {
 
                 /* Integrity checks */
-                RESULT_RETURN_UNLESS(file_handle != nullptr,         ResultNullHandle);
-                RESULT_RETURN_UNLESS(file_handle->handle != nullptr, ResultInvalidHandle);
+                RESULT_RETURN_UNLESS(file_handle != nullptr,           ResultNullFileHandle);
+                RESULT_RETURN_UNLESS(file_handle->handle != nullptr,   ResultInvalidFileHandle);
+                RESULT_RETURN_UNLESS(file_handle->file_device != this, ResultInvalidFileHandle);
 
                 /* Copy file data */
-                ::memcpy(out_read_buffer, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_handle->handle) + file_handle->file_offset), read_size);
+                ::memcpy(read_buffer, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_handle->handle) + file_offset), read_size);
+                if (out_read_size != nullptr) {
+                    *out_read_size = read_size;
+                }
 
                 RESULT_RETURN_SUCCESS;
             }
 
             virtual Result OpenDirectoryImpl(DirectoryHandle *out_directory_handle, const char *path) override {
-                RESULT_RETURN_UNLESS(out_directory_handle != nullptr, ResultNullHandle);
-                RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
+
+                /* Integrity checks */
+                RESULT_RETURN_UNLESS(path != nullptr,                  ResultNullPath);
+                RESULT_RETURN_UNLESS(out_directory_handle != nullptr,  ResultNullDirectoryHandle);
+
                 const char character = *path;
                 RESULT_RETURN_IF(character != '\0' && character != '/', ResultDirectoryNotFound);
+
+                /* Open directory */
                 out_directory_handle->entry_index = 0;
+
                 RESULT_RETURN_SUCCESS;
             }
             virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle) override {
-                RESULT_RETURN_UNLESS(directory_handle != nullptr, ResultNullHandle);
+                RESULT_RETURN_UNLESS(directory_handle != nullptr, ResultNullDirectoryHandle);
                 directory_handle->entry_index = 0;
                 RESULT_RETURN_SUCCESS;
             }
             virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) override {
                 
                 /* Integrity checks */
-                RESULT_RETURN_UNLESS(directory_handle != nullptr, ResultNullHandle);
+                RESULT_RETURN_UNLESS(directory_handle != nullptr, ResultNullDirectoryHandle);
 
                 /* Calculate directory count to read */
                 const u32 file_count = m_archive_resource->GetFileCount();
@@ -138,7 +125,7 @@ namespace awn::res {
             virtual Result GetFileSizeImpl(size_t *out_size, FileHandle *file_handle) override {
 
                 /* Integrity checks */
-                RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullHandle);
+                RESULT_RETURN_UNLESS(file_handle != nullptr, ResultNullFileHandle);
 
                 /* Find file */
                 ArchiveFileReturn file_return = {};
@@ -155,7 +142,7 @@ namespace awn::res {
             virtual Result GetFileSizeImpl(size_t *out_size, const char *path) override {
 
                 /* Integrity checks */
-                RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
+                RESULT_RETURN_UNLESS(path != nullptr, ResultNullFileHandle);
 
                 /* Find file */
                 ArchiveFileReturn file_return = {};

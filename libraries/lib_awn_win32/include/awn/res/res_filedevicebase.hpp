@@ -91,35 +91,35 @@ namespace awn::res {
     };
 
     struct FileLoadContext {
-        void       *file;
-        size_t      file_size;
-        s32         file_alignment;
-        mem::Heap  *heap;
-        const char *file_path;
+        mem::Heap  *file_heap;
         u32         read_div;
         bool        out_is_file_memory_allocated;
+        void       *file_buffer;
+        size_t      file_size;
+        s32         file_alignment;
     };
 
     class FileDeviceBase {
         private:
             friend class FileDeviceManager;
         public:
-            static constexpr size_t cMaxAutoReadSize = 0x20;
+            static constexpr s32    cMinimumFileAlignment = 0x20;
+            static constexpr size_t cMaxAutoReadSize      = 0x20;
         protected:
             vp::util::IntrusiveRedBlackTreeNode<u32> m_manager_tree_node;
             MaxDriveString                           m_device_name;
         public:
             VP_RTTI_BASE(FileDeviceBase);
         protected:
-            virtual Result LoadFileImpl(FileLoadContext *file_load_context);
-            virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) { VP_ASSERT(false); VP_UNUSED(out_file_handle, path, open_mode); }
-            virtual Result CloseFileImpl(FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(file_handle); }
-            virtual Result ReadFileImpl(void *out_read_buffer, FileHandle *file_handle, u32 read_size) { VP_ASSERT(false); VP_UNUSED(out_read_buffer, file_handle, read_size); }
-            virtual Result WriteFileImpl(FileHandle *file_handle, void *write_buffer, u32 write_size) { VP_ASSERT(false); VP_UNUSED(file_handle, write_buffer, write_size); }
-            virtual Result FlushFileImpl(FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(file_handle); }
+            virtual Result LoadFileImpl(const char *path, FileLoadContext *file_load_context);
+            virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode)                                             { VP_ASSERT(false); VP_UNUSED(out_file_handle, path, open_mode); }
+            virtual Result CloseFileImpl(FileHandle *file_handle)                                                                                      { VP_ASSERT(false); VP_UNUSED(file_handle); }
+            virtual Result ReadFileImpl(void *read_buffer, size_t *out_read_size, FileHandle *file_handle, size_t read_size, size_t file_offset)       { VP_ASSERT(false); VP_UNUSED(read_buffer, out_read_size, file_handle, read_size, file_offset); }
+            virtual Result WriteFileImpl(size_t *out_written_size, FileHandle *file_handle, void *write_buffer, size_t write_size, size_t file_offset) { VP_ASSERT(false); VP_UNUSED(file_handle, write_buffer, write_size, file_offset); }
+            virtual Result FlushFileImpl(FileHandle *file_handle)                                                                                      { VP_ASSERT(false); VP_UNUSED(file_handle); }
 
             virtual Result GetFileSizeImpl(size_t *out_size, FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(out_size, file_handle); }
-            virtual Result GetFileSizeImpl(size_t *out_size, const char *path) { VP_ASSERT(false); VP_UNUSED(out_size, path); }
+            virtual Result GetFileSizeImpl(size_t *out_size, const char *path)        { VP_ASSERT(false); VP_UNUSED(out_size, path); }
 
             virtual Result CheckFileExistsImpl(const char *path) { VP_ASSERT(false); VP_UNUSED(path); }
 
@@ -130,6 +130,8 @@ namespace awn::res {
             virtual bool CheckDirectoryExistsImpl(const char *path) { VP_UNUSED(path); return false; }
 
             virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { VP_ASSERT(false); VP_UNUSED(out_formatted_path, path); }
+
+            virtual u32 GetDriveSize() const { return 0; }
         public:
             explicit constexpr ALWAYS_INLINE FileDeviceBase() : m_manager_tree_node(), m_device_name() {/*...*/}
             explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *device_name) : m_manager_tree_node(), m_device_name(device_name) {
@@ -138,12 +140,12 @@ namespace awn::res {
             }
             constexpr virtual ALWAYS_INLINE ~FileDeviceBase() {/*...*/}
 
-            ALWAYS_INLINE Result TryLoadFile(FileLoadContext *file_load_context)                                { return this->LoadFileImpl(file_load_context); }
-            ALWAYS_INLINE Result TryOpenFile(FileHandle *out_file_handle, const char *path, OpenMode open_mode) { return this->OpenFileImpl(out_file_handle, path, open_mode); }
-            ALWAYS_INLINE Result TryCloseFile(FileHandle *file_handle)                                          { return this->CloseFileImpl(file_handle); }
-            ALWAYS_INLINE Result TryReadFile(void *out_read_buffer, FileHandle *file_handle, u32 read_size)     { return this->ReadFileImpl(out_read_buffer, file_handle, read_size); }
-            ALWAYS_INLINE Result TryWriteFile(FileHandle *file_handle, void *write_buffer, u32 write_size)      { return this->WriteFileImpl(file_handle, write_buffer, write_size); }
-            ALWAYS_INLINE Result TryFlushFile(FileHandle *file_handle)                                          { return this->FlushFileImpl(file_handle); }
+            ALWAYS_INLINE Result LoadFile(const char *path, FileLoadContext *file_load_context)                                                          { return this->LoadFileImpl(path, file_load_context); }
+            ALWAYS_INLINE Result OpenFile(FileHandle *out_file_handle, const char *path, OpenMode open_mode)                                             { return this->OpenFileImpl(out_file_handle, path, open_mode); }
+            ALWAYS_INLINE Result CloseFile(FileHandle *file_handle)                                                                                      { return this->CloseFileImpl(file_handle); }
+            ALWAYS_INLINE Result ReadFile(void *read_buffer, size_t *out_read_size, FileHandle *file_handle, size_t read_size, size_t file_offset)       { return this->ReadFileImpl(read_buffer, out_read_size, file_handle, read_size, file_offset); }
+            ALWAYS_INLINE Result WriteFile(size_t *out_written_size, FileHandle *file_handle, void *write_buffer, size_t write_size, size_t file_offset) { return this->WriteFileImpl(out_written_size, file_handle, write_buffer, write_size, file_offset); }
+            ALWAYS_INLINE Result FlushFile(FileHandle *file_handle)                                                                                      { return this->FlushFileImpl(file_handle); }
 
             ALWAYS_INLINE Result GetFileSize(size_t *out_size, FileHandle *file_handle) { return this->GetFileSizeImpl(out_size, file_handle); }
             ALWAYS_INLINE Result GetFileSize(size_t *out_size, const char *path)        { return this->GetFileSizeImpl(out_size, path); }
@@ -161,120 +163,8 @@ namespace awn::res {
 
     ALWAYS_INLINE Result FileHandle::Close() {
         if (file_device == nullptr) { RESULT_RETURN_SUCCESS; }
-        const Result result = file_device->TryCloseFile(this);
+        const Result result = file_device->CloseFile(this);
         file_device         = nullptr;
         return result;
     }
 }
-
-           //     /* Integrity checks */
-           //     RESULT_RETURN_UNLESS(file_load_context->out_file != nullptr && file_load_context->out_file_size == 0, ResultInvalidFileBufferSize);
-           //     RESULT_RETURN_UNLESS((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
-           //
-           //     /* Open file handle */
-           //     FileHandle handle = {};
-           //     const Result open_result = this->TryOpenFile(std::addressof(handle), file_load_context->file_path, OpenMode::Read);
-           //     RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
-           //
-           //     /* Get file size */
-           //     size_t       file_size   = 0;
-           //     const Result size_result = this->GetFileSize(std::addressof(file_size), std::addressof(handle));
-           //     RESULT_RETURN_UNLESS(size_result == ResultSuccess, size_result);
-           //
-           //
-           //     /* Check for compression detection */
-           //     size_t output_size         = file_load_context->out_file_size;
-           //     size_t output_alignment    = vp::util::AlignUp(file_load_context->out_file_alignment, alignof(u64));
-           //     DecompressorBase *decompressor = nullptr;
-           //     if ((file_load_context->compression_type != CompressionType::None && file_load_context->out_file == nullptr) || file_load_context->compression_type == CompressionType::Auto) {
-           //
-           //         /* Load auto buffer */
-           //         char auto_read[cMaxAutoReadSize] = {};
-           //
-           //         /* Read header */
-           //         const u32 auto_size = (cMaxAutoReadSize < file_size) ? cMaxAutoReadSize : file_size;
-           //         this->TryReadFile(auto_read, std::addressof(handle), auto_size);
-           //
-           //         /* Auto detect compression */
-           //         if (file_load_context->compression_type == CompressionType::Auto) {
-           //             file_load_context->compression_type = DecompressorManager::GetInstance()->AutoDetectCompressionType(auto_read, auto_size);
-           //         }
-           //
-           //         /* Get decompressor */
-           //         decompressor = DecompressorManager::GetInstance()->GetDecompressor(file_load_context->compression_type);
-           //         RESULT_RETURN_IF(decompressor == nullptr, ResultInvalidDecompressor);
-           //
-           //         DecompSize decomp_size = decompressor->GetDecompressedSize(auto_read, auto_size);
-           //         output_alignment       = (output_alignment == alignof(u64)) ? decomp_size->alignment : output_alignment;
-           //         if (file_load_context->out_file == nullptr) {
-           //             output_size = decomp_size->size;
-           //
-           //             /* Allocate output buffer */
-           //             file_load_context->out_file              = ::operator new(output_size, file_load_context->heap, output_alignment);
-           //             file_load_context->out_file_size         = output_size;
-           //             file_load_context->out_file_alignment    = output_alignment;
-           //             file_load_context->out_is_heap_allocated = true;
-           //         }
-           //
-           //         /* Copy auto header */
-           //         file_size = file_size - auto_size;
-           //         ::memcpy(file_load_context->out_file, auto_read, auto_size);
-           //
-           //     } else {
-           //         output_size = file_size;
-           //
-           //         /* Allocate output file buffers */
-           //         if (file_load_context->out_file == nullptr) {
-           //             file_load_context->out_file              = ::operator new(output_size, file_load_context->heap, file_load_context->out_file_alignment);
-           //             file_load_context->out_file_size         = output_size;
-           //             file_load_context->out_file_alignment    = output_alignment;
-           //             file_load_context->out_is_heap_allocated = true;
-           //         }
-           //     }
-           //
-           //     /* Calculate read div */
-           //     const u32    div_size          = (file_load_context->read_div == 0) : file_size ? file_load_context->read_div;
-           //     const size_t div_total_size    = vp::util::AlignDown(file_size, div_size);
-           //     const u32    stream_read_count = file_size / div_size;
-           //
-           //     /* Allocate decompressor */
-           //     DecompThread *decomp_thread = nullptr;
-           //     StreamState  *stream_state  = nullptr;
-           //     if (file_load_context->compression_type != CompressionType::None && 1 < stream_read_count) {
-           //         stream_state  = decompressor->AllocateStreamState();
-           //         decomp_thread = decompressor->GetDecompThread();
-           //     }
-           //
-           //     RESULT_RETURN_UNLESS(file_size <= file_load_context->out_file_size, ResultInvalidFileBufferSize);
-           //
-           //     /* First read */
-           //     this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(file_load_context->out_file)) + offset), std::addressof(handle), div_size);
-           //
-           //     /* Stream read */
-           //     size_t offset = div_size;
-           //     while (offset != div_total_size) {
-           //
-           //         /* Signal decompressor thread */
-           //         if (stream_state != nullptr) {
-           //             stream_state->read_loop_event.Clear();
-           //             decompressor->SignalDecompThread();
-           //         }
-           //
-           //         /* Read next chunk */
-           //         this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(std::addressof(file_load_context->out_file)) + offset), std::addressof(handle), div_size);
-           //
-           //         /* Wait for previous chunk */
-           //         if (stream_state != nullptr) {
-           //             stream_state->read_loop_event.Wait();
-           //         }
-           //
-           //         offset = offset + div_size;
-           //     }
-           //
-           //     if (stream_state != nullptr) {
-           //         decompressor->FreeStreamState(stream_state);
-           //     }
-           //
-           //     /* Close file handle */
-           //     const Result close_result = this->TryCloseFile(std::addressof(handle));
-           //     RESULT_RETURN_UNLESS(close_result == ResultSuccess, close_result);

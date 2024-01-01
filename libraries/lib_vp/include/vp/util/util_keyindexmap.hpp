@@ -49,6 +49,8 @@ namespace vp::util {
                 Index *entry = m_hash_map.TryGetParentByHash(hash);
                 return (entry != nullptr) ? entry->index : cInvalidEntryIndex;
             }
+
+            constexpr ALWAYS_INLINE void Clear() { m_hash_map.Clear(); }
     };
 
     template <u32 Size>
@@ -76,5 +78,7 @@ namespace vp::util {
                 Index *entry = m_hash_map.TryGetParentByHash(hash);
                 return (entry != nullptr) ? entry->index : cInvalidEntryIndex;
             }
+
+            constexpr ALWAYS_INLINE void Clear() { m_hash_map.Clear(); }
     };
 }

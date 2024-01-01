@@ -25,9 +25,11 @@ namespace vp::util {
         T max_y;
     };
 
+    using BoundingBox2f = BoundingBox2<float>;
+
     class Viewport {
         private:
-            BoundingBox2<float> m_bounding_box;
+            BoundingBox2f m_bounding_box;
         public:
             constexpr Viewport() {/*...*/}
             constexpr Viewport(float min_x, float min_y, float max_x, float max_y) : m_bounding_box{min_x, min_y, max_x, max_y } {/*...*/}

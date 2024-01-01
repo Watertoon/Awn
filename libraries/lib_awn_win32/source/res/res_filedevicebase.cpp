@@ -17,11 +17,11 @@
 
 namespace awn::res {
 
-    Result FileDeviceBase::LoadFileImpl(FileLoadContext *file_load_context) {
+    Result FileDeviceBase::LoadFileImpl(const char *path, FileLoadContext *file_load_context) {
 
         /* Integrity checks */
-        RESULT_RETURN_UNLESS(file_load_context->file != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
-        RESULT_RETURN_UNLESS((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
+        RESULT_RETURN_IF(file_load_context->file_buffer != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
+        RESULT_RETURN_IF((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
         
         /* Declare a file handle closed on exit */
         FileHandle handle = {};
@@ -30,7 +30,7 @@ namespace awn::res {
         };
 
         /* Open file handle */
-        const Result open_result = this->TryOpenFile(std::addressof(handle), file_load_context->file_path, OpenMode::Read);
+        const Result open_result = this->OpenFile(std::addressof(handle), path, OpenMode::Read);
         RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
 
         /* Get file size */
@@ -39,14 +39,14 @@ namespace awn::res {
         RESULT_RETURN_UNLESS(size_result == ResultSuccess, size_result);
 
         /* Align alignment */
-        size_t output_alignment = vp::util::AlignUp(file_load_context->file_alignment, alignof(u64));
+        size_t output_alignment = (file_load_context->file_alignment < cMinimumFileAlignment) ? cMinimumFileAlignment : file_load_context->file_alignment;
 
         /* Check whether the otuput memory needs to be allocated */
-        if (file_load_context->file == nullptr) {
+        if (file_load_context->file_buffer == nullptr) {
 
             /* Allocate file memory */
-            file_load_context->file = ::operator new(file_size, file_load_context->heap, output_alignment);
-            RESULT_RETURN_IF(file_load_context->file == nullptr, ResultFailedToAllocateFileMemory);
+            file_load_context->file_buffer = ::operator new(file_size, file_load_context->file_heap, output_alignment);
+            RESULT_RETURN_IF(file_load_context->file_buffer == nullptr, ResultFailedToAllocateFileMemory);
 
             /* Set output file sizes */
             file_load_context->file_size                    = file_size;
@@ -57,8 +57,8 @@ namespace awn::res {
         /* Handle file allocation error */
         auto error_after_alloc_guard = SCOPE_GUARD {
             if (file_load_context->out_is_file_memory_allocated == true) {
-                ::operator delete(file_load_context->file);
-                file_load_context->file = nullptr;
+                ::operator delete(file_load_context->file_buffer);
+                file_load_context->file_buffer = nullptr;
             }
         };
 
@@ -66,23 +66,21 @@ namespace awn::res {
         RESULT_RETURN_UNLESS(file_size <= file_load_context->file_size, ResultInvalidFileBufferSize);
 
         /* Calculate read div */
-        const u32    div_size          = (file_load_context->read_div == 0) ? file_size : file_load_context->read_div;
-        const size_t div_total_size    = vp::util::AlignDown(file_size, div_size);
+        const u32    read_clamp     = (file_load_context->read_div == 0) ? file_size : file_load_context->read_div;
 
         /* First read */
-        const Result read_result = this->TryReadFile(file_load_context->file, std::addressof(handle), div_size);
+        size_t file_offset = 0;
+        const Result read_result = this->ReadFile(file_load_context->file_buffer, std::addressof(file_offset), std::addressof(handle), read_clamp, file_offset);
         RESULT_RETURN_UNLESS(read_result == ResultSuccess, read_result);
 
         /* Stream read */
-        size_t offset = div_size;
-        while (offset != div_total_size) {
+        while (file_offset < file_size) {
 
             /* Read next chunk */
-            const Result read_loop_result = this->TryReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_load_context->file) + offset), std::addressof(handle), div_size);
+            size_t size_read = 0;
+            const Result read_loop_result = this->ReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_load_context->file_buffer) + file_offset), std::addressof(size_read), std::addressof(handle), read_clamp, file_offset);
+            file_offset += size_read;
             RESULT_RETURN_UNLESS(read_loop_result == ResultSuccess, read_loop_result);
-
-            /* Advance file read offset */
-            offset = ((div_total_size - offset) < div_size) ? div_total_size - offset : offset + div_size;
         }
 
         /* Cancel alloc error for success */

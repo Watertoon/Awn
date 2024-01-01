@@ -58,6 +58,10 @@
     //#include <vp/nn.hpp>
 #endif
 
+/* zstd */
+#define ZSTD_STATIC_LINKING_ONLY
+#include <zstd.h>
+
 /* Vulkan */
 #ifdef VP_TARGET_GRAPHICS_API_vk
     #define VK_USE_PLATFORM_WIN32_KHR

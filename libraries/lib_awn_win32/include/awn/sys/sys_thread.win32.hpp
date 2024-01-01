@@ -17,6 +17,7 @@
 
 namespace awn::sys {
 
+
     class Thread : public ThreadBase {
         private:
             ukern::UKernHandle m_thread_handle;
@@ -53,7 +54,7 @@ namespace awn::sys {
                 RESULT_ABORT_UNLESS(result);
                 m_priority = priority;
             }
-            virtual void SetCoreMask(u64 core_mask) override {
+            virtual void SetCoreMask(CoreMask core_mask) override {
                 const Result result = ukern::SetThreadCoreMask(m_thread_handle, core_mask);
                 if (result == ukern::ResultSameCoreMask) { return; }
                 RESULT_ABORT_UNLESS(result);

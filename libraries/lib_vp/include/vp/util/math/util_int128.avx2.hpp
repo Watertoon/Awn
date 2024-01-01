@@ -15,61 +15,7 @@
  */
 #pragma once
 
-namespace vp::util::sse4 {
-
-    /* naming structure: v [number of elements] [{s}igned or {u}nsigned] [integer type] */
-    typedef int v4si __attribute__((vector_size(16)));
-    typedef unsigned int v4ui __attribute__((vector_size(16)));
-    typedef long long v2sll __attribute__((vector_size(16)));
-    typedef unsigned long long v2ull __attribute__((vector_size(16)));
-    typedef short v8ss __attribute__((vector_size(16)));
-    typedef unsigned short v8us __attribute__((vector_size(16)));
-    typedef char v16cc __attribute__((vector_size(16)));
-    typedef signed char v16sc __attribute__((vector_size(16)));
-    typedef unsigned char v16uc __attribute__((vector_size(16)));
-
-    /* 128 bit integer interop struct */
-    struct v128 {
-        union {
-            v4si  si;
-            v4ui  ui;
-            v2sll sll;
-            v2ull ull;
-            v8ss  ss;
-            v8us  us;
-            v16cc cc;
-            v16sc sc;
-            v16uc uc;
-            __m128i mm;
-        };
-
-        constexpr ALWAYS_INLINE v128() : mm() {/*...*/}
-        constexpr ALWAYS_INLINE v128(const v128& rhs) : mm(rhs.mm) {/*...*/}
-
-        constexpr ALWAYS_INLINE v128(__m128i rhs) : mm(rhs) {/*Takes care of v2sll*/}
-        constexpr ALWAYS_INLINE v128(v4si rhs)  : si(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128(v4ui rhs)  : ui(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128(v2ull rhs) : ull(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128(v8ss rhs)  : ss(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128(v8us rhs)  : us(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128(v16sc rhs) : sc(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128(v16uc rhs) : uc(rhs) {/*...*/}
-
-        constexpr ALWAYS_INLINE v128(int x, int y = 0, int z = 0, int w = 0) : si{x,y,z,w} {/*...*/}
-        constexpr ALWAYS_INLINE v128(unsigned int x, unsigned int y = 0, unsigned int z = 0, unsigned int w = 0) : ui{x,y,z,w} {/*...*/}
-        constexpr ALWAYS_INLINE v128(long long x, long long y = 0) : sll{x,y} {/*...*/}
-        constexpr ALWAYS_INLINE v128(unsigned long long x, unsigned long long y = 0) : ull{x,y} {/*...*/}
-        constexpr ALWAYS_INLINE v128(short x, short y = 0, short z = 0, short w = 0, short x2 = 0, short y2 = 0, short z2 = 0, short w2 = 0) : ss{x,y,z,w,x2,y2,z2,w2} {/*...*/}
-        constexpr ALWAYS_INLINE v128(unsigned short x, unsigned short y = 0, unsigned short z = 0, unsigned short w = 0, unsigned short x2 = 0, unsigned short y2 = 0, unsigned short z2 = 0, unsigned short w2 = 0) : us{x,y,z,w,x2,y2,z2,w2} {/*...*/}
-        constexpr ALWAYS_INLINE v128(char x1, char y1 = 0, char z1 = 0, char w1 = 0, char x2 = 0, char y2 = 0, char z2 = 0, char w2 = 0, char x3 = 0, char y3 = 0, char z3 = 0, char w3 = 0, char x4 = 0, char y4 = 0, char z4 = 0, char w4 = 0) : cc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
-        constexpr ALWAYS_INLINE v128(signed char x1, signed char y1 = 0, signed char z1 = 0, signed char w1 = 0, signed char x2 = 0, signed char y2 = 0, signed char z2 = 0, signed char w2 = 0, signed char x3 = 0, signed char y3 = 0, signed char z3 = 0, signed char w3 = 0, signed char x4 = 0, signed char y4 = 0, signed char z4 = 0, signed char w4 = 0) : sc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
-        constexpr ALWAYS_INLINE v128(unsigned char x1, unsigned char y1 = 0, unsigned char z1 = 0, unsigned char w1 = 0, unsigned char x2 = 0, unsigned char y2 = 0, unsigned char z2 = 0, unsigned char w2 = 0, unsigned char x3 = 0, unsigned char y3 = 0, unsigned char z3 = 0, unsigned char w3 = 0, unsigned char x4 = 0, unsigned char y4 = 0, unsigned char z4 = 0, unsigned char w4 = 0) : uc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
-    };
-
-    typedef v128 v2ll;
-    typedef v128 v4i;
-    typedef v128 v8s;
-    typedef v128 v16c;
+namespace vp::util::avx2 {
 
     /* Arithmitic intructions */
 
@@ -298,24 +244,24 @@ namespace vp::util::sse4 {
 
     constexpr v4si lddqu(int const *address) {
         if (std::is_constant_evaluated()) {
-            v128 out = {};
+            v128i out = {};
             out.si[0] = address[0];
             out.si[1] = address[1];
             out.si[2] = address[2];
             out.si[3] = address[3];
             return out.si;
         } else {
-            return v128(_mm_lddqu_si128(reinterpret_cast<__m128i const*>(address))).si;
+            return v128i(_mm_lddqu_si128(reinterpret_cast<__m128i const*>(address))).si;
         }
     }
 
-    constexpr v4si pinsrd(const v128& a, int i, int index) {
+    constexpr v4si pinsrd(const v128i& a, int i, int index) {
         if (std::is_constant_evaluated()) {
-            v128 out(a);
+            v128i out(a);
             out.si[index] = i;
             return out.si;
         } else {
-            return v128(_mm_insert_epi32(a.mm, i, index)).si;
+            return v128i(_mm_insert_epi32(a.mm, i, index)).si;
         }
     }
 
@@ -365,7 +311,7 @@ namespace vp::util::sse4 {
 
             return v2ull{out1, out2};
         } else {
-            return v128{__builtin_ia32_pclmulqdq128(v128{a}.sll, v128{b}.sll, selection_mask)}.ull;
+            return v128i{__builtin_ia32_pclmulqdq128(v128i{a}.sll, v128i{b}.sll, selection_mask)}.ull;
         }
     }
 

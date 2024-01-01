@@ -203,11 +203,12 @@ namespace vp::util {
             template <typename T>
                 requires (T::cIsIFunction) && (sizeof(T) <= sizeof(m_any))
             constexpr ALWAYS_INLINE void SetFunction(const T &function) {
-                m_any = function;
+                function.CopyTo(this);
             }
     };
 
     template <class FunctionType, class Lambda>
+        requires (sizeof(Lambda) <= 0x18)
     constexpr ALWAYS_INLINE auto MakeLambdaFunction(const Lambda &lambda) {
         return LambdaFunction<Lambda, FunctionType>(std::move(lambda));
     }

@@ -66,23 +66,15 @@ namespace vp::util {
 
     using Matrix33f = Matrix33RowMajorType<float>;
 
-    /*namespace Matrix33Calc {
-        
-        constexpr ALWAYS_INLINE bool Inverse(Matrix33f *out_inverse, Matrix33f *in_matrix) {
-            const float d_eifh = (in_matrix->m_arr2d[1][1] * in_matrix->m_arr2d[2][2]) - (in_matrix->m_arr2d[1][2] * in_matrix->m_arr2d[2][1]);
-            const float d_fgid = (in_matrix->m_arr2d[1][2] * in_matrix->m_arr2d[2][0]) - (in_matrix->m_arr2d[1][0] * in_matrix->m_arr2d[2][2]);
-            const float d_dheg = (in_matrix->m_arr2d[1][0] * in_matrix->m_arr2d[2][1]) - (in_matrix->m_arr2d[1][1] * in_matrix->m_arr2d[0][2]);
-            const float determinent = (in_matrix->m_arr2d[0][0] * d_eifh) + (in_matrix->m_arr2d[0][1] * d_fgid) + (in_matrix->m_arr2d[0][2] * d_dheg);
-            if (determinent == 0.0) {
-                return false;
-            }
-            
-            return true;
+    constexpr ALWAYS_INLINE bool Inverse(Matrix33f *out_inverse, Matrix33f *in_matrix) {
+        const float d_eifh = (in_matrix->m_arr2d[1][1] * in_matrix->m_arr2d[2][2]) - (in_matrix->m_arr2d[1][2] * in_matrix->m_arr2d[2][1]);
+        const float d_fgid = (in_matrix->m_arr2d[1][2] * in_matrix->m_arr2d[2][0]) - (in_matrix->m_arr2d[1][0] * in_matrix->m_arr2d[2][2]);
+        const float d_dheg = (in_matrix->m_arr2d[1][0] * in_matrix->m_arr2d[2][1]) - (in_matrix->m_arr2d[1][1] * in_matrix->m_arr2d[0][2]);
+        const float determinent = (in_matrix->m_arr2d[0][0] * d_eifh) + (in_matrix->m_arr2d[0][1] * d_fgid) + (in_matrix->m_arr2d[0][2] * d_dheg);
+        if (determinent == 0.0) {
+            return false;
         }
         
-        constexpr ALWAYS_INLINE void CalculateRollPitYawIndex(Vector3f *out_vector, const Matrix33& matrix) {
-            
-        }
-    }*/
-
+        return true;
+    }
 }

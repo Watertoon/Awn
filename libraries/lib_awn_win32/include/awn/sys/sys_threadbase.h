@@ -25,6 +25,8 @@ namespace awn::sys {
     using TlsDestructor = void (*)(void*);
     using TlsSlot       = u32;
 
+    using CoreMask = ukern::UKernCoreMask;
+
     class ThreadManager;
 
     class ThreadBase {
@@ -91,7 +93,7 @@ namespace awn::sys {
             virtual void SleepThread([[maybe_unused]] vp::TimeSpan timeout_ns) {/*...*/}
 
             virtual void SetPriority([[maybe_unused]] s32 priority)  {/*...*/}
-            virtual void SetCoreMask([[maybe_unused]] u64 core_mask) {/*...*/}
+            virtual void SetCoreMask([[maybe_unused]] CoreMask core_mask) {/*...*/}
 
             constexpr ALWAYS_INLINE s32 GetPriority() const {
                 return m_priority;

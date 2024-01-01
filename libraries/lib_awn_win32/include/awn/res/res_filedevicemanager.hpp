@@ -62,21 +62,21 @@ namespace awn::res {
                 return m_mounted_file_device_tree.Find(hash);
             }
 
-            Result TryLoadFile(FileLoadContext *file_context) {
+            Result LoadFile(const char *path, FileLoadContext *file_load_context) {
 
                 /* Get drive */
                 MaxDriveString drive;
-                vp::util::GetDrive(std::addressof(drive), file_context->file_path);
+                vp::util::GetDrive(std::addressof(drive), path);
 
                 /* Find file device */
                 FileDeviceBase *device = this->GetFileDeviceByName(drive.GetString());
 
                 /* Get path without drive */
-                vp::util::FixedString<vp::util::cMaxPath> path;
-                vp::util::GetPathWithoutDrive(std::addressof(path), file_context->file_path);
+                vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
+                vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
 
                 /* Load */
-                return device->TryLoadFile(file_context);
+                return device->LoadFile(path_no_drive.GetString(), file_load_context);
             }
     };
 }

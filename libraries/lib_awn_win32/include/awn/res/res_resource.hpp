@@ -25,22 +25,29 @@ namespace awn::res {
             virtual ~ResourceUserInfo() {/*...*/}
     };
 
+    class ResourceFactoryBase;
+
     class Resource {
+        public:
+            friend class ResourceFactoryBase;
         protected:
             void             *m_file;
-            u32               m_file_size;
+            size_t            m_file_size;
+            ResourceUserInfo *m_user_info;
         public:
             VP_RTTI_BASE(Resource);
         public:
-            constexpr ALWAYS_INLINE Resource() : m_file(nullptr), m_file_size(0) {/*...*/}
-            constexpr virtual ~Resource() {/*...*/}
+            constexpr ALWAYS_INLINE Resource() : m_file(), m_file_size(), m_user_info() {/*...*/}
+            virtual ~Resource() {/*...*/}
 
-            virtual bool Initialize([[maybe_unused]] mem::Heap *heap, [[maybe_unused]] void *file, [[maybe_unused]] u32 file_size) { return true; }
-            virtual void Finalize() { return; }
+            virtual Result OnFileLoad([[maybe_unused]] mem::Heap *heap, [[maybe_unused]] void *file, [[maybe_unused]] size_t file_size)         { return true; }
 
-            constexpr virtual size_t GetFileAlignment()        const { return alignof(u32); }
+            virtual Result InitializeForAsync([[maybe_unused]] mem::Heap *heap, [[maybe_unused]] void *file, [[maybe_unused]] size_t file_size) { return true; }
+            virtual void   FinalizeForAsync()                                                                                                   { return; }
 
             constexpr ALWAYS_INLINE void *GetFile()           { return m_file; }
             constexpr ALWAYS_INLINE u32   GetFileSize() const { return m_file_size; }
+
+            constexpr ALWAYS_INLINE void SetUserInfo(ResourceUserInfo *user_info) { m_user_info = user_info; }
     };
 }

@@ -19,22 +19,22 @@ namespace vp::util {
 
 	constexpr ALWAYS_INLINE u32 Crc32b_32(u32 value, u32 accumulate) {
 
-        const sse4::v2ull constant = {0xB4E5B025F7011641, 0x00000001DB710641};
-        sse4::v2ull state = {static_cast<size_t>(value ^ accumulate) << 32, 0ull};
+        const v2ull constant = {0xB4E5B025F7011641, 0x00000001DB710641};
+        v2ull state = {static_cast<size_t>(value ^ accumulate) << 32, 0ull};
 
-        state = sse4::pclmulqdq(state, constant, sse4::PclmulSelectionMask(false, false));
-        state = sse4::pclmulqdq(state, constant, sse4::PclmulSelectionMask(false, true));
+        state = avx2::pclmulqdq(state, constant, avx2::PclmulSelectionMask(false, false));
+        state = avx2::pclmulqdq(state, constant, avx2::PclmulSelectionMask(false, true));
 
         return static_cast<u32>(state[1]);
     }
 
     constexpr ALWAYS_INLINE u32 Crc32b_64(u64 value, u32 accumulate) {
 
-        const sse4::v2ull constant = {0xB4E5B025F7011641, 0x00000001DB710641};
-        sse4::v2ull state = {value ^ accumulate, 0ull};
+        const v2ull constant = {0xB4E5B025F7011641, 0x00000001DB710641};
+        v2ull state = {value ^ accumulate, 0ull};
 
-        state = sse4::pclmulqdq(state, constant, sse4::PclmulSelectionMask(false, false));
-        state = sse4::pclmulqdq(state, constant, sse4::PclmulSelectionMask(false, true));
+        state = avx2::pclmulqdq(state, constant, avx2::PclmulSelectionMask(false, false));
+        state = avx2::pclmulqdq(state, constant, avx2::PclmulSelectionMask(false, true));
 
         return static_cast<u32>(state[1]);
     }

@@ -18,7 +18,7 @@
 namespace vp::util {
 
     template <size_t Size>
-        requires (Size < 0xffff)
+        requires (Size < 0x40'0000)
     class FixedString {
         public:
             char m_string_array[Size];
@@ -204,8 +204,8 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE size_t      GetLength() const { return m_length; }
-            constexpr ALWAYS_INLINE char*       GetString()       { return m_string_array; }
-            constexpr ALWAYS_INLINE const char* GetString() const { return m_string_array; }
+            constexpr ALWAYS_INLINE char       *GetString()       { return m_string_array; }
+            constexpr ALWAYS_INLINE const char *GetString() const { return m_string_array; }
     };
 
     class HeapString {

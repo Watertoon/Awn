@@ -132,7 +132,8 @@ namespace vp::util {
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 drive_start_offset = FindDriveDelimiter(path_with_drive, path_len);
+        const u32 drive_base         = FindDriveDelimiter(path_with_drive, path_len);
+        const u32 drive_start_offset = (drive_base != 0) ? drive_base + 2 : 0;
 
          /* Copy string from last delimiter */
         const u32 name_size = path_len - drive_start_offset;
@@ -154,7 +155,8 @@ namespace vp::util {
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 drive_start_offset = FindDriveDelimiter(path_with_drive->m_string_array, path_len);
+        const u32 drive_base         = FindDriveDelimiter(path_with_drive->m_string_array, path_len);
+        const u32 drive_start_offset = (drive_base != 0) ? drive_base + 2 : 0;
 
          /* Copy string from last delimiter */
         const u32 name_size = path_len - drive_start_offset;
