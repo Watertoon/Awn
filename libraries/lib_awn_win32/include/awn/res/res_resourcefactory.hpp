@@ -72,7 +72,7 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(decompressor != nullptr, ResultInvalidDecompressor);
 
                 /* Load decompressed */
-                const Result result = decompressor->TryLoadDecompress(nullptr, nullptr, path, resource_load_context);
+                const Result result = decompressor->LoadDecompressFile(nullptr, nullptr, path, resource_load_context, resource_load_context->file_device);
                 if (result != ResultSuccess) {
                     delete resource;
                     return result;

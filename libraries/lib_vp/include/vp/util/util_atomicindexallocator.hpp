@@ -6,7 +6,8 @@ namespace vp::util {
         requires (sizeof(T) <= sizeof(u32))
     class AtomicIndexAllocator {
         public:
-            static constexpr T   cInvalidHandle = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr T   cInvalidHandle     = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr T   cInvalidEntryIndex = static_cast<T>(0xffff'ffff'ffff'ffff);
             static constexpr u32 cMaxSize       = ~T(0);
         private:
             u32  m_next_index;
@@ -97,7 +98,8 @@ namespace vp::util {
         requires (sizeof(T) <= sizeof(u32)) && (Count <= (~T(0)))
     class FixedAtomicIndexAllocator {
         public:
-            static constexpr T   cInvalidHandle = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr T cInvalidHandle     = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr T cInvalidEntryIndex = static_cast<T>(0xffff'ffff'ffff'ffff);
         private:
             u32  m_next_index;
             T    m_handle_array[Count];

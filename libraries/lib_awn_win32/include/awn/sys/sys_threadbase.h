@@ -78,7 +78,7 @@ namespace awn::sys {
             }
 
             virtual ~ThreadBase() {
-                this->WaitForThreadExit();
+                this->ExitThread();
                 m_message_queue.Finalize();
             }
 

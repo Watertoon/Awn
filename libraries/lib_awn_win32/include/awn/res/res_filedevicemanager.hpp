@@ -56,20 +56,25 @@ namespace awn::res {
                 m_mounted_file_device_tree.Insert(file_device);
             }
 
-            FileDeviceBase *GetFileDeviceByName(const char *device_name) {
-                const u32 hash = vp::util::HashCrc32b(device_name);
+            FileDeviceBase *GetFileDeviceByDrive(const char *drive) {
+                const u32 hash = vp::util::HashCrc32b(drive);
                 std::scoped_lock l(m_device_tree_cs);
                 return m_mounted_file_device_tree.Find(hash);
             }
 
-            Result LoadFile(const char *path, FileLoadContext *file_load_context) {
+            FileDeviceBase *GetFileDeviceByPath(const char *path) {
 
                 /* Get drive */
                 MaxDriveString drive;
                 vp::util::GetDrive(std::addressof(drive), path);
 
+                return this->GetFileDeviceByDrive(drive.GetString());
+            }
+
+            Result LoadFile(const char *path, FileLoadContext *file_load_context) {
+
                 /* Find file device */
-                FileDeviceBase *device = this->GetFileDeviceByName(drive.GetString());
+                FileDeviceBase *device = this->GetFileDeviceByPath(path);
 
                 /* Get path without drive */
                 vp::util::FixedString<vp::util::cMaxPath> path_no_drive;

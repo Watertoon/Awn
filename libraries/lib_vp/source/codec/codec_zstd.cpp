@@ -145,14 +145,15 @@ namespace vp::codec {
             /* Copy in new stream data to leftovers if under next size threshold */
             if (leftover_used_iter < next_size) {
 
-                const size_t append_size = ((next_size - leftover_used_iter) < stream_size_iter) ? next_size - leftover_used_iter : stream_size_iter;
+                const size_t next_size_left = next_size - leftover_used_iter;
+                const size_t append_size = (next_size_left < stream_size_iter) ? next_size_left : stream_size_iter;
 
                 ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(stream_context->leftover_stream) + leftover_used_iter), stream_iter, append_size);
 
                 /* Advance iterators */
                 leftover_used_iter += append_size;
-                stream_iter         = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(stream_iter) + next_size);
-                stream_size_iter   -= next_size;
+                stream_iter         = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(stream_iter) + append_size);
+                stream_size_iter   -= append_size;
             }
 
             /* Check if we have reached the next decompress threshold */
@@ -164,8 +165,6 @@ namespace vp::codec {
 
             /* Adjust iters */
             output_iter         = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output_iter) + size_read);
-            stream_iter         = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(stream_iter) + next_size);
-            stream_size_iter   -= next_size;
             output_size_left   -= size_read;
             expected_size_left -= size_read;
 

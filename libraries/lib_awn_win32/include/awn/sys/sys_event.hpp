@@ -17,6 +17,15 @@
 
 namespace awn::sys {
 
+    enum class ResetMode : bool {
+        Manual = 0,
+        Auto   = 1,
+    };
+    enum class SignalState : bool {
+        Cleared  = 0,
+        Signaled = 1,
+    };
+
     class Event {
         private:
             u16                              m_signal_state;
@@ -26,7 +35,7 @@ namespace awn::sys {
             ukern::InternalConditionVariable m_cv;
         public:
             constexpr ALWAYS_INLINE Event() : m_signal_state(), m_auto_reset_mode(), m_wake_id(), m_cs(), m_cv() {/*...*/}
-            constexpr ALWAYS_INLINE Event(bool create_signaled, bool auto_reset) : m_signal_state(create_signaled), m_auto_reset_mode(auto_reset) {/*...*/}
+            constexpr ALWAYS_INLINE Event(SignalState signal_state, ResetMode reset_mode) : m_signal_state(static_cast<u16>(signal_state)), m_auto_reset_mode(static_cast<u16>(reset_mode)) {/*...*/}
 
             void Signal() {
                 std::scoped_lock lock(m_cs);

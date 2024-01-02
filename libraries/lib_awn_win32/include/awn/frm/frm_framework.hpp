@@ -470,7 +470,7 @@ namespace awn::frm {
                 m_present_thread.StartThread();
 
                 /* Initialize present event */
-                m_present_event.Initialize();
+                m_present_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
 
                 /* Initialize sync */
                 for (u32 i = 0; i < WindowThread::cMaxRenderTargetCount; ++i) {

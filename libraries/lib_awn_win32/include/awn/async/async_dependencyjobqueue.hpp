@@ -71,7 +71,7 @@ namespace awn::async {
             u32                 m_core_number;
             u32                 m_is_ready_to_exit;
         public:
-            constexpr  DependencyJobThreadControl() : m_next_job(), m_local_job_ring(), m_out_of_jobs_event(false, true), m_local_ring_mutex(), m_core_number(), m_is_ready_to_exit() {/*...*/}
+            constexpr  DependencyJobThreadControl() : m_next_job(), m_local_job_ring(), m_out_of_jobs_event(sys::SignalState::Cleared, sys::ResetMode::Auto), m_local_ring_mutex(), m_core_number(), m_is_ready_to_exit() {/*...*/}
             constexpr ~DependencyJobThreadControl() {/*...*/}
 
             void SetNextJobFromLocalRing() {

@@ -111,7 +111,7 @@ namespace awn::res {
                 }
 
                 /* Read File */
-                const u32 read_clamp = (0xffff'ffff < read_size) ? 0xffff'ffff : static_cast<u32>(read_size);
+                u32       read_clamp = (0xffff'ffff < read_size) ? 0xffff'ffff : static_cast<u32>(read_size);
                 u32       size_read  = 0;
                 size_t    read_iter  = 0;
                 ON_SCOPE_EXIT {
@@ -125,7 +125,10 @@ namespace awn::res {
                     if (read_result == false) {
                         return ConvertWin32ErrorToResult();
                     }
-                } while (read_iter != read_size || size_read < read_clamp);
+                    if ((read_size - read_iter) < read_clamp) {
+                        read_clamp = (read_size - read_iter);
+                    }
+                } while (read_iter != read_size && size_read == read_clamp);
 
                 RESULT_RETURN_SUCCESS;
             }
@@ -164,7 +167,7 @@ namespace awn::res {
                     if (write_result == false) {
                         return ConvertWin32ErrorToResult();
                     }
-                    if (write_clamp < (write_size - written_iter)) {
+                    if ((write_size - written_iter) < write_clamp) {
                         write_clamp = (write_size - written_iter);
                     }
                 } while (written_iter != write_size);

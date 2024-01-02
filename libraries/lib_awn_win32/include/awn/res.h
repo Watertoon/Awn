@@ -19,6 +19,7 @@
 #include <awn/res/res_filedevicebase.hpp>
 #include <awn/res/res_systemfiledevice.win32.hpp>
 #include <awn/res/res_filedevicemanager.hpp>
+#include <awn/res/res_zstddecompressor.hpp>
 #include <awn/res/res_resource.hpp>
 #include <awn/res/res_archiveresource.hpp>
 #include <awn/res/res_archivefiledevice.hpp>

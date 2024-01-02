@@ -109,8 +109,8 @@ namespace awn::async {
             void Initialize(mem::Heap *heap, AsyncTaskCreateDelegate *create_delegate, u32 count) {
 
                 /* Initialize events */
-                m_acquire_event.Initialize();
-                m_available_event.Initialize();
+                m_acquire_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
+                m_available_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
 
                 /* Initialize task pointer array */
                 m_task_array.Initialize(heap, count);

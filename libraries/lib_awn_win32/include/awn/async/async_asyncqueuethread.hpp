@@ -40,8 +40,7 @@ namespace awn::async {
 
                 async_queue->m_task_thread_array.PushPointer(this);
 
-                m_execute_event.Initialize();
-                m_execute_event.Signal();
+                m_execute_event.Initialize(sys::SignalState::Signaled, sys::ResetMode::Manual);
             }
             ~AsyncQueueThread() { m_execute_event.Finalize(); }
 

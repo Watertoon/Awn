@@ -17,7 +17,8 @@
 
 namespace awn::res {
 
-    struct ResourceLoadContext;
+    struct FileLoadContext;
+    class  FileDeviceBase;
 
     class IDecompressor {
         public:
@@ -29,6 +30,6 @@ namespace awn::res {
             virtual void SetPriority([[maybe_unused]] u32 priority) {/*...*/}
             virtual void SetCoreMask([[maybe_unused]] sys::CoreMask core_mask) {/*...*/}
 
-            virtual Result TryLoadDecompress(u32 *out_size, u32 *out_alignment, const char *path, ResourceLoadContext *resource_load_context) { RESULT_RETURN_SUCCESS; }
+            virtual Result LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) { RESULT_RETURN_SUCCESS; }
     };
 }

@@ -114,10 +114,10 @@ namespace awn::async {
 
 		/* Initialize events */
 		for (u32 i = 0; i < queue_info->priority_level_count; ++i) {
-			m_priority_level_array[i].priority_cleared_event.Initialize();
+			m_priority_level_array[i].priority_cleared_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
 			m_priority_level_array[i].priority_cleared_event.Signal();
 		}
-		m_all_task_complete_event.Initialize();
+		m_all_task_complete_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
 
 		return;
 	}
