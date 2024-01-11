@@ -103,6 +103,10 @@ namespace awn::async {
 
             Result PushTask(AsyncTaskPushInfo *push_info);
 
+            void ChangePriority(u32 new_priority);
+
+            constexpr ALWAYS_INLINE u32 GetPriority() const { return m_priority; }
+
             void Wait() {
                 m_finish_event.Wait();
             }

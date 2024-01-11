@@ -32,7 +32,7 @@ namespace awn::async {
         u16              priority;
         bool             is_multi_run_complete_once;
         union {
-            u32 multi_run_state;
+            u32     multi_run_state;
             struct {
                 u16 multi_run_count;
                 u16 active_running_count;

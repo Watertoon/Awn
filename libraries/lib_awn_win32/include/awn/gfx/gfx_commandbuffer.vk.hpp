@@ -409,7 +409,7 @@ namespace awn::gfx {
                     .sType      = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
                     .layout     = gfx::Context::GetInstance()->GetVkPipelineLayout(),
                     .stageFlags = static_cast<VkShaderStageFlags>(shader_stage_flags),
-                    .offset     = location * sizeof(u32),
+                    .offset     = static_cast<u32>(location * sizeof(u32)),
                     .size       = sizeof(u32),
                     .pValues    = std::addressof(view_handle),
                 };

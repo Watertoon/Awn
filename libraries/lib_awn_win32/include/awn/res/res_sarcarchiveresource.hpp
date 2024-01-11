@@ -22,7 +22,7 @@ namespace awn::res {
             vp::res::SarcExtractor m_sarc_extractor;
         public:
             constexpr SarcArchiveResource() : ArchiveResource(), m_sarc_extractor() {/*...*/}
-            constexpr virtual ~SarcArchiveResource() override {/*...*/}
+            virtual ~SarcArchiveResource() override {/*...*/}
 
             virtual Result OnFileLoad(mem::Heap *heap, void *file, size_t file_size) override {
                 VP_UNUSED(heap, file_size);

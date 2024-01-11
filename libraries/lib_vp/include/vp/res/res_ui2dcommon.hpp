@@ -70,16 +70,12 @@ namespace vp::res {
     };
     static_assert(sizeof(ResUi2dUserData) == 0xc);
 
-    struct ResUi2dUserDataSection : public ResUi2dSection {
+    struct ResUi2dUserDataList : public ResUi2dSection {
         u16 user_data_count;
         u16 reserve0;
         ResUi2dUserData user_data_array[];
 
         static constexpr inline u32 Magic = util::TCharCode32("usd1");
     };
-    static_assert(sizeof(ResUi2dUserDataSection) == 0xc);
-
-    struct ResUi2dSystemData {
-        u32 system_data_type;
-    };
+    static_assert(sizeof(ResUi2dUserDataList) == 0xc);
 }

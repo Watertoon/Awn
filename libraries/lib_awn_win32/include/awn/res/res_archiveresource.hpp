@@ -31,7 +31,7 @@ namespace awn::res {
         private:
         public:
             constexpr ArchiveResource() : Resource() {/*...*/}
-            constexpr virtual ~ArchiveResource() override {/*...*/}
+            virtual ~ArchiveResource() override {/*...*/}
 
             virtual u32 TryGetEntryIndex(const char *path) const { VP_UNUSED(path); return cInvalidEntryIndex; }
 

@@ -18,6 +18,6 @@
 namespace awn::res {
 
     Result LoadFile(const char *path, FileLoadContext *file_load_context);
-    Result LoadResource(const char *path, ResourceLoadContext *resource_load_context);
-    Result LoadResourceWithDecompressor(const char *path, ResourceLoadContext *resource_load_context);
+    Result LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context);
+    Result LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor);
 }

@@ -57,7 +57,7 @@ namespace awn::async {
         }
 
         /* Free if necessary */
-        if (result != ResultIncomplete) {
+        if (result != ResultRescheduled) {
             m_status = static_cast<u32>(Status::FreeExecute); 
             this->FreeExecute();
             m_status = static_cast<u32>(Status::Complete);

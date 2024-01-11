@@ -373,7 +373,7 @@ namespace awn::res {
             }
             virtual u32 GetDriveSize() const override { return m_drive_size + 9; }
         public:
-            constexpr ALWAYS_INLINE ContentFileDevice() : SystemFileDevice("content"), m_drive_size() {
+            ALWAYS_INLINE ContentFileDevice() : SystemFileDevice("content"), m_drive_size() {
 
                 /* Obtain size of process working dir */
                 m_drive_size = ::GetCurrentDirectory(0, nullptr);
@@ -397,7 +397,7 @@ namespace awn::res {
             }
             virtual u32 GetDriveSize() const override { return m_drive_size + 6; }
         public:
-            constexpr ALWAYS_INLINE SaveFileDevice() : SystemFileDevice("save"), m_drive_size() {
+            ALWAYS_INLINE SaveFileDevice() : SystemFileDevice("save"), m_drive_size() {
 
                 /* Obtain size of process working dir */
                 m_drive_size = ::GetCurrentDirectory(0, nullptr);

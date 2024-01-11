@@ -94,6 +94,10 @@ namespace awn::async {
             ALWAYS_INLINE void WaitForExecute() {
                 m_execute_event.Wait();
             }
+            
+            void CalcSync() {
+                
+            }
     };
     
     constexpr AsyncQueue *AsyncTaskPushInfo::GetQueue() {

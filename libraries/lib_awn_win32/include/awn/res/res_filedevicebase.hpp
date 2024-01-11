@@ -115,7 +115,7 @@ namespace awn::res {
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode)                                             { VP_ASSERT(false); VP_UNUSED(out_file_handle, path, open_mode); }
             virtual Result CloseFileImpl(FileHandle *file_handle)                                                                                      { VP_ASSERT(false); VP_UNUSED(file_handle); }
             virtual Result ReadFileImpl(void *read_buffer, size_t *out_read_size, FileHandle *file_handle, size_t read_size, size_t file_offset)       { VP_ASSERT(false); VP_UNUSED(read_buffer, out_read_size, file_handle, read_size, file_offset); }
-            virtual Result WriteFileImpl(size_t *out_written_size, FileHandle *file_handle, void *write_buffer, size_t write_size, size_t file_offset) { VP_ASSERT(false); VP_UNUSED(file_handle, write_buffer, write_size, file_offset); }
+            virtual Result WriteFileImpl(size_t *out_written_size, FileHandle *file_handle, void *write_buffer, size_t write_size, size_t file_offset) { VP_ASSERT(false); VP_UNUSED(out_written_size, file_handle, write_buffer, write_size, file_offset); }
             virtual Result FlushFileImpl(FileHandle *file_handle)                                                                                      { VP_ASSERT(false); VP_UNUSED(file_handle); }
 
             virtual Result GetFileSizeImpl(size_t *out_size, FileHandle *file_handle) { VP_ASSERT(false); VP_UNUSED(out_size, file_handle); }

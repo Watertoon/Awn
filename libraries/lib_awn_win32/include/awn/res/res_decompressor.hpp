@@ -27,9 +27,9 @@ namespace awn::res {
             constexpr IDecompressor() {/*...*/}
             constexpr virtual ~IDecompressor() {/*...*/}
 
-            virtual void SetPriority([[maybe_unused]] u32 priority) {/*...*/}
-            virtual void SetCoreMask([[maybe_unused]] sys::CoreMask core_mask) {/*...*/}
+            virtual void SetPriority(u32 priority)            { VP_UNUSED(priority); }
+            virtual void SetCoreMask(sys::CoreMask core_mask) { VP_UNUSED(core_mask); }
 
-            virtual Result LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) { RESULT_RETURN_SUCCESS; }
+            virtual Result LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) { VP_UNUSED(out_size, out_alignment, path, file_load_context, file_device); RESULT_RETURN_SUCCESS; }
     };
 }

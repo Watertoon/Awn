@@ -21,4 +21,5 @@ namespace awn::async {
     DECLARE_RESULT(Incomplete,      1);
     DECLARE_RESULT(AlreadyQueued,   2);
     DECLARE_RESULT(InvalidPriority, 3);
+    DECLARE_RESULT(Rescheduled,     4);
 }

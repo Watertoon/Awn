@@ -97,6 +97,7 @@ namespace awn::async {
                 /* Clear thread control state */
                 for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
                     if (((m_active_core_mask >> i) & 1) == 0) { continue; }
+                    vp::util::MemoryBarrierReadWrite();
 
                     m_thread_array[i].thread->m_thread_control.m_next_job = nullptr;
                     m_thread_array[i].thread->m_thread_control.m_out_of_jobs_event.Clear();
@@ -206,6 +207,7 @@ namespace awn::async {
 
                 return;
             }
+
             void FinishRun() {
 
                 /* Integrity check */

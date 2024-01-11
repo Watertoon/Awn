@@ -45,5 +45,12 @@ namespace awn::async {
             void CancelTask();
 
             void WaitForCompletion();
+
+            constexpr ALWAYS_INLINE bool HasTask() const {
+                return m_async_task != nullptr;
+            }
+            constexpr ALWAYS_INLINE bool IsPending() const {
+                return m_async_task != nullptr && m_state == static_cast<u32>(State::Pending);
+            }
     };
 }

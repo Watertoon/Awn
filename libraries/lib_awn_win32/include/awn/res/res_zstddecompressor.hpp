@@ -330,7 +330,7 @@ namespace awn::res {
                         m_dic_array[i] = nullptr;
                         continue;
                     }
-                    if (m_dic_array == nullptr) { continue; }
+                    if (m_dic_array[i] == nullptr) { continue; }
 
                     /* Get dic id */
                     u32 dic_id = 0;
