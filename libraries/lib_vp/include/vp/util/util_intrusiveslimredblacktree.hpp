@@ -86,7 +86,7 @@ namespace vp::util {
             }
     };
 
-	template<typename T, typename K, class Traits>
+	template<typename T, typename K, class Traits, Traits::ComparisonFunction Compare, Traits::CollisionFunction Collision>
 	class IntrusiveRedBlackTree {
 		public:
             using value_type       = T;
@@ -242,8 +242,11 @@ namespace vp::util {
                 u32        traversal_count = 0;
                 do {
                     node_iter       = next_node;
-                    VP_ASSERT(node_iter->m_key != insert->m_key);
-                    side            = (node_iter->m_key <= insert->m_key);
+
+                    const std::strong_ordering comp  = Compare(node_iter->m_key, insert->m_key);
+                    if (comp == 0) { Collision(Traits::GetParent(node_iter), Traits::GetParent(insert)); return; }
+
+                    side            = comp < 0;
                     trace_mask      = (trace_mask << 1) | side;
                     traversal_count = traversal_count + 1;
                     next_node       = std::addressof(node_iter->m_left)[side];
@@ -532,9 +535,11 @@ namespace vp::util {
                 /* Find removal location */
                 node_type  *remove_node = m_root;
                 node_type **right_node  = nullptr;
+                std::strong_ordering comp(std::strong_ordering::equal);
                 while (
-                    (right_node = std::addressof(remove_node->m_left),  key < remove_node->m_key) ||
-                    (right_node = std::addressof(remove_node->m_right), remove_node->m_key < key)) {
+                    (comp = Compare(remove_node->m_key, key)),
+                    (right_node = std::addressof(remove_node->m_left), comp > 0) ||
+                    (right_node = std::addressof(remove_node->m_right), comp < 0)) {
                     remove_node = *right_node;
                     VP_ASSERT(remove_node != nullptr);
                 }
@@ -558,8 +563,9 @@ namespace vp::util {
 
                 /* Binary iterate */
                 while (iter != nullptr) {
-                    if (iter->m_key == key) { return iter; }
-                    const bool side = (iter->m_key <= key);
+                    const std::strong_ordering comp = Compare(iter->m_key, key);
+                    if (comp == 0) { return iter; }
+                    const bool side = comp < 0;
                     iter = std::addressof(iter->m_left)[side];
                 }
 
@@ -663,6 +669,9 @@ namespace vp::util {
     template<class RP, typename K, auto M>
     class IntrusiveRedBlackTreeMemberTraits {
         public:
+            using ComparisonFunction = std::strong_ordering(*)(const K&, const K&);
+            using CollisionFunction  = void(*)(RP*,RP*);
+        public:
             static ALWAYS_INLINE RP *GetParent(IntrusiveRedBlackTreeNode<K> *node) {
                 return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
             }
@@ -685,12 +694,36 @@ namespace vp::util {
             }
     };
 
-    template<class RP, auto M>
+    template <typename T>
+    constexpr ALWAYS_INLINE std::strong_ordering RedBlackTreeDefaultCompare(const T &rhs, const T &lhs) {
+        return (rhs <=> lhs);
+    }
+    template <typename T>
+    ALWAYS_INLINE void RedBlackTreeDefaultCollision([[maybe_unused]] T*, [[maybe_unused]] T*) {
+        VP_ASSERT(false)
+    }
+
+    template<class RP, auto M, auto Compare = RedBlackTreeDefaultCompare<typename vp::util::MemberType<M>::key_type>, auto Collision = RedBlackTreeDefaultCollision<RP>>
     struct IntrusiveRedBlackTreeTraits {
-        using K           = vp::util::MemberType<M>::key_type;
-        using Traits      = IntrusiveRedBlackTreeMemberTraits<RP, K, M>;
-        using Node        = IntrusiveRedBlackTreeNode<K>;
-        using Tree        = IntrusiveRedBlackTree<ParentType<M>, K, Traits>;
-        using ReverseTree = IntrusiveRedBlackTree<ParentType<M>, K, Traits>;
+        using K                  = vp::util::MemberType<M>::key_type;
+        using Traits             = IntrusiveRedBlackTreeMemberTraits<RP, K, M>;
+        using Node               = IntrusiveRedBlackTreeNode<K>;
+        using Tree               = IntrusiveRedBlackTree<ParentType<M>, K, Traits, Compare, Collision>;
+        //using ReverseTree        = IntrusiveRedBlackTree<ParentType<M>, K, Traits>;
     };
+
+    constexpr ALWAYS_INLINE std::strong_ordering ConvertComparisionToStrongOrdering(const s32 comp) {
+        const std::strong_ordering first  = (0 < comp) ? std::strong_ordering::greater : std::strong_ordering::equal;
+        const std::strong_ordering second = (comp < 0) ? std::strong_ordering::less : first;
+        return second;
+    }
+
+    template <typename T>
+    ALWAYS_INLINE std::strong_ordering RedBlackTreeDefaultStringCompare(const T &rhs, const T &lhs) {
+        return ConvertComparisionToStrongOrdering(::strcmp(lhs, rhs));
+    }
+
+    template <class RP, auto M>
+        requires (std::is_same<typename vp::util::MemberType<M>::key_type, const char*>::value == true || std::is_same<typename vp::util::MemberType<M>::key_type, char*>::value == true)
+    using IntrusiveRedBlackTreeStringTraits = IntrusiveRedBlackTreeTraits<RP, M, RedBlackTreeDefaultStringCompare<typename vp::util::MemberType<M>::key_type>>;
 }

@@ -29,7 +29,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE ~RingBuffer() {/*...*/}
 
             void Initialize(imem::IHeap *heap, u32 queue_count, s32 alignment = 8) {
-                
+
                 /* Integrity checks */
                 VP_ASSERT(queue_count != 0);
 
@@ -114,7 +114,7 @@ namespace vp::util {
 
                     /* Move ring to remove iter */
                     T *adjust_location = m_array + adjust;
-                    
+
                     const bool is_wrap   = (m_max_count < m_count + m_offset) & (m_offset < adjust);
                     const u32  adj_count = (is_wrap == true) ?  m_max_count - adjust - 1 : m_count - adjust - 1;
 
@@ -164,54 +164,75 @@ namespace vp::util {
                 VP_ASSERT(m_array != nullptr);
 
                 /* Set state */
-                m_max_count      = queue_count;
-                m_offset = 0;
-                m_count          = 0;
+                m_max_count = queue_count;
+                m_offset    = 0;
+                m_count     = 0;
 
                 return;
             }
 
             void Finalize() {
-
+                m_max_count = 0;
+                m_count     = 0;
+                m_offset    = 0;
                 if (m_array != nullptr) {
                     delete [] m_array;
                 }
-                m_offset    = 0;
-                m_count     = 0;
-                m_max_count = 0;
             }
 
-            constexpr ALWAYS_INLINE void Insert(T value) {
+            constexpr void Insert(T value) {
 
                 /* Integrity checks */
                 VP_ASSERT(value != 0);
 
-                /* Increment count */
-                const u32 count = vp::util::InterlockedIncrement(std::addressof(m_count));
+                /* Ensure available space */
+                u32 count = m_count;
+                u32 last  = 0;
+                while ((count - m_offset) < (m_max_count - 3)) {
 
-                /* Calculate offset */
-                const u32 offset = count - m_offset;
-                VP_ASSERT(offset < m_max_count);
+                    /* Attempt to reserve space */
+                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(last), std::addressof(m_count), count + 1, count);
+                    if (result == false) { count = last; continue; }
 
-                /* Placeback value */
-                m_array[(m_max_count - 1) & count] = value;
+                    /* Insert our element */
+                    vp::util::MemoryBarrierRelease();
+                    m_array[(m_max_count - 1) & count] = value;
+
+                    return;
+                }
+                VP_ASSERT(false);
             }
 
-            constexpr ALWAYS_INLINE T RemoveFront() {
+            constexpr T RemoveFront() {
 
-                /* Check count */
-                const u32 offset = m_offset;
-                if ((m_count - offset) != 0) { return 0; }
+                /* Attempt to read the next item in the queue */
+                u32 offset = m_offset;
+                while (0 < m_count - offset) {
 
-                /* Try to acquire value */
-                T ret = m_array[(m_max_count - 1) & offset];
-                if (ret == 0) { return 0; }
+                    /* Check if next element is available */
+                    T ret = m_array[(m_max_count - 1) & offset];
+                    if (ret == 0) {
+                        vp::util::MemoryBarrierRelease();
 
-                /* Increment queue */
-                m_array[(m_max_count - 1) & offset] = 0;
-                m_offset = offset + 1;
+                        /* Retry if a new element was added */
+                        const u32 next_offset = m_offset;
+                        if (next_offset == offset) { return 0; }
+                        offset = next_offset;
+                        continue;
+                    }
 
-                return ret;
+                    /* Reserve the element as ours */
+                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(offset), std::addressof(m_offset), offset + 1, offset);
+                    if (result == false) { continue; }
+
+                    /* Take the element */
+                    vp::util::MemoryBarrierRelease();
+                    m_array[(m_max_count - 1) & offset] = 0;
+
+                    return ret;
+                }
+
+                return 0;
             }
 	};
 }

@@ -164,7 +164,7 @@ namespace awn::ukern::impl {
 
             u32 GetCoreCount() const { return m_core_count; }
         private:
-            void TransferFiberForSignalKey(FiberLocalStorage *waiting_fiber);
+            bool TransferFiberForSignalKey(FiberLocalStorage *waiting_fiber);
         public:
             Result CreateThreadImpl(UKernHandle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, s32 priority, u32 core_id);
 

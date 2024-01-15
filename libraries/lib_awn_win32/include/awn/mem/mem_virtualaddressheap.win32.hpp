@@ -120,16 +120,18 @@ namespace awn::mem {
 
                     /* Adjust start and end addresses lockless */
                     void *start = m_start_address;
-                    while (new_address < start) {
-                        vp::util::InterlockedCompareExchange(std::addressof(m_start_address), new_address, start);
-                        start = m_start_address;
+                    while (new_address < m_start_address) {
+                        const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(start), std::addressof(m_start_address), new_address, start);
+                        if (result == true) { break; }
                     }
+
                     void *new_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_address) + final_size);
                     void *end     = m_end_address;
                     while (end < new_end) {
-                        vp::util::InterlockedCompareExchange(std::addressof(m_end_address), new_end, end);
-                        end = m_end_address;
+                        const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(end), std::addressof(m_end_address), new_end, end);
+                        if (result == true) { break; }
                     }
+
 
                     return new_address;
                 }
@@ -228,17 +230,18 @@ namespace awn::mem {
                     m_free_small_memory_list.PushBack(*new_small_block);
                 }
 
-                /* Adjust start and end addresses lockless */
-                void *start = m_start_address;
-                while (commit < start) {
-                    vp::util::InterlockedCompareExchange(std::addressof(m_start_address), commit, start);
-                    start = m_start_address;
+                /* Adjust start and end addresses atomicly */
+                void *start      = m_start_address;
+                while (commit < m_start_address) {
+                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(start), std::addressof(m_start_address), commit, start);
+                    if (result == true) { break; }
                 }
+    
                 void *new_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(commit) + (small_page_count_first << 0xc));
                 void *end     = m_end_address;
                 while (end < new_end) {
-                    vp::util::InterlockedCompareExchange(std::addressof(m_end_address), new_end, end);
-                    end = m_end_address;
+                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(end), std::addressof(m_end_address), new_end, end);
+                    if (result == true) { break; }
                 }
 
                 return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_small_block) + address_base_offset);

@@ -23,8 +23,8 @@ namespace awn::res {
     struct ResourceLoadContext : public FileLoadContext {
         FileDeviceBase      *file_device;
         ResourceFactoryBase *resource_factory;
-        ResourceUserInfo    *resource_user_info;
         mem::Heap           *resource_heap;
+        mem::Heap           *gpu_heap;
         s32                  resource_alignment;
     };
 
@@ -81,10 +81,9 @@ namespace awn::res {
                 /* Setup resource */
                 resource->m_file      = resource_load_context->file_buffer;
                 resource->m_file_size = resource_load_context->file_size;
-                resource->m_user_info = resource_load_context->resource_user_info;
 
                 /* Resource pre-prepare */
-                resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->file_buffer, resource_load_context->file_size);
+                resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_buffer, resource_load_context->file_size);
 
                 /* Set output */
                 *out_resource = resource;
@@ -116,10 +115,9 @@ namespace awn::res {
                 /* Setup resource */
                 resource->m_file      = resource_load_context->file_buffer;
                 resource->m_file_size = resource_load_context->file_size;
-                resource->m_user_info = resource_load_context->resource_user_info;
 
                 /* Resource load callback */
-                resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->file_buffer, resource_load_context->file_size);
+                resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_buffer, resource_load_context->file_size);
 
                 /* Set output */
                 *out_resource = resource;

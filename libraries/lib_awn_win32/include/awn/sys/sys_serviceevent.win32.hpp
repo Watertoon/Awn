@@ -68,7 +68,8 @@ namespace awn::sys {
                     const u32 result = ::WaitForSingleObject(m_win32_event_handle, INFINITE);
                     VP_ASSERT(result == WAIT_OBJECT_0);       
                     if (m_auto_reset_mode == true) {
-                        is_acquired_for_auto_reset = vp::util::InterlockedCompareExchange(std::addressof(m_signal_state), 0u, 1u); 
+                        u32 last_signal_state = 0;
+                        is_acquired_for_auto_reset = vp::util::InterlockedCompareExchange(std::addressof(last_signal_state), std::addressof(m_signal_state), 0u, 1u); 
                     }
                 } while (is_acquired_for_auto_reset == false);
 
@@ -77,20 +78,28 @@ namespace awn::sys {
 
             bool Signal() {
 
-                const u32 last_signal_state = vp::util::InterlockedCompareExchange(std::addressof(m_signal_state), 1u, 0u);
-                if (last_signal_state != 0) { return false; }
+                /* Attempt to set the signal */
+                u32 last_signal_state = 0;
+                const bool result = vp::util::InterlockedCompareExchangeRelease(std::addressof(last_signal_state), std::addressof(m_signal_state), 1u, 0u);
+                if (result == false) { return false; }
 
+                /* If the signal is signaled, unblock waiters and set the OS event */
                 ukern::WakeByAddress(reinterpret_cast<uintptr_t>(std::addressof(m_signal_state)), ukern::SignalType_Signal, 1, (m_auto_reset_mode == true) ? 1 : -1);
                 ::SetEvent(m_win32_event_handle);
+
                 return true;
             }
 
             bool Clear() {
 
-                const u32 last_signal_state = vp::util::InterlockedCompareExchange(std::addressof(m_signal_state), 0u, 1u);
-                if (last_signal_state != 1) { return false; }
+                /* Attempt to clear the signal */
+                u32 last_signal_state = 0;
+                const bool result = vp::util::InterlockedCompareExchangeRelease(std::addressof(last_signal_state), std::addressof(m_signal_state), 0u, 1u);
+                if (result == false) { return false; }
 
+                /* If the signal was cleared, clear the OS event */
                 ::ResetEvent(m_win32_event_handle);
+
                 return true;
             }
 

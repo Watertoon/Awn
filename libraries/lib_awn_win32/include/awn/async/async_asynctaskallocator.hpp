@@ -160,7 +160,7 @@ namespace awn::async {
                 }
 
                 /* Try push task */
-                if (task->PushTask(schedule_info->push_info) != ResultSuccess && AsyncTaskForAllocator::CheckRuntimeTypeInfo(task) == true) {
+                if (task->PushTask(schedule_info->push_info) != ResultSuccess && AsyncTaskForAllocator::CheckRuntimeTypeInfoStatic(task) == true) {
                     if (is_acquired_task == false) { return; }
                     this->FreeTask(task);
                 }

@@ -31,12 +31,11 @@ namespace vp::util {
         private:
             s16        m_counter_array[cMaxHandles];
             void      *m_object_array[cMaxHandles];
-            BusyMutex  m_table_mutex;
             s32        m_indice_iter;
             u16        m_active_handles;
             u16        m_counter_value;
         public:
-            constexpr ALWAYS_INLINE FixedHandleTable() : m_counter_array{}, m_object_array{}, m_table_mutex(), m_indice_iter(-1), m_active_handles(0), m_counter_value(1) {/*...*/}
+            constexpr ALWAYS_INLINE FixedHandleTable() : m_counter_array{}, m_object_array{},  m_indice_iter(-1), m_active_handles(0), m_counter_value(1) {/*...*/}
             constexpr ~FixedHandleTable() {/*...*/}
 
             constexpr ALWAYS_INLINE void Initialize() {
@@ -52,9 +51,6 @@ namespace vp::util {
             }
 
             bool ReserveHandle(u32 *out_handle, void *object) {
-                
-                /* Lock the handle table */
-                ScopedBusyMutex lock(std::addressof(m_table_mutex));
 
                 /* Integrity check handle count */
                 if (cMaxHandles <= m_active_handles) { return false; }
@@ -84,9 +80,6 @@ namespace vp::util {
 
             bool FreeHandle(u32 handle) {
 
-                /* Lock the handle table */
-                ScopedBusyMutex lock(std::addressof(m_table_mutex));
-
                 /* Integrity check the handle is a valid form */
                 if ((handle == 0) || ((handle >> cCounterBitOffset) == 0)) { return false; }
 
@@ -104,9 +97,6 @@ namespace vp::util {
             }
 
             void *GetObjectByHandle(u32 handle) {
-
-                /* Lock the handle table */
-                ScopedBusyMutex lock(std::addressof(m_table_mutex));
 
                 /* Integrity check the handle is a valid form */
                 if (((handle >> cHandleReserveBitOffset) != 0) || (handle == 0) || ((handle >> cCounterBitOffset) == 0)) { return nullptr; }

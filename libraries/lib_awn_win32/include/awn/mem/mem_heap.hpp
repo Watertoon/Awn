@@ -108,7 +108,7 @@ namespace awn::mem {
 
                 /* Remove parent heap */
                 if (m_parent_heap != nullptr) { 
-                    if (awn::mem::Heap::CheckRuntimeTypeInfo(m_parent_heap) == true) {
+                    if (awn::mem::Heap::CheckRuntimeTypeInfoStatic(m_parent_heap) == true) {
                         reinterpret_cast<awn::mem::Heap*>(m_parent_heap)->RemoveChild(this);                         
                     } else {         
                         std::scoped_lock l(*GetHeapManagerLock());               

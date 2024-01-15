@@ -54,6 +54,15 @@
     #ifdef InterlockedDecrementRelease
         #undef InterlockedDecrementRelease
     #endif
+    #ifdef InterlockedIncrementRelease
+        #undef InterlockedIncrementRelease
+    #endif
+    #ifdef InterlockedCompareExchangeAcquire
+        #undef InterlockedCompareExchangeAcquire
+    #endif
+    #ifdef InterlockedCompareExchangeRelease
+        #undef InterlockedCompareExchangeRelease
+    #endif
 #elif VP_TARGET_PLATFORM_nx
     //#include <vp/nn.hpp>
 #endif

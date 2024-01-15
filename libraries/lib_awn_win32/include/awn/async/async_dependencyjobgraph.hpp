@@ -69,6 +69,7 @@ namespace awn::async {
         public:
             static constexpr size_t cMaxUserIdCount    = 0x100;
             static constexpr u16    cInvalidRegisterId = 0xffff;
+            static constexpr u16    cAllCores          = 0x41;
         public:
             using JobGraphNodeAllocator = vp::util::PointerArrayAllocator<JobGraphNode>;
             using RegisterLinkAllocator = vp::util::PointerArrayAllocator<JobRegisterLink>;

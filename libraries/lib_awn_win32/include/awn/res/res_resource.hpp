@@ -17,12 +17,12 @@
 
 namespace awn::res {
 
-    class ResourceUserInfo {
+    class ResourceUserContext {
         public:
-            VP_RTTI_BASE(ResourceUserInfo);
+            VP_RTTI_BASE(ResourceUserContext);
         public:
-            constexpr ResourceUserInfo() {/*...*/}
-            virtual ~ResourceUserInfo() {/*...*/}
+            constexpr ResourceUserContext() {/*...*/}
+            virtual ~ResourceUserContext() {/*...*/}
     };
 
     class ResourceFactoryBase;
@@ -31,23 +31,22 @@ namespace awn::res {
         public:
             friend class ResourceFactoryBase;
         protected:
-            void             *m_file;
-            size_t            m_file_size;
-            ResourceUserInfo *m_user_info;
+            void                *m_file;
+            size_t               m_file_size;
         public:
             VP_RTTI_BASE(Resource);
         public:
-            constexpr ALWAYS_INLINE Resource() : m_file(), m_file_size(), m_user_info() {/*...*/}
+            constexpr ALWAYS_INLINE Resource() : m_file(), m_file_size() {/*...*/}
             virtual ~Resource() {/*...*/}
 
-            virtual Result OnFileLoad([[maybe_unused]] mem::Heap *heap, [[maybe_unused]] void *file, [[maybe_unused]] size_t file_size)         { return true; }
+            virtual Result OnFileLoad(mem::Heap *heap, mem::Heap *gpu_heap, void *file, size_t file_size) { VP_UNUSED(heap, gpu_heap, file, file_size); RESULT_RETURN_SUCCESS; }
 
-            virtual Result InitializeForAsync([[maybe_unused]] mem::Heap *heap, [[maybe_unused]] void *file, [[maybe_unused]] size_t file_size) { return true; }
-            virtual void   FinalizeForAsync()                                                                                                   { return; }
+            virtual constexpr bool IsRequireInitializeOnCreate() const { return false; }
+
+            virtual Result Initialize(mem::Heap *heap, mem::Heap *gpu_heap, ResourceUserContext *user_context, void *file, size_t file_size) { VP_UNUSED(heap, gpu_heap, user_context, file, file_size); RESULT_RETURN_SUCCESS; }
+            virtual void   Finalize()                                                                                                        { return; }
 
             constexpr ALWAYS_INLINE void *GetFile()           { return m_file; }
             constexpr ALWAYS_INLINE u32   GetFileSize() const { return m_file_size; }
-
-            constexpr ALWAYS_INLINE void SetUserInfo(ResourceUserInfo *user_info) { m_user_info = user_info; }
     };
 }

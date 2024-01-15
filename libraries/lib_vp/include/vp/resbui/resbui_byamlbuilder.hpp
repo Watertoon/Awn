@@ -103,7 +103,7 @@ namespace vp::resbui {
                 if (memory_info->location_container.size == 0) { return; }
 
                 /* Check if big data */
-                if (ByamlNodeBigData::CheckRuntimeTypeInfo(m_root_node) == true) {
+                if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(m_root_node) == true) {
 
                     /* Serialize big data */
                     uintptr_t big_data_iter  = reinterpret_cast<uintptr_t>(big_data_base);
@@ -179,7 +179,7 @@ namespace vp::resbui {
                 const size_t big_data_base = out_memory_info->location_string_pool.offset + out_memory_info->location_string_pool.size;
                 uintptr_t container_iter  = big_data_base;
                 uintptr_t big_data_iter   = big_data_base;
-                if (ByamlNodeBigData::CheckRuntimeTypeInfo(m_root_node) == true) {
+                if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(m_root_node) == true) {
 
                     /* Calculate big data and container end */
                     reinterpret_cast<ByamlNodeBigData*>(m_root_node)->CalculateBigDataEndOffsets(std::addressof(big_data_iter), std::addressof(container_iter), 0);

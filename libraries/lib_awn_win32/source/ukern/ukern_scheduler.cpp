@@ -535,7 +535,7 @@ namespace awn::ukern::impl {
         return result;
     }
 
-    void UserScheduler::TransferFiberForSignalKey(FiberLocalStorage *waiting_fiber) {
+    bool UserScheduler::TransferFiberForSignalKey(FiberLocalStorage *waiting_fiber) {
 
         /* Check lock is set */
         const u32 prev_tag = *waiting_fiber->lock_address;
@@ -550,14 +550,14 @@ namespace awn::ukern::impl {
             /* Push back fiber waiter */
             lock_fiber->wait_list.PushBack(*waiting_fiber);
 
-            return;
+            return false;
         }
 
         /* Take the lock back */
         u32 tag                      = waiting_fiber->wait_tag;
         *waiting_fiber->lock_address = tag;
 
-        return;
+        return true;
     }
 
     Result UserScheduler::SignalKeyImpl(u32 *cv_key, u32 signal_count) {
@@ -568,9 +568,9 @@ namespace awn::ukern::impl {
         /* Lock scheduler */
         ScopedSchedulerLock lock(this);
 
-        /* Zero signal count */
+        /* Clear cv key if signal count of 0 */
         if (signal_count == 0) {
-            /* Set cv key to 0 */
+
             *cv_key = 0;
 
             RESULT_RETURN_SUCCESS;
@@ -579,21 +579,22 @@ namespace awn::ukern::impl {
         /* Find parent waiter */
         FiberLocalStorage *cv_fiber = nullptr;
         for (FiberLocalStorage &fiber_local : m_wait_list) {
-            if (fiber_local.wait_address == cv_key) {
-                cv_fiber = std::addressof(fiber_local);
-                break;
-            }
+            if (fiber_local.wait_address != cv_key) { continue; }
+            cv_fiber = std::addressof(fiber_local);
+            break;
         }
 
         /* Check we found a waiter */
         RESULT_RETURN_IF(cv_fiber == nullptr, ResultInvalidAddress);
 
-        /* Handle reacquisition of lock */
-        *cv_fiber->lock_address = 0;
-        cv_fiber->waitable_object->EndWait(cv_fiber, ResultSuccess);
-        cv_fiber->waitable_object = nullptr;
+        /* Reacquire the lock or join the cs wait list */
+        cv_fiber->wait_list_node.Unlink();
+        if (this->TransferFiberForSignalKey(cv_fiber) == true) {
+            cv_fiber->waitable_object->EndWait(cv_fiber, ResultSuccess);
+            cv_fiber->waitable_object = nullptr;
+        }
 
-        /* Unlock cv waiters */
+        /* Transfer cv waiters */
         u32 i = 1;
         for (FiberLocalStorage &waiting_fiber : cv_fiber->wait_list) {
 
@@ -608,21 +609,6 @@ namespace awn::ukern::impl {
 
             /* Loop count */
             ++i;
-        }
-
-        /* Transfer wait list */
-        if (cv_fiber->wait_list.IsEmpty() == false) {
-
-            FiberLocalStorage *next_cv_parent = std::addressof(cv_fiber->wait_list.PopFront());
-            for (FiberLocalStorage &waiting_fiber : cv_fiber->wait_list) {
-                /* Detach from previous list */
-                waiting_fiber.wait_list_node.Unlink();
-
-                /* Add to new parent */
-                next_cv_parent->wait_list.PushBack(waiting_fiber);
-            }
-
-            m_wait_list.PushBack(*next_cv_parent);
         }
 
         /* Set cv key to 0 */

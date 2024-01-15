@@ -40,7 +40,7 @@ namespace awn::res {
             constexpr BeaArchiveResource() : ArchiveResource(), m_bea(nullptr) {/*...*/}
             virtual ~BeaArchiveResource() override {/*...*/}
 
-            virtual Result OnFileLoad(mem::Heap *heap, void *file, size_t file_size) override {
+            virtual Result OnFileLoad(mem::Heap *heap, mem::Heap *gpu_heap, void *file, size_t file_size) override {
                 VP_UNUSED(heap, file_size);
                 m_bea = vp::res::ResBea::ResCast(file);
                 RESULT_RETURN_UNLESS(m_bea != nullptr, ResultInvalidFile);

@@ -134,7 +134,7 @@ namespace vp::resbui {
                     for (ByamlNodeBase &node : m_node_list) {
 
                         /* Serialize big data */
-                        if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == true) {
+                        if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == true) {
                             reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->SerializeForBigData(big_data_offset, container_offset, head);
                         }
 
@@ -153,7 +153,7 @@ namespace vp::resbui {
                         data_type_array[i] = static_cast<u8>(node.GetByamlDataType());
 
                         /* Serialize big data */
-                        if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == true) {
+                        if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == true) {
                             reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->SerializeForBigData(big_data_offset, container_offset, head);
                         }
 
@@ -175,7 +175,7 @@ namespace vp::resbui {
 
                 /* Calculate sub nodes */
                 for (ByamlNodeBase &node : m_node_list) {
-                    if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == false) { continue; }
+                    if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == false) { continue; }
                     reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->CalculateBigDataEndOffsets(big_data_offset_iter, container_offset_iter, head);
                 }
 
@@ -266,7 +266,7 @@ namespace vp::resbui {
                     for (ByamlNodeBase &node : m_node_list) {
 
                         /* Serialize big data */
-                        if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == true) {
+                        if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == true) {
                             reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->SerializeForBigData(big_data_offset, container_offset, head);
                         }
 
@@ -298,7 +298,7 @@ namespace vp::resbui {
                     for (ByamlNodeBase &node : m_node_list) {
 
                         /* Serialize big data */
-                        if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == true) {
+                        if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == true) {
                             reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->SerializeForBigData(big_data_offset, container_offset, head);
                         }
 
@@ -327,7 +327,7 @@ namespace vp::resbui {
 
                 /* Calculate sub nodes */
                 for (ByamlNodeBase &node : m_node_list) {
-                    if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == false) { continue; }
+                    if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == false) { continue; }
                     reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->CalculateBigDataEndOffsets(big_data_offset_iter, container_offset_iter, head);
                 }
 
@@ -420,7 +420,7 @@ namespace vp::resbui {
                     for (ByamlNodeBase &node : m_node_list) {
 
                         /* Serialize big data */
-                        if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == true) {
+                        if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == true) {
                             reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->SerializeForBigData(big_data_offset, container_offset, head);
                         }
 
@@ -457,7 +457,7 @@ namespace vp::resbui {
                     for (ByamlNodeBase &node : m_node_list) {
 
                         /* Serialize big data */
-                        if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == true) {
+                        if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == true) {
                             reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->SerializeForBigData(big_data_offset, container_offset, head);
                         }
 
@@ -491,7 +491,7 @@ namespace vp::resbui {
 
                 /* Calculate sub nodes */
                 for (ByamlNodeBase &node : m_node_list) {
-                    if (ByamlNodeBigData::CheckRuntimeTypeInfo(std::addressof(node)) == false) { continue; }
+                    if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node)) == false) { continue; }
                     reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->CalculateBigDataEndOffsets(big_data_offset_iter, container_offset_iter, head);
                 }
 

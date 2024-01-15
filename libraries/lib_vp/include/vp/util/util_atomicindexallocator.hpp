@@ -51,7 +51,7 @@ namespace vp::util {
                 return;
             }
 
-            void Clear() {
+            constexpr void Clear() {
 
                 /* Clear allocator */
                 m_next_index = 0;
@@ -63,30 +63,29 @@ namespace vp::util {
                 return;
             }
 
-            T Allocate() {
+            constexpr T Allocate() {
 
                 /* Try to atomicly acquire an index */
-                u32 handle_value      = 0;
-                u32 last_handle_value = static_cast<u32>(m_next_index);
-                while (last_handle_value != cInvalidHandle) {
-                    handle_value      = static_cast<u32>(m_next_index);
-                    last_handle_value = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle_value]), handle_value);
-                    if (last_handle_value == handle_value) { return static_cast<T>(handle_value); }
+                u32 handle_value = vp::util::InterlockedLoadAcquire(std::addressof(m_next_index));
+                for (;;) {
+                    if (handle_value == static_cast<T>(cInvalidHandle)) { break; }
+                    const bool result = vp::util::InterlockedCompareExchange(std::addressof(handle_value), std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle_value]), handle_value);
+                    if (result == true) { return static_cast<T>(handle_value); }
                 }
 
                 return static_cast<T>(cInvalidHandle);
             }
 
-            void Free(T index) {
+            constexpr void Free(T index) {
 
                 /* Atomicly release an index */
-                u32 handle     = 0;
-                u32 last_index = 0;
+                u32 handle = 0;
+                bool result;
                 do {
-                    handle                = m_next_index;
+                    handle                = vp::util::InterlockedLoadAcquire(std::addressof(m_next_index));
                     m_handle_array[index] = handle;
-                    last_index            = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle]), handle);
-                } while (last_index != handle);
+                    result                = vp::util::InterlockedCompareExchange(std::addressof(handle), std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle]), handle);
+                } while (result == false);
 
                 return;
             }
@@ -119,30 +118,29 @@ namespace vp::util {
                 return;
             }
 
-            ALWAYS_INLINE T Allocate() {
+            constexpr ALWAYS_INLINE T Allocate() {
 
                 /* Try to atomicly acquire an index */
-                u32 handle_value      = 0;
-                u32 last_handle_value = static_cast<u32>(m_next_index);
-                while (last_handle_value != cInvalidHandle) {
-                    handle_value      = static_cast<u32>(m_next_index);
-                    last_handle_value = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle_value]), handle_value);
-                    if (last_handle_value == handle_value) { return static_cast<T>(handle_value); }
+                u32 handle_value = InterlockedLoadAcquire(std::addressof(m_next_index));
+                for (;;) {
+                    if (handle_value == static_cast<T>(cInvalidHandle)) { break; }
+                    const bool result = InterlockedCompareExchange(std::addressof(handle_value), std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle_value]), handle_value);
+                    if (result == true) { return static_cast<T>(handle_value); }
                 }
 
                 return static_cast<T>(cInvalidHandle);
             }
 
-            ALWAYS_INLINE void Free(T index) {
+            constexpr ALWAYS_INLINE void Free(T index) {
 
                 /* Atomicly release an index */
-                u32 handle     = 0;
-                u32 last_index = 0;
+                u32 handle = 0;
+                bool result;
                 do {
-                    handle                = m_next_index;
+                    handle                = InterlockedLoadAcquire(std::addressof(m_next_index));
                     m_handle_array[index] = handle;
-                    last_index            = vp::util::InterlockedCompareExchange(std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle]), handle);
-                } while (last_index != handle);
+                    result                = InterlockedCompareExchange(std::addressof(handle), std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle]), handle);
+                } while (result == false);
 
                 return;
             }

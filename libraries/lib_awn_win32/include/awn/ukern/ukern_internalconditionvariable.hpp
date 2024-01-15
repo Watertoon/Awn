@@ -29,7 +29,7 @@ namespace awn::ukern {
                 const FiberLocalStorage *fiber_local = ukern::GetCurrentThread();
                 const UKernHandle tag = fiber_local->ukern_fiber_handle;
 
-                VP_ASSERT(tag == (cs->m_handle & (~0x4000'0000)));
+                VP_ASSERT(tag == (cs->m_handle & (~FiberLocalStorage::HasChildWaitersBit)));
 
                 RESULT_ABORT_UNLESS(impl::GetScheduler()->WaitKeyImpl(std::addressof(cs->m_handle), std::addressof(m_cv), tag, -1));
 
@@ -41,20 +41,18 @@ namespace awn::ukern {
                 const FiberLocalStorage *fiber_local = ukern::GetCurrentThread();
                 const UKernHandle tag = fiber_local->ukern_fiber_handle;
                 
-                VP_ASSERT(tag == (cs->m_handle & (~0x4000'0000)));
+                VP_ASSERT(tag == (cs->m_handle & (~FiberLocalStorage::HasChildWaitersBit)));
                 
                 impl::GetScheduler()->WaitKeyImpl(std::addressof(cs->m_handle), std::addressof(m_cv), tag, impl::GetAbsoluteTimeToWakeup(timeout_ns));
             }
-            
+
             void Signal(u32 count = 1) {
-                if (m_cv != 0) {
-                    impl::GetScheduler()->SignalKeyImpl(std::addressof(m_cv), count);
-                }
+                if (m_cv == 0) { return; }
+                impl::GetScheduler()->SignalKeyImpl(std::addressof(m_cv), count);
             }
             void Broadcast() {
-                if (m_cv != 0) {
-                    impl::GetScheduler()->SignalKeyImpl(std::addressof(m_cv), -1);
-                }
+                if (m_cv == 0) { return; }
+                impl::GetScheduler()->SignalKeyImpl(std::addressof(m_cv), -1);
             }
     };
 }

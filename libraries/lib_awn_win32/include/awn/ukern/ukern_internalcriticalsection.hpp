@@ -28,39 +28,57 @@ namespace awn::ukern {
 
             void Enter() {
 
+                /* Get current thread handle */
                 const ThreadType *current_thread = ukern::GetCurrentThread();
                 const UKernHandle tag            = current_thread->ukern_fiber_handle;
 
                 /* Acquire loop */
                 for (;;) {
-                    /* Try to acquire the critical section */
-                    const UKernHandle other_waiter = vp::util::InterlockedCompareExchange(std::addressof(m_handle), static_cast<u32>(tag), 0u);
-                    if (other_waiter == 0) { return; }
+                    /* Try to acquire the tag for the current thread */
+                    u32 handle = 0;
+                    const bool result = vp::util::InterlockedCompareExchange(std::addressof(handle), std::addressof(m_handle), static_cast<u32>(tag), 0u);
+                    if (result == true) { return; }
 
-                    /* Set tag bit */
-                    if (((other_waiter >> 0x1e) & 1) == 0) {
-                        const UKernHandle prev_value = ::InterlockedOr(reinterpret_cast<volatile long int*>(std::addressof(m_handle)), FiberLocalStorage::HasChildWaitersBit);
-                        if (prev_value != other_waiter) { continue; }
+                    /* Set arbitration bit */
+                    if (((handle >> 0x1e) & 1) == 0) {
+                        const u32 last_handle = vp::util::InterlockedFetchOr(std::addressof(m_handle), FiberLocalStorage::HasChildWaitersBit);
+                        if (handle != last_handle) { continue; }
                     }
 
                     /* If we fail, lock the thread */
-                    RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateLockImpl(other_waiter & (~FiberLocalStorage::HasChildWaitersBit), std::addressof(m_handle), tag));
-                    if ((m_handle & (~FiberLocalStorage::HasChildWaitersBit)) == tag) { return; }
+                    RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateLockImpl(handle & (~FiberLocalStorage::HasChildWaitersBit), std::addressof(m_handle), tag));
+
+                    /* Ensure non-spurious wakeup */
+                    handle = vp::util::InterlockedLoad(std::addressof(m_handle));
+                    if ((handle & (~FiberLocalStorage::HasChildWaitersBit)) == tag) { return; }
                 }
             }
 
             bool TryEnter() {
+
+                /* Get current thread handle */
                 const ThreadType *current_thread = ukern::GetCurrentThread();
                 const UKernHandle tag            = current_thread->ukern_fiber_handle;
-                const UKernHandle other_waiter   = vp::util::InterlockedCompareExchange(std::addressof(m_handle), static_cast<u32>(tag), 0u);
-                return other_waiter == 0;
+
+                /* Try to acquire the tag for the current thread */
+                u32 handle = 0;
+                const bool result = vp::util::InterlockedCompareExchange(std::addressof(handle), std::addressof(m_handle), static_cast<u32>(tag), 0u);
+
+                return result == true;
             }
 
             void Leave() {
 
-                /* Unlock waiters */
-                if (((m_handle >> 0x1e) & 1) == 1) { RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateUnlockImpl(std::addressof(m_handle))); }
-                else { ::InterlockedExchange(std::addressof(m_handle), 0); }
+                /* Get current thread handle */
+                const ThreadType *current_thread = ukern::GetCurrentThread();
+                const UKernHandle tag            = current_thread->ukern_fiber_handle;
+
+                /* Release and Unlock waiters if arbitration bit is set */
+                u32 handle = 0;
+                const bool result = vp::util::InterlockedCompareExchangeRelease(std::addressof(handle), std::addressof(m_handle), 0u, tag);
+                if (result == false) { RESULT_ABORT_UNLESS(impl::GetScheduler()->ArbitrateUnlockImpl(std::addressof(m_handle))); }
+
+                return;
             }
 
             void lock() {

@@ -122,7 +122,7 @@ namespace awn::mem {
         /* Lookup all children in thread's lookup heap */
         if (last_lookup_heap != nullptr && last_lookup_heap->HasChildren() == true) {
             vp::imem::IHeap *contained_heap = last_lookup_heap->FindHeapFromAddress(address);
-            if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+            if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfoStatic(contained_heap) == true) {
                 mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
                 thread->SetLookupHeap(out_heap);
                 return out_heap;
@@ -132,7 +132,7 @@ namespace awn::mem {
         /* Lookup all children in thread's current heap */
         if (thread_heap != nullptr && thread_heap->HasChildren() == true) {
             vp::imem::IHeap *contained_heap = thread_heap->FindHeapFromAddress(address);
-            if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+            if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfoStatic(contained_heap) == true) {
                 mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
                 thread->SetLookupHeap(out_heap);
                 return out_heap;
@@ -146,7 +146,7 @@ namespace awn::mem {
 
             /* Lookup all children in root heap */
             vp::imem::IHeap *contained_heap = heap_mgr->root_heap_array[i]->FindHeapFromAddress(address);
-            if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+            if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfoStatic(contained_heap) == true) {
                 mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
                 thread->SetLookupHeap(out_heap);
                 return out_heap;
@@ -160,7 +160,7 @@ namespace awn::mem {
 
                 /* Lookup all children in root heap */
                 vp::imem::IHeap *contained_heap = gpu_heap_mgr->m_host_uncached_heap_context_array[i].root_heap->FindHeapFromAddress(address);
-                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfoStatic(contained_heap) == true) {
                     mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
                     thread->SetLookupHeap(out_heap);
                     return out_heap;
@@ -170,7 +170,7 @@ namespace awn::mem {
                 
                 /* Lookup all children in root heap */
                 vp::imem::IHeap *contained_heap = gpu_heap_mgr->m_host_cached_heap_context_array[i].root_heap->FindHeapFromAddress(address);
-                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfoStatic(contained_heap) == true) {
                     mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
                     thread->SetLookupHeap(out_heap);
                     return out_heap;
@@ -180,7 +180,7 @@ namespace awn::mem {
                 
                 /* Lookup all children in root heap */
                 vp::imem::IHeap *contained_heap = gpu_heap_mgr->m_gpu_host_uncached_heap_context_array[i].root_heap->FindHeapFromAddress(address);
-                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfo(contained_heap) == true) {
+                if (contained_heap != nullptr && Heap::CheckRuntimeTypeInfoStatic(contained_heap) == true) {
                     mem::Heap *out_heap = reinterpret_cast<Heap*>(contained_heap);
                     thread->SetLookupHeap(out_heap);
                     return out_heap;
@@ -198,10 +198,10 @@ namespace awn::mem {
 
             /* Return heap on success */
             int result = ::strcmp(heap.GetName(), heap_name);
-            if (result == 0 && Heap::CheckRuntimeTypeInfo(std::addressof(heap)) == true) { return reinterpret_cast<mem::Heap*>(std::addressof(heap)); }
+            if (result == 0 && Heap::CheckRuntimeTypeInfoStatic(std::addressof(heap)) == true) { return reinterpret_cast<mem::Heap*>(std::addressof(heap)); }
 
             /* Recurse through childs children on failure */
-            if (Heap::CheckRuntimeTypeInfo(std::addressof(heap)) == true && reinterpret_cast<Heap&>(heap).m_child_list.IsEmpty() == false) {
+            if (Heap::CheckRuntimeTypeInfoStatic(std::addressof(heap)) == true && reinterpret_cast<Heap&>(heap).m_child_list.IsEmpty() == false) {
                 Heap *candidate = FindHeapByNameImpl(reinterpret_cast<mem::Heap*>(std::addressof(heap)), heap_name);
                 if (candidate != nullptr) { return candidate; }
             }
