@@ -87,7 +87,7 @@ namespace awn::gfx {
                 if (command_pool_holder == nullptr) {
                     command_pool_holder = m_command_pool_holder_allocator.Allocate();
                     VP_ASSERT(command_pool_holder != nullptr);
-                    
+
                     /* Set Tls */
                     sys::ThreadManager::GetInstance()->GetCurrentThread()->SetTlsData(m_command_pool_tls_slot, command_pool_holder);
                 }

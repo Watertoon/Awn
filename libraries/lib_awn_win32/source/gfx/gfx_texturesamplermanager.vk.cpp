@@ -113,12 +113,11 @@ namespace awn::gfx {
         
         return;
     }
-
     
     DescriptorSlot TextureSamplerManager::RegisterTextureView(TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
 
         /* Integrity check infos */
-        VP_ASSERT(texture_info != nullptr && texture_view_info != nullptr && texture_view_info->texture == nullptr);
+        VP_ASSERT(texture_info != nullptr && (texture_view_info == nullptr || texture_view_info->texture == nullptr));
 
         /* Get texture memory requirements */
         GpuMemoryRequirements texture_requirements = Texture::GetMemoryRequirements(texture_info);
@@ -135,31 +134,35 @@ namespace awn::gfx {
         /* Get texture node */
         TextureNode *new_texture_node = std::addressof(m_texture_array[texture_handle]);
 
-        /* Initialize texture objects */
+        /* Initialize texture */
         new_texture_node->reference_count = 1;
         new_texture_node->separate_memory = offset;
         new_texture_node->texture.Initialize(m_vk_device_memory_texture, offset, texture_info);
-        texture_view_info->texture = std::addressof(new_texture_node->texture);
-        new_texture_node->texture_view.Initialize(texture_view_info);
 
-        /* Get texture descriptor */
-        char descriptor_storage[Context::cTargetMaxTextureDescriptorSize] = {};
-        const VkDescriptorImageInfo descriptor_image_info = {
-            .imageView   = new_texture_node->texture_view.GetVkImageView(),
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        const VkDescriptorGetInfoEXT descriptor_get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-            .data  = {
-                .pSampledImage = std::addressof(descriptor_image_info)
-            }
-        }; 
-        ::pfn_vkGetDescriptorEXT(Context::GetInstance()->GetVkDevice(), std::addressof(descriptor_get_info), sizeof(descriptor_storage), descriptor_storage);
+        /* Initialize texture view */
+        if (texture_view_info != nullptr) {
+            texture_view_info->texture = std::addressof(new_texture_node->texture);
+            new_texture_node->texture_view.Initialize(texture_view_info);
 
-        /* Register texture descriptor to descriptor buffer */
-        const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * texture_handle;
-        ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
+            /* Get texture descriptor */
+            char descriptor_storage[Context::cTargetMaxTextureDescriptorSize] = {};
+            const VkDescriptorImageInfo descriptor_image_info = {
+                .imageView   = new_texture_node->texture_view.GetVkImageView(),
+                .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+            };
+            const VkDescriptorGetInfoEXT descriptor_get_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
+                .type  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                .data  = {
+                    .pSampledImage = std::addressof(descriptor_image_info)
+                }
+            }; 
+            ::pfn_vkGetDescriptorEXT(Context::GetInstance()->GetVkDevice(), std::addressof(descriptor_get_info), sizeof(descriptor_storage), descriptor_storage);
+
+            /* Register texture descriptor to descriptor buffer */
+            const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * texture_handle;
+            ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
+        }
 
         return texture_handle;
     }
@@ -167,7 +170,7 @@ namespace awn::gfx {
     DescriptorSlot TextureSamplerManager::RegisterTextureView(void *gpu_texture_memory, TextureInfo *texture_info, TextureViewInfo *texture_view_info) {
 
         /* Integrity check infos */
-        VP_ASSERT(texture_info != nullptr && texture_view_info != nullptr && texture_view_info->texture == nullptr);
+        VP_ASSERT(texture_info != nullptr && (texture_view_info == nullptr || texture_view_info->texture == nullptr));
 
         /* Allocate texture handle */
         const u32 texture_handle = m_texture_handle_table.Allocate();
@@ -179,27 +182,31 @@ namespace awn::gfx {
         /* Initialize texture objects */
         new_texture_node->reference_count = 1;
         new_texture_node->texture.Initialize(gpu_texture_memory, texture_info);
-        texture_view_info->texture = std::addressof(new_texture_node->texture);
-        new_texture_node->texture_view.Initialize(texture_view_info);
 
-        /* Get texture descriptor */
-        char descriptor_storage[Context::cTargetMaxTextureDescriptorSize] = {};
-        const VkDescriptorImageInfo descriptor_image_info = {
-            .imageView   = new_texture_node->texture_view.GetVkImageView(),
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL
-        };
-        const VkDescriptorGetInfoEXT descriptor_get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-            .data  = {
-                .pSampledImage = std::addressof(descriptor_image_info)
-            }
-        }; 
-        ::pfn_vkGetDescriptorEXT(Context::GetInstance()->GetVkDevice(), std::addressof(descriptor_get_info), sizeof(descriptor_storage), descriptor_storage);
+        /* Initialize texture view */
+        if (texture_view_info != nullptr) {
+            texture_view_info->texture = std::addressof(new_texture_node->texture);
+            new_texture_node->texture_view.Initialize(texture_view_info);
 
-        /* Register texture descriptor to descriptor buffer */
-        const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * texture_handle;
-        ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
+            /* Get texture descriptor */
+            char descriptor_storage[Context::cTargetMaxTextureDescriptorSize] = {};
+            const VkDescriptorImageInfo descriptor_image_info = {
+                .imageView   = new_texture_node->texture_view.GetVkImageView(),
+                .imageLayout = VK_IMAGE_LAYOUT_GENERAL
+            };
+            const VkDescriptorGetInfoEXT descriptor_get_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
+                .type  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                .data  = {
+                    .pSampledImage = std::addressof(descriptor_image_info)
+                }
+            }; 
+            ::pfn_vkGetDescriptorEXT(Context::GetInstance()->GetVkDevice(), std::addressof(descriptor_get_info), sizeof(descriptor_storage), descriptor_storage);
+
+            /* Register texture descriptor to descriptor buffer */
+            const size_t descriptor_offset = vp::util::AlignUp(Context::GetInstance()->GetTextureDescriptorSize(), Context::GetInstance()->GetDescriptorAlignment()) * texture_handle;
+            ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_texture_descriptor_gpu_address) + descriptor_offset), descriptor_storage, m_texture_descriptor_size);
+        }
 
         return texture_handle;
     }
@@ -212,7 +219,7 @@ namespace awn::gfx {
         /* Increment reference count */
         const u32 last_value = vp::util::InterlockedIncrement(std::addressof(texture_node->reference_count));
         VP_ASSERT(last_value != 0);
-        
+
         return texture_slot;
     }
 

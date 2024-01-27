@@ -227,6 +227,10 @@ namespace vp::util {
             static constexpr ALWAYS_INLINE const_iterator IteratorTo(const_reference obj) {
                 return const_iterator(Traits::GetListNode(std::addressof(obj)));
             }
+
+            static constexpr pointer GetNext(IntrusiveListNode *node) {
+                return Traits::GetParent(node->next());
+            }
     };
 
     template<class RP, auto M>

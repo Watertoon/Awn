@@ -91,4 +91,39 @@ namespace vp::util {
             static constexpr ALWAYS_INLINE bool IsSameTypeInfo(RootType *other_obj) { \
                 return GetRuntimeTypeInfoStatic() == other_obj->GetRuntimeTypeInfo(); \
             }
+
+    #define VP_STATIC_RTTI_BASE(class_name) \
+        protected: \
+            using RootType = class_name; \
+            static constexpr inline const vp::util::RuntimeTypeInfo sRootRTTI = {}; \
+        public: \
+            static constexpr ALWAYS_INLINE const vp::util::RuntimeTypeInfo *GetRuntimeTypeInfoStatic() { \
+                return std::addressof(sRootRTTI); \
+            } \
+            static constexpr bool CheckRuntimeTypeInfoStatic(const vp::util::RuntimeTypeInfo *other_obj) { \
+                const vp::util::RuntimeTypeInfo *class_info = other_obj; \
+                const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
+                do { \
+                    if (target->IsSameTypeInfo(class_info) == true) { return true; } \
+                    class_info = class_info->m_next; \
+                } while (class_info != nullptr); \
+                return false; \
+            }
+
+    #define VP_STATIC_RTTI_DERIVED(derived_class, base_class) \
+        protected: \
+            static constexpr inline const vp::util::RuntimeTypeInfo sDerivedRTTI = base_class::GetRuntimeTypeInfoStatic(); \
+        public: \
+            static constexpr ALWAYS_INLINE const vp::util::RuntimeTypeInfo *GetRuntimeTypeInfoStatic() { \
+                return std::addressof(sDerivedRTTI); \
+            } \
+            static constexpr bool CheckRuntimeTypeInfoStatic(const vp::util::RuntimeTypeInfo *other_obj) { \
+                const vp::util::RuntimeTypeInfo *class_info = other_obj; \
+                const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
+                do { \
+                    if (target->IsSameTypeInfo(class_info) == true) { return true; } \
+                    class_info = class_info->m_next; \
+                } while (class_info != nullptr); \
+                return false; \
+            }
 }

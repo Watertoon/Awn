@@ -56,7 +56,7 @@ namespace awn::gfx {
                         .depth             = texture_info->depth
                     },
                     .mipLevels             = texture_info->mip_levels,
-                    .arrayLayers           = texture_info->array_layers,
+                    .arrayLayers           = texture_info->array_layer_count,
                     .samples               = static_cast<VkSampleCountFlagBits>(texture_info->sample_count),
                     .tiling                = static_cast<VkImageTiling>(texture_info->tile_mode),
                     .usage                 = vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)),
@@ -97,7 +97,7 @@ namespace awn::gfx {
                         .depth             = texture_info->depth
                     },
                     .mipLevels             = texture_info->mip_levels,
-                    .arrayLayers           = texture_info->array_layers,
+                    .arrayLayers           = texture_info->array_layer_count,
                     .samples               = static_cast<VkSampleCountFlagBits>(texture_info->sample_count),
                     .tiling                = static_cast<VkImageTiling>(texture_info->tile_mode),
                     .usage                 = vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)),

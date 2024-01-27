@@ -19,7 +19,11 @@ namespace awn::async {
 
 	AsyncTask *AsyncQueue::AcquireNextTask(AsyncQueueThread *queue_thread) {
 
-		/* Handle out of tasks */
+        /* Lock for scheduling */
+        std::scoped_lock l(m_queue_mutex);
+        vp::util::MemoryBarrierReadWrite();
+
+        /* Handle out of tasks */
 		if (m_task_count == 0) {
 			if (this->UpdateAllTaskCompletion() == true) {
 				queue_thread->m_current_task = nullptr;
@@ -53,6 +57,7 @@ namespace awn::async {
 		--m_task_count;
 		next_task->m_status = static_cast<u32>(AsyncTask::Status::Acquired);
 
+        next_task->m_queue_thread    = queue_thread;
 		queue_thread->m_current_task = next_task;
 
 		return next_task;

@@ -177,6 +177,15 @@ namespace awn::gfx {
             VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT m_vk_physical_device_dynamic_rendering_unused_attachments_features;
             VkPhysicalDeviceNestedCommandBufferFeaturesEXT               m_vk_physical_device_nested_command_buffer_features;
             VkPhysicalDeviceMaintenance6FeaturesKHR                      m_vk_physical_device_maintenance_6_features;
+            VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR         m_vk_physical_device_dynamic_rendering_local_read_features;
+            VkPhysicalDeviceIndexTypeUint8FeaturesKHR                    m_vk_physical_device_index_type_u8_features;
+            VkPhysicalDeviceShaderClockFeaturesKHR                       m_vk_physical_device_shader_clock_features;
+            VkPhysicalDeviceShaderExpectAssumeFeaturesKHR                m_vk_physical_device_shader_expect_assume_features;
+            VkPhysicalDeviceShaderFloatControls2FeaturesKHR              m_vk_physical_device_shader_float_controls_2_features;
+            VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR        m_vk_physical_device_shader_maximal_reconvergence_features;
+            VkPhysicalDeviceShaderQuadControlFeaturesKHR                 m_vk_physical_device_shader_quad_control_features;
+            VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR              m_vk_physical_device_shader_subgroup_rotate_features;
+            VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR  m_vk_physical_device_shader_subgroup_uniform_control_flow_features;
 
             VkPhysicalDeviceMemoryProperties                             m_vk_physical_device_memory_properties;
 
@@ -297,6 +306,43 @@ namespace awn::gfx {
             },
             m_vk_physical_device_maintenance_6_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_dynamic_rendering_local_read_features),
+            },
+            m_vk_physical_device_dynamic_rendering_local_read_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_index_type_u8_features),
+            },
+            m_vk_physical_device_index_type_u8_features{
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_shader_clock_features),
+            },
+            m_vk_physical_device_shader_clock_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_shader_expect_assume_features),
+            },
+            m_vk_physical_device_shader_expect_assume_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_shader_float_controls_2_features),
+            },
+            m_vk_physical_device_shader_float_controls_2_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_shader_maximal_reconvergence_features),
+            },
+            m_vk_physical_device_shader_maximal_reconvergence_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_shader_quad_control_features),
+            },
+            m_vk_physical_device_shader_quad_control_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_shader_subgroup_rotate_features),
+            },
+            m_vk_physical_device_shader_subgroup_rotate_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_shader_subgroup_uniform_control_flow_features),
+            },
+            m_vk_physical_device_shader_subgroup_uniform_control_flow_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
+                .pNext = nullptr,
             }
             {/*...*/}
 

@@ -52,7 +52,7 @@ namespace awn::gfx {
                 .depth             = texture_info->depth
             },
             .mipLevels             = texture_info->mip_levels,
-            .arrayLayers           = texture_info->array_layers,
+            .arrayLayers           = texture_info->array_layer_count,
             .samples               = static_cast<VkSampleCountFlagBits>(texture_info->sample_count),
             .tiling                = static_cast<VkImageTiling>(texture_info->tile_mode),
             .usage                 = image_usage_flags,

@@ -79,5 +79,9 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE u32 GetCount() const { return m_array_count; }
+
+            constexpr ALWAYS_INLINE u32 GetIndexOf(T *element) const {
+                return element - m_object_array;
+            }
     };
 }

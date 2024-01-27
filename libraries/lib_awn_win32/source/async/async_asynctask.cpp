@@ -26,7 +26,15 @@ namespace awn::async {
             sys::ThreadBase *task_thread = m_queue->m_task_thread_array[i];
             if (task_thread != thread) { continue; }
 
-            this->Invoke(reinterpret_cast<AsyncQueueThread*>(task_thread));
+            /* Set thread */
+            {
+                std::scoped_lock l(m_queue->m_queue_mutex);
+                m_queue_thread = reinterpret_cast<AsyncQueueThread*>(thread);
+                m_status       = static_cast<u32>(Status::Queued); 
+            }
+
+            /* Invoke */
+            this->Invoke();
 
             return true;
         }
@@ -34,30 +42,38 @@ namespace awn::async {
         return false;
     }
 
-    void AsyncTask::Invoke(AsyncQueueThread *thread) {
-
-        /* Set thread */
-        m_queue_thread = thread;
-        m_status       = static_cast<u32>(Status::Queued); 
+    void AsyncTask::Invoke() {
 
         /* Execute */
         this->Execute();
 
-        m_status = static_cast<u32>(Status::PostExecute); 
-        this->PostExecute();
+        /* Post execute */
+        {
+            std::scoped_lock l(m_queue->m_queue_mutex);
 
-        /* Result */
-        Result result = 0;
-        if (m_result_delegate != nullptr) {
+            m_status = static_cast<u32>(Status::PostExecute); 
+            this->PostExecute();
+        }
+
+        /* Result execute */
+        Result          result          = 0;
+        ResultFunction *result_function = m_result_function;
+        if (result_function != nullptr) {
+            m_result_function = nullptr;
+
             const TaskResultInvokeInfo invoke_info = {
                 .task      = this,
                 .user_data = m_user_data,
             };
-            result = m_result_delegate->Invoke(std::addressof(invoke_info));
+            result = result_function->Invoke(std::addressof(invoke_info));
+
+            m_queue_thread = nullptr;
         }
 
         /* Free if necessary */
         if (result != ResultRescheduled) {
+            std::scoped_lock l(m_queue->m_queue_mutex);
+
             m_status = static_cast<u32>(Status::FreeExecute); 
             this->FreeExecute();
             m_status = static_cast<u32>(Status::Complete);
@@ -71,7 +87,7 @@ namespace awn::async {
 
         /* Clear state */
         m_queue_thread    = nullptr;
-        m_result_delegate = nullptr;
+        m_result_function = nullptr;
 
         /* Free cancel */
         this->FreeCancel();
@@ -93,14 +109,13 @@ namespace awn::async {
 
         /* Setup task */
         m_queue           = queue;
-        m_task_delegate   = push_info->task_delegate;
-        m_result_delegate = push_info->result_delegate;
+        m_task_function   = push_info->task_function;
+        m_result_function = push_info->result_function;
         m_user_data       = push_info->user_data;
         this->FormatPushInfo(push_info);
 
         /* Try invoke sync */
         if (push_info->is_sync == true) {
-            std::scoped_lock l(queue->m_queue_mutex);
             if (this->TryInvokeSync() == true) { RESULT_RETURN_SUCCESS; }
         }
 
@@ -185,5 +200,64 @@ namespace awn::async {
         }
 
         RESULT_RETURN_SUCCESS;
+    }
+    
+    void AsyncTask::ChangePriority(u32 new_priority) {
+
+        /* Get queue and ensure it exists */
+        async::AsyncQueue *queue = m_queue;
+        if (queue == nullptr) { return; }
+
+        /* Lock queue */
+        std::scoped_lock l(queue->m_queue_mutex);
+
+        /* Clamp priority */
+        const u32 last_priority  = m_priority;
+        const u32 max_priority   = queue->m_priority_level_array.GetCount();
+        const u32 priority_clamp = (max_priority < new_priority) ? max_priority : new_priority;
+
+        /* Check priority actually changed */
+        if (priority_clamp == last_priority) { return; }
+
+        /* Replace head task if head */
+        AsyncTask *head = queue->m_priority_level_array[last_priority].async_task_head;
+        if (head == this) {
+            AsyncTask *next_head = nullptr;
+            if (head->m_queue_list_node.IsLinked() == true) {
+                AsyncTask *next_task = AsyncQueue::AsyncTaskList::GetNext(std::addressof(head->m_queue_list_node));
+                if (next_task->m_priority == last_priority) { next_head = next_task; }
+            }
+            queue->m_priority_level_array[last_priority].async_task_head = next_head;
+        }
+
+        /* Unlink from queue */
+        m_queue_list_node.Unlink();
+
+        /* Find lowest populated priority level */
+        u32 priority_iter  = priority_clamp;
+        do {
+            priority_iter = priority_iter - 1;
+        } while(priority_iter != cInvalidPriorityLevel && queue->m_priority_level_array[priority_iter].async_task_head == nullptr);
+
+        /* Insert into list at respective priority level */
+        if (priority_iter == cInvalidPriorityLevel) {
+
+            /* Insert as head since there are no other tasks */
+            queue->m_task_list.PushBack(*this);
+
+            /* Clear priorty level event */
+            queue->m_priority_level_array[priority_clamp].priority_cleared_event.Clear();
+        } else {
+
+            /* Link next to back of current priority */
+            queue->m_priority_level_array[priority_iter].async_task_head->m_queue_list_node.LinkNext(std::addressof(m_queue_list_node));
+        }
+
+        /* Set priority level head */
+        if (queue->m_priority_level_array[priority_clamp].async_task_head == nullptr) {
+            queue->m_priority_level_array[priority_clamp].async_task_head = this;
+        }
+
+        return;
     }
 }

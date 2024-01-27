@@ -173,10 +173,10 @@ namespace awn::frm {
                     /* Initialize render targets */
                     gfx::RenderTargetImportInfo import_info = {};
                     import_info.SetDefaults();
-                    import_info.image_format  = static_cast<u32>(gfx::ImageFormat::R8G8B8A8_Unorm);
-                    import_info.array_layers  = m_window_info.view_count;
-                    import_info.render_width  = m_window_info.width;
-                    import_info.render_height = m_window_info.height;
+                    import_info.image_format      = static_cast<u32>(gfx::ImageFormat::R8G8B8A8_Unorm);
+                    import_info.array_layer_count = m_window_info.view_count;
+                    import_info.render_width      = m_window_info.width;
+                    import_info.render_height     = m_window_info.height;
 
                     for (u32 i = 0; i < image_count; ++i) {
                         import_info.vk_image = m_vk_image_array[i];
@@ -292,10 +292,10 @@ namespace awn::frm {
                 /* Initialize render targets */
                 gfx::RenderTargetImportInfo import_info = {};
                 import_info.SetDefaults();
-                import_info.image_format  = static_cast<u32>(gfx::ImageFormat::R8G8B8A8_Unorm);
-                import_info.array_layers  = m_window_info.view_count;
-                import_info.render_width  = m_window_info.width;
-                import_info.render_height = m_window_info.height;
+                import_info.image_format      = static_cast<u32>(gfx::ImageFormat::R8G8B8A8_Unorm);
+                import_info.array_layer_count = m_window_info.view_count;
+                import_info.render_width      = m_window_info.width;
+                import_info.render_height     = m_window_info.height;
 
                 for (u32 i = 0; i < image_count; ++i) {
                     import_info.vk_image = m_vk_image_array[i];

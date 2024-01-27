@@ -10,6 +10,7 @@ namespace vp::util {
             };
         public:
             constexpr void *operator new(size_t size, Storage *storage) {
+                VP_UNUSED(size);
                 return storage;
             }
         private:
@@ -43,16 +44,17 @@ namespace vp::util {
             template <size_t, class>
             friend class AnyFunction;
         public:
-            static constexpr bool cIsIFunction = true;
+            VP_STATIC_RTTI_BASE(IFunction);
         private:
             constexpr ALWAYS_INLINE void *operator new(size_t size, impl::AnyFunctionBase *any_function) {
+                VP_UNUSED(size);
                 return any_function;
             }
         public:
             constexpr ALWAYS_INLINE IFunction() {/*...*/}
             virtual ~IFunction() {/*...*/}
 
-            virtual Return Invoke(Args ...args) { return Return(); }
+            virtual Return Invoke(Args ...args) { VP_UNUSED(args...); return Return(); }
 
             constexpr virtual bool IsValid() const { return false; }
         protected:
@@ -65,7 +67,7 @@ namespace vp::util {
     class StaticFunction;
 
     template <class Return, class ...Args>
-    class StaticFunction<Return(Args...)> : public IFunction<Return(Args...)> {
+    class StaticFunction<Return(Args...)> final : public IFunction<Return(Args...)> {
         public:
             template <size_t, class>
             friend class AnyFunction;
@@ -75,6 +77,7 @@ namespace vp::util {
             FunctionType m_function;
         private:
             constexpr ALWAYS_INLINE void *operator new(size_t size, impl::AnyFunctionBase *any_function) {
+                VP_UNUSED(size);
                 return any_function;
             }
         public:
@@ -96,7 +99,7 @@ namespace vp::util {
     class MemberFunction;
 
     template <class Parent, class Return, class ...Args>
-    class MemberFunction<Parent, Return(Args...)> : public IFunction<Return(Args...)> {
+    class MemberFunction<Parent, Return(Args...)> final : public IFunction<Return(Args...)> {
         public:
             template <size_t, class>
             friend class AnyFunction;
@@ -113,6 +116,7 @@ namespace vp::util {
             FunctionType  m_function;
         private:
             constexpr ALWAYS_INLINE void *operator new(size_t size, impl::AnyFunctionBase *any_function) {
+                VP_UNUSED(size);
                 return any_function;
             }
         public:
@@ -134,7 +138,7 @@ namespace vp::util {
     class LambdaFunction;
 
     template <class Lambda, class Return, class ...Args>
-    class LambdaFunction<Lambda, Return(Args...)> : public IFunction<Return(Args...)> {
+    class LambdaFunction<Lambda, Return(Args...)> final : public IFunction<Return(Args...)> {
         public:
             template <size_t, class>
             friend class AnyFunction;
@@ -142,6 +146,7 @@ namespace vp::util {
             using FunctionType = Return(*)(Args...);
         private:
             constexpr ALWAYS_INLINE void *operator new(size_t size, impl::AnyFunctionBase *any_function) {
+                VP_UNUSED(size);
                 return any_function;
             }
         private:
@@ -165,7 +170,7 @@ namespace vp::util {
     class AnyFunction;
 
     template <size_t StorageU64Count, class Return, class ...Args>
-    class AnyFunction<StorageU64Count, Return(Args...)> : public impl::AnyFunctionBase {
+    class AnyFunction<StorageU64Count, Return(Args...)> final : public impl::AnyFunctionBase {
         private:
             class UnbindDummy : public IFunction<Return(Args...)> {public:
                 public:
@@ -173,6 +178,7 @@ namespace vp::util {
                     friend class AnyFunction;
                 private:
                     constexpr ALWAYS_INLINE void *operator new(size_t size, impl::AnyFunctionBase *any_function) {
+                        VP_UNUSED(size);
                         return any_function;
                     }
                 public:
@@ -201,7 +207,7 @@ namespace vp::util {
             }
 
             template <typename T>
-                requires (T::cIsIFunction) && (sizeof(T) <= sizeof(m_any))
+                requires (IFunction<Return(Args...)>::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) == true) && (sizeof(T) <= sizeof(m_any))
             constexpr ALWAYS_INLINE void SetFunction(const T &function) {
                 function.CopyTo(this);
             }
@@ -217,6 +223,7 @@ namespace vp::util {
     constexpr ALWAYS_INLINE auto MakeMemberFunction(Parent *parent, const Member &member_function) {
         return MemberFunction<Parent, FunctionType>(parent, member_function);
     }
+
     template <class FunctionType, class Function>
     constexpr ALWAYS_INLINE auto MakeStaticFunction(const Function &function) {
         return StaticFunction<FunctionType>(std::move(function));

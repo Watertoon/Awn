@@ -44,7 +44,7 @@ namespace awn::gfx {
                         .baseMipLevel   = texture_view_info->base_mip_level,
                         .levelCount     = texture_view_info->mip_levels,
                         .baseArrayLayer = texture_view_info->base_array_layer,
-                        .layerCount     = texture_view_info->array_layers,
+                        .layerCount     = texture_view_info->array_layer_count,
                     }
                 };
                 const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
@@ -64,7 +64,7 @@ namespace awn::gfx {
                 m_vk_image_view = VK_NULL_HANDLE;
             }
 
-            constexpr ALWAYS_INLINE u32 GetLayerCount() const { return m_image_view_info.array_layers; }
+            constexpr ALWAYS_INLINE u32 GetLayerCount() const { return m_image_view_info.array_layer_count; }
 
             constexpr ALWAYS_INLINE VkImageView GetVkImageView() const { return m_vk_image_view; }
     };

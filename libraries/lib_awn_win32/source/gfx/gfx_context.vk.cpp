@@ -265,6 +265,35 @@ namespace awn::gfx {
         /* Maintenance 6 feature checks */
         if (m_vk_physical_device_maintenance_6_features.maintenance6 == false) { VP_ASSERT(false); return false; }
 
+        /* Dynamic Rendering Local Read features checks */
+        if (m_vk_physical_device_dynamic_rendering_local_read_features.dynamicRenderingLocalRead == false) { VP_ASSERT(false); return false; }
+
+        /* Index type u8 features checks */
+        if (m_vk_physical_device_index_type_u8_features.indexTypeUint8 == false) { VP_ASSERT(false); return false; }
+
+        /* Shader clock checks */
+        if (m_vk_physical_device_shader_clock_features.shaderSubgroupClock == false) { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_shader_clock_features.shaderDeviceClock == false) { VP_ASSERT(false); return false; }
+
+        /* Shader expect assume checks */
+        if (m_vk_physical_device_shader_expect_assume_features.shaderExpectAssume == false) { VP_ASSERT(false); return false; }
+
+        /* Shader float controls 2 checks */
+        if (m_vk_physical_device_shader_float_controls_2_features.shaderFloatControls2 == false) { VP_ASSERT(false); return false; }
+
+        /* Shader maximal reconvergence checks */
+        if (m_vk_physical_device_shader_maximal_reconvergence_features.shaderMaximalReconvergence == false) { VP_ASSERT(false); return false; }
+
+        /* Shader quad control checks */
+        if (m_vk_physical_device_shader_quad_control_features.shaderQuadControl == false) { VP_ASSERT(false); return false; }
+
+        /* Shader subgroup rotate checks */
+        if (m_vk_physical_device_shader_subgroup_rotate_features.shaderSubgroupRotate == false)          { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_shader_subgroup_rotate_features.shaderSubgroupRotateClustered == false) { VP_ASSERT(false); return false; }
+
+        /* Shader subgroup uniform control flow checks */
+        if (m_vk_physical_device_shader_subgroup_uniform_control_flow_features.shaderSubgroupUniformControlFlow == false)          { VP_ASSERT(false); return false; }
+
         m_vk_physical_device = vk_physical_device;
 
         /* Find queue families */
@@ -490,8 +519,56 @@ namespace awn::gfx {
 		/* Initialize device */
         {
             /* VkDevice feature enables */
+            VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR shader_subgroup_uniform_control_flow_features = {
+                .sType                            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
+                .pNext                            = nullptr,
+                .shaderSubgroupUniformControlFlow = VK_TRUE,
+            };
+            VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR shader_subgroup_rotate_features = {
+                .sType                         = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES_KHR,
+                .pNext                         = std::addressof(shader_subgroup_uniform_control_flow_features),
+                .shaderSubgroupRotate          = VK_TRUE,
+                .shaderSubgroupRotateClustered = VK_TRUE,
+            };
+            VkPhysicalDeviceShaderQuadControlFeaturesKHR   shader_quad_control_features = {
+                .sType             = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
+                .pNext             = std::addressof(shader_subgroup_rotate_features),
+                .shaderQuadControl = VK_TRUE,
+            };
+            VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
+                .sType                      = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
+                .pNext                      = std::addressof(shader_quad_control_features),
+                .shaderMaximalReconvergence = VK_TRUE,
+            };
+            VkPhysicalDeviceShaderFloatControls2FeaturesKHR shader_float_controls_2_features = {
+                .sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES_KHR,
+                .pNext                = std::addressof(shader_maximal_reconvergence_features),
+                .shaderFloatControls2 = VK_TRUE,
+            };
+            VkPhysicalDeviceShaderExpectAssumeFeaturesKHR shader_expect_assume_features = {
+                .sType              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES_KHR,
+                .pNext              = std::addressof(shader_float_controls_2_features),
+                .shaderExpectAssume = VK_TRUE,
+            };
+            VkPhysicalDeviceShaderClockFeaturesKHR  shader_clock_features = {
+                .sType               = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
+                .pNext               = std::addressof(shader_expect_assume_features),
+                .shaderSubgroupClock = VK_TRUE,
+                .shaderDeviceClock   = VK_TRUE,
+            };
+            VkPhysicalDeviceIndexTypeUint8FeaturesKHR index_type_u8_features = {
+                .sType          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_KHR,
+                .pNext          = std::addressof(shader_clock_features),
+                .indexTypeUint8 = VK_TRUE,
+            };
+            VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_features = {
+                .sType                     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR,
+                .pNext                     = std::addressof(index_type_u8_features),
+                .dynamicRenderingLocalRead = VK_TRUE,
+            };
             VkPhysicalDeviceMaintenance6FeaturesKHR maintenance_6_features = {
                 .sType        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES_KHR,
+                .pNext        = std::addressof(dynamic_rendering_local_read_features),
                 .maintenance6 = VK_TRUE,
             };
             VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
@@ -637,6 +714,15 @@ namespace awn::gfx {
                 VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME,
                 VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
                 VK_KHR_MAINTENANCE_6_EXTENSION_NAME,
+                VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME,
+                VK_KHR_INDEX_TYPE_UINT8_EXTENSION_NAME,
+                VK_KHR_SHADER_CLOCK_EXTENSION_NAME,
+                VK_KHR_SHADER_EXPECT_ASSUME_EXTENSION_NAME,
+                VK_KHR_SHADER_FLOAT_CONTROLS_2_EXTENSION_NAME,
+                VK_KHR_SHADER_MAXIMAL_RECONVERGENCE_EXTENSION_NAME,
+                VK_KHR_SHADER_QUAD_CONTROL_EXTENSION_NAME,
+                VK_KHR_SHADER_SUBGROUP_ROTATE_EXTENSION_NAME,
+                VK_KHR_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_EXTENSION_NAME,
             };
             const u32 device_extension_count = sizeof(device_extension_array) / sizeof(const char*);
             

@@ -177,9 +177,9 @@ namespace vp::res {
 
         u32 flags = 0;
         //if (texture_info->storage_dimension == static_cast<u8>(GfxImageStorageDimension::Type2D) { flags |= VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT; }
-        if (1 < texture_info->array_layers) { flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT | VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT; }
+        if (1 < texture_info->array_layer_count) { flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT | VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT; }
         //if (1 < texture_info->sample_count) { flags |= ; }
-        
+
         return flags;
     }
 
@@ -218,22 +218,22 @@ namespace vp::res {
     constexpr inline VkImageViewType GfxImageDimensionToVkImageViewType(GfxImageDimension image_dimension) {
 
         switch (image_dimension) {
-            case GfxImageDimension::Type1D:
+            case GfxImageDimension::Type1d:
                 return VK_IMAGE_VIEW_TYPE_1D;
-            case GfxImageDimension::Type2D:
+            case GfxImageDimension::Type2d:
                 return VK_IMAGE_VIEW_TYPE_2D;
-            case GfxImageDimension::Type3D:
+            case GfxImageDimension::Type3d:
                 return VK_IMAGE_VIEW_TYPE_3D;
             case GfxImageDimension::TypeCube:
                 return VK_IMAGE_VIEW_TYPE_CUBE;
-            case GfxImageDimension::Type1DArray:
+            case GfxImageDimension::Type1dArray:
                 return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
-            case GfxImageDimension::Type2DArray:
+            case GfxImageDimension::Type2dArray:
                 return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
             case GfxImageDimension::TypeCubeArray:
                 return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
-            case GfxImageDimension::Type2DMultisample:
-            case GfxImageDimension::Type2DMultisampleArray:
+            case GfxImageDimension::Type2dMultisample:
+            case GfxImageDimension::Type2dMultisampleArray:
             case GfxImageDimension::TypeRectangle:
                 break;
         };

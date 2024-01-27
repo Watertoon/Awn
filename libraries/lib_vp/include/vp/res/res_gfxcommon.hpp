@@ -392,9 +392,9 @@ namespace vp::res {
     };
 
     enum class GfxImageStorageDimension : u8 { 
-        Type1D = 1,
-        Type2D = 2,
-        Type3D = 3,
+        Type1d = 1,
+        Type2d = 2,
+        Type3d = 3,
     };
 
     struct ResGfxTextureInfo {
@@ -419,11 +419,11 @@ namespace vp::res {
         u32 width;
         u32 height;
         u32 depth;
-        u32 array_layers;
+        u32 array_layer_count;
         u32 packaged_texture_layout;
 
         constexpr void SetDefaults() {
-            storage_dimension = static_cast<u8>(GfxImageStorageDimension::Type2D);
+            storage_dimension = static_cast<u8>(GfxImageStorageDimension::Type2d);
             tile_mode         = 0;
             swizzle           = 0;
             mip_levels        = 1;
@@ -433,20 +433,20 @@ namespace vp::res {
             sample_count      = 1;
             image_format      = 0;
             gpu_access_flags  = 0;
-            array_layers      = 1;
+            array_layer_count = 1;
         }
     };
     static_assert(sizeof(ResGfxTextureInfo) == 0x28);
 
     enum class GfxImageDimension : u8 {
-        Type1D                  = 0,
-        Type2D                  = 1,
-        Type3D                  = 2,
+        Type1d                  = 0,
+        Type2d                  = 1,
+        Type3d                  = 2,
         TypeCube                = 3,
-        Type1DArray             = 4,
-        Type2DArray             = 5,
-        Type2DMultisample       = 6,
-        Type2DMultisampleArray  = 7,
+        Type1dArray             = 4,
+        Type2dArray             = 5,
+        Type2dMultisample       = 6,
+        Type2dMultisampleArray  = 7,
         TypeCubeArray           = 8,
         TypeRectangle           = 9,
     };
@@ -481,7 +481,7 @@ namespace vp::res {
         u16  mip_levels;
         u32  reserve2[3];
         u32  base_array_layer;
-        u32  array_layers;
+        u32  array_layer_count;
         u32  reserve3[2];
         T   *texture;
     };

@@ -51,23 +51,18 @@ namespace awn::async {
                 m_is_finished = false;
                 do {
 
-                    {
-                        /* Lock queue */
-                        std::scoped_lock l(m_queue->m_queue_mutex);
+                    /* Schedule next task */
+                    AsyncTask *task = m_queue->AcquireNextTask(this);
+                    if (task == nullptr) { break; }
 
-                        /* Schedule async task */
-                        AsyncTask *task = m_queue->AcquireNextTask(this);
-                        if (task == nullptr) { break; }
+                    /* Execute task */
+                    task->Invoke();
 
-                        /* Execute task */
-                        task->Invoke(this);
+                    /* Signal execute event */
+                    m_execute_event.Signal();
 
-                        /* Signal execute event */
-                        m_execute_event.Signal();
-
-                        /* Signal finished tasks */
-                        m_queue->UpdateCompletion();
-                    }
+                    /* Signal finished tasks */
+                    m_queue->UpdateCompletion();
 
                     /* Memory barrier */
                     vp::util::MemoryBarrierReadWrite();

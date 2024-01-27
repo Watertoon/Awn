@@ -24,16 +24,16 @@ namespace awn::gfx {
         u16      image_dimension;
         u16      base_mip_level;
         u32      base_array_layer;
-        u32      array_layers;
+        u32      array_layer_count;
         Texture *texture;
 
         constexpr void SetDefaults() {
-            image_format     = 0;
-            image_dimension  = static_cast<u16>(ImageDimension::Type2D);
-            base_mip_level   = 0;
-            base_array_layer = 0;
-            array_layers     = 1;
-            texture          = nullptr;
+            image_format      = 0;
+            image_dimension   = static_cast<u16>(ImageDimension::Type2d);
+            base_mip_level    = 0;
+            base_array_layer  = 0;
+            array_layer_count = 1;
+            texture           = nullptr;
         }
     };
 
@@ -42,20 +42,20 @@ namespace awn::gfx {
         u16      image_dimension;
         u16      base_mip_level;
         u32      base_array_layer;
-        u32      array_layers;
+        u32      array_layer_count;
         u32      render_width;
         u32      render_height;
         VkImage  vk_image;
 
         constexpr void SetDefaults() {
-            image_format     = 0;
-            image_dimension  = static_cast<u16>(ImageDimension::Type2D);
-            base_mip_level   = 0;
-            base_array_layer = 0;
-            array_layers     = 1;
-            render_width     = 640;
-            render_height    = 480;
-            vk_image         = nullptr;
+            image_format      = 0;
+            image_dimension   = static_cast<u16>(ImageDimension::Type2d);
+            base_mip_level    = 0;
+            base_array_layer  = 0;
+            array_layer_count = 1;
+            render_width      = 640;
+            render_height     = 480;
+            vk_image          = nullptr;
         }
     };
 
@@ -69,13 +69,13 @@ namespace awn::gfx {
             VkImage       m_vk_image;
             VkImageLayout m_vk_image_layout;
             u32           m_vk_aspect_mask;
-            u32           m_array_layers;
+            u32           m_array_layer_count;
             u32           m_render_width;
             u32           m_render_height;
         protected:
             void SetVkImageLayout(VkImageLayout vk_image_layout) { m_vk_image_layout = vk_image_layout; }
         public:
-            constexpr RenderTargetBase() : m_vk_image_view(VK_NULL_HANDLE), m_vk_image(VK_NULL_HANDLE), m_vk_image_layout(VK_IMAGE_LAYOUT_UNDEFINED), m_array_layers(0), m_render_width(0), m_render_height(0) {/*...*/}
+            constexpr RenderTargetBase() : m_vk_image_view(VK_NULL_HANDLE), m_vk_image(VK_NULL_HANDLE), m_vk_image_layout(VK_IMAGE_LAYOUT_UNDEFINED), m_array_layer_count(0), m_render_width(0), m_render_height(0) {/*...*/}
             constexpr ~RenderTargetBase() {/*...*/}
 
             void Finalize() {
@@ -87,12 +87,12 @@ namespace awn::gfx {
                 m_vk_image        = VK_NULL_HANDLE;
                 m_vk_image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
                 m_vk_aspect_mask  = 0;
-                m_array_layers    = 0;
+                m_array_layer_count    = 0;
                 m_render_width    = 0;
                 m_render_height   = 0;
             }
 
-            constexpr u32 GetViewCount()    const { return m_array_layers; }
+            constexpr u32 GetViewCount()    const { return m_array_layer_count; }
             constexpr u32 GetViewMask()     const { return 0xffff'ffff; }
             constexpr u32 GetRenderWidth()  const { return m_render_width; }
             constexpr u32 GetRenderHeight() const { return m_render_height; }
@@ -128,7 +128,7 @@ namespace awn::gfx {
                         .baseMipLevel   = render_target_info->base_mip_level,
                         .levelCount     = 1,
                         .baseArrayLayer = render_target_info->base_array_layer,
-                        .layerCount     = render_target_info->array_layers,
+                        .layerCount     = render_target_info->array_layer_count,
                     }
                 };
                 const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
@@ -138,7 +138,7 @@ namespace awn::gfx {
                 m_vk_image           = render_target_info->texture->GetVkImage();
                 m_vk_image_layout    = VK_IMAGE_LAYOUT_UNDEFINED;
                 m_vk_aspect_mask     = image_aspect_mask;
-                m_array_layers       = render_target_info->array_layers;
+                m_array_layer_count       = render_target_info->array_layer_count;
                 m_render_width       = render_target_info->texture->GetWidth();
                 m_render_height      = render_target_info->texture->GetHeight();
 
@@ -165,7 +165,7 @@ namespace awn::gfx {
                         .baseMipLevel   = render_target_import_info->base_mip_level,
                         .levelCount     = 1,
                         .baseArrayLayer = render_target_import_info->base_array_layer,
-                        .layerCount     = render_target_import_info->array_layers,
+                        .layerCount     = render_target_import_info->array_layer_count,
                     }
                 };
                 const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
@@ -175,7 +175,7 @@ namespace awn::gfx {
                 m_vk_image           = render_target_import_info->vk_image;
                 m_vk_image_layout    = VK_IMAGE_LAYOUT_UNDEFINED;
                 m_vk_aspect_mask     = image_aspect_mask;
-                m_array_layers       = render_target_import_info->array_layers;
+                m_array_layer_count       = render_target_import_info->array_layer_count;
                 m_render_width       = render_target_import_info->render_width;
                 m_render_height      = render_target_import_info->render_height;
 
@@ -208,7 +208,7 @@ namespace awn::gfx {
                         .baseMipLevel   = render_target_info->base_mip_level,
                         .levelCount     = 1,
                         .baseArrayLayer = render_target_info->base_array_layer,
-                        .layerCount     = render_target_info->array_layers,
+                        .layerCount     = render_target_info->array_layer_count,
                     }
                 };
                 const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
@@ -218,7 +218,7 @@ namespace awn::gfx {
                 m_vk_image           = render_target_info->texture->GetVkImage();
                 m_vk_image_layout    = VK_IMAGE_LAYOUT_UNDEFINED;
                 m_vk_aspect_mask     = image_aspect_mask;
-                m_array_layers       = render_target_info->array_layers;
+                m_array_layer_count       = render_target_info->array_layer_count;
                 m_render_width       = render_target_info->texture->GetWidth();
                 m_render_height      = render_target_info->texture->GetHeight();
 
@@ -245,7 +245,7 @@ namespace awn::gfx {
                         .baseMipLevel   = render_target_import_info->base_mip_level,
                         .levelCount     = 1,
                         .baseArrayLayer = render_target_import_info->base_array_layer,
-                        .layerCount     = render_target_import_info->array_layers,
+                        .layerCount     = render_target_import_info->array_layer_count,
                     }
                 };
                 const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
@@ -255,7 +255,7 @@ namespace awn::gfx {
                 m_vk_image           = render_target_import_info->vk_image;
                 m_vk_image_layout    = VK_IMAGE_LAYOUT_UNDEFINED;
                 m_vk_aspect_mask     = image_aspect_mask;
-                m_array_layers       = render_target_import_info->array_layers;
+                m_array_layer_count       = render_target_import_info->array_layer_count;
                 m_render_width       = render_target_import_info->render_width;
                 m_render_height      = render_target_import_info->render_height;
 

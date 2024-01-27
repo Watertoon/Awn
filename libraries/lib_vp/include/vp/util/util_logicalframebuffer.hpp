@@ -50,5 +50,12 @@ namespace vp::util {
                 *out_x = m_dimensions[0];
                 *out_y = m_dimensions[1];
             }
+            constexpr void GetVirtualCanvasSize(vp::util::Vector2f *out_vec2f) const {
+                *out_vec2f = m_virtual_size;
+            }
+
+            constexpr void GetDimensions(vp::util::Vector2f *out_vec2f) const {
+                *out_vec2f = m_dimensions;
+            }
     };
 }

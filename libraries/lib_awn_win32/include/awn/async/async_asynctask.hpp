@@ -27,14 +27,14 @@ namespace awn::async {
         void      *user_data;
     };
 
-    using TaskDelegate   = vp::util::IDelegate<void*>;
-    using ResultDelegate = vp::util::IDelegateReturn<Result, const TaskResultInvokeInfo*>;
+    using TaskFunction   = vp::util::IFunction<void(void*)>;
+    using ResultFunction = vp::util::IFunction<Result(const TaskResultInvokeInfo*)>;
 
     struct AsyncTaskPushInfo {
         AsyncQueue       *queue;
         AsyncQueueThread *queue_thread;
-        TaskDelegate     *task_delegate;
-        ResultDelegate   *result_delegate;
+        TaskFunction     *task_function;
+        ResultFunction   *result_function;
         void             *user_data;
         u32               priority;
         bool              is_sync;
@@ -48,7 +48,7 @@ namespace awn::async {
             friend class AsyncQueueThread;
             friend class AsyncTaskWatcher;
         public:
-            enum class Status : u32 {
+            enum class Status : u16 {
                 Uninitialized = 0,
                 Cancelled     = 1,
                 Queued        = 2,
@@ -60,7 +60,7 @@ namespace awn::async {
         public:
             static constexpr u32 cInvalidPriorityLevel = 0xffff'ffff;
         protected:
-            u16                          m_priority;
+            u32     m_priority;
             union {
                 u16 m_state;
                 struct {
@@ -68,11 +68,11 @@ namespace awn::async {
                     u16 m_reserve0 : 15;
                 };
             };                          
-            u32                          m_status;
+            u16                          m_status;
             AsyncQueue                  *m_queue;
             AsyncQueueThread            *m_queue_thread;
-            TaskDelegate                *m_task_delegate;
-            ResultDelegate              *m_result_delegate;
+            TaskFunction                *m_task_function;
+            ResultFunction              *m_result_function;
             void                        *m_user_data;
             sys::ServiceEvent            m_finish_event;
             vp::util::IntrusiveListNode  m_queue_list_node;
@@ -80,8 +80,8 @@ namespace awn::async {
             VP_RTTI_BASE(AsyncTask);
         protected:
             virtual void Execute() {
-                if (m_task_delegate == nullptr) { return; }
-                m_task_delegate->Invoke(m_user_data);
+                if (m_task_function == nullptr) { return; }
+                m_task_function->Invoke(m_user_data);
             }
 
             virtual void PostExecute() {/*...*/}
@@ -93,12 +93,13 @@ namespace awn::async {
             virtual void FreeCancel() {/*...*/}
         protected:
             bool TryInvokeSync();
-        
-            void Invoke(AsyncQueueThread *thread);
+            void InvokeSync(AsyncQueueThread *thread);
+
+            void Invoke();
 
             void Cancel();
         public:
-            AsyncTask() : m_priority(), m_state(), m_status(), m_queue(), m_queue_thread(), m_task_delegate(), m_result_delegate(), m_user_data(), m_finish_event(), m_queue_list_node() { m_finish_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual); }
+            AsyncTask() : m_priority(), m_state(), m_status(), m_queue(), m_queue_thread(), m_task_function(), m_result_function(), m_user_data(), m_finish_event(), m_queue_list_node() { m_finish_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual); }
             virtual ~AsyncTask() { m_finish_event.Finalize(); }
 
             Result PushTask(AsyncTaskPushInfo *push_info);
@@ -110,5 +111,7 @@ namespace awn::async {
             void Wait() {
                 m_finish_event.Wait();
             }
+            
+            constexpr Status GetStatus() const { return static_cast<Status>(m_status); }
     };
 }

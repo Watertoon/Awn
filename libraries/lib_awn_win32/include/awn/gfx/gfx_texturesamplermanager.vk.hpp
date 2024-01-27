@@ -53,7 +53,7 @@ namespace awn::gfx {
                 constexpr ~TextureNode() {/*...*/}
             };
         public:
-            using TextureHandleTable = vp::util::FixedAtomicIndexAllocator<u32, Context::cTargetMaxTextureDescriptorCount>;
+            using TextureHandleTable = vp::util::FixedAtomicIndexAllocator<u16, Context::cTargetMaxTextureDescriptorCount>;
             using SamplerHandleTable = vp::util::FixedAtomicIndexAllocator<u16, Context::cTargetMaxSamplerDescriptorCount>;
             using SamplerMap         = vp::util::IntrusiveRedBlackTreeTraits<SamplerNode, &SamplerNode::rb_node>::Tree;
         private:
