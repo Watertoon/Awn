@@ -90,8 +90,10 @@ namespace awn::async {
                 m_execute_event.Wait();
             }
             
-            void CalcSync() {
-                
+            void CancelCurrentTaskIfPriority(u32 priority) {
+                std::scoped_lock l(m_queue->m_queue_mutex);
+                if (m_current_task == nullptr || m_current_task->m_priority != priority) { return; }
+                m_current_task->CancelWhileActive();
             }
     };
     

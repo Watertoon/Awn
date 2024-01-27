@@ -19,6 +19,41 @@ namespace vp::util {
 
     template <typename T>
     class PointerArray {
+        public:
+            class Iterator {
+                private:
+                    T **m_array;
+                public:
+                    constexpr ALWAYS_INLINE Iterator(T **array) : m_array(array) {/*...*/}
+
+                    constexpr ALWAYS_INLINE T *&operator*() {
+                        return *m_array;
+                    }
+                    constexpr ALWAYS_INLINE const T *&operator*() const {
+                        return *m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
+                        return m_array == rhs.m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
+                        return m_array != rhs.m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator &operator++() {
+                        ++m_array;
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator++([[maybe_unused]]int) {
+                        ++m_array;
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator--() {
+                        --m_array;
+                        return *this;
+                    }
+            };
         private:
             u32   m_max_pointers;
             u32   m_used_pointers;
@@ -26,6 +61,13 @@ namespace vp::util {
         public:
             constexpr ALWAYS_INLINE PointerArray() : m_max_pointers(0), m_used_pointers(0), m_pointer_array(nullptr) {/*...*/}
             constexpr ~PointerArray() {/*...*/}
+
+            constexpr Iterator begin() {
+                return Iterator(m_pointer_array);
+            }
+            constexpr Iterator end() {
+                return Iterator(m_pointer_array + m_used_pointers);
+            }
 
             constexpr ALWAYS_INLINE T *operator[](u32 index) {
                 if (index < m_used_pointers) {

@@ -18,7 +18,42 @@
 namespace vp::util {
 
     template <typename T>
-    class HeapArray {
+    class HeapArray {        
+        public:
+            class Iterator {
+                private:
+                    T *m_array;
+                public:
+                    constexpr ALWAYS_INLINE Iterator(T *array) : m_array(array) {/*...*/}
+
+                    constexpr ALWAYS_INLINE T &operator*() {
+                        return *m_array;
+                    }
+                    constexpr ALWAYS_INLINE const T &operator*() const {
+                        return *m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
+                        return m_array == rhs.m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
+                        return m_array != rhs.m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator &operator++() {
+                        ++m_array;
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator++([[maybe_unused]]int) {
+                        ++m_array;
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator--() {
+                        --m_array;
+                        return *this;
+                    }
+            };
         private:
             T   *m_object_array;
             u32  m_array_count;
@@ -66,6 +101,13 @@ namespace vp::util {
                 /* Clear state */
                 m_array_count  = 0;
                 m_object_array = nullptr;
+            }
+            
+            constexpr Iterator begin() {
+                return Iterator(m_object_array);
+            }
+            constexpr Iterator end() {
+                return Iterator(m_object_array + m_array_count);
             }
 
             constexpr ALWAYS_INLINE T &operator[](u32 index) {

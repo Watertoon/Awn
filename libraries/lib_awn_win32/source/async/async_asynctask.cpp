@@ -26,15 +26,7 @@ namespace awn::async {
             sys::ThreadBase *task_thread = m_queue->m_task_thread_array[i];
             if (task_thread != thread) { continue; }
 
-            /* Set thread */
-            {
-                std::scoped_lock l(m_queue->m_queue_mutex);
-                m_queue_thread = reinterpret_cast<AsyncQueueThread*>(thread);
-                m_status       = static_cast<u32>(Status::Queued); 
-            }
-
-            /* Invoke */
-            this->Invoke();
+            this->InvokeSync(reinterpret_cast<AsyncQueueThread*>(task_thread));
 
             return true;
         }
@@ -42,28 +34,45 @@ namespace awn::async {
         return false;
     }
 
+    void AsyncTask::InvokeSync(AsyncQueueThread *thread) {
+
+        /* Set thread */
+        {
+            std::scoped_lock l(m_queue->m_queue_mutex);
+            m_queue_thread = thread;
+            m_status       = static_cast<u32>(Status::Queued); 
+        }
+
+        /* Invoke */
+        this->Invoke();
+
+        return;
+    }
+
     void AsyncTask::Invoke() {
 
         /* Execute */
         this->Execute();
+        m_status = static_cast<u32>(Status::PostExecute); 
 
         /* Post execute */
         {
             std::scoped_lock l(m_queue->m_queue_mutex);
 
-            m_status = static_cast<u32>(Status::PostExecute); 
             this->PostExecute();
         }
 
         /* Result execute */
-        Result          result          = 0;
+        m_cancel_function               = nullptr;
+        Result          result          = ResultSuccess;
         ResultFunction *result_function = m_result_function;
         if (result_function != nullptr) {
             m_result_function = nullptr;
 
-            const TaskResultInvokeInfo invoke_info = {
-                .task      = this,
-                .user_data = m_user_data,
+            TaskResultInvokeInfo invoke_info = {
+                .task         = this,
+                .user_data    = m_user_data,
+                .is_cancelled = static_cast<bool>(m_is_cancelled),
             };
             result = result_function->Invoke(std::addressof(invoke_info));
 
@@ -77,7 +86,13 @@ namespace awn::async {
             m_status = static_cast<u32>(Status::FreeExecute); 
             this->FreeExecute();
             m_status = static_cast<u32>(Status::Complete);
-            m_finish_event.Signal();
+            if (m_is_signal_finish_event == true) {
+                m_is_cancelled = false;
+                m_finish_event.Signal();
+            }
+
+            /* Set as free for allocator */
+            m_is_free_for_allocator = true;
         }
 
         return;
@@ -85,9 +100,24 @@ namespace awn::async {
 
     void AsyncTask::Cancel() {
 
-        /* Clear state */
+        /* Clear thread and result function */
         m_queue_thread    = nullptr;
         m_result_function = nullptr;
+
+        /* Invoke cancel function */
+        CancelFunction *cancel_function = m_cancel_function;
+        if (cancel_function != nullptr) {
+            m_cancel_function = nullptr;
+
+            TaskCancelInvokeInfo invoke_info = {
+                .task      = this,
+                .user_data = m_user_data,
+            };
+            cancel_function->Invoke(std::addressof(invoke_info));
+        }
+
+        /* Lock queue */
+        std::scoped_lock l(m_queue->m_queue_mutex);
 
         /* Free cancel */
         this->FreeCancel();
@@ -95,7 +125,22 @@ namespace awn::async {
         /* Set status to cancelled */
         m_status = static_cast<u32>(Status::Cancelled);
 
+        /* Signal finish event */
+        if (m_is_signal_finish_event == true) {
+            m_is_cancelled = false;
+            m_finish_event.Signal();
+        }
+
+        /* Set as free for allocator */
+        m_is_free_for_allocator = true;
+
         return;
+    }
+
+    void AsyncTask::CancelWhileActive() {
+        m_finish_event.Clear();
+        m_is_signal_finish_event = true;
+        m_is_cancelled           = true;
     }
 
     Result AsyncTask::PushTask(AsyncTaskPushInfo *push_info) {
@@ -108,10 +153,12 @@ namespace awn::async {
         RESULT_RETURN_UNLESS(push_info->priority <= queue->m_priority_level_array.GetCount(), ResultInvalidPriority);
 
         /* Setup task */
-        m_queue           = queue;
-        m_task_function   = push_info->task_function;
-        m_result_function = push_info->result_function;
-        m_user_data       = push_info->user_data;
+        m_queue                  = queue;
+        m_task_function          = push_info->task_function;
+        m_result_function        = push_info->result_function;
+        m_cancel_function        = push_info->cancel_function;
+        m_user_data              = push_info->user_data;
+        m_is_signal_finish_event = (push_info->is_sync == true) | (push_info->is_skip_finish_event == false);
         this->FormatPushInfo(push_info);
 
         /* Try invoke sync */

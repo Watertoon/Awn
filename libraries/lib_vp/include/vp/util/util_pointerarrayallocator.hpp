@@ -25,7 +25,42 @@ namespace vp::util {
                 FreeList *next;
                 char      _padding[cPaddingSize];
             };
-            static_assert(sizeof(T) <= sizeof(FreeList) && alignof(T) <= alignof(FreeList));
+            static_assert(sizeof(T) <= sizeof(FreeList) && alignof(T) <= alignof(FreeList));  
+        public:
+            class Iterator {
+                private:
+                    T **m_array;
+                public:
+                    constexpr ALWAYS_INLINE Iterator(T **array) : m_array(array) {/*...*/}
+
+                    constexpr ALWAYS_INLINE T *&operator*() {
+                        return *m_array;
+                    }
+                    constexpr ALWAYS_INLINE const T *&operator*() const {
+                        return *m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
+                        return m_array == rhs.m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
+                        return m_array != rhs.m_array;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator &operator++() {
+                        ++m_array;
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator++([[maybe_unused]]int) {
+                        ++m_array;
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator--() {
+                        --m_array;
+                        return *this;
+                    }
+            };
         private:
             FreeList  *m_free_list;
             T        **m_pointer_array;
@@ -34,7 +69,14 @@ namespace vp::util {
         public:
             constexpr ALWAYS_INLINE PointerArrayAllocator() : m_free_list(), m_pointer_array(), m_used_count(), m_max() {/*...*/}
             constexpr ~PointerArrayAllocator() {/*...*/}
-            
+
+            constexpr Iterator begin() {
+                return Iterator(m_pointer_array);
+            }
+            constexpr Iterator end() {
+                return Iterator(m_pointer_array + m_used_count);
+            }
+
             constexpr ALWAYS_INLINE T *operator[](u32 index) {
                 VP_ASSERT(index < m_used_count);
                 return m_pointer_array[index];

@@ -53,6 +53,8 @@ namespace awn::async {
         protected:
             AsyncTask *AcquireNextTask(AsyncQueueThread *queue_thread);
 
+            bool IsAnyThreadHaveTaskPriority(u32 priority);
+
             bool UpdateAllTaskCompletion();
             void UpdatePriorityLevelCompletion();
             void UpdateCompletion();
@@ -67,6 +69,7 @@ namespace awn::async {
             void CancelTask(AsyncTask *task);
 
             void CancelPriorityLevel(u32 priority);
+            void CancelThreadPriorityLevel(u32 priority);
 
             ALWAYS_INLINE void Wait() {
                 m_all_task_complete_event.Wait();
@@ -76,6 +79,7 @@ namespace awn::async {
                 if (m_priority_level_array[priority].is_paused == true || m_priority_level_array[priority].async_task_head != nullptr) { return; }
                 m_priority_level_array[priority].priority_cleared_event.Wait();
             }
+
             void ForceCalcSyncOnThread(AsyncQueueThread *thread, u32 up_to_priority) {
 
                 /* Lock queue */
