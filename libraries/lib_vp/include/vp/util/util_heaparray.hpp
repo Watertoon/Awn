@@ -125,5 +125,9 @@ namespace vp::util {
             constexpr ALWAYS_INLINE u32 GetIndexOf(T *element) const {
                 return element - m_object_array;
             }
+
+            constexpr void Sort() {
+                std::sort(m_object_array, m_object_array + m_array_count);
+            }
     };
 }

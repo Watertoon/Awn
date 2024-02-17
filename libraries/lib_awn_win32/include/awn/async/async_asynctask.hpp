@@ -36,6 +36,10 @@ namespace awn::async {
     using ResultFunction = vp::util::IFunction<Result(TaskResultInvokeInfo*)>;
     using CancelFunction = vp::util::IFunction<void(TaskCancelInvokeInfo*)>;
 
+    using StaticTaskFunction   = vp::util::StaticFunction<void(void*)>;
+    using StaticResultFunction = vp::util::StaticFunction<Result(TaskResultInvokeInfo*)>;
+    using StaticCancelFunction = vp::util::StaticFunction<void(TaskCancelInvokeInfo*)>;
+
     struct AsyncTaskPushInfo {
         AsyncQueue       *queue;
         AsyncQueueThread *queue_thread;
@@ -57,13 +61,14 @@ namespace awn::async {
             friend class AsyncTaskWatcher;
         public:
             enum class Status : u16 {
-                Uninitialized = 0,
-                Cancelled     = 1,
-                Queued        = 2,
-                Acquired      = 3,
-                FreeExecute   = 4,
-                PostExecute   = 5,
-                Complete      = 6,
+                Uninitialized   = 0,
+                Cancelled       = 1,
+                ForceCancelled  = 2,
+                Queued          = 3,
+                Acquired        = 4,
+                FreeExecute     = 5,
+                PostExecute     = 6,
+                Complete        = 7,
             };
         public:
             static constexpr u32 cInvalidPriorityLevel = 0xffff'ffff;
@@ -113,9 +118,12 @@ namespace awn::async {
             void CancelWhileActive();
         public:
             AsyncTask() : m_priority(), m_state(), m_status(), m_queue(), m_queue_thread(), m_task_function(), m_result_function(), m_cancel_function(), m_user_data(), m_finish_event(), m_queue_list_node() { m_finish_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual); }
-            virtual ~AsyncTask() { m_finish_event.Finalize(); }
+            virtual ~AsyncTask() { this->Finalize(); m_finish_event.Finalize(); }
 
             Result PushTask(AsyncTaskPushInfo *push_info);
+            void Finalize();
+
+            void CancelTask();
 
             void ChangePriority(u32 new_priority);
 

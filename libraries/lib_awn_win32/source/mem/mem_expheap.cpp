@@ -17,6 +17,143 @@
 
 namespace awn::mem {
 
+    bool ExpHeap::AddFreeBlock(AddressRange range) {
+
+        void *new_start = range.start;
+        void *new_end   = range.end;
+
+        /* Skip if empty free list */
+        vp::util::IntrusiveListNode *link_node = std::addressof((*m_free_block_list.end()).exp_list_node);;
+
+        /* Find free block before and after */
+        if (m_free_block_list.IsEmpty() == false) {
+            ExpHeapMemoryBlock *prev_block = nullptr;
+            ExpHeapMemoryBlock *next_block = nullptr;
+            for (ExpHeapMemoryBlock &free_block : m_free_block_list) {
+                next_block = std::addressof(free_block);
+                if (new_start <= next_block) { break; }
+                prev_block = next_block;
+            }
+
+            /* Coalesce back */
+            if (next_block != nullptr && new_end == reinterpret_cast<void*>(next_block)) {
+                next_block->exp_list_node.Unlink();
+                new_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(next_block) + next_block->block_size + sizeof(ExpHeapMemoryBlock));
+            }
+
+            /* Coalesce front */
+            if (prev_block != nullptr) {
+                link_node = std::addressof(prev_block->exp_list_node);
+                if (new_start == reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(prev_block) + prev_block->block_size + sizeof(ExpHeapMemoryBlock))) {
+                    link_node = prev_block->exp_list_node.prev();
+                    prev_block->exp_list_node.Unlink();
+                    new_start = reinterpret_cast<void*>(prev_block);
+                }
+            }
+        }
+
+        /* Ensure block size is valid */
+        const size_t new_size = reinterpret_cast<uintptr_t>(new_end) - reinterpret_cast<uintptr_t>(new_start);
+        if (new_size < sizeof(ExpHeapMemoryBlock)) {
+            return false;
+        }
+
+        /* Add new free block */
+        ExpHeapMemoryBlock *new_block = reinterpret_cast<ExpHeapMemoryBlock*>(new_start);
+        std::construct_at(new_block);
+        new_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
+        new_block->alignment   = 0;
+        new_block->block_size  = new_size - sizeof(ExpHeapMemoryBlock);
+
+        /* Link new free block between range */
+        link_node->LinkNext(std::addressof(new_block->exp_list_node));
+
+        return true;
+    }
+
+    void ExpHeap::AddUsedBlock(ExpHeapMemoryBlock *free_block, uintptr_t allocation_address, size_t size) {
+
+        /* Unlink old free block */
+        vp::util::IntrusiveListNode *next_node = free_block->exp_list_node.next();
+        vp::util::IntrusiveListNode *prev_node = free_block->exp_list_node.prev();
+        free_block->exp_list_node.Unlink();
+
+        /* Calculate new free block addresses and sizes */
+        uintptr_t new_free_address     = allocation_address + size;
+        uintptr_t new_free_end_address = reinterpret_cast<uintptr_t>(free_block) + free_block->block_size + sizeof(ExpHeapMemoryBlock);
+        uintptr_t new_free_total_size  = new_free_end_address - new_free_address;
+
+        uintptr_t orig_start_address   = reinterpret_cast<uintptr_t>(free_block);
+        uintptr_t used_start_address   = allocation_address - sizeof(ExpHeapMemoryBlock);
+        uintptr_t used_alignment       = used_start_address - orig_start_address;
+
+        /* Create a new free block at front if alignment is great enough */
+        if (sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity <= used_alignment) {
+
+            ExpHeapMemoryBlock *front_free_block = reinterpret_cast<ExpHeapMemoryBlock*>(orig_start_address);
+
+            std::construct_at(front_free_block);
+            front_free_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
+            front_free_block->alignment   = 0;
+            front_free_block->block_size  = used_alignment - sizeof(ExpHeapMemoryBlock);
+
+            prev_node->LinkNext(std::addressof(front_free_block->exp_list_node));
+            //m_free_block_list.PushBack(*front_free_block);
+
+            used_alignment = 0;
+        }
+
+        /* Create new free block at back if leftover space is great enough */
+        if (sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity <= new_free_total_size) {
+
+            ExpHeapMemoryBlock *back_free_block = reinterpret_cast<ExpHeapMemoryBlock*>(new_free_address);
+
+            std::construct_at(back_free_block);
+            back_free_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
+            back_free_block->alignment   = 0;
+            back_free_block->block_size  = new_free_total_size - sizeof(ExpHeapMemoryBlock);
+
+            next_node->LinkPrev(std::addressof(back_free_block->exp_list_node));
+            //m_free_block_list.PushBack(*back_free_block);
+
+            new_free_total_size = 0;
+        }
+
+        /* Add used block */
+        ExpHeapMemoryBlock *used_block = reinterpret_cast<ExpHeapMemoryBlock*>(used_start_address);
+
+        std::construct_at(used_block);
+        used_block->alloc_magic = ExpHeapMemoryBlock::cAllocMagic;
+        used_block->alignment   = used_alignment;
+        used_block->block_size  = size + new_free_total_size;
+
+        m_allocated_block_list.PushBack(*used_block);
+
+        return;
+    }
+
+    ExpHeap *ExpHeap::TryCreate(const char *name, void *address, size_t size, bool is_thread_safe) {
+
+        /* Integrity checks */
+        VP_ASSERT(address != nullptr && (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity) <= size);
+
+        /* Contruct exp heap object */
+        ExpHeap *new_heap = reinterpret_cast<ExpHeap*>(address);
+        std::construct_at(new_heap, name, nullptr, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) + sizeof(ExpHeap)), size - sizeof(ExpHeap), is_thread_safe);
+
+        /* Create and push free node spanning block */
+        ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(new_heap) + sizeof(ExpHeap));
+        std::construct_at(first_block);
+
+        first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
+        first_block->alignment   = 0;
+        first_block->block_size  = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
+
+        new_heap->m_free_block_list.PushBack(*first_block);
+
+        return new_heap;
+    }
+
     ExpHeap *ExpHeap::TryCreate(const char *name, Heap *parent_heap, size_t size, s32 alignment, bool is_thread_safe) {
 
         /* Use current heap if one is not provided */

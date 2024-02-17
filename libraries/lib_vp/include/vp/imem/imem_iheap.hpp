@@ -17,14 +17,6 @@
 
 namespace vp::imem {
 
-    enum class HeapType : u8 {
-        IHeap         = 0,
-        ExpIHeap      = 1,
-        UnitIHeap     = 2,
-        FrameIHeap    = 3,
-        SeperateIHeap = 4
-    };
-
     enum class AllocationMode : bool {
         FirstFit = 0,
         BestFit  = 1
@@ -76,15 +68,15 @@ namespace vp::imem {
                 /* Check if address is in this IHeap */
                 if (this->IsAddressInHeap(address) == false) { return nullptr; }
 
-                /* Walk the child IHeap list to determine if the address is in a child IHeap */
+                /* Search for address in child IHeaps */
                 for (IHeap &child : m_child_list) {
-                    if (child.IsAddressInHeap(address) == true) {
-                        /* Repeat for child IHeap */
-                        return child.FindHeapFromAddress(address);
-                    }
+                    if (child.IsAddressInHeap(address) == false) { continue; }
+
+                    /* Continue the search in child IHeap */
+                    return child.FindHeapFromAddress(address);
                 }
 
-                /* Return this IHeap if address is part of heap, yet not part of a child IHeap */
+                /* Not in children, we own it */
                 return this;
             }
 

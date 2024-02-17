@@ -17,13 +17,14 @@
 
 namespace vp::util {
 
+    template <class KeyType, class IndexType>
 	class KeyIndexMap {
         public:
-            static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
+            static constexpr IndexType cInvalidEntryIndex = static_cast<IndexType>(0xffff'ffff'ffff'ffff);
         public:
             struct Index {
-                u32 hash;
-                u32 index;
+                KeyType   hash;
+                IndexType index;
             };
         private:
             HashMap<&Index::hash> m_hash_map;

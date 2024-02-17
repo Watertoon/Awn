@@ -66,20 +66,25 @@ namespace awn::sys {
     };
 
     class ServiceMutex {
+        public:
+            static constexpr u32 cInvalidLockCount = 0xffff'ffff;
         private:
             u32               m_wait_value;
             u32               m_lock_count;
             sys::ThreadBase  *m_owner;
             CRITICAL_SECTION  m_win32_lock;
         public:
-            constexpr ALWAYS_INLINE  ServiceMutex() : m_wait_value(0), m_lock_count(0), m_owner(nullptr), m_win32_lock(0) {/*...*/}
+            constexpr ALWAYS_INLINE  ServiceMutex() : m_wait_value(0), m_lock_count(-1), m_owner(nullptr), m_win32_lock(0) {/*...*/}
             constexpr ALWAYS_INLINE ~ServiceMutex() {/*...*/}
 
             void Initialize() {
                 ::InitializeCriticalSection(std::addressof(m_win32_lock));
+                m_lock_count = 0;
             }
             void Finalize() {
+                if (m_lock_count == cInvalidLockCount) { return; }
                 ::DeleteCriticalSection(std::addressof(m_win32_lock));
+                m_lock_count = cInvalidLockCount;
             }
 
             void Enter() {

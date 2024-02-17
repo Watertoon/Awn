@@ -98,6 +98,20 @@ namespace awn::async {
         return;
     }
 
+    void AsyncTask::Finalize() {
+        if (m_status == static_cast<u32>(Status::ForceCancelled)) { return; }
+        this->CancelTask();
+        m_queue           = nullptr;
+        m_user_data       = nullptr;
+        m_result_function = nullptr;
+        m_cancel_function = nullptr;
+        m_status          = static_cast<u32>(Status::ForceCancelled);
+    }
+
+    void AsyncTask::CancelTask() {
+        if (m_queue != nullptr) { m_queue->CancelTask(this); }
+    }
+
     void AsyncTask::Cancel() {
 
         /* Clear thread and result function */
@@ -228,7 +242,7 @@ namespace awn::async {
                     if ((thread_mask & thread_mask_index) != 0)                                  { continue; }
 
                     /* Signal thread */
-                    const bool is_sent_message  = q_thread->TrySendMessage(static_cast<size_t>(AsyncQueueThread::Message::Start));
+                    const bool is_sent_message  = q_thread->TrySendMessage(static_cast<size_t>(AsyncQueueThread::Message::Resume));
 
                     /* Adjust thread mask */
                     is_failed_to_signal_thread &= is_sent_message;

@@ -25,16 +25,22 @@ namespace awn::async {
         public:
             enum class Message : size_t {
                 Exit    = 0,
-                Start   = 1,
+                Resume  = 1,
                 Suspend = 2,
-                Resume  = 3,
+            };
+            enum class Status : u32 {
+                Finished  = 1,
+                Suspended = 2,
+                Active    = 3,
             };
         private:
+            Status             m_status;
             u32                m_is_finished;
             u32                m_requests_per_yield;
             AsyncTask         *m_current_task;
             AsyncQueue        *m_queue;
             sys::ServiceEvent  m_execute_event;
+            sys::ServiceEvent  m_suspend_event;
         public:
              AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, sys::ThreadRunMode run_mode, u32 max_messages, u32 stack_size, s32 priority) : ServiceThread(name, thread_heap, run_mode, 0x7fff'ffff, max_messages, stack_size, priority), m_is_finished(true), m_requests_per_yield(), m_current_task(), m_queue(async_queue), m_execute_event() { 
 
@@ -45,6 +51,23 @@ namespace awn::async {
             ~AsyncQueueThread() { m_execute_event.Finalize(); }
 
             virtual void ThreadMain(size_t message) override {
+
+                /* Handle suspension */
+                if (m_status != Status::Suspended) {
+
+                    if (message == static_cast<size_t>(Message::Suspend)) {
+
+                        m_status = Status::Suspended;
+                        m_suspend_event.Signal();
+                        return;
+                    }
+
+                } else {
+                    if (message == static_cast<size_t>(Message::Resume)) { return; }
+
+                    m_status = Status::Active;
+                    m_suspend_event.Signal();
+                }
 
                 /* Task main loop */
                 u32 yield_iter = m_requests_per_yield;
@@ -79,7 +102,7 @@ namespace awn::async {
                     /* Peek next message */
                     this->TryPeekMessage(std::addressof(message));
 
-                } while (message != m_exit_message && message != static_cast<size_t>(Message::Suspend));
+                } while (message != m_exit_message);
 
                 m_is_finished = true;
 
@@ -89,7 +112,13 @@ namespace awn::async {
             ALWAYS_INLINE void WaitForExecute() {
                 m_execute_event.Wait();
             }
+
+            ALWAYS_INLINE void WaitForSuspension() {
+                m_suspend_event.Wait();
+            }
+
             
+
             void CancelCurrentTaskIfPriority(u32 priority) {
                 std::scoped_lock l(m_queue->m_queue_mutex);
                 if (m_current_task == nullptr || m_current_task->m_priority != priority) { return; }

@@ -27,6 +27,7 @@
 #include <type_traits>
 #include <mutex>
 #include <array>
+#include <algorithm>
 
 /* Platform includes */
 #ifdef VP_TARGET_PLATFORM_win32

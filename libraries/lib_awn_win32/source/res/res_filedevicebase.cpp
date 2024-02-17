@@ -22,7 +22,7 @@ namespace awn::res {
         /* Integrity checks */
         RESULT_RETURN_IF(file_load_context->file_buffer != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
         RESULT_RETURN_IF((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
-        
+
         /* Declare a file handle closed on exit */
         FileHandle handle = {};
         ON_SCOPE_EXIT {
@@ -85,6 +85,61 @@ namespace awn::res {
 
         /* Cancel alloc error for success */
         error_after_alloc_guard.Cancel();
+
+        RESULT_RETURN_SUCCESS;
+    }
+
+    Result FileDeviceBase::SaveFileImpl(const char *path, FileSaveInfo *file_save_info) {
+
+        /* Integrity checks */
+        RESULT_RETURN_IF(file_save_info->file != nullptr && file_save_info->file_size == 0, ResultInvalidFileBufferSize);
+
+        /* Open write dest */
+        FileHandle handle = {};
+        ON_SCOPE_EXIT {
+            RESULT_ABORT_UNLESS(handle.Close());
+        };
+        const Result open_result = this->OpenFile(std::addressof(handle), path, OpenMode::Write);
+        RESULT_RETURN_IF(open_result != ResultSuccess, open_result);
+
+        /* Write file */
+        size_t written_size       = 0;
+        const Result write_result = this->WriteFile(std::addressof(written_size), std::addressof(handle), file_save_info->file, file_save_info->file_size, 0);
+        RESULT_RETURN_IF(write_result != ResultSuccess, write_result);
+
+        RESULT_RETURN_SUCCESS;
+    }
+
+    Result FileDeviceBase::CopyFileImpl(const char *dest_path, const char *source_path, void *copy_buffer, size_t copy_size) {
+
+        /* Integrity checks */
+        RESULT_RETURN_IF(copy_buffer == nullptr || copy_size == 0, ResultNullOutBuffer);
+
+        /* Open source */
+        FileHandle src_handle = {};
+        ON_SCOPE_EXIT {
+            src_handle.Close();
+        };
+        const Result src_result = this->OpenFile(std::addressof(src_handle), source_path, OpenMode::Read);
+        if (src_result != ResultSuccess) { return src_result; }
+
+        /* Open dest */
+        FileHandle dst_handle = {};
+        ON_SCOPE_EXIT {
+            dst_handle.Close();
+        };
+        const Result dst_result = this->OpenFile(std::addressof(dst_handle), dest_path, OpenMode::Write);
+        if (dst_result != ResultSuccess) { return dst_result; }
+
+        /* Read source */
+        size_t read_size = 0;
+        const Result read_result = this->ReadFile(copy_buffer, std::addressof(read_size), std::addressof(src_handle), copy_size, 0);
+        if (read_result != ResultSuccess) { return read_result; }
+
+        /* Write to dest */
+        size_t write_size = 0;
+        const Result write_result = this->WriteFile(std::addressof(write_size), std::addressof(dst_handle), copy_buffer, read_size, 0);
+        if (write_result != ResultSuccess) { return write_result; }
 
         RESULT_RETURN_SUCCESS;
     }

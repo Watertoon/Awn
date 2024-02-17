@@ -18,7 +18,7 @@
 namespace vp::util {
 
     template <size_t Size>
-        requires (Size < 0x40'0000)
+        requires (Size < 0x40'0000) && (0 < Size)
     class FixedString {
         public:
             char m_string_array[Size];
@@ -82,6 +82,32 @@ namespace vp::util {
                 }
 
                 return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
+            }
+
+            constexpr ALWAYS_INLINE bool operator>(const FixedString& rhs) {
+                if (m_length != rhs.m_length) { return false; }
+                return ::memcmp(m_string_array, rhs.m_string_array, m_length) < 0;
+            }
+            constexpr ALWAYS_INLINE bool operator>(const FixedString& rhs) const {
+                if (m_length != rhs.m_length) { return false; }
+                return ::memcmp(m_string_array, rhs.m_string_array, m_length) < 0;
+            }
+            constexpr ALWAYS_INLINE bool operator<(const FixedString& rhs) {
+                if (m_length != rhs.m_length) { return false; }
+                return ::memcmp(m_string_array, rhs.m_string_array, m_length) > 0;
+            }
+            constexpr ALWAYS_INLINE bool operator<(const FixedString& rhs) const {
+                if (m_length != rhs.m_length) { return false; }
+                return ::memcmp(m_string_array, rhs.m_string_array, m_length) > 0;
+            }
+
+            constexpr ALWAYS_INLINE bool IsSame(const char *string) const {
+                return ::strncmp(m_string_array, string, m_length) == 0;
+            }
+            constexpr ALWAYS_INLINE void Clear() {
+                m_length = 0;
+                m_string_array[0] = '\0';
+                return;
             }
 
             constexpr ALWAYS_INLINE FixedString &operator=(const FixedString& rhs) {
