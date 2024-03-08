@@ -20,7 +20,8 @@ namespace awn::res {
     class ResourceFactoryManager;
     class ResourceFactoryBase;
 
-    struct ResourceLoadContext : public FileLoadContext {
+    struct ResourceLoadContext {
+        FileLoadContext      file_load_context;
         FileDeviceBase      *file_device;
         ResourceFactoryBase *resource_factory;
         mem::Heap           *resource_heap;
@@ -72,18 +73,18 @@ namespace awn::res {
                 RESULT_RETURN_UNLESS(decompressor != nullptr, ResultInvalidDecompressor);
 
                 /* Load decompressed */
-                const Result result = decompressor->LoadDecompressFile(nullptr, nullptr, path, resource_load_context, resource_load_context->file_device);
+                const Result result = decompressor->LoadDecompressFile(nullptr, nullptr, path, std::addressof(resource_load_context->file_load_context), resource_load_context->file_device);
                 if (result != ResultSuccess) {
                     delete resource;
                     return result;
                 }
 
                 /* Setup resource */
-                resource->m_file      = resource_load_context->file_buffer;
-                resource->m_file_size = resource_load_context->file_size;
+                resource->m_file      = resource_load_context->file_load_context.file_buffer;
+                resource->m_file_size = resource_load_context->file_load_context.file_size;
 
                 /* Resource pre-prepare */
-                resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_buffer, resource_load_context->file_size);
+                resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_load_context.file_buffer, resource_load_context->file_load_context.file_size);
 
                 /* Set output */
                 *out_resource = resource;
@@ -103,9 +104,9 @@ namespace awn::res {
                 /* Load file */
                 Result result = 0;
                 if (resource_load_context->file_device == nullptr) {
-                    result = FileDeviceManager::GetInstance()->LoadFile(path, resource_load_context);
+                    result = FileDeviceManager::GetInstance()->LoadFile(path, std::addressof(resource_load_context->file_load_context));
                 } else {
-                    result = resource_load_context->file_device->LoadFile(path, resource_load_context);
+                    result = resource_load_context->file_device->LoadFile(path, std::addressof(resource_load_context->file_load_context));
                 }
                 if (result != ResultSuccess) {
                     delete resource;
@@ -113,11 +114,11 @@ namespace awn::res {
                 }
 
                 /* Setup resource */
-                resource->m_file      = resource_load_context->file_buffer;
-                resource->m_file_size = resource_load_context->file_size;
+                resource->m_file      = resource_load_context->file_load_context.file_buffer;
+                resource->m_file_size = resource_load_context->file_load_context.file_size;
 
                 /* Resource load callback */
-                resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_buffer, resource_load_context->file_size);
+                resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_load_context.file_buffer, resource_load_context->file_load_context.file_size);
 
                 /* Set output */
                 *out_resource = resource;

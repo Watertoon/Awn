@@ -54,4 +54,12 @@ namespace awn::res {
     DECLARE_RESULT(OutputBufferTooSmall,        34);
     DECLARE_RESULT(ZstdError,                   35);
     DECLARE_RESULT(InvalidZstdFrameContentSize, 36);
+    DECLARE_RESULT(InactiveLoadThread,          37);
+    DECLARE_RESULT(NoLocalArchive,              38);
+    DECLARE_RESULT(InvalidReferenceBinder,      39);
+    DECLARE_RESULT(StillInReference,            40);
+    DECLARE_RESULT(FailedToPreFinalizeResource, 41);
+    DECLARE_RESULT(FailedToLoadResource,        42);
+    DECLARE_RESULT(MemoryAllocationFailure,     43);
+    DECLARE_RESULT(NoExternalHeap,              44);
 }

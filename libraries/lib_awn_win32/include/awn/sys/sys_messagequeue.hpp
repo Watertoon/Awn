@@ -67,6 +67,24 @@ namespace awn::sys {
                 m_current_message = m_current_message - offset;
                 m_buffer_full_cv.Broadcast();
             }
+
+            ALWAYS_INLINE void JamMessageImpl(size_t message) {
+
+                /* Calculate our front message buffer index */
+                const s32 offset = m_current_message;
+                const s32 adjust = (offset < 1) ? m_max_messages : 0;
+                const s32 index  = offset + adjust - 1;
+
+                /* Add message */
+                m_message_buffer[index]  = message;
+                m_pending_messages      += 1;
+                m_current_message        = index;
+
+                /* Signal */
+                m_message_sent_cv.Broadcast();
+
+                return;
+            }
         public:
             constexpr MessageQueue() : m_message_buffer(nullptr), m_max_messages(0), m_pending_messages(0), m_current_message(0), m_message_mutex(), m_message_sent_cv(), m_buffer_full_cv() {/*...*/}
             constexpr ~MessageQueue() {/*...*/}
@@ -137,6 +155,26 @@ namespace awn::sys {
                 if (m_max_messages <= m_pending_messages) { return false; }
 
                 this->SendMessageImpl(message);
+
+                return true;
+            }
+
+            void JamMessage(size_t message) {
+                std::scoped_lock l(m_message_mutex);
+
+                this->WaitForMessageClear();
+
+                this->JamMessageImpl(message);
+
+                return;
+            }
+
+            bool TryJamMessage(size_t message) {
+                std::scoped_lock l(m_message_mutex);
+
+                if (m_max_messages <= m_pending_messages) { return false; }
+
+                this->JamMessageImpl(message);
 
                 return true;
             }

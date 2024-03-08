@@ -312,8 +312,9 @@ namespace awn::mem {
         }
 
         /* Free all large memory */
-        auto large_iter = m_large_memory_map.Start();
-        while (large_iter != m_large_memory_map.End()) {
+        auto large_iter = m_large_memory_map.begin();
+        auto end_iter   = m_large_memory_map.end();
+        while (large_iter != end_iter) {
             VirtualHeapLargeMemoryBlock *region = std::addressof(*large_iter);
             ++large_iter;
             m_large_memory_map.Remove(region);

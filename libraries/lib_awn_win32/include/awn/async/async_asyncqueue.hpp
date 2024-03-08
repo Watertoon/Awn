@@ -62,7 +62,7 @@ namespace awn::async {
             constexpr  AsyncQueue() : m_task_list(), m_task_count(), m_priority_level_array(), m_task_thread_array(), m_all_task_complete_event(), m_queue_mutex() {/*...*/}
             constexpr ~AsyncQueue() {/*...*/}
 
-            void Initialize(mem::Heap *heap, AsyncQueueInfo *queue_info);
+            void Initialize(mem::Heap *heap, const AsyncQueueInfo *queue_info);
 
             void Finalize();
 
@@ -94,5 +94,7 @@ namespace awn::async {
 
                 return;
             }
+
+            sys::ServiceMutex *GetQueueMutex() { return std::addressof(m_queue_mutex); }
     };
 }

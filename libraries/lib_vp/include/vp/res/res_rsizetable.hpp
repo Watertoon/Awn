@@ -68,8 +68,9 @@ namespace vp::res {
             u32                 m_resource_size_crc32_count;
             u32                 m_resource_size_collision_count;
             u32                 m_max_path;
+            void               *m_head;
         public:
-            constexpr ALWAYS_INLINE ResourceSizeTableExtractor() : m_resource_size_crc32_array(nullptr), m_resource_size_collision_array(nullptr), m_resource_size_crc32_count(0), m_resource_size_collision_count(0), m_max_path(0) {/*...*/}
+            constexpr ALWAYS_INLINE ResourceSizeTableExtractor() : m_resource_size_crc32_array(nullptr), m_resource_size_collision_array(nullptr), m_resource_size_crc32_count(0), m_resource_size_collision_count(0), m_max_path(0), m_head() {/*...*/}
             constexpr ~ResourceSizeTableExtractor() {/*...*/}
 
             bool Initialize(void *file, u32 file_size, u32 max_path_length = 0xffff'ffff) {
@@ -104,6 +105,8 @@ namespace vp::res {
                     m_resource_size_crc32_count = file_size / sizeof(ResRsizetableCrc32);
                     m_max_path                  = (max_path_length != 0xffff'ffff) ? max_path_length : cDefaultMaxLength;
                 }
+
+                m_head = file;
 
                 return true;
             }
@@ -189,5 +192,7 @@ namespace vp::res {
 
                 return m_resource_size_crc32_array[entry_id].resource_size;
             }
+            
+            constexpr void *GetResourceSizeTable() const { return m_head; }
     };
 }

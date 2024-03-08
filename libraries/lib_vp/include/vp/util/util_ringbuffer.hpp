@@ -19,6 +19,42 @@ namespace vp::util {
 
 	template<typename T>
 	class RingBuffer {
+        public:
+            class Iterator {
+                private:
+                    const RingBuffer<T> *m_ring;
+                    u32                  m_index;
+                public:
+                    constexpr ALWAYS_INLINE Iterator(const RingBuffer<T> *ring, u32 index) : m_ring(ring), m_index(index) {/*...*/}
+                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
+
+                    constexpr ALWAYS_INLINE T &operator*() {
+                        return (*m_ring)[m_index];
+                    }
+                    constexpr ALWAYS_INLINE const T &operator*() const {
+                        return (*m_ring)[m_index];
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
+                        return m_index == rhs.m_index;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
+                        return m_index != rhs.m_index;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator &operator++() {
+                        ++m_index;
+                        return *this;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator &operator++([[maybe_unused]]int) {
+                        ++m_index;
+                        return *this;
+                    }
+            };
+        public:
+            using iterator = Iterator;
 		private:
 			u32  m_offset;
 			u32  m_count;
@@ -28,19 +64,26 @@ namespace vp::util {
             constexpr ALWAYS_INLINE RingBuffer() : m_offset(0), m_count(0), m_max_count(0), m_array{} {/*...*/}
             constexpr ALWAYS_INLINE ~RingBuffer() {/*...*/}
 
+            constexpr iterator begin() {
+                return iterator(this, m_offset);
+            }
+            constexpr iterator end() {
+                return iterator(this, m_max_count);
+            }
+
             void Initialize(imem::IHeap *heap, u32 queue_count, s32 alignment = 8) {
 
                 /* Integrity checks */
-                VP_ASSERT(queue_count != 0);
+                if (queue_count == 0) { return; }
 
                 /* Allocate pointer array */
                 m_array = new (heap, alignment) T[queue_count];
                 VP_ASSERT(m_array != nullptr);
 
                 /* Set state */
-                m_max_count      = queue_count;
-                m_offset = 0;
-                m_count          = 0;
+                m_max_count = queue_count;
+                m_offset    = 0;
+                m_count     = 0;
 
                 return;
             }
@@ -50,9 +93,20 @@ namespace vp::util {
                 if (m_array != nullptr) {
                     delete [] m_array;
                 }
-                m_offset = 0;
-                m_count          = 0;
-                m_max_count      = 0;
+                m_offset    = 0;
+                m_count     = 0;
+                m_max_count = 0;
+            }
+
+            constexpr T &operator[](u32 index) {
+                const u32 base_offset = m_offset + index;
+                const u32 adj_index   = (m_max_count < base_offset) ? base_offset - m_max_count : base_offset;
+                return m_array[adj_index];
+            }
+            constexpr T &operator[](u32 index) const {
+                const u32 base_offset = m_offset + index;
+                const u32 adj_index   = (m_max_count < base_offset) ? base_offset - m_max_count : base_offset;
+                return m_array[adj_index];
             }
 
             constexpr ALWAYS_INLINE void Insert(T value) {
@@ -137,6 +191,11 @@ namespace vp::util {
                 VP_ASSERT(false);
 
                 return iter;
+            }
+
+            constexpr void Clear() {
+                m_offset = 0;
+                m_count  = 0;
             }
 
             constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; }

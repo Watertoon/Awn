@@ -26,6 +26,8 @@ namespace awn::mem {
 			FreeList m_free_list;
             u32      m_block_size;
         public:
+            VP_RTTI_DERIVED(UnitHeap, Heap);
+        public:
             constexpr UnitHeap(const char *name, mem::Heap *parent_heap, void *start_address, size_t size, u32 block_size) : Heap(name, parent_heap, start_address, size), m_block_size(block_size) {/*...*/}
             virtual constexpr ~UnitHeap() override {/*...*/}
 

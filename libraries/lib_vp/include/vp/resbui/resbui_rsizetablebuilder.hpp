@@ -123,13 +123,10 @@ namespace vp::resbui {
                     /* Try to readd a no longer colliding node */
                     const u32         hash                     = entry->hash_node.GetKey();
                     ResourceSizeNode *no_longer_colliding_node = nullptr;
-                    ResourceSizeNode *node_iter                = m_collision_entry_list.Start();
-                    while (node_iter != nullptr) {
-                        if (node_iter->hash_node.GetKey() == hash) {
-                            if (no_longer_colliding_node != nullptr) { return entry; }
-                            no_longer_colliding_node = node_iter; 
-                        }
-                        node_iter = m_collision_entry_list.GetNext(node_iter);
+                    for (ResourceSizeNode &node_iter : m_collision_entry_list) {
+                        if (node_iter.hash_node.GetKey() != hash) { continue; }
+                        if (no_longer_colliding_node != nullptr) { return entry; }
+                        no_longer_colliding_node = std::addressof(node_iter);
                     }
                     if (no_longer_colliding_node != nullptr) {
                         m_collision_entry_list.Remove(no_longer_colliding_node);
@@ -169,12 +166,9 @@ namespace vp::resbui {
 
                 /* Stream out crc32 entries  */
                 u32 crc32_count = 0;
-                ResourceSizeNode *hash_node = m_crc32_entry_list.Start();
-                while (hash_node != nullptr) {
-                    rsizetable->resource_size_crc32_array[crc32_count].path_crc32    = hash_node->hash_node.GetKey();
-                    rsizetable->resource_size_crc32_array[crc32_count].resource_size = hash_node->size;
-
-                    hash_node = m_crc32_entry_list.GetNext(hash_node);
+                for (ResourceSizeNode &hash_node : m_crc32_entry_list) {
+                    rsizetable->resource_size_crc32_array[crc32_count].path_crc32    = hash_node.hash_node.GetKey();
+                    rsizetable->resource_size_crc32_array[crc32_count].resource_size = hash_node.size;
                     ++crc32_count;
                 }
                 rsizetable->resource_size_crc32_count = crc32_count;
@@ -182,13 +176,10 @@ namespace vp::resbui {
                 /* Stream out collision entries */
                 u32               collision_count = 0;
                 void             *collision_array = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(rsizetable) + sizeof(res::ResRsizetable) + crc32_count * sizeof(res::ResRsizetableCrc32));
-                ResourceSizeNode *collision_node = m_collision_entry_list.Start();
-                while (collision_node != nullptr) {
+                for (ResourceSizeNode &collision_node : m_collision_entry_list) {
                     char *output_string = reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(collision_array) + (sizeof(u32) + max_path_length) * collision_count);
-                    ::strncpy(output_string, collision_node->collision_node.GetKey(), max_path_length);
-                    *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(output_string) + max_path_length) = collision_node->size;
-
-                    collision_node = m_collision_entry_list.GetNext(collision_node);
+                    ::strncpy(output_string, collision_node.collision_node.GetKey(), max_path_length);
+                    *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(output_string) + max_path_length) = collision_node.size;
                     ++collision_count;
                 }
                 rsizetable->resource_size_collision_count = collision_count;

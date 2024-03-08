@@ -108,6 +108,9 @@ namespace awn::async {
 
             void Initialize(mem::Heap *heap, AsyncTaskCreateDelegate *create_delegate, u32 count) {
 
+                /* Integrity checks */
+                VP_ASSERT(create_delegate != nullptr);
+
                 /* Initialize events */
                 m_acquire_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
                 m_available_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
@@ -146,7 +149,7 @@ namespace awn::async {
             void ScheduleTask(AsyncTaskScheduleInfo *schedule_info) {
 
                 /* Acquire task */
-                bool is_acquired_task = false;
+                bool is_acquired_task       = false;
                 AsyncTaskForAllocator *task = schedule_info->task_for_allocator;
                 if (task == nullptr) {
                     task             = this->AcquireTask();

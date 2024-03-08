@@ -59,6 +59,9 @@ namespace awn::res {
 
             virtual void SetPriority(u32 priority) override;
             virtual void SetCoreMask(sys::CoreMask core_mask) override;
+            
+            virtual u32           GetPriority() override { return m_decompressor_thread->GetPriority(); }
+            virtual sys::CoreMask GetCoreMask() override { return m_decompressor_thread->GetCoreMask(); }
 
             virtual Result LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) override;
         public:

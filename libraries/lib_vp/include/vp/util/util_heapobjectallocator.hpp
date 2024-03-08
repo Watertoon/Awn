@@ -79,6 +79,14 @@ namespace vp::util {
                 return true;
             }
 
+            void Finalize() {
+                if (m_start_address != nullptr) {
+                    ::operator delete(m_start_address);
+                    m_start_address = nullptr;
+                    m_free_list     = nullptr;
+                }
+            }
+
             template <typename ... Args>
             ALWAYS_INLINE T *Allocate(Args &&... args) {
 

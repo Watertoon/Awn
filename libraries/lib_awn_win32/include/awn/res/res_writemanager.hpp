@@ -14,7 +14,7 @@ namespace awn::res {
                 Copy   = vp::util::TCharCode32("Copy"),
             };
         private:
-            SaveFileDevice       m_save_file_device;
+            SaveFileDevice      *m_save_file_device;
             FileDeviceBase      *m_user_file_device;
             sys::DelegateThread *m_save_thread;
             ThreadDelegate       m_delegate;

@@ -97,5 +97,7 @@ namespace vp::imem {
 
             constexpr ALWAYS_INLINE void *GetStartAddress() const { return m_start_address; }
             constexpr ALWAYS_INLINE void *GetEndAddress()   const { return m_end_address; }
+
+            constexpr ALWAYS_INLINE IHeap *GetParentHeap() const { return m_parent_heap; }
     };
 }

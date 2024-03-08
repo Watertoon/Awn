@@ -52,5 +52,8 @@ namespace awn::async {
             constexpr ALWAYS_INLINE bool IsPending() const {
                 return m_async_task != nullptr && m_state == static_cast<u32>(State::Pending);
             }
+            constexpr ALWAYS_INLINE bool IsCancelled() const {
+                return m_state == static_cast<u32>(State::Cancelled);
+            }
     };
 }

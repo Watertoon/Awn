@@ -60,7 +60,7 @@ namespace awn::res {
         VP_ASSERT(m_work_memory != nullptr);
 
         /* Create thread */
-        m_decompressor_thread = new DecompressorThread(heap);
+        m_decompressor_thread = new (heap, alignof(DecompressorThread)) DecompressorThread(heap);
         m_decompressor_thread->StartThread();
 
         /* Clear ZsDic */

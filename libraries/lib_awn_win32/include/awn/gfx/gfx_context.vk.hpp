@@ -91,7 +91,7 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxSamplerDescriptorSize = 0x20;
 
             /* Global descriptor resource limits */
-            static constexpr size_t cTargetMaxTextureDescriptorCount = 0x4000;
+            static constexpr size_t cTargetMaxTextureDescriptorCount = 0x2000;
             static constexpr size_t cTargetMaxSamplerDescriptorCount = 0xfa0;
             static constexpr size_t cTargetMaxDescriptorCount        = cTargetMaxTextureDescriptorCount + cTargetMaxSamplerDescriptorCount;
             static constexpr size_t cTargetMaxSetUniformBufferCount  = 14;

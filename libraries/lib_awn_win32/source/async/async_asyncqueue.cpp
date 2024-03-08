@@ -37,8 +37,9 @@ namespace awn::async {
         u32            i              = m_priority_level_array.GetCount() - 1;
 		for (; i != 0xffff'ffff; --i) {
 			if (m_priority_level_array[i].is_paused == true) { continue; }
-			next_task      = m_priority_level_array[i].async_task_head;
 			priority_level = std::addressof(m_priority_level_array[i]);
+			next_task      = priority_level->async_task_head;
+            if (next_task == nullptr) { continue; }
 			break;
 		}
 
@@ -102,7 +103,7 @@ namespace awn::async {
 		this->UpdatePriorityLevelCompletion();
 	}
 
-	void AsyncQueue::Initialize(mem::Heap *heap, AsyncQueueInfo *queue_info) {
+	void AsyncQueue::Initialize(mem::Heap *heap, const AsyncQueueInfo *queue_info) {
 
         /* Integrity checks */
         VP_ASSERT(queue_info != nullptr);

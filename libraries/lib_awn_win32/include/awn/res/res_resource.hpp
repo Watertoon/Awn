@@ -44,7 +44,10 @@ namespace awn::res {
             virtual constexpr bool IsRequireInitializeOnCreate() const { return false; }
 
             virtual Result Initialize(mem::Heap *heap, mem::Heap *gpu_heap, ResourceUserContext *user_context, void *file, size_t file_size) { VP_UNUSED(heap, gpu_heap, user_context, file, file_size); RESULT_RETURN_SUCCESS; }
-            virtual void   Finalize()                                                                                                        { return; }
+            virtual Result PostInitialize(mem::Heap *heap, mem::Heap *gpu_heap, ResourceUserContext *user_context, void *file, size_t file_size);
+            virtual Result PreFinalize();
+            virtual void   Finalize() { return; }
+
 
             constexpr ALWAYS_INLINE void *GetFile()           { return m_file; }
             constexpr ALWAYS_INLINE u32   GetFileSize() const { return m_file_size; }

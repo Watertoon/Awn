@@ -25,6 +25,7 @@ namespace vp::util {
                     T **m_array;
                 public:
                     constexpr ALWAYS_INLINE Iterator(T **array) : m_array(array) {/*...*/}
+                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
 
                     constexpr ALWAYS_INLINE T *&operator*() {
                         return *m_array;
@@ -130,7 +131,7 @@ namespace vp::util {
             }
             
             constexpr ALWAYS_INLINE void PushPointer(T *pointer) {
-                VP_ASSERT(m_used_pointers <= m_max_pointers);
+                VP_ASSERT(m_used_pointers < m_max_pointers);
                 m_pointer_array[m_used_pointers] = pointer;
                 ++m_used_pointers;
             }

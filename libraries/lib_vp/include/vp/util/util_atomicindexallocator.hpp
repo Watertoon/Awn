@@ -8,7 +8,7 @@ namespace vp::util {
         public:
             static constexpr T   cInvalidHandle     = static_cast<T>(0xffff'ffff'ffff'ffff);
             static constexpr T   cInvalidEntryIndex = static_cast<T>(0xffff'ffff'ffff'ffff);
-            static constexpr u32 cMaxSize       = ~T(0);
+            static constexpr u32 cMaxSize           = cInvalidHandle;
         private:
             u32  m_next_index;
             u32  m_max_count;
@@ -94,7 +94,7 @@ namespace vp::util {
     };
 
     template <typename T, size_t Count>
-        requires (sizeof(T) <= sizeof(u32)) && (Count <= (~T(0)))
+        requires (sizeof(T) <= sizeof(u32)) && (Count < static_cast<T>(0xffff'ffff'ffff'ffff))
     class FixedAtomicIndexAllocator {
         public:
             static constexpr T cInvalidHandle     = static_cast<T>(0xffff'ffff'ffff'ffff);

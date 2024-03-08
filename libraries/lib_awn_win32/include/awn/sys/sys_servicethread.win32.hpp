@@ -61,7 +61,7 @@ namespace awn::sys {
             }
             virtual void SleepThread(vp::TimeSpan timeout_ns) {
 
-                const LARGE_INTEGER timeout_100ns = {-timeout_ns.GetNanoSeconds() / 100};
+                const LARGE_INTEGER timeout_100ns = { .QuadPart = -timeout_ns.GetNanoSeconds() / 100};
                 const bool is_set = ::SetWaitableTimer(m_waitable_timer_for_sleep, std::addressof(timeout_100ns), 0, nullptr, nullptr, false);
                 VP_ASSERT(is_set == true);
 

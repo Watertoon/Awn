@@ -132,7 +132,13 @@ namespace awn::async {
             void Wait() {
                 m_finish_event.Wait();
             }
-            
-            constexpr Status GetStatus() const { return static_cast<Status>(m_status); }
+
+            constexpr AsyncQueue *GetQueue() { return m_queue; }
+
+            constexpr Status GetStatus()   const { return static_cast<Status>(m_status); }
+            constexpr bool   IsCancelled() const { return static_cast<Status>(m_status) == Status::Cancelled; }
+
+            constexpr bool   IsAvailable() const { return static_cast<Status>(m_status) == Status::Complete || m_status < static_cast<u32>(Status::Queued); }
+            constexpr bool   IsBusy()      const { return !this->IsAvailable(); }
     };
 }

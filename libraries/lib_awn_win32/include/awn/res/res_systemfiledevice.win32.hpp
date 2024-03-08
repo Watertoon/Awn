@@ -55,7 +55,7 @@ namespace awn::res {
 
                 return;
             }
-            constexpr virtual ALWAYS_INLINE ~ContentFileDevice() override {/*...*/}
+            virtual constexpr ALWAYS_INLINE ~ContentFileDevice() override {/*...*/}
     };
 
     class SaveFileDevice : public SystemFileDevice {
@@ -73,6 +73,6 @@ namespace awn::res {
 
                 return;
             }
-            constexpr virtual ALWAYS_INLINE ~SaveFileDevice() override {/*...*/}
+            virtual constexpr ALWAYS_INLINE ~SaveFileDevice() override {/*...*/}
     };
 }

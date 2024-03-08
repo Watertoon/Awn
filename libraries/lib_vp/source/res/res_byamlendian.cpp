@@ -48,10 +48,11 @@ namespace vp::res {
         void FreeAll() {
 
             /* Free all nodes */
-            BigDataNode *iter = map.Start();
-            while (iter != nullptr) {
-                BigDataNode *node = iter;
-                iter = map.GetNext(iter);
+            BigDataMap::iterator iter     = map.begin();
+            BigDataMap::iterator end_iter = map.end();
+            while (iter != end_iter) {
+                BigDataNode *node = std::addressof(*iter);
+                ++iter;
                 map.Remove(node);
                 ::operator delete (node, heap, alignof(BigDataNode));
             }

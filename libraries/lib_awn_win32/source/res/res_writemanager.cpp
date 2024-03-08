@@ -28,7 +28,7 @@ namespace awn::res {
         if (m_pause == true) { return; }
 
         /* Load file */
-        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? std::addressof(m_save_file_device) : m_user_file_device;
+        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? m_save_file_device : m_user_file_device;
         FileLoadContext load_context = {
             .file_buffer = m_output,
             .file_size   = m_output_size,
@@ -49,7 +49,7 @@ namespace awn::res {
         if (m_pause == true) { return; }
 
         /* Get file size */
-        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? std::addressof(m_save_file_device) : m_user_file_device;
+        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? m_save_file_device : m_user_file_device;
         file_device->GetFileSize(std::addressof(m_output_size), m_save_path.GetString());
 
         return;
@@ -66,7 +66,7 @@ namespace awn::res {
         if (m_pause == true) { return; }
 
         /* Get file size */
-        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? std::addressof(m_save_file_device) : m_user_file_device;
+        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? m_save_file_device : m_user_file_device;
         FileSaveInfo    save_file_info {
             .file        = m_output,
             .file_size   = m_output_size,
@@ -87,7 +87,7 @@ namespace awn::res {
         if (m_pause == true) { return; }
 
         /* Commit writes */
-        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? std::addressof(m_save_file_device) : m_user_file_device;
+        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? m_save_file_device : m_user_file_device;
         file_device->Commit();
 
         return;
@@ -104,7 +104,7 @@ namespace awn::res {
         if (m_pause == true) { return; }
 
         /* Copy file */
-        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? std::addressof(m_save_file_device) : m_user_file_device;
+        FileDeviceBase *file_device = (m_user_file_device == nullptr) ? m_save_file_device : m_user_file_device;
         RESULT_ABORT_UNLESS(file_device->CopyFile(m_save_path.GetString(), m_copy_path.GetString(), m_output, m_output_size));
 
         return;
@@ -139,6 +139,9 @@ namespace awn::res {
 
     void AsyncSaveManager::Initialize(mem::Heap *heap, const char *thread_name, u32 priority, sys::CoreMask core_mask) {
 
+        /* Allocate save file device */
+        m_save_file_device = new (heap, alignof(SaveFileDevice)) SaveFileDevice();
+
         /* Initialize thread */
         m_save_thread = new (heap, alignof(sys::DelegateThread)) sys::DelegateThread(std::addressof(m_delegate), thread_name, heap, sys::ThreadRunMode::WaitForMessage, 0, 4, 0x4000, priority);
         m_save_thread->SetCoreMask(core_mask);
@@ -147,7 +150,14 @@ namespace awn::res {
         return;
     }
     void AsyncSaveManager::Finalize() {
-        delete m_save_thread;
+        if (m_save_thread != nullptr) {
+            delete m_save_thread;
+            m_save_thread = nullptr;
+        }
+        if (m_save_file_device != nullptr) {
+            delete m_save_file_device;
+            m_save_file_device = nullptr;
+        }
     }
 
     bool AsyncSaveManager::RequestRead(void *file_buffer, size_t buffer_size, const char *path, FileDeviceBase *user_file_device) {

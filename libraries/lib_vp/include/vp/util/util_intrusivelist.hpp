@@ -77,6 +77,7 @@ namespace vp::util {
                 public:
                     constexpr ALWAYS_INLINE Iterator(IntrusiveListNode *node) : m_next(node) {/*...*/}
                     constexpr ALWAYS_INLINE Iterator(const IntrusiveListNode *node) : m_next(const_cast<IntrusiveListNode*>(node)) {/*...*/}
+                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
 
                     ALWAYS_INLINE reference operator*() {
                         return Traits::GetParentReference(m_next);

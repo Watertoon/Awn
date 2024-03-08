@@ -33,7 +33,7 @@ namespace awn::sys {
                 while(m_pending_messages == 0) {
                     m_message_busy_mutex.Leave();
                     if (m_sent_wait_value != 1) {
-                        ::InterlockedExchange(std::addressof(m_sent_wait_value), 1);
+                        vp::util::InterlockedExchange(std::addressof(m_sent_wait_value), 1u);
                     }
                     if (::IsThreadAFiber() == false) {
                         u32 wait_value = 1;
@@ -52,7 +52,7 @@ namespace awn::sys {
                 /* Wait on condition variable until we have space for our message */
                 while(m_max_messages <= m_pending_messages) {
                     if (m_full_wait_value != 1) {
-                        ::InterlockedExchange(std::addressof(m_full_wait_value), 1);
+                        vp::util::InterlockedExchange(std::addressof(m_full_wait_value), 1u);
                     }
                     m_message_busy_mutex.Leave();
                     if (::IsThreadAFiber() == false) {
@@ -101,14 +101,33 @@ namespace awn::sys {
 
                 return;
             }
+
+            ALWAYS_INLINE void JamMessageImpl(size_t message) {
+
+                /* Calculate our front message buffer index */
+                const s32 offset = m_current_message;
+                const s32 adjust = (offset < 1) ? m_max_messages : 0;
+                const s32 index  = offset + adjust - 1;
+
+                /* Add message */
+                m_message_buffer[index]  = message;
+                m_pending_messages      += 1;
+                m_current_message        = index;
+
+                /* Signal */
+                ukern::WakeByAddress(reinterpret_cast<uintptr_t>(std::addressof(m_sent_wait_value)), ukern::SignalType_SignalAndIncrementIfEqual, 1, 0xffff'ffff);
+                ::WakeByAddressAll(std::addressof(m_sent_wait_value));
+
+                return;
+            }
         public:
             constexpr  ServiceMessageQueue() : m_message_buffer(nullptr), m_max_messages(0), m_pending_messages(0), m_current_message(0), m_message_busy_mutex{}, m_sent_wait_value(0), m_full_wait_value(0) {/*...*/}
             constexpr ~ServiceMessageQueue() {/*...*/}
 
-            void Initialize(s32 max_message_count) {
+            void Initialize(vp::imem::IHeap *heap, s32 max_message_count) {
 
                 /* Allocate message buffer */
-                m_message_buffer = new size_t[max_message_count];
+                m_message_buffer = new (heap, alignof(size_t)) size_t[max_message_count];
                 VP_ASSERT(m_message_buffer != nullptr);
 
                 m_max_messages = max_message_count;
@@ -187,6 +206,26 @@ namespace awn::sys {
                 if (m_max_messages <= m_pending_messages) { return false; }
 
                 this->SendMessageImpl(message);
+
+                return true;
+            }
+
+            void JamMessage(size_t message) {
+                vp::util::ScopedBusyMutex l(std::addressof(m_message_busy_mutex));
+
+                this->WaitForMessageClear();
+
+                this->JamMessageImpl(message);
+
+                return;
+            }
+
+            bool TryJamMessage(size_t message) {
+                vp::util::ScopedBusyMutex l(std::addressof(m_message_busy_mutex));
+
+                if (m_max_messages <= m_pending_messages) { return false; }
+
+                this->JamMessageImpl(message);
 
                 return true;
             }

@@ -38,7 +38,7 @@ namespace vp::util {
             virtual constexpr ALWAYS_INLINE const vp::util::RuntimeTypeInfo *GetRuntimeTypeInfo() const { \
                 return GetRuntimeTypeInfoStatic(); \
             } \
-            static constexpr bool CheckRuntimeTypeInfoStatic(RootType *other_obj) { \
+            static constexpr bool CheckRuntimeTypeInfoStatic(const RootType *other_obj) { \
                 const vp::util::RuntimeTypeInfo *class_info = other_obj->GetRuntimeTypeInfo(); \
                 const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
                 do { \
@@ -47,7 +47,7 @@ namespace vp::util {
                 } while (class_info != nullptr); \
                 return false; \
             } \
-            static constexpr bool CheckRuntimeTypeInfoStatic(vp::util::RuntimeTypeInfo *other_obj) { \
+            static constexpr bool CheckRuntimeTypeInfoStatic(const vp::util::RuntimeTypeInfo *other_obj) { \
                 const vp::util::RuntimeTypeInfo *class_info = other_obj; \
                 const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
                 do { \
@@ -70,7 +70,7 @@ namespace vp::util {
             virtual constexpr ALWAYS_INLINE const vp::util::RuntimeTypeInfo *GetRuntimeTypeInfo() const override { \
                 return GetRuntimeTypeInfoStatic(); \
             } \
-            static constexpr bool CheckRuntimeTypeInfoStatic(RootType *other_obj) { \
+            static constexpr bool CheckRuntimeTypeInfoStatic(const RootType *other_obj) { \
                 const vp::util::RuntimeTypeInfo *class_info = other_obj->GetRuntimeTypeInfo(); \
                 const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
                 do { \
@@ -79,7 +79,7 @@ namespace vp::util {
                 } while (class_info != nullptr); \
                 return false; \
             } \
-            static constexpr bool CheckRuntimeTypeInfoStatic(vp::util::RuntimeTypeInfo *other_obj) { \
+            static constexpr bool CheckRuntimeTypeInfoStatic(const vp::util::RuntimeTypeInfo *other_obj) { \
                 const vp::util::RuntimeTypeInfo *class_info = other_obj; \
                 const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
                 do { \

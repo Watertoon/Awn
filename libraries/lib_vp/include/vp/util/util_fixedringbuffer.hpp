@@ -19,6 +19,42 @@ namespace vp::util {
 
 	template<typename T, size_t Size>
 	class FixedRingBuffer {
+        public:
+            class Iterator {
+                private:
+                    const FixedRingBuffer<T, Size> *m_ring;
+                    u32                             m_index;
+                public:
+                    constexpr ALWAYS_INLINE Iterator(const FixedRingBuffer<T, Size> *ring, u32 index) : m_ring(ring), m_index(index) {/*...*/}
+                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
+
+                    constexpr ALWAYS_INLINE T &operator*() {
+                        return (*m_ring)[m_index];
+                    }
+                    constexpr ALWAYS_INLINE const T &operator*() const {
+                        return (*m_ring)[m_index];
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
+                        return m_index == rhs.m_index;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
+                        return m_index != rhs.m_index;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator &operator++() {
+                        ++m_index;
+                        return *this;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator &operator++([[maybe_unused]]int) {
+                        ++m_index;
+                        return *this;
+                    }
+            };
+        public:
+            using iterator = Iterator;
 		private:
 			u32 m_offset;
 			u32 m_count;
@@ -26,6 +62,24 @@ namespace vp::util {
         public:
             constexpr ALWAYS_INLINE FixedRingBuffer() : m_offset(0), m_count(0), m_array{} {/*...*/}
             constexpr ~FixedRingBuffer() {/*...*/}
+
+            constexpr iterator begin() {
+                return iterator(this, m_offset);
+            }
+            constexpr iterator end() {
+                return iterator(this, Size);
+            }
+
+            constexpr T &operator[](u32 index) {
+                const u32 base_offset = m_offset + index;
+                const u32 adj_index   = (Size < base_offset) ? base_offset - Size : base_offset;
+                return m_array[adj_index];
+            }
+            constexpr T &operator[](u32 index) const {
+                const u32 base_offset = m_offset + index;
+                const u32 adj_index   = (Size < base_offset) ? base_offset - Size : base_offset;
+                return m_array[adj_index];
+            }
 
             constexpr ALWAYS_INLINE void Insert(T pointer) {
 
@@ -106,6 +160,11 @@ namespace vp::util {
                 VP_ASSERT(false);
 
                 return iter;
+            }
+
+            constexpr void Clear() {
+                m_offset = 0;
+                m_count  = 0;
             }
 
             constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; } 

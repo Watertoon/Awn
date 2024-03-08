@@ -28,7 +28,7 @@ namespace vp::util {
             ALWAYS_INLINE T *GetType() { return reinterpret_cast<T*>(std::addressof(m_storage)); }
             template <typename T>
                 requires (sizeof(T) <= sizeof(Storage))
-            ALWAYS_INLINE T *GetType() const { return reinterpret_cast<T*>(std::addressof(m_storage)); }
+            ALWAYS_INLINE const T *GetType() const { return reinterpret_cast<const T*>(std::addressof(m_storage)); }
     };
 
     namespace impl {        
@@ -124,7 +124,7 @@ namespace vp::util {
             virtual ~MemberFunction() override {/*...*/}
 
             virtual Return Invoke(Args ...args) override {
-                (m_parent->*m_function)(args...);
+                return (m_parent->*m_function)(args...);
             }
 
             constexpr virtual bool IsValid() const override { return true; }
@@ -185,7 +185,7 @@ namespace vp::util {
                     constexpr ALWAYS_INLINE UnbindDummy() : IFunction<Return(Args...)>() {/*...*/}
                     virtual ~UnbindDummy() override {/*...*/}
 
-                    virtual Return Invoke(Args ...args) override { return Return(); }
+                    virtual Return Invoke([[maybe_unused]] Args ...args) override { return Return(); }
                     constexpr virtual bool IsValid() const override { return false; }
                 protected:
                     constexpr virtual void CopyTo(impl::AnyFunctionBase *any_function) const override {

@@ -117,7 +117,7 @@ namespace awn::res {
                 *out_read_size = read_iter;
             }
         };
-        do {                    
+        do {
             const bool read_result = ::ReadFile(file_handle->handle, read_buffer, read_clamp, reinterpret_cast<long unsigned int*>(std::addressof(size_read)), nullptr);
             read_iter += size_read;
             if (read_result == false) {
@@ -159,7 +159,7 @@ namespace awn::res {
                 *out_written_size = written_iter;
             }
         };
-        do {                    
+        do {
             const bool write_result = ::WriteFile(file_handle->handle, write_buffer, write_clamp, reinterpret_cast<long unsigned int*>(std::addressof(size_written)), nullptr);
             written_iter += size_written;
             if (write_result == false) {

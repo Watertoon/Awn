@@ -103,6 +103,7 @@ namespace awn::sys {
             }
 
             ALWAYS_INLINE void SendMessage(size_t message) { m_message_queue.SendMessage(message); }
+            ALWAYS_INLINE void JamMessage(size_t message)  { m_message_queue.JamMessage(message); }
             ALWAYS_INLINE bool TrySendMessage(size_t message) { return m_message_queue.TrySendMessage(message); }
             ALWAYS_INLINE bool TryPeekMessage(size_t *out_message) { return m_message_queue.TryPeekMessage(out_message); }
 

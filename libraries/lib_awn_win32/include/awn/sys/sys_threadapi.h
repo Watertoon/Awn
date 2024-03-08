@@ -20,4 +20,12 @@ namespace awn::sys {
     sys::ThreadBase *GetCurrentThread();
 
     void SleepThread(vp::TimeSpan timeout_ns);
+    
+    TlsSlot AllocateTlsSlot(TlsDestructor destructor);
+    void FreeTlsSlot(TlsSlot slot);
+
+    void *GetTlsData(TlsSlot slot);
+    void SetTlsData(TlsSlot slot, void *data);
+
+    bool IsThreadValid(sys::ThreadBase *thread);
 }

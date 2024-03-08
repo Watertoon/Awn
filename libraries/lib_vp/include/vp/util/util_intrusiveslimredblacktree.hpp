@@ -49,6 +49,12 @@ namespace vp::util {
                 return (m_parent_color.GetPointer() == nullptr) & (m_left == nullptr) & (m_right == nullptr);
             }
 
+            constexpr ALWAYS_INLINE void ForceUnlink() {
+                m_left  = nullptr;
+                m_right = nullptr;
+                m_parent_color.SetPointerAndClearFlags(0);
+            }
+
             IntrusiveRedBlackTreeNode *GetNext() {
 
                 IntrusiveRedBlackTreeNode *iter = m_right;
@@ -96,6 +102,40 @@ namespace vp::util {
             using const_pointer    = const T*;
             using node_type        = IntrusiveRedBlackTreeNode<K>;
             using key_type         = K;
+        public:
+            class Iterator {
+                private:
+                    node_type *m_node;
+                public:
+                    constexpr ALWAYS_INLINE Iterator(node_type *node) : m_node(node) {/*...*/}
+                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
+
+                    ALWAYS_INLINE reference operator*() {
+                        return Traits::GetParentReference(m_node);
+                    }
+                    ALWAYS_INLINE const_reference operator*() const {
+                        return Traits::GetParentReference(m_node);
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
+                        return !(m_node != rhs.m_node);
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
+                        return m_node != rhs.m_node;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator &operator++() {
+                        m_node = GetNext(m_node);
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator++([[maybe_unused]]int) {
+                        m_node = GetNext(m_node);
+                        return *this;
+                    }
+            };
+        public:
+            using iterator = Iterator;
         private:
             node_type *m_root;
         private:
@@ -615,7 +655,7 @@ namespace vp::util {
                 return Traits::GetParent(node);
             }
 
-            pointer Start() {
+            iterator begin() {
 
                 if (m_root == nullptr) { return nullptr; }
 
@@ -623,27 +663,34 @@ namespace vp::util {
                 while (ret->m_left != nullptr) {
                     ret = reinterpret_cast<node_type*>(ret->m_left);
                 }
-                return Traits::GetParent(ret);
+                return iterator(ret);
+            }
+            iterator end() {
+                return iterator(nullptr);
             }
 
-            pointer GetNext(pointer node) {
+            static pointer GetNext(pointer node) {
                 node_type *next = reinterpret_cast<node_type*>(Traits::GetTreeNode(node)->GetNext());
                 return (next != nullptr) ? Traits::GetParent(next) : nullptr;
             }
-            node_type *GetNext(node_type *node) {
+            static node_type *GetNext(node_type *node) {
                 node_type *next = reinterpret_cast<node_type*>(node->GetNext());
                 return (next != nullptr) ? next : nullptr;
             }
 
-            pointer End() {
+            constexpr void ForceReset() { m_root = nullptr; }
 
-                if (m_root == nullptr) { return nullptr; }
+            void ClearAll(auto lambda = [] ALWAYS_INLINE_LAMBDA ([[maybe_unused]] pointer obj) {/*...*/}) {
 
-                node_type *ret = m_root;
-                while (ret->m_right != nullptr) {
-                    ret = reinterpret_cast<node_type*>(ret->m_right);
+                iterator iter = this->begin();
+                while (iter != this->end()) {
+                    pointer obj = std::addressof(*iter);
+                    ++iter;
+                    (lambda)(obj);
+                    Traits::GetTreeNode(obj)->ForceUnlink();
                 }
-                return Traits::GetParent(ret);
+
+                return;
             }
 
             size_t GetCount() {
@@ -705,10 +752,11 @@ namespace vp::util {
 
     template<class RP, auto M, auto Compare = RedBlackTreeDefaultCompare<typename vp::util::MemberType<M>::key_type>, auto Collision = RedBlackTreeDefaultCollision<RP>>
     struct IntrusiveRedBlackTreeTraits {
-        using K                  = vp::util::MemberType<M>::key_type;
-        using Traits             = IntrusiveRedBlackTreeMemberTraits<RP, K, M>;
-        using Node               = IntrusiveRedBlackTreeNode<K>;
-        using Tree               = IntrusiveRedBlackTree<ParentType<M>, K, Traits, Compare, Collision>;
+        using Key                = vp::util::MemberType<M>::key_type;
+        using Parent             = vp::util::ParentType<M>;
+        using Traits             = IntrusiveRedBlackTreeMemberTraits<RP, Key, M>;
+        using Node               = IntrusiveRedBlackTreeNode<Key>;
+        using Tree               = IntrusiveRedBlackTree<ParentType<M>, Key, Traits, Compare, Collision>;
         //using ReverseTree        = IntrusiveRedBlackTree<ParentType<M>, K, Traits>;
     };
 

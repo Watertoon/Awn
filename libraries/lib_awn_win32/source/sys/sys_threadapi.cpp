@@ -24,4 +24,26 @@ namespace awn::sys {
     void SleepThread(vp::TimeSpan timeout_ns) {
         sys::ThreadManager::GetInstance()->GetCurrentThread()->SleepThread(timeout_ns);
     }
+
+    TlsSlot AllocateTlsSlot(TlsDestructor destructor) {
+        TlsSlot    slot   = 0;
+        const bool result = sys::ThreadManager::GetInstance()->AllocateTlsSlot(std::addressof(slot), destructor, false);
+        VP_ASSERT(result == true);
+        return slot;
+    }
+
+    void FreeTlsSlot(TlsSlot slot) {
+        sys::ThreadManager::GetInstance()->FreeTlsSlot(slot);
+    }
+
+    void *GetTlsData(TlsSlot slot) {
+        return sys::GetCurrentThread()->GetTlsData(slot);
+    }
+    void SetTlsData(TlsSlot slot, void *data) {
+        sys::GetCurrentThread()->SetTlsData(slot, data);
+    }    
+
+        bool IsThreadValid(sys::ThreadBase *thread) {
+            return sys::ThreadManager::GetInstance()->IsThreadValid(thread);
+        }
 }

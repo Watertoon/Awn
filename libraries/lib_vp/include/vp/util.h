@@ -71,6 +71,8 @@
 #include <vp/util/util_priorityqueue.hpp>
 #include <vp/util/util_indexallocator.hpp>
 #include <vp/util/util_atomicindexallocator.hpp>
+#include <vp/util/util_framearray.hpp>
+#include <vp/util/util_redblacktreeallocator.hpp>
 #include <vp/util/util_ifunction.hpp>
 
 #include <vp/util/math/util_vectortypes.hpp>

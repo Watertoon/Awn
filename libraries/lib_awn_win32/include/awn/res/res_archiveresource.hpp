@@ -28,7 +28,8 @@ namespace awn::res {
     };
 
     class ArchiveResource : public Resource {
-        private:
+        public:
+            static constexpr inline const u32 cInvalidEntryIndex = 0xffff'ffff;
         public:
             constexpr ArchiveResource() : Resource() {/*...*/}
             virtual ~ArchiveResource() override {/*...*/}

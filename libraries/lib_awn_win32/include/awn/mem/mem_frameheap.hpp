@@ -6,6 +6,8 @@ namespace awn::mem {
         protected:
             void *m_start_offset;
         public:
+            VP_RTTI_DERIVED(FrameHeap, Heap);
+        public:
             FrameHeap(const char *name, Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : Heap(name, parent_heap, start_address, size, is_thread_safe), m_start_offset(start_address) {/*...*/}
             virtual ~FrameHeap() override {/*...*/}
 

@@ -22,6 +22,7 @@ namespace awn::sys {
     constexpr inline s32 cPriorityNormal      = THREAD_PRIORITY_NORMAL;
     constexpr inline s32 cPriorityAboveNormal = THREAD_PRIORITY_ABOVE_NORMAL;
     constexpr inline s32 cPriorityHigh        = THREAD_PRIORITY_HIGHEST;
+    constexpr inline u32 cInvalidTlsSlot      = 0xffff'ffff;
 
     class ThreadManager {
         public:
@@ -137,6 +138,14 @@ namespace awn::sys {
                 } else {
                     return reinterpret_cast<ThreadBase*>(ukern::GetCurrentThread()->user_arg);
                 }
+            }
+
+            bool IsThreadValid(sys::ThreadBase *thread) {
+                std::scoped_lock l(m_list_cs);
+                for (sys::ThreadBase &thread_iter : m_thread_list) {
+                    if (std::addressof(thread_iter) == thread) { return true; }
+                }
+                return false;
             }
 
             ALWAYS_INLINE bool IsServiceThreadCurrent() {

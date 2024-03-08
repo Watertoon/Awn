@@ -29,6 +29,7 @@ namespace awn::async {
                 Suspend = 2,
             };
             enum class Status : u32 {
+                None      = 0,
                 Finished  = 1,
                 Suspended = 2,
                 Active    = 3,
@@ -42,7 +43,9 @@ namespace awn::async {
             sys::ServiceEvent  m_execute_event;
             sys::ServiceEvent  m_suspend_event;
         public:
-             AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, sys::ThreadRunMode run_mode, u32 max_messages, u32 stack_size, s32 priority) : ServiceThread(name, thread_heap, run_mode, 0x7fff'ffff, max_messages, stack_size, priority), m_is_finished(true), m_requests_per_yield(), m_current_task(), m_queue(async_queue), m_execute_event() { 
+            VP_RTTI_BASE(AsyncQueueThread);
+        public:
+             AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority) : ServiceThread(name, thread_heap, sys::ThreadRunMode::WaitForMessage, 0x7fff'ffff, 8, stack_size, priority), m_status(), m_is_finished(true), m_requests_per_yield(), m_current_task(), m_queue(async_queue), m_execute_event() { 
 
                 async_queue->m_task_thread_array.PushPointer(this);
 
@@ -63,7 +66,7 @@ namespace awn::async {
                     }
 
                 } else {
-                    if (message == static_cast<size_t>(Message::Resume)) { return; }
+                    if (message != static_cast<size_t>(Message::Resume)) { return; }
 
                     m_status = Status::Active;
                     m_suspend_event.Signal();
@@ -109,6 +112,42 @@ namespace awn::async {
                 return;
             }
 
+            void Suspend() {
+
+                /* Ensure not current thread */
+                if (this == sys::GetCurrentThread()) { return; }
+
+                /* Change status */
+                Status     last_status;
+                const bool result      = vp::util::InterlockedCompareExchange(std::addressof(last_status), std::addressof(m_status), Status::Suspended, Status::Active);
+                m_suspend_event.Wait();
+                if (result == false) { return; }
+
+                /* Set message */
+                m_suspend_event.Clear();
+                this->JamMessage(static_cast<uintptr_t>(Message::Suspend));
+
+                return;
+            }
+
+            void Resume() {
+
+                /* Ensure not current thread */
+                if (this == sys::GetCurrentThread()) { return; }
+
+                /* Change status */
+                Status     last_status;
+                const bool result      = vp::util::InterlockedCompareExchange(std::addressof(last_status), std::addressof(m_status), Status::Active, Status::Suspended);
+                m_suspend_event.Wait();
+                if (result == false) { return; }
+
+                /* Set message */
+                m_suspend_event.Clear();
+                this->JamMessage(static_cast<uintptr_t>(Message::Resume));
+
+                return;
+            }
+
             ALWAYS_INLINE void WaitForExecute() {
                 m_execute_event.Wait();
             }
@@ -117,18 +156,28 @@ namespace awn::async {
                 m_suspend_event.Wait();
             }
 
-            
+            ALWAYS_INLINE void WaitForPriorityLevel(u32 priority_level) {
+                m_queue->WaitForPriorityLevel(priority_level);
+            }
+            ALWAYS_INLINE void CancelPriorityLevel(u32 priority_level) {
+                m_queue->CancelPriorityLevel(priority_level);
+            }
 
             void CancelCurrentTaskIfPriority(u32 priority) {
                 std::scoped_lock l(m_queue->m_queue_mutex);
                 if (m_current_task == nullptr || m_current_task->m_priority != priority) { return; }
                 m_current_task->CancelWhileActive();
             }
+
+            constexpr bool IsActive()    const { return m_status == Status::Active; }
+            constexpr bool IsSuspended() const { return m_status == Status::Suspended; }
+
+            constexpr AsyncQueue *GetQueue() const { return m_queue; }
     };
     
     constexpr AsyncQueue *AsyncTaskPushInfo::GetQueue() {
         VP_ASSERT(queue != nullptr || queue_thread != nullptr);
-        AsyncQueue *out_queue = (queue != nullptr) ? queue : queue_thread->m_queue;
+        AsyncQueue *out_queue = (queue != nullptr) ? queue : queue_thread->GetQueue();
         VP_ASSERT(out_queue != nullptr);
         return out_queue;
     }

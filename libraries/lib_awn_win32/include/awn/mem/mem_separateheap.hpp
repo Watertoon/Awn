@@ -42,6 +42,8 @@ namespace awn::mem {
             u64                      m_management_area_size;
             void                    *m_management_area_start;
         public:
+            VP_RTTI_DERIVED(SeparateHeap, Heap);
+        public:
             SeparateHeap(const char *name, void *heap_start, u64 heap_size, void *management_start, u64 management_size, bool is_thread_safe) : Heap(name, nullptr, reinterpret_cast<void*>(heap_start), heap_size, is_thread_safe), m_used_block_list(), m_management_free_list_start(reinterpret_cast<SeparateFreeListHelper*>(management_start)), m_used_management_block_count(0), m_total_management_block_count(management_size/ sizeof(SeparateMemoryBlock)), m_management_area_size(management_size), m_management_area_start(management_start) {
 
                 /* Initialize managment free list */

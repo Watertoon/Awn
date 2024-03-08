@@ -39,9 +39,11 @@ namespace awn::res {
 
             virtual Result GetFileReferenceImpl(void **out_file, size_t *out_size, const char *file_path);
         public:
+            constexpr ArchiveFileDevice() : FileDeviceBase(), m_archive_resource() {/*...*/}
             constexpr ArchiveFileDevice(ArchiveResource *archive_resource) : FileDeviceBase(), m_archive_resource(archive_resource) {/*...*/}
             constexpr virtual ~ArchiveFileDevice() override {/*...*/}
 
             Result GetFileReference(void **out_file, size_t *out_size, const char *file_path);
+            constexpr void SetArchiveResource(ArchiveResource *archive_res) { m_archive_resource = archive_res; }
     };
 }
