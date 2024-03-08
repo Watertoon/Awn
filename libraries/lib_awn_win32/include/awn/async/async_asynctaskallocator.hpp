@@ -23,7 +23,7 @@ namespace awn::async {
         AsyncTaskWatcher      *watcher;
     };
 
-    using AsyncTaskCreateDelegate = vp::util::DelegateReturnFunction<AsyncTaskForAllocator*, mem::Heap*>;
+    using AsyncTaskCreateFunction = vp::util::IFunction<AsyncTaskForAllocator*(AsyncTaskAllocator*, mem::Heap*)>;
 
     class AsyncTaskAllocator {
         public:
@@ -106,10 +106,10 @@ namespace awn::async {
             constexpr  AsyncTaskAllocator() : m_acquire_event(), m_available_event(), m_acquire_cs(), m_free_cs(), m_list_index(0), m_task_list{}, m_task_array()  {/*...*/}
             constexpr ~AsyncTaskAllocator() {/*...*/}
 
-            void Initialize(mem::Heap *heap, AsyncTaskCreateDelegate *create_delegate, u32 count) {
+            void Initialize(mem::Heap *heap, AsyncTaskCreateFunction *create_function, u32 count) {
 
                 /* Integrity checks */
-                VP_ASSERT(create_delegate != nullptr);
+                VP_ASSERT(create_function != nullptr);
 
                 /* Initialize events */
                 m_acquire_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
@@ -120,8 +120,9 @@ namespace awn::async {
 
                 /* Create and add tasks to acquire list */
                 for (u32 i = 0; i < count; ++i) {
-                    m_task_array.PushPointer(create_delegate->Invoke(heap));
-                    VP_ASSERT(m_task_array[i] != nullptr);
+                    AsyncTaskForAllocator *allocator_task = create_function->Invoke(this, heap);
+                    VP_ASSERT(allocator_task != nullptr);
+                    m_task_array.PushPointer(allocator_task);
                     m_task_list[m_list_index].PushBack(*m_task_array[i]);
                 }
 

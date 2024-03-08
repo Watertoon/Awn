@@ -31,3 +31,17 @@
 #include <awn/res/res_beaarchiveresource.hpp>
 
 #include <awn/res/res_writemanager.hpp>
+
+#include <awn/res/res_resourcesizetablemanager.h>
+#include <awn/res/res_extensionmanager.h>
+#include <awn/res/res_resourcebinder.h>
+#include <awn/res/res_resourceunit.hpp>
+#include <awn/res/res_asyncsystemapi.h>
+#include <awn/res/res_resourceunitmanager.hpp>
+#include <awn/res/res_decompressormanager.hpp>
+#include <awn/res/res_resourcememorymanager.h>
+#include <awn/res/res_resourceunitallocator.hpp>
+#include <awn/res/res_loadtask.hpp>
+#include <awn/res/res_threadlocalarchivemanager.h>
+#include <awn/res/res_resourcesizetablemanager.h>
+#include <awn/res/res_asyncresourcemanager.h>
