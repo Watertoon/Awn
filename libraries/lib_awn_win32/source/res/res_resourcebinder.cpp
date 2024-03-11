@@ -14,7 +14,6 @@
  *  if not, see <https://www.gnu.org/licenses/>.
  */
 #include <awn.hpp>
-#include <ares.h>
 
 namespace awn::res {
 
@@ -85,6 +84,7 @@ namespace awn::res {
         /* Enforce load guard */
         VP_ASSERT(m_load_guard != true);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
+        m_status     = Status::Uninitialized;
 
         AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
         return manager->TryLoadSync(file_path, this, bind_info);
@@ -95,6 +95,7 @@ namespace awn::res {
         /* Enforce load guard */
         VP_ASSERT(m_load_guard != true);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
+        m_status     = Status::Uninitialized;
 
         AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
         return manager->TryLoadAsync(file_path, this, bind_info);

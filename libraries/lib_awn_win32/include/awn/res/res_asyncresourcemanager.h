@@ -116,7 +116,6 @@ namespace awn::res {
             sys::ServiceCriticalSection    m_free_frame_cs;
             ResourceUnitIndexFrame         m_resource_unit_free_frame_buffer;
 
-            FileDeviceBase                *m_default_file_device;
             ArchiveFileDevice              m_default_archive_file_device;
             ArchiveFileDevice              m_default_archive_file_device_for_size_prepare;
             ResourceBinder                 m_default_archive_binder;
@@ -209,7 +208,7 @@ namespace awn::res {
             constexpr AsyncResourceManager() : m_system_heap(), m_app_impl(), m_extension_manager(), m_memory_manager(), m_is_trigger_clear_all_caches(), m_resource_unit_allocator(), m_resource_unit_finalize_list(), m_finalize_list_cs(),
             m_async_queue_thread_control(), m_async_queue_thread_memory(), m_async_queue_control(), m_async_queue_memory(), m_async_queue_load(), m_async_queue_load_thread_array(), m_async_task_allocator_load(),
             m_free_frame_cs(), m_resource_unit_free_frame_buffer(), 
-            m_default_file_device(), m_default_archive_file_device(), m_default_archive_file_device_for_size_prepare(), m_default_archive_binder(), m_default_archive_reference_count(), m_thread_local_archive_manager(), m_resource_size_table_manager(),
+            m_default_archive_file_device(), m_default_archive_file_device_for_size_prepare(), m_default_archive_binder(), m_default_archive_reference_count(), m_thread_local_archive_manager(), m_resource_size_table_manager(),
             m_managed_thread_array_cs(), m_managed_thread_array(), m_enable_managed(),
             m_task_for_calculate(), m_task_for_load_sync(), m_task_for_clear_cache_for_allocate(), m_task_for_force_reserve_unload(), m_task_for_force_clear_all_caches(),
 
@@ -281,7 +280,7 @@ namespace awn::res {
             ResourceMemoryManager *GetMemoryManager(MaxPathString *path);
             CompressionType GetCompressionTypeByExtension(MaxExtensionString *extension);
         public:
-            constexpr FileDeviceBase    *GetDefaultFileDevice() { return m_default_file_device; }
+            constexpr FileDeviceBase    *GetDefaultFileDevice()        { return FileDeviceManager::GetInstance()->GetDefaultFileDevice(); }
             constexpr ArchiveFileDevice *GetDefaultArchiveFileDevice() { return std::addressof(m_default_archive_file_device); }
 
             bool CheckArchiveFileExists(ArchiveResource *archive_resource, MaxPathString *path);

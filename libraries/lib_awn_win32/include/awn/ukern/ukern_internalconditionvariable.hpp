@@ -43,7 +43,7 @@ namespace awn::ukern {
                 
                 VP_ASSERT(tag == (cs->m_handle & (~FiberLocalStorage::HasChildWaitersBit)));
                 
-                impl::GetScheduler()->WaitKeyImpl(std::addressof(cs->m_handle), std::addressof(m_cv), tag, impl::GetAbsoluteTimeToWakeup(timeout_ns));
+                impl::GetScheduler()->WaitKeyImpl(std::addressof(cs->m_handle), std::addressof(m_cv), tag, TimeSpan::GetAbsoluteTimeToWakeup(timeout_ns));
             }
 
             void Signal(u32 count = 1) {

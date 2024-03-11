@@ -111,7 +111,8 @@ namespace awn::async {
             bool TryInvokeSync();
             void InvokeSync(AsyncQueueThread *thread);
 
-            void Invoke();
+            Result Invoke();
+            void InvokeFreeExecute();
 
             void Cancel();
 

@@ -71,11 +71,8 @@ namespace awn::sys {
 
             virtual void ThreadMain([[maybe_unused]] size_t message) {/*...*/}
         public:
-            ALWAYS_INLINE ThreadBase(mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages , u32 stack_size, s32 priority) : m_thread_heap(thread_heap), m_lookup_heap(nullptr), m_message_queue(), m_message_queue_buffer(), m_exit_message(exit_code), m_stack_size(stack_size), m_priority(priority), m_core_mask(), m_run_mode(static_cast<u32>(run_mode)), m_tls_slot_array(), m_thread_manager_list_node() {
-                m_message_queue.Initialize(thread_heap, max_messages);
-            }
-            ALWAYS_INLINE ThreadBase(mem::Heap *thread_heap) : m_thread_heap(thread_heap), m_lookup_heap(nullptr) {
-            }
+            ThreadBase(mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages , u32 stack_size, s32 priority);
+            ThreadBase(mem::Heap *thread_heap);
 
             virtual ~ThreadBase() {
                 this->ExitThread();

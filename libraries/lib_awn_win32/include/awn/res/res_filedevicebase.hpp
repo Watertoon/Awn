@@ -22,10 +22,10 @@ namespace awn::res {
     using MaxExtensionString = vp::util::MaxExtensionString;
 
     enum class CompressionType : u16 {
-        None        = (1 << 0),
-        Auto        = (1 << 1),
-        Szs         = (1 << 2),
-        Zstandard   = (1 << 3),
+        None        = (0 << 0),
+        Auto        = (1 << 0),
+        Szs         = (1 << 1),
+        Zstandard   = (1 << 2),
     };
     VP_ENUM_FLAG_TRAITS(CompressionType);
 

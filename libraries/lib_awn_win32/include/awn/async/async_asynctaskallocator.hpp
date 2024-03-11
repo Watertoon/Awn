@@ -36,7 +36,7 @@ namespace awn::async {
             sys::ServiceEvent           m_available_event;
             sys::ServiceCriticalSection m_acquire_cs;
             sys::ServiceCriticalSection m_free_cs;
-            bool                        m_list_index;
+            u32                         m_list_index;
             AsyncTaskList               m_task_list[2];
             AsyncTaskArray              m_task_array;
         private:
@@ -49,13 +49,13 @@ namespace awn::async {
                 for (;;) {
 
                     /* Get current acquire list */
-                    AsyncTaskList *list = std::addressof(m_task_list[m_list_index]);
+                    AsyncTaskList &list = m_task_list[m_list_index];
 
-                    for (AsyncTaskForAllocator &task : *list) {
+                    for (AsyncTaskForAllocator &task : list) {
                         if (task.m_is_free_for_allocator == false) { continue; }
 
                         /* Acquire task */
-                        task.m_queue_list_node.Unlink();
+                        task.SetAllocator(this);
                         return std::addressof(task);
                     }
 
@@ -97,6 +97,8 @@ namespace awn::async {
                 std::scoped_lock l(m_free_cs);
 
                 /* Add task to free list and signal there's a new free task */
+                task->m_is_free_for_allocator = true;
+                task->m_task_allocator        = nullptr;
                 m_task_list[m_list_index ^ 1].PushBack(*task);
                 m_available_event.Signal();
 
@@ -122,8 +124,10 @@ namespace awn::async {
                 for (u32 i = 0; i < count; ++i) {
                     AsyncTaskForAllocator *allocator_task = create_function->Invoke(this, heap);
                     VP_ASSERT(allocator_task != nullptr);
+
+                    allocator_task->m_is_free_for_allocator = true;
                     m_task_array.PushPointer(allocator_task);
-                    m_task_list[m_list_index].PushBack(*m_task_array[i]);
+                    m_task_list[m_list_index].PushBack(*allocator_task);
                 }
 
                 return;

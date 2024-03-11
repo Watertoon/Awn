@@ -14,7 +14,6 @@
  *  if not, see <https://www.gnu.org/licenses/>.
  */
 #include <awn.hpp>
-#include <ares.h>
 
 namespace awn::res {
 
@@ -681,12 +680,12 @@ namespace awn::res {
         };
 
         /* Load without decompression if none */
-        if (static_cast<CompressionType>(m_compression_type) == CompressionType::None) {
+        const CompressionType decompressor_type = static_cast<CompressionType>(m_compression_type);
+        if (decompressor_type == CompressionType::None) {
             return res::LoadResource(std::addressof(m_resource), file_path, std::addressof(load_context));
         }
 
         /* Select decompressor */
-        const CompressionType decompressor_type = static_cast<CompressionType>(m_compression_type);
         const u32             handle            = res::AllocateDecompressor();
         IDecompressor *decompressor      = res::GetDecompressor(handle, decompressor_type, 0xd, (1 << (sys::GetCurrentCoreNumber() & 0x3f)));
 
@@ -951,7 +950,7 @@ namespace awn::res {
 
         /* Increment reference for binder or transience */
         ResourceBinder *resource_binder = unit_info->resource_binder;
-        if (resource_binder == nullptr) {
+        if (resource_binder != nullptr) {
             this->SetToBinder(resource_binder);
         } else if (m_is_transient_on_load == true) {
             this->IncrementReference();

@@ -74,7 +74,7 @@ namespace awn::ukern {
     }
 
     void Sleep(TimeSpan timeout_span) {
-        impl::GetScheduler()->SleepThreadImpl(impl::GetAbsoluteTimeToWakeup(timeout_span));
+        impl::GetScheduler()->SleepThreadImpl(TimeSpan::GetAbsoluteTimeToWakeup(timeout_span));
     }
 
     void YieldThread() {

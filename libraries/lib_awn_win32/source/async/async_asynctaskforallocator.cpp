@@ -52,7 +52,9 @@ namespace awn::async {
 		if (watcher->m_state < static_cast<u32>(AsyncTaskWatcher::State::Complete)) { return; }
 
 		/* Free task to allocator */
-		m_task_allocator->FreeTask(this);
+		if (m_task_allocator != nullptr) {
+			m_task_allocator->FreeTask(this);
+		}
 
 		return;
 	}

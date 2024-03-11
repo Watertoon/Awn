@@ -45,7 +45,8 @@ namespace awn::res {
         public:
             VP_RTTI_BASE(ResourceFactoryBase);
         public:
-            explicit constexpr ALWAYS_INLINE ResourceFactoryBase(const char *file_extension) : m_manager_tree_node(), m_file_extension(file_extension) {
+            constexpr ALWAYS_INLINE ResourceFactoryBase() : m_manager_tree_node(), m_file_extension() {/*...*/}
+            constexpr ALWAYS_INLINE ResourceFactoryBase(const char *file_extension) : m_manager_tree_node(), m_file_extension(file_extension) {
                 const u32 hash_crc32 = vp::util::HashCrc32b(file_extension);
                 m_manager_tree_node.SetKey(hash_crc32);
             }

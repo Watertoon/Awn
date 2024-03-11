@@ -14,7 +14,6 @@
  *  if not, see <https://www.gnu.org/licenses/>.
  */
 #include <awn.hpp>
-#include <ares.h>
 
 namespace awn::res {
 
@@ -248,6 +247,7 @@ namespace awn::res {
 
         /* Allocate resource unit */
         ResourceUnit *resource_unit = this->AllocateResourceUnit();
+        VP_ASSERT(resource_unit != nullptr);
 
         /* Initialize resource unit */
         ResourceUnitInfo unit_info = {
@@ -274,10 +274,7 @@ namespace awn::res {
                 .priority        = convert_priority,
             },
         };
-        async::AsyncTaskScheduleInfo schedule_info = {
-            .push_info = std::addressof(push_info),
-        };
-        m_async_task_allocator_load.ScheduleTask(std::addressof(schedule_info));
+        resource_unit->m_load_task.PushTask(std::addressof(push_info));
 
         return;
     }
@@ -290,15 +287,17 @@ namespace awn::res {
 
         /* Break if transitoned out of schedule load */
         ResourceUnit *resource_unit = reinterpret_cast<ResourceUnit*>(result_info->user_data);
-        if (resource_unit->m_status == ResourceUnit::Status::InLoad) { RESULT_RETURN_SUCCESS; }
+        if (resource_unit->m_resource_heap == nullptr || resource_unit->m_status != ResourceUnit::Status::InLoad) { RESULT_RETURN_SUCCESS; }
 
         /* Queue load file  */
         const u32 convert_priority = ConvertPriorityMemoryThreadToLoadThread(result_info->task->GetPriority());
-        async::AsyncTaskPushInfo push_info = {
-            .queue         = std::addressof(m_async_queue_load),
-            .task_function = std::addressof(m_load_file_exe),
-            .user_data     = resource_unit,
-            .priority      = convert_priority,
+        LoadTaskPushInfo push_info = {
+            {                
+                .queue         = std::addressof(m_async_queue_load),
+                .task_function = std::addressof(m_load_file_exe),
+                .user_data     = resource_unit,
+                .priority      = convert_priority,
+            },
         };
         RESULT_RETURN_IF(result_info->task->PushTask(std::addressof(push_info)) == ResultSuccess, async::ResultRescheduled);
 
@@ -620,6 +619,13 @@ namespace awn::res {
         m_system_heap          = system_heap;
         VP_ASSERT(system_heap != nullptr);
 
+        /* Initialize memory manager */
+        ResourceMemoryManagerInfo memory_manager_info = {
+            .name              = "awn::res::ResourceMemoryManager_Main",
+            .manager_heap_type = ManagerHeapType::VirtualAddressHeap,
+        };
+        m_memory_manager.Initialize(system_heap, std::addressof(memory_manager_info));
+
         /* Initialize extension manager */
         ExtensionManagerInfo ext_mgr_info = {
             .extension_count      = app_impl->GetExtensionArrayCount(),
@@ -631,12 +637,13 @@ namespace awn::res {
         m_thread_local_archive_manager.Initialize(system_heap, manager_info->max_thread_local_archive_count);
 
         /* Initialize resource unit allocator */
+        VP_ASSERT(0 < manager_info->max_resource_unit_count);
         m_resource_unit_allocator.Initialize(system_heap, manager_info->max_resource_unit_count);
 
         /* Initialize task allocator */
         auto load_task_create_lambda   = []([[maybe_unused]] async::AsyncTaskAllocator*, mem::Heap *heap) { return new (heap, alignof(LoadTask)) LoadTask(); };
         auto load_task_create_function = vp::util::MakeLambdaFunction<async::AsyncTaskForAllocator*(async::AsyncTaskAllocator*, mem::Heap*)>(load_task_create_lambda);
-        m_async_task_allocator_load.Initialize(heap, std::addressof(load_task_create_function), manager_info->load_task_count);
+        m_async_task_allocator_load.Initialize(system_heap, std::addressof(load_task_create_function), manager_info->load_task_count);
 
         /* Initialize control queue and thread */
         const async::AsyncQueueInfo control_queue_info = {
@@ -712,6 +719,7 @@ namespace awn::res {
         m_resource_size_table_manager.Initialize(manager_info->resource_size_table_path);
 
         /* Initialize free queue */
+        
         
         /* Adjust system heap */
         system_heap->AdjustHeap();
@@ -798,6 +806,9 @@ namespace awn::res {
         m_async_queue_memory.Finalize();
         m_async_queue_load.Finalize();
 
+        /* Finalize memory manager */
+        m_memory_manager.Finalize();
+
         /* Destroy manager heap */
         m_system_heap->Finalize();
         m_system_heap = nullptr;
@@ -852,7 +863,7 @@ namespace awn::res {
     }
 
     void AsyncResourceManager::SuspendControlThread() { m_async_queue_thread_control->Suspend(); }
-    void AsyncResourceManager::SuspendMemoryThread() { m_async_queue_thread_control->Suspend(); }
+    void AsyncResourceManager::SuspendMemoryThread() { m_async_queue_thread_memory->Suspend(); }
     void AsyncResourceManager::SuspendLoadThreads() { 
         for (async::AsyncQueueThread *&thread : m_async_queue_load_thread_array) {
             thread->Suspend();
@@ -860,7 +871,7 @@ namespace awn::res {
     }
 
     void AsyncResourceManager::ResumeControlThread() { m_async_queue_thread_control->Resume(); }
-    void AsyncResourceManager::ResumeMemoryThread() { m_async_queue_thread_control->Resume(); }
+    void AsyncResourceManager::ResumeMemoryThread() { m_async_queue_thread_memory->Resume(); }
     void AsyncResourceManager::ResumeLoadThreads() { 
         for (async::AsyncQueueThread *&thread : m_async_queue_load_thread_array) {
             thread->Resume();
@@ -969,7 +980,7 @@ namespace awn::res {
 
         /* Lookup resource size */
         const size_t resource_size = m_resource_size_table_manager.GetResourceSize(prepare_info->original_path);
-        if (resource_size != 0) {
+        if (resource_size != ResourceSizeTableManager::cInvalidSize) {
             out_result->resource_size = resource_size + alignment + sizeof(size_t);
             return;
         }

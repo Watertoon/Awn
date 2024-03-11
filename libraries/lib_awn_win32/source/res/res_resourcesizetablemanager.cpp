@@ -14,7 +14,6 @@
  *  if not, see <https://www.gnu.org/licenses/>.
  */
 #include <awn.hpp>
-#include <ares.h>
 
 namespace awn::res {
 

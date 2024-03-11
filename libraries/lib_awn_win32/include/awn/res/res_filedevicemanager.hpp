@@ -41,6 +41,8 @@ namespace awn::res {
                 m_main_file_device = content_device;
 
                 this->AddFileDevice(content_device);
+
+                return;
             }
 
             void Finalize() {
@@ -49,6 +51,8 @@ namespace awn::res {
                 }
                 m_main_file_device = nullptr;
             }
+
+            constexpr FileDeviceBase *GetDefaultFileDevice() { return m_main_file_device; }
 
             void AddFileDevice(FileDeviceBase *file_device) {
                 VP_ASSERT(file_device != nullptr);

@@ -26,5 +26,5 @@
 #include <awn/sys/sys_threadmanager.win32.hpp>
 #include <awn/sys/sys_thread.win32.hpp>
 #include <awn/sys/sys_servicethread.win32.hpp>
-#include <awn/sys/sys_serviceevent.win32.hpp>
+#include <awn/sys/sys_serviceevent2.win32.hpp>
 #include <awn/sys/sys_delegatethread.hpp>

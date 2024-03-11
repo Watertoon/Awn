@@ -23,6 +23,7 @@ namespace awn::res {
         private:
             sys::ServiceCriticalSection m_factory_map_cs;
             ResourceFactoryMap          m_resource_factory_map;
+            ResourceFactoryBase         m_default_resource_factory;
         public:
             AWN_SINGLETON_TRAITS(ResourceFactoryManager);
         public:
@@ -43,31 +44,11 @@ namespace awn::res {
             ALWAYS_INLINE ResourceFactoryBase *FindResourceFactory(const char *file_extension) {
                 const u32 ext_hash = vp::util::HashCrc32b(file_extension);
                 std::scoped_lock lock(m_factory_map_cs);
-                return m_resource_factory_map.Find(ext_hash);
+                ResourceFactoryBase *res_factory = m_resource_factory_map.Find(ext_hash);
+                return (res_factory != nullptr) ? res_factory : std::addressof(m_default_resource_factory);
             }
 
-            Result LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context) {
-
-                /* Find factory */
-                ResourceFactoryBase *factory = resource_load_context->resource_factory;
-                if (factory == nullptr) {
-                    MaxExtensionString extension;
-                    vp::util::GetExtension(std::addressof(extension), path);
-                    factory = this->FindResourceFactory(extension.GetString());
-                }
-                RESULT_RETURN_IF(factory == nullptr, ResultNullResourceFactory);
-
-                /* Load file with factory */
-                return factory->LoadResource(out_resource, path, resource_load_context);
-            }
-            Result LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor) {
-
-                /* Get factory */
-                ResourceFactoryBase *factory = resource_load_context->resource_factory;
-                RESULT_RETURN_IF(factory == nullptr, ResultNullResourceFactory);
-
-                /* Load file with factory */
-                return factory->LoadResourceWithDecompressor(out_resource, path, resource_load_context, decompressor);
-            }
+            Result LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context);
+            Result LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor);
     };
 }

@@ -19,22 +19,6 @@ namespace awn::ukern::impl {
 
     constinit vp::util::FixedObjectAllocator<FiberLocalStorage, cMaxThreadCount> sUserFiberLocalAllocator = {};
 
-    TickSpan GetAbsoluteTimeToWakeup(TimeSpan timeout_ns) {
-
-        /* Convert to tick */
-        const s64 timeout_tick = timeout_ns.GetTick();
-
-        /* "Infinite" time on zero */
-        if (0 >= timeout_tick) { return TimeSpan::cMaxTime; }
-
-        /* Calculate absolute timeout */
-        const s64 absolute_time = timeout_tick + vp::util::GetSystemTick();
-
-        if (absolute_time + 1 <= 1) { return TimeSpan::cMaxTime; }
-
-        return absolute_time + 2;
-    }
-
     NO_RETURN void UserScheduler::SchedulerFiberMain(size_t core_num) {
 
         /* Alias core number */
@@ -683,7 +667,7 @@ namespace awn::ukern::impl {
         /* Perform decrement */
         u32 wait_value = *wait_address;
         if (do_decrement == true) {
-            ::InterlockedDecrement(wait_address);
+            vp::util::InterlockedDecrement(wait_address);
         }
 
         /* Check address */
@@ -747,7 +731,7 @@ namespace awn::ukern::impl {
         }
 
         /* Integrity checks */
-        RESULT_RETURN_IF(address_fiber == nullptr, ResultNoWaiters);
+        RESULT_RETURN_IF(address_fiber == nullptr, ResultSuccess);
 
         /* Release parent waiter */
         address_fiber->waitable_object->EndWait(address_fiber, ResultSuccess);
@@ -803,12 +787,11 @@ namespace awn::ukern::impl {
 
         /* Lock scheduler */
         ScopedSchedulerLock lock(this);
-        
-        /* Check address value */
-        RESULT_RETURN_IF(*wait_address != value, ResultValueOutOfRange);
 
         /* Set new value */
-        ::InterlockedExchange(wait_address, value + 1);
+        u32 last;
+        const bool result = vp::util::InterlockedCompareExchange(std::addressof(last), wait_address, value + 1, value);
+        RESULT_RETURN_IF(result == false || last != value, ResultInvalidWaitAddressValue);
 
         /* Find address in wait list */
         FiberLocalStorage *address_fiber = nullptr;
@@ -820,7 +803,7 @@ namespace awn::ukern::impl {
         }
 
         /* Check address value */
-        RESULT_RETURN_IF(*wait_address != value, ResultNoWaiters);
+        RESULT_RETURN_IF(address_fiber == nullptr, ResultSuccess);
 
         /* Release parent waiter */
         address_fiber->waitable_object->EndWait(address_fiber, ResultSuccess);
@@ -871,9 +854,7 @@ namespace awn::ukern::impl {
         ScopedSchedulerLock lock(this);
 
         /* Check address value */
-        if (*wait_address != value) {
-            return ResultValueOutOfRange;
-        }
+        RESULT_RETURN_IF(*wait_address != value, ResultInvalidWaitAddressValue);
 
         /* Find address in wait list */
         FiberLocalStorage *address_fiber = nullptr;
@@ -898,10 +879,10 @@ namespace awn::ukern::impl {
             if (i < count) { signal = -1; }
         }
 
-        /* Only modify if non-zero signal */
-        if (signal != 0) {
-            ::InterlockedExchange(wait_address, value + signal);
-        }
+        /* Attempt modify */
+        u32 last;
+        const bool result = vp::util::InterlockedCompareExchange(std::addressof(last), wait_address, value + signal, value);
+        RESULT_RETURN_IF(result == false || last != value, ResultInvalidWaitAddressValue);
 
         /* Release parent waiter */
         address_fiber->waitable_object->EndWait(address_fiber, ResultSuccess);

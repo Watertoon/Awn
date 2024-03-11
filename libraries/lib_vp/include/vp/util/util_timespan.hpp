@@ -31,6 +31,11 @@ namespace vp {
             constexpr ALWAYS_INLINE TimeSpan(const TimeSpan &rhs) : m_time_ns(rhs.m_time_ns) {/*...*/}
             constexpr ~TimeSpan() {/*...*/}
 
+            constexpr TimeSpan &operator=(const TimeSpan &rhs) {
+                m_time_ns = rhs.m_time_ns;
+                return *this;
+            }
+
             static TimeSpan FromTick(s64 tick) {
 
                 /* Query frequency and limit */
@@ -60,6 +65,22 @@ namespace vp {
                 if (tick_left <= 0) { return 0; }
 
                 return FromTick(tick_left);
+            }
+            
+            static TickSpan GetAbsoluteTimeToWakeup(TimeSpan timeout_ns) {
+
+                /* Convert to tick */
+                const s64 timeout_tick = timeout_ns.GetTick();
+
+                /* "Infinite" time on zero */
+                if (0 >= timeout_tick) { return TimeSpan::cMaxTime; }
+
+                /* Calculate absolute timeout */
+                const s64 absolute_time = timeout_tick + vp::util::GetSystemTick();
+
+                if (absolute_time + 1 <= 1) { return TimeSpan::cMaxTime; }
+
+                return absolute_time + 2;
             }
 
             s64 GetTick() const {

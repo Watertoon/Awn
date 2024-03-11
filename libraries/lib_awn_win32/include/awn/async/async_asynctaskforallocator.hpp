@@ -32,6 +32,12 @@ namespace awn::async {
             void SetWatcher(AsyncTaskWatcher *watcher, AsyncQueue *queue);
 
             void FreeToAllocator();
+
+            constexpr void SetAllocator(AsyncTaskAllocator *allocator) {                
+                m_is_free_for_allocator = false;
+                m_task_allocator        = allocator;
+                m_queue_list_node.Unlink();
+            }
         private:
             void ReleaseWatcher(AsyncTaskWatcher::State state);
         protected:

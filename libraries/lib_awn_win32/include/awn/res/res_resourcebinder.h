@@ -52,7 +52,7 @@ namespace awn::res {
 
             void InitializeResource(ResourceUserContext *resource_user_context);
         public:
-            constexpr  ResourceBinder() {/*...*/}
+            constexpr  ResourceBinder() : m_state_mask(), m_status(Status::Uninitialized), m_resource_unit(), m_watcher() {/*...*/}
             ~ResourceBinder() { this->Finalize(); }
 
             void Finalize();
@@ -77,6 +77,7 @@ namespace awn::res {
 
             constexpr Resource *GetResourceDirect() const;
 
+            constexpr Status GetStatus()     const { return m_status; }
             constexpr bool IsLoadGuard()     const { return m_load_guard; }
             constexpr bool IsCompleteGuard() const { return m_complete_guard; }
 

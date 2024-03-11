@@ -14,7 +14,6 @@
  *  if not, see <https://www.gnu.org/licenses/>.
  */
 #include <awn.hpp>
-#include <ares.h>
 
 namespace awn::res {
 
@@ -69,7 +68,7 @@ namespace awn::res {
 
         std::scoped_lock l(m_memory_mgr_mutex);
         
-        while (0 < count && m_resource_unit_free_cache_list.IsEmpty() == true) {
+        while (0 < count && m_resource_unit_free_cache_list.IsEmpty() == false) {
             --count;
             ResourceUnit *resource_unit = std::addressof(m_resource_unit_free_cache_list.PopBack());
             if (resource_unit->m_is_freeable_for_memory_manager == false) { continue; }
@@ -93,6 +92,7 @@ namespace awn::res {
             m_resource_heap = mem::ExpHeap::TryCreate(manager_info->name, heap, manager_info->heap_size, manager_info->heap_alignment, true);
         }
 
+        /* Initialize sync object */
         m_memory_mgr_mutex.Initialize();
 
         return;
@@ -110,6 +110,7 @@ namespace awn::res {
             m_resource_heap = nullptr;
         }
 
+        /* Finalize sync object */
         m_memory_mgr_mutex.Finalize();
 
         return;

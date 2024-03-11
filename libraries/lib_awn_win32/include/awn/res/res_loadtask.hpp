@@ -34,16 +34,25 @@ namespace awn::res {
                 LoadTaskPushInfo *push_info = reinterpret_cast<LoadTaskPushInfo*>(load_task_push_info);
                 m_load_user_data.m_file_path = push_info->file_path;
 
-                /* Copy async load info */
-                m_load_user_data.m_async_load_info = *push_info->async_load_info;
+                /* Set resource binder */
+                m_load_user_data.m_resource_binder = push_info->binder;
 
-                /* Reference archive */
-                if (push_info->async_load_info->archive_binder != nullptr) {                    
-                    RESULT_ABORT_UNLESS(m_load_user_data.m_archive_binder_ref.ReferenceBinderSync(push_info->async_load_info->archive_binder));
+                /* Handle async load info */
+                AsyncResourceLoadInfo *load_info = push_info->async_load_info;
+                if (load_info != nullptr) {
+
+                    /* Copy async load info */
+                    m_load_user_data.m_async_load_info = *load_info;
+
+                    /* Reference archive */
+                    if (load_info->archive_binder != nullptr) {                    
+                        RESULT_ABORT_UNLESS(m_load_user_data.m_archive_binder_ref.ReferenceBinderSync(load_info->archive_binder));
+                    }
                 }
 
+
                 /* Set user data */
-                if (m_user_data != nullptr) {
+                if (m_user_data == nullptr) {
                     m_user_data = std::addressof(m_load_user_data);
                 }
 

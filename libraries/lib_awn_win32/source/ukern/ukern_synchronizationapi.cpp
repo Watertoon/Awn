@@ -32,7 +32,7 @@ namespace awn::ukern {
     Result WaitKey(uintptr_t address, uintptr_t cv_key, u32 tag, s64 timeout_ns) {
         /* Call scheduler impl */
         impl::UserScheduler *scheduler = impl::GetScheduler();
-        return scheduler->WaitKeyImpl(reinterpret_cast<u32*>(address), reinterpret_cast<u32*>(cv_key), tag, impl::GetAbsoluteTimeToWakeup(timeout_ns));
+        return scheduler->WaitKeyImpl(reinterpret_cast<u32*>(address), reinterpret_cast<u32*>(cv_key), tag, TimeSpan::GetAbsoluteTimeToWakeup(timeout_ns));
     }
 
     Result SignalKey(uintptr_t cv_key, u32 count) {
@@ -44,7 +44,7 @@ namespace awn::ukern {
     Result WaitOnAddress(uintptr_t address, u32 arbitration_type, u32 value, s64 timeout_ns) {
         impl::UserScheduler *scheduler = impl::GetScheduler();
 
-        const u64 absolute_timeout = impl::GetAbsoluteTimeToWakeup(timeout_ns);
+        const u64 absolute_timeout = TimeSpan::GetAbsoluteTimeToWakeup(timeout_ns);
 
         if (arbitration_type == ArbitrationType_WaitIfEqual) {
             return scheduler->WaitForAddressIfEqualImpl(reinterpret_cast<u32*>(address), value, absolute_timeout);

@@ -17,8 +17,6 @@
 
 namespace awn::ukern::impl {
 
-    TickSpan GetAbsoluteTimeToWakeup(TimeSpan timeout_ns);
-
     static constexpr const u32 cPriorityNormal    = THREAD_PRIORITY_NORMAL;
     static constexpr const u32 cDefaultCoreId     = static_cast<u32>(-2);
     static constexpr const u32 cDefaultCoreIdMask = 1;

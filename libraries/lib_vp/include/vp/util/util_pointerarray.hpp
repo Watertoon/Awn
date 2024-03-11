@@ -91,7 +91,7 @@ namespace vp::util {
             ALWAYS_INLINE void Initialize(imem::IHeap *heap, u32 pointer_count, s32 alignment = 8) {
 
                 /* Integrity checks */
-                VP_ASSERT(pointer_count != 0);
+                if (pointer_count == 0) { return; }
                 VP_ASSERT(m_pointer_array == nullptr && m_max_pointers == 0);
 
                 /* Allocate pointer array */

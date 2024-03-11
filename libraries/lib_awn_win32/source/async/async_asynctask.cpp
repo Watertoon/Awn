@@ -44,12 +44,18 @@ namespace awn::async {
         }
 
         /* Invoke */
-        this->Invoke();
+        const Result result = this->Invoke();
+
+        /* Free if necessary */
+        if (result != ResultRescheduled) {
+            std::scoped_lock l(m_queue->m_queue_mutex);
+            this->InvokeFreeExecute();
+        }
 
         return;
     }
 
-    void AsyncTask::Invoke() {
+    Result AsyncTask::Invoke() {
 
         /* Execute */
         this->Execute();
@@ -79,23 +85,22 @@ namespace awn::async {
             m_queue_thread = nullptr;
         }
 
-        /* Free if necessary */
-        if (result != ResultRescheduled) {
-            std::scoped_lock l(m_queue->m_queue_mutex);
+        return result;
+    }
 
-            m_status = static_cast<u32>(Status::FreeExecute); 
-            this->FreeExecute();
-            m_status = static_cast<u32>(Status::Complete);
-            if (m_is_signal_finish_event == true) {
-                m_is_cancelled = false;
-                m_finish_event.Signal();
-            }
+    void AsyncTask::InvokeFreeExecute() {
 
-            /* Set as free for allocator */
-            m_is_free_for_allocator = true;
+        /* Free execute */
+        m_status = static_cast<u32>(Status::FreeExecute); 
+        this->FreeExecute();
+        m_status = static_cast<u32>(Status::Complete);
+        if (m_is_signal_finish_event == true) {
+            m_is_cancelled = false;
+            m_finish_event.Signal();
         }
 
-        return;
+        /* Set as free for allocator */
+        m_is_free_for_allocator = true;
     }
 
     void AsyncTask::Finalize() {

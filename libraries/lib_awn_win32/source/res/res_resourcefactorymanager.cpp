@@ -18,4 +18,31 @@
 namespace awn::res {
 
     AWN_SINGLETON_TRAITS_IMPL(ResourceFactoryManager);
+    
+    Result ResourceFactoryManager::LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context) {
+
+        /* Find factory */
+        ResourceFactoryBase *factory = resource_load_context->resource_factory;
+        if (factory == nullptr) {
+            MaxExtensionString extension;
+            vp::util::GetExtension(std::addressof(extension), path);
+            factory = this->FindResourceFactory(extension.GetString());
+        }
+
+        /* Load file with factory */
+        return factory->LoadResource(out_resource, path, resource_load_context);
+    }
+    Result ResourceFactoryManager::LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor) {
+
+        /* Get factory */
+        ResourceFactoryBase *factory = resource_load_context->resource_factory;
+        if (factory == nullptr) {
+            MaxExtensionString extension;
+            vp::util::GetExtension(std::addressof(extension), path);
+            factory = this->FindResourceFactory(extension.GetString());
+        }
+
+        /* Load file with factory */
+        return factory->LoadResourceWithDecompressor(out_resource, path, resource_load_context, decompressor);
+    }
 }

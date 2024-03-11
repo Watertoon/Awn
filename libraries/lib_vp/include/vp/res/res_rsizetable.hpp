@@ -165,6 +165,9 @@ namespace vp::res {
             }
             constexpr u32 TryGetResourceSizeByCrc32(u32 hash_crc32) {
 
+                /* Integrity checks for hash table */
+                if (m_resource_size_crc32_array == nullptr || m_resource_size_crc32_count == 0) { return cInvalidSize; }
+
                 /* Binary search for path hash */
                 u32 entry_id  = m_resource_size_crc32_count / 2;
                 u32 high_iter = m_resource_size_crc32_count;
