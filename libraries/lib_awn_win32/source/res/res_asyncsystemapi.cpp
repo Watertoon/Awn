@@ -30,6 +30,8 @@ namespace awn::res {
 	void SetDefaultArchive(ResourceBinder *archive_binder) {
         AsyncResourceManager::GetInstance()->SetDefaultArchive(archive_binder);
     }
+    void ReferenceThreadLocalArchive() { AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager()->ReferenceThreadLocalArchive(); }
+    void ReleaseThreadLocalArchive() { AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager()->ReleaseThreadLocalArchive(); }
 
     u32  AllocateDecompressor() {
         return AsyncResourceManager::GetInstance()->AllocateDecompressor();
@@ -42,4 +44,5 @@ namespace awn::res {
     }
 
     Result LoadAsyncResourceSync(Resource **out_resource, const char *path, AsyncResourceLoadInfo *load_info) { VP_UNUSED(out_resource, path, load_info); VP_ASSERT(false); }
+
 }

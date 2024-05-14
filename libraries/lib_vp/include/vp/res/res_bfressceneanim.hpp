@@ -18,13 +18,13 @@
 namespace vp::res {
 
     struct ResBfresCameraAnimResultDefault {
-        float          near;
-        float          far;
-        float          aspect;
-        float          fovy;
-        util::Vector3f translation;
-        util::Vector3f rotation;
-        float          twist;
+        float        near;
+        float        far;
+        float        aspect;
+        float        fovy;
+        util::Float3 translation;
+        util::Float3 rotation;
+        float        twist;
     };
     static_assert(sizeof(ResBfresCameraAnimResultDefault) == 0x2c);
 
@@ -72,13 +72,13 @@ namespace vp::res {
     static_assert(sizeof(ResBfresCameraAnim) == 0x40);
 
     struct ResBfresLightAnimResultDefault {
-        s32            enable;
-        util::Vector3f translation;
-        util::Vector3f rotation;
-        util::Vector2f distance_attenuation;
-        util::Vector2f angle_attenuation;
-        util::Vector3f color0;
-        util::Vector3f color1;
+        s32          enable;
+        util::Float3 translation;
+        util::Float3 rotation;
+        util::Float2 distance_attenuation;
+        util::Float2 angle_attenuation;
+        util::Float3 color0;
+        util::Float3 color1;
     };
     static_assert(sizeof(ResBfresLightAnimResultDefault) == 0x44);
 
@@ -126,17 +126,17 @@ namespace vp::res {
     static_assert(sizeof(ResBfresLightAnim) == 0x58);
 
     struct ResBfresFogAnimResultDefault {
-        util::Vector2f distance_attenuation;
-        util::Vector3f color;
+        util::Float2 distance_attenuation;
+        util::Float3 color;
     };
     static_assert(sizeof(ResBfresFogAnimResultDefault) == 0x14);
 
     struct ResBfresFogAnim {
         u32                           magic;
-        u32                           is_baked                    : 1;
-        u32                           reserve0                    : 1;
-        u32                           is_looping                  : 1;
-        u32                           reserve1                    : 29;
+        u32                           is_baked   : 1;
+        u32                           reserve0   : 1;
+        u32                           is_looping : 1;
+        u32                           reserve1   : 29;
         const char                   *animation_name;
         ResBfresAnimCurve            *anim_curve_array;
         ResBfresFogAnimResultDefault *fog_anim_result_default;

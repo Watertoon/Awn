@@ -30,7 +30,7 @@ namespace vp::util {
             u32     m_max;
             Parent *m_array;
         private:
-            constexpr ALWAYS_INLINE GetBaseIndex(HashType hash) const {
+            constexpr ALWAYS_INLINE u32 GetBaseIndex(HashType hash) const {
 
                 /* Calculate base index */
                 const u32 max_count  = m_max;
@@ -134,7 +134,7 @@ namespace vp::util {
             u32    m_count;
             Parent m_array[Size];
         private:
-            constexpr ALWAYS_INLINE GetBaseIndex(HashType hash) const {
+            constexpr ALWAYS_INLINE u32 GetBaseIndex(HashType hash) const {
 
                 /* Calculate base index */
                 const u32 max_count  = Size;

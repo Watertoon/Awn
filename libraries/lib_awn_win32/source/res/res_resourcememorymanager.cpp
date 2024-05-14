@@ -92,9 +92,6 @@ namespace awn::res {
             m_resource_heap = mem::ExpHeap::TryCreate(manager_info->name, heap, manager_info->heap_size, manager_info->heap_alignment, true);
         }
 
-        /* Initialize sync object */
-        m_memory_mgr_mutex.Initialize();
-
         return;
     }
 
@@ -109,9 +106,6 @@ namespace awn::res {
             }
             m_resource_heap = nullptr;
         }
-
-        /* Finalize sync object */
-        m_memory_mgr_mutex.Finalize();
 
         return;
     }

@@ -17,6 +17,10 @@
 
 namespace vp::util {
 
+    constexpr char ToLowercase(char character) {
+        return (0x19 < character - 0x41) ? character : character + 0x20;   
+    }
+
     constexpr u32 FindDriveDelimiter(const char *path, u32 path_len) {
 
         /* Find ':' */
@@ -69,11 +73,16 @@ namespace vp::util {
     }
 
     constexpr inline size_t cMaxPath      = 260;
+
+#ifdef VP_TARGET_PLATFORM_win32
+    static_assert(cMaxPath == MAX_PATH);
+#endif
+
     constexpr inline size_t cMaxDrive     = 32;
     constexpr inline size_t cMaxExtension = 16;
 
-    using MaxPathString = vp::util::FixedString<cMaxPath>;
-    using MaxDriveString = vp::util::FixedString<cMaxDrive>;
+    using MaxPathString      = vp::util::FixedString<cMaxPath>;
+    using MaxDriveString     = vp::util::FixedString<cMaxDrive>;
     using MaxExtensionString = vp::util::FixedString<cMaxExtension>;
 
     constexpr void GetDrive(MaxDriveString *out_drive, const char *path_with_drive) {
@@ -206,8 +215,26 @@ namespace vp::util {
         const u32 name_size = ext_start_offset;
         ::memcpy(out_path->m_string_array, path_with_extension, name_size);
         out_path->m_length = name_size;
-    
+
         out_path->AssureTermination();
+    }
+
+    constexpr const char *AdvancePathNoDirectory(const char *path) {
+
+        /* Null check */
+        if (path == nullptr) { return path; }
+
+        /* strlen */
+        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path, cMaxPath + 1) : ::strlen(path);
+
+        /* Length check */
+        if (path_len == 0) { return path; }
+
+        /* Get file name offset */
+        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
+
+        /* Advance string to cut off directory */
+        return path + name_start_offset;
     }
 
     constexpr void GetDirectory(MaxPathString *out_directory, const char *path) {

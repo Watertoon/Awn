@@ -4,32 +4,41 @@ Awn is a personal C++ library designed to power low-latency multi-threaded real-
 # Vp
 Vp is an included personal C++ library designed to carry common utilities and file format definitions in a more portable form than Awn.
 
-# Features
-* A usermode fiber scheduler using an M:N threading model to create a cooperative usermode thread scheduler
-* A multi-threaded dependency-based job graph system for bulk processing
-* An asynchronous task system for background processing
-* A custom CPU and GPU heap system to manage memory
-* A Vulkan 1.3 wrapper library targeting ampere-level GPUs, featuring:
-  * A commitment to managing GPU memory through Virtual Addresses outside texture data via Resizable Bar
-  * A commitment to using shader objects for flexible and dynamic setting of fixed function state
-  * A custom TextureSampler manager for managing binding descriptor slots and texture memory
-* A file device and resource manager with support for file formats reverse engineered and adapted from predominantly Nintendo EPD games
-* A SIMD linear-algebra math library
-  * Vector api
-  * Matrix api
-  * Camera api
-  * Projection api
-* Basic keyboard and mouse support
-* Basic window framework
-* Many utility data structures
-  * IntrusiveList providing an interface for creating 2 way lists out of structures
-  * IntrusiveRedBlackTree providing an interface for sorted maps out of structures
-  * HandleTable providing an interface for bookkeeping the existence of objects via handles
-  * Runtime Type Info api
-  * Atomics api
-  * Time api
-  * ScopeGuard providing RAII style scope cleanup
-  * Functional error-handling via Result
+# Vp Features
+* Linear Algebra math library
+* Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats
+* Yaz0 decompressor for Nintendo szs files and Zstd wrapper
+* Common hash algorithms, crc32b, murmur3, and murmur64
+* Common utilities
+  * Scope Guard
+  * Structured Error Handling
+* Common Data Structures
+  * Red Black Tree (Map)
+  * Ring Buffer (circular queue)
+  * Handle Table (index allocator)
+  * Intrusive List (Bi-directional Linked List)
+  * Priority Queue
+  * Hash Map
+  * Dependency graph (connection mask)
+  * Pointer Array
+  * Frame Array
+  * Heap Array
+  * Fixed String
+
+# Awn Features
+* An asynchronous file resource manager
+* A cooperative thread manager
+* A heap-tree based CPU and GPU memory manager
+* Graphics wrapper api
+* Basic mouse and keyboard support
+* Base framework for a mainloop with a single window
+
+# In Development
+* A parameter system that can autogenerate byaml parameter accessors
+* An AI behavior tree system
+* A revamped multi-threaded framework based on dependency graphs
+* An Actor and Scene system
+* A UI and Font system utilizing the reverse engineered bflyt format
 
 # System Requirements
 * The user's Vulkan implementation must conform to all the limits and features enforced by awn::gfx::Context which include but are not limited to:
@@ -40,7 +49,7 @@ Vp is an included personal C++ library designed to carry common utilities and fi
 * Requires an x86_64 CPU with AVX2, PCLMUL, RDTSC, and POPCNT
 
 # Footnote
-Built for Windows 10 with GCC 13.2 and gnu make from MSYS2. 
+Built for Windows 10 with GCC 14.1 and gnu make from MSYS2. 
 Build instructions:
 1. Install MSYS2 
 2. From MSYS2 install the standard GCC package

@@ -17,6 +17,25 @@
 
 namespace awn::res {
 
+    ResourceUnit::ResourceUnit() : m_state(), m_status(Status::Uninitialized), m_reference_count(), m_deferred_adjust_count{}, m_resource_initialize_guard(), m_user_resource_size(), m_file_alignment(), m_resource_unit_manager(),
+                     m_resource_unit_manager_tree_node(), m_file_path(), m_file_device(), m_resource_factory(), m_resource_user_context(), m_archive_binder(), m_archive_resource(), m_resource(), m_load_task(), m_heap_adjust_task(), m_unload_task(), 
+                     m_resource_heap(), m_gpu_heap(), m_memory_manager(), m_finalize_async_res_mgr_list_node(), m_memory_manager_node(), m_memory_manager_free_cache_node(), m_status_update_event() 
+    {
+        m_status_update_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
+    }
+
+    ResourceUnit::~ResourceUnit() {
+
+        /* Finalize event */
+        m_status_update_event.Finalize();
+
+        /* Remove from resource unit manager */
+        if (m_resource_unit_manager != nullptr) {
+            m_resource_unit_manager->UnregisterResourceUnit(this);
+            m_resource_unit_manager = nullptr;
+        }
+    }
+
     void ResourceUnit::AdjustReferenceCount(s32 adjust_amount) {
 
         /* Adjust ref */
@@ -901,18 +920,23 @@ namespace awn::res {
         m_resource_initialize_guard = 0;
         m_state                     = 0;
 
+        /* Set file device, resource factory, and resource user context */
+        m_file_device           = async_resource_load_info->file_device;
+        m_resource_factory      = async_resource_load_info->resource_factory;
+        m_resource_user_context = async_resource_load_info->resource_user_context;
+
         /* Set manager */
-        m_resource_unit_manager     = unit_info->resource_unit_manager;
+        m_resource_unit_manager = unit_info->resource_unit_manager;
 
         /* Clear status event */
         m_status_update_event.Clear();                
 
         /* Set file path */
-        m_file_path  = unit_info->file_path;
+        m_file_path = unit_info->file_path;
 
         /* Setup user resource size */
-        m_is_user_resource_size     = async_resource_load_info->resource_size != 0;
-        m_user_resource_size        = async_resource_load_info->resource_size;
+        m_is_user_resource_size = async_resource_load_info->resource_size != 0;
+        m_user_resource_size    = async_resource_load_info->resource_size;
 
         /* Setup external heap */
         mem::Heap *heap = async_resource_load_info->resource_heap;

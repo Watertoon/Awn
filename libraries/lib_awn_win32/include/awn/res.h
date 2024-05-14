@@ -28,7 +28,6 @@
 #include <awn/res/res_fileapi.h>
 
 #include <awn/res/res_sarcarchiveresource.hpp>
-#include <awn/res/res_beaarchiveresource.hpp>
 
 #include <awn/res/res_writemanager.hpp>
 

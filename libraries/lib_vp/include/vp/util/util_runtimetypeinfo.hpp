@@ -27,6 +27,16 @@ namespace vp::util {
             constexpr ALWAYS_INLINE bool IsSameTypeInfo(const RuntimeTypeInfo *other_info) const { return this == other_info; }
     };
 
+    constexpr bool CheckRuntimeTypeInfo(const vp::util::RuntimeTypeInfo *target_obj, const vp::util::RuntimeTypeInfo *other_obj) {
+        const vp::util::RuntimeTypeInfo *class_info = other_obj;
+        const vp::util::RuntimeTypeInfo *target     = target_obj;
+        do {
+            if (target->IsSameTypeInfo(class_info) == true) { return true; }
+            class_info = class_info->m_next;
+        } while (class_info != nullptr);
+        return false;
+    }
+
     #define VP_RTTI_BASE(class_name) \
         protected: \
             using RootType = class_name; \
@@ -39,6 +49,7 @@ namespace vp::util {
                 return GetRuntimeTypeInfoStatic(); \
             } \
             static constexpr bool CheckRuntimeTypeInfoStatic(const RootType *other_obj) { \
+                if (other_obj == nullptr) { return false; } \
                 const vp::util::RuntimeTypeInfo *class_info = other_obj->GetRuntimeTypeInfo(); \
                 const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
                 do { \
@@ -71,6 +82,7 @@ namespace vp::util {
                 return GetRuntimeTypeInfoStatic(); \
             } \
             static constexpr bool CheckRuntimeTypeInfoStatic(const RootType *other_obj) { \
+                if (other_obj == nullptr) { return false; } \
                 const vp::util::RuntimeTypeInfo *class_info = other_obj->GetRuntimeTypeInfo(); \
                 const vp::util::RuntimeTypeInfo *target     = GetRuntimeTypeInfoStatic(); \
                 do { \

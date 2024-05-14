@@ -32,9 +32,9 @@ namespace vp::res {
     VP_ENUM_FLAG_TRAITS(BfresBoneAnimCurveType);
 
     struct ResBfresBoneAnimResultDefault {
-        util::Vector3f translate;
-        util::Vector4f rotate;
-        util::Vector3f scale;
+        util::Float3 translate;
+        util::Float4 rotate;
+        util::Float3 scale;
     };
     static_assert(sizeof(ResBfresBoneAnimResultDefault) == sizeof(float) * 10);
 

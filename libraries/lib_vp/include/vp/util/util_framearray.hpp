@@ -102,19 +102,34 @@ namespace vp::util {
                 return;
             }
 
-            constexpr ALWAYS_INLINE void SetBuffer(void *pointer_buffer, u32 pointer_count) {
+            constexpr ALWAYS_INLINE void SetArray(void *array, u32 count) {
 
                 /* Integrity checks */
-                VP_ASSERT(pointer_buffer != nullptr && pointer_count != 0);
+                VP_ASSERT(array != nullptr && count != 0);
 
                 /* Set state */
-                m_array = pointer_buffer;
+                m_array = reinterpret_cast<T*>(array);
                 m_count = 0;
-                m_max   = pointer_count;
-            
+                m_max   = count;
+
                 return;
             }
-            
+
+            template <typename ... Args>
+            ALWAYS_INLINE T *Allocate(Args &&... args) {
+
+                /* Increment count */
+                const u32 count = m_count;
+                VP_ASSERT(count < m_max);
+                m_count = count + 1;
+
+                /* Initialize a new value in place */
+                T *next = std::addressof(m_array[count]);
+                std::construct_at(next, std::forward<Args>(args) ...);
+
+                return next;
+            }
+
             constexpr ALWAYS_INLINE void PushValue(T value) {
                 VP_ASSERT(m_count <= m_max);
                 m_array[m_count] = value;

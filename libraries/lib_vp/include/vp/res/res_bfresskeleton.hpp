@@ -54,18 +54,23 @@ namespace vp::res {
         u16                        rigid_bone_index;
         u16                        billboard_index;
         u16                        user_data_count;
-        u32                        reserve1                 : 8;
-        u32                        unknown0                 : 4;
-        u32                        is_bone_visible          : 1;
-        u32                        unknown1                 : 3;
-        u32                        billboard_mode           : 3;
-        u32                        reserve3                 : 1;
-        u32                        unknown2                 : 3;
-        u32                        local_transform_mode     : 5;
-        u32                        hierarchy_transform_mode : 4;
-        util::Vector3f             translate;
-        util::Vector4f             rotate;
-        util::Vector3f             scale;
+        union {
+            u32 flags;
+            struct {
+                u32 reserve1                 : 8;
+                u32 unknown0                 : 4;
+                u32 is_bone_visible          : 1;
+                u32 unknown1                 : 3;
+                u32 billboard_mode           : 3;
+                u32 reserve3                 : 1;
+                u32 unknown2                 : 3;
+                u32 local_transform_mode     : 5;
+                u32 hierarchy_transform_mode : 4;                
+            };
+        };
+        util::Float3               translate;
+        util::Float4               rotate;
+        util::Float3               scale;
 
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
@@ -104,7 +109,7 @@ namespace vp::res {
         ResNintendoWareDictionary *bone_dictionary;
         ResBfresBone              *bone_array;
         u16                       *bone_index_table;
-        util::Matrix34f           *inverse_transformation_matrix_array;
+        util::FloatColumnMajor4x3 *inverse_transformation_matrix_array;
         void                      *runtime_user_pointer;
         u16                       *mirrored_bone_index_table;
         u16                        bone_count;

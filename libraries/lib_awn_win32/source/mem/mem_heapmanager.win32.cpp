@@ -18,7 +18,7 @@
 namespace awn::mem {
 
     namespace {
-        constinit vp::util::TypeStorage<HeapManager>   sHeapManagerStorage       = {};
+        constinit vp::util::TypedStorage<HeapManager>   sHeapManagerStorage       = {};
         constinit sys::ServiceCriticalSection          sHeapManagerCS            = {};
         constinit bool                                 sIsHeapManagerInitialized = false;
         constexpr const char *                         cRootHeapNameArray[]      = {
@@ -155,6 +155,7 @@ namespace awn::mem {
 
         /* If root heaps fail fallback to the gpu root heaps */
         GpuHeapManager *gpu_heap_mgr = GpuHeapManager::GetInstance();
+        if (gpu_heap_mgr == nullptr) { return nullptr; }
         for (u32 i = 0; i < cMaxGpuRootHeapCount; ++i) {
             if (gpu_heap_mgr->m_host_uncached_heap_context_array[i].root_heap != nullptr) {
 

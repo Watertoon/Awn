@@ -195,7 +195,7 @@ namespace vp::res {
 
                 return m_resource_size_crc32_array[entry_id].resource_size;
             }
-            
+
             constexpr void *GetResourceSizeTable() const { return m_head; }
     };
 }

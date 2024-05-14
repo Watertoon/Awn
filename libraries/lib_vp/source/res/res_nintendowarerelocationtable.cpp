@@ -23,7 +23,7 @@ namespace vp::res {
 
     void ResNintendoWareRelocationTable::Relocate() {
 
-        ResNintendoWareFileHeader *file_header = GetFileHeader();
+        ResNintendoWareFileHeader *file_header = this->GetFileHeader();
 
         /* No sections is valid */
         if (section_count == 0) {
@@ -111,7 +111,7 @@ namespace vp::res {
 
     void ResNintendoWareRelocationTable::Unrelocate() {
 
-        ResNintendoWareFileHeader *file_header = GetFileHeader();
+        ResNintendoWareFileHeader *file_header = this->GetFileHeader();
 
         /* No sections is valid */
         if (section_count == 0) {

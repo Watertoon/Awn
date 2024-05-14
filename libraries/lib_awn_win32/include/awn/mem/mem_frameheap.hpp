@@ -24,6 +24,9 @@ namespace awn::mem {
                 FrameHeap *new_frameheap = reinterpret_cast<FrameHeap*>(memory);
                 std::construct_at(new_frameheap, name, parent_heap, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + sizeof(FrameHeap)), max_size - sizeof(FrameHeap), is_thread_safe);
 
+                /* Add to parent heap child list */
+                parent_heap->PushBackChild(new_frameheap);
+
                 return new_frameheap;
             }
 

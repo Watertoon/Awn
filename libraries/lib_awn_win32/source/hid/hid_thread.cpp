@@ -135,7 +135,7 @@ namespace awn::hid {
                 }
         };
 
-        vp::util::TypeStorage<HidThread> HidThreadInstance = {};
+        vp::util::TypedStorage<HidThread> HidThreadInstance = {};
     }
 
     void InitializeRawInputThread(mem::Heap *heap) {

@@ -7,6 +7,8 @@ namespace awn::res {
 	void SetLoadThreadsPriority(u32 priority);
 
 	void SetDefaultArchive(ResourceBinder *archive_binder);
+    void ReferenceThreadLocalArchive();
+    void ReleaseThreadLocalArchive();
 
     u32  AllocateDecompressor();
     void FreeDecompressor(u32 handle);

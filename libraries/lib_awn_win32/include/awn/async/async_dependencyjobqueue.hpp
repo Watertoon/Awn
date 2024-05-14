@@ -59,8 +59,8 @@ namespace awn::async {
             friend class DependencyJobQueue;
             friend class DependencyJobThreadManager;
         public:
-            static constexpr size_t       cMaxLocalJobCount = 8;
-            static constinit inline void *cIsBlocked        = reinterpret_cast<void*>(0x1);
+            static constexpr size_t    cMaxLocalJobCount = 8;
+            static constexpr uintptr_t cIsBlocked        = 0x1;
         public:
             using LocalJobRingBuffer = vp::util::FixedRingBuffer<JobQueueNode*, cMaxLocalJobCount>;
         private:

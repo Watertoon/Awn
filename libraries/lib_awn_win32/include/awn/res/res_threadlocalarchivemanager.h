@@ -53,15 +53,23 @@ namespace awn::res {
             bool IsThreadLocalArchiveInReference();
             
 			void ReferenceThreadLocalArchive();
-
 			void ReleaseThreadLocalArchive();
 	};
-    
+
     class ScopedThreadLocalArchive {
         private:
             ResourceBinder m_last_binder;
         public:
+            constexpr ScopedThreadLocalArchive() : m_last_binder() {/*...*/}
             ScopedThreadLocalArchive(ResourceBinder *archive_binder);
+
+            void SetArchive(ResourceBinder *archive_binder);
+
             ~ScopedThreadLocalArchive();
+    };
+    class ScopedThreadLocalArchiveReference {
+        public:
+            ScopedThreadLocalArchiveReference();
+            ~ScopedThreadLocalArchiveReference();
     };
 }

@@ -15,6 +15,8 @@
  */
 #include <vp.hpp>
 
+#ifdef VP_TARGET_ARCHITECTURE_x86
+
 namespace vp::codec {
 
     Result GetZstdDDictIdFromStream(u32 *out_id, const void *zstd_stream, size_t stream_size) {
@@ -179,3 +181,5 @@ namespace vp::codec {
         return expected_size_left;
     }
 }
+
+#endif

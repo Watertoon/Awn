@@ -74,6 +74,13 @@ namespace vp::util {
         return (state ^ state >> cShift);
     }
 
+    constexpr ALWAYS_INLINE u32 DualHashMurmur64(const char *string0, const char *string1) {
+        const u64 hash0 = HashMurmur64(string0);
+        const u64 hash1 = HashMurmur64(string1);
+        const u64 asj_hash1 = (hash0 != hash1) ? hash1 : 0;
+        return hash0 ^ asj_hash1;
+    }
+
     constexpr inline u32 cMurmur32Constant1 = 0xcc9e2d51;
     constexpr inline u32 cMurmur32Constant2 = 0x1b873593;
     constexpr inline u32 cMurmur32PreShift  = 0x16a88000;

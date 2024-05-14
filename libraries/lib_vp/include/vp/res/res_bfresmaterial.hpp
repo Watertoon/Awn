@@ -65,15 +65,15 @@ namespace vp::res {
     };
     
     struct ResBfresSrt2d {
-        util::Vector2f scale;
-        float          rotation;
-        util::Vector2f translation;
+        util::Float2 scale;
+        float        rotation;
+        util::Float2 translation;
     };
 
     struct ResBfresSrt3d {
-        util::Vector3f scale;
-        util::Vector3f rotation;
-        util::Vector3f translation;
+        util::Float3 scale;
+        util::Float3 rotation;
+        util::Float3 translation;
     };
 
     enum class BfresSrtMode : u32 {
@@ -83,18 +83,18 @@ namespace vp::res {
     };
 
     struct ResBfresTextureSrt {
-        BfresSrtMode   srt_mode;
-        util::Vector2f scale;
-        float          rotation;
-        util::Vector2f translation;
+        BfresSrtMode srt_mode;
+        util::Float2 scale;
+        float        rotation;
+        util::Float2 translation;
     };
 
     struct ResBfresTextureSrtWithUserPointer {
-        BfresSrtMode    srt_mode;
-        util::Vector2f  scale;
-        float           rotation;
-        util::Vector2f  translation;
-        void           *user_pointer;
+        BfresSrtMode  srt_mode;
+        util::Float2  scale;
+        float         rotation;
+        util::Float2  translation;
+        void         *runtime_user_pointer;
     };
 
     struct ResBfresShaderParam;
@@ -102,12 +102,12 @@ namespace vp::res {
     using ConvertTextureSrtFunction = u32 (*)(void*, const void*, ResBfresShaderParam*, void*);
 
     struct ResBfresShaderParam {
-        ConvertTextureSrtFunction  *runtime_convert_texture_srt_callback;
-        const char                 *shader_param_name;
-        u16                         shader_param_offset;
-        u8                          data_type;
-        u8                          reserve0;
-        u32                         reserve1;
+        ConvertTextureSrtFunction *runtime_convert_texture_srt_callback;
+        const char                *shader_param_name;
+        u16                        shader_param_offset;
+        u8                         data_type;
+        u8                         reserve0;
+        u32                        reserve1;
     };
     static_assert(sizeof(ResBfresShaderParam) == 0x18);
 

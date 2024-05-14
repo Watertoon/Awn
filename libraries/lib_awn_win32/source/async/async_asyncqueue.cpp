@@ -110,9 +110,6 @@ namespace awn::async {
         VP_ASSERT(0 < queue_info->priority_level_count);
         VP_ASSERT(0 < queue_info->queue_thread_count);
 
-        /* Initialize service mutex */
-        m_queue_mutex.Initialize();
-
 		/* Initialize arrays */
 		m_priority_level_array.Initialize(heap, queue_info->priority_level_count);
 		m_task_thread_array.Initialize(heap, queue_info->queue_thread_count);
@@ -127,8 +124,6 @@ namespace awn::async {
 	}
 
 	void AsyncQueue::Finalize() {
-
-        m_queue_mutex.Finalize();
 
 		m_all_task_complete_event.Finalize();
 		for (PriorityLevel &priority_level : m_priority_level_array) {

@@ -20,4 +20,5 @@
 #include <awn/result/result_async.h>
 #include <awn/result/result_res.h>
 #include <awn/result/result_gfx.h>
+#include <awn/result/result_para.h>
 #include <awn/result/result_frm.h>

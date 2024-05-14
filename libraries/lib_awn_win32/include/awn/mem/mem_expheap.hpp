@@ -82,5 +82,5 @@ namespace awn::mem {
 
             constexpr void SetAllocationMode(AllocationMode allocation_mode) { m_allocation_mode = allocation_mode; }
     };
-    static_assert(sizeof(ExpHeap) == 0xa0);
+    static_assert(sizeof(ExpHeap) == 0x98);
 }

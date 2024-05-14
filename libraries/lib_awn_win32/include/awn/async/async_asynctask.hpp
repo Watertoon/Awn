@@ -40,6 +40,13 @@ namespace awn::async {
     using StaticResultFunction = vp::util::StaticFunction<Result(TaskResultInvokeInfo*)>;
     using StaticCancelFunction = vp::util::StaticFunction<void(TaskCancelInvokeInfo*)>;
 
+    template <typename T>
+    using MemberTaskFunction   = vp::util::MemberFunction<T, void(void*)>;
+    template <typename T>
+    using MemberResultFunction = vp::util::MemberFunction<T, Result(TaskResultInvokeInfo*)>;
+    template <typename T>
+    using MemberCancelFunction = vp::util::MemberFunction<T, void(TaskCancelInvokeInfo*)>;
+
     struct AsyncTaskPushInfo {
         AsyncQueue       *queue;
         AsyncQueueThread *queue_thread;

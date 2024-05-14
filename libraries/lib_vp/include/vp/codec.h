@@ -15,6 +15,11 @@
  */
 #pragma once
 
-#include <vp/codec/codec_aes128cbc.x86.hpp>
+#ifdef VP_TARGET_ARCHITECTURE_x86
+    #include <vp/codec/codec_aes128cbc.x86.hpp>
+#endif
 #include <vp/codec/codec_nisasyst.hpp>
-#include <vp/codec/codec_zstd.h>
+
+#ifdef VP_TARGET_PLATFORM_win32
+    #include <vp/codec/codec_zstd.h>
+#endif

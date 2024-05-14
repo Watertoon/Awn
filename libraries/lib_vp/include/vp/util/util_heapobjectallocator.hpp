@@ -113,5 +113,7 @@ namespace vp::util {
                 new_node->next = m_free_list;
                 m_free_list = new_node;
             }
+
+            constexpr bool IsValid() const { return m_start_address != nullptr; }
     };
 }

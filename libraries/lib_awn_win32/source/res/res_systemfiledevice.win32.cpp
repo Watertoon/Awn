@@ -204,14 +204,9 @@ namespace awn::res {
         /* Integrity checks */
         RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
 
-        /* Format path */
-        MaxPathString formatted_path;
-        const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
-        RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
-
         /* Open file */
         FileHandle handle = {};
-        const Result open_result = this->OpenFile(std::addressof(handle), formatted_path.GetString(), OpenMode::Read);
+        const Result open_result = this->OpenFile(std::addressof(handle), path, OpenMode::Read);
         RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
 
         /* Copy size */

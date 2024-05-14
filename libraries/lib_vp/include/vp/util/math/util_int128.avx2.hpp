@@ -241,7 +241,6 @@ namespace vp::util::avx2 {
     }
 
     /* Load, Store, Set */
-
     constexpr v4si lddqu(int const *address) {
         if (std::is_constant_evaluated()) {
             v128i out = {};
@@ -314,7 +313,5 @@ namespace vp::util::avx2 {
             return v128i{__builtin_ia32_pclmulqdq128(v128i{a}.sll, v128i{b}.sll, selection_mask)}.ull;
         }
     }
-
     static_assert(pclmulqdq(v2ull{5 , 8}, v2ull{5 , 7}, PclmulSelectionMask(false, false))[0] == 17ll);
-
 }

@@ -88,6 +88,7 @@ namespace vp::res {
             }
         public:
             constexpr ByamlIterator() : m_byaml(nullptr), m_container_data{} {/*...*/}
+            constexpr ByamlIterator(const ResByaml *res_byaml, ByamlData data) : m_byaml(res_byaml), m_container_data(data) {/*...*/}
             ALWAYS_INLINE ByamlIterator(const unsigned char *byaml_file) : m_byaml(reinterpret_cast<const ResByaml*>(byaml_file)), m_container_data{} {
 
                 /* Verify valid byaml file */
@@ -205,10 +206,11 @@ namespace vp::res {
             bool TryRemapIndexByKey(u32 *out_container_index, const char *key) const {
 
                 /* Integrity checks */
-                if (m_byaml == nullptr || m_byaml->key_table_offset == 0 || (static_cast<ByamlDataType>(m_container_data.data_type) != ByamlDataType::Dictionary && static_cast<ByamlDataType>(m_container_data.data_type) != ByamlDataType::DictionaryWithRemap)) { return false; }
+                const ByamlDataType container_data_type = static_cast<ByamlDataType>(m_container_data.data_type);
+                if (m_byaml == nullptr || m_byaml->key_table_offset == 0 || (container_data_type != ByamlDataType::Dictionary && container_data_type != ByamlDataType::DictionaryWithRemap)) { return false; }
 
                 /* Endianess check */
-                const u32 is_reverse_endian = m_byaml->IsReverseEndian();
+                const bool is_reverse_endian = m_byaml->IsReverseEndian();
 
                 /* Setup container and iterators */
                 const u32 r_key_table_offset = (is_reverse_endian == false) ? m_byaml->key_table_offset : vp::util::SwapEndian(m_byaml->key_table_offset);
@@ -257,10 +259,11 @@ namespace vp::res {
             bool TryGetByamlDataByKey(ByamlData *out_byaml_data, const char *key) const {
 
                 /* Integrity checks */
-                if (m_byaml == nullptr || m_byaml->key_table_offset == 0 || (static_cast<ByamlDataType>(m_container_data.data_type) != ByamlDataType::Dictionary && static_cast<ByamlDataType>(m_container_data.data_type) != ByamlDataType::DictionaryWithRemap)) { return false; }
+                const ByamlDataType container_data_type = static_cast<ByamlDataType>(m_container_data.data_type);
+                if (m_byaml == nullptr || m_byaml->key_table_offset == 0 || (container_data_type != ByamlDataType::Dictionary && container_data_type != ByamlDataType::DictionaryWithRemap)) { return false; }
 
                 /* Endianess check */
-                const u32 is_reverse_endian = m_byaml->IsReverseEndian();
+                const bool is_reverse_endian = m_byaml->IsReverseEndian();
 
                 /* Setup container and iterators */
                 const u32 r_key_table_offset = (is_reverse_endian == false) ? m_byaml->key_table_offset : vp::util::SwapEndian(m_byaml->key_table_offset);
@@ -286,10 +289,10 @@ namespace vp::res {
                 while (i < size) {
                     index = i + size;
                     index = index >> 1;
-                    const ResByamlDictionaryPair *res_pair = dic_iter.GetDictionaryPairByIndex(index, is_reverse_endian);
-                    const u32 r_key_index = (is_reverse_endian == false) ? res_pair->key_index : vp::util::SwapEndian24(res_pair->key_index);
-                    const char *pair_key = table_iterator.GetStringByIndex(r_key_index, key_pool_offset, is_reverse_endian);
-                    const s32 result = ::strcmp(key, pair_key);
+                    const ResByamlDictionaryPair *res_pair    = dic_iter.GetDictionaryPairByIndex(index, is_reverse_endian);
+                    const u32                     r_key_index = (is_reverse_endian == false) ? res_pair->key_index : vp::util::SwapEndian24(res_pair->key_index);
+                    const char                   *pair_key    = table_iterator.GetStringByIndex(r_key_index, key_pool_offset, is_reverse_endian);
+                    const s32                     result      = ::strcmp(key, pair_key);
                     
                     if (result == 0) {
                         out_byaml_data->SetPair(res_pair, is_reverse_endian);
@@ -783,6 +786,41 @@ namespace vp::res {
                 return true;
             }
 
+            ByamlIterator GetIteratorByIndex(u32 index) const {
+
+                ByamlData data = {};
+                const bool result = this->TryGetByamlDataByIndex(std::addressof(data), index);
+                if (result == false) { return ByamlIterator(); }
+
+                return ByamlIterator(m_byaml, data);
+            }
+
+            ByamlIterator GetIteratorByKey(const char *key) const {
+
+                ByamlData data = {};
+                const bool result = this->TryGetByamlDataByKey(std::addressof(data), key);
+                if (result == false) { return ByamlIterator(); }
+
+                return ByamlIterator(m_byaml, data);
+            }
+
+            ByamlIterator GetIteratorByHash(u32 hash) const {
+
+                ByamlData data = {};
+                const bool result = this->TryGetByamlDataByHash(std::addressof(data), hash);
+                if (result == false) { return ByamlIterator(); }
+
+                return ByamlIterator(m_byaml, data);
+            }
+            ByamlIterator GetIteratorByHash(u64 hash) const {
+
+                ByamlData data = {};
+                const bool result = this->TryGetByamlDataByHash(std::addressof(data), hash);
+                if (result == false) { return ByamlIterator(); }
+
+                return ByamlIterator(m_byaml, data);
+            }
+
             bool TryGetIteratorByKey(ByamlIterator *out_iterator, const char *key) const {
 
                 ByamlData data = {};
@@ -1004,6 +1042,48 @@ namespace vp::res {
             }
             ALWAYS_INLINE bool TryGetBinaryDataByIterator(void **out_value, u32 *out_size, u32 *out_alignment) const {
                 return this->TryGetBinaryDataByData(out_value, out_size, out_alignment, m_container_data);
+            }
+            ALWAYS_INLINE bool TryGetIteratorByIterator(ByamlIterator *out_iter) const {
+                return this->TryGetIteratorByData(out_iter, m_container_data);
+            }
+
+            template <typename T>
+                requires (IsBigDataType(TGetByamlDataTypeValue<T>()) == false)
+            const T *GetMonoArray(u32 *out_count) {
+
+                /* Fail if not array  */
+                const ByamlDataType data_type = static_cast<ByamlDataType>(this->GetDataType());
+                if (IsArrayType(data_type) == false) { return nullptr; }
+
+                /* Get count */
+                const ResByamlContainer *container = reinterpret_cast<const ResByamlContainer*>(m_container_data.GetBigData(m_byaml));
+                const u32                count     = (m_byaml->IsReverseEndian() == false) ? container->count : vp::util::SwapEndian24(container->count);
+                if (out_count != nullptr) { *out_count = count; }
+
+                /* Get array if mono-typed */
+                const ByamlDataType *data_type_array = reinterpret_cast<const ByamlDataType*>(reinterpret_cast<uintptr_t>(container) + sizeof(ResByamlContainer));
+                if (data_type == ByamlDataType::MonoTypedArray) {
+                    if (data_type_array[0] != TGetByamlDataTypeValue<T>()) { return nullptr; }
+                    return reinterpret_cast<const T*>(reinterpret_cast<uintptr_t>(container) + sizeof(u32) + sizeof(ResByamlContainer));
+                }
+
+                /* Verify array is mono-typed */
+                for (u32 i = 0; i < count; ++i) {
+                    if (data_type_array[i] != TGetByamlDataTypeValue<T>()) { return nullptr; }
+                }
+
+                return reinterpret_cast<const T*>(reinterpret_cast<uintptr_t>(container) + vp::util::AlignUp(count + sizeof(ResByamlContainer), alignof(u32)));
+            }
+
+            bool TryGetByamlDataAndKeyByIndex(ByamlData *out_data, const char **out_key, u32 index) {
+                const bool data_result = this->TryGetByamlDataByIndex(out_data, index);
+                const bool key_result  = this->TryGetKeyByData(out_key, *out_data);
+                return data_result & key_result;
+            }
+            bool TryGetIteratorAndKeyByIndex(ByamlIterator *out_iter, const char **out_key, u32 index) {
+                const bool iter_result = this->TryGetIteratorByIndex(out_iter, index);
+                const bool key_result  = this->TryGetKeyByData(out_key, out_iter->m_container_data);
+                return iter_result & key_result;
             }
     };
 }

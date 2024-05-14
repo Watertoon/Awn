@@ -1,58 +1,48 @@
-/*
- *  Copyright (C) W. Michael Knudson
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with this program; 
- *  if not, see <https://www.gnu.org/licenses/>.
- */
 #pragma once
 
 namespace vp::res {
 
     enum class BeaCompressionType : u16 {
-        None      = 0,
-        Zlib      = 1,
-        Zstandard = 2,
+        None = 0,
+        Zlib = 1,
+        Zstd = 2,
     };
 
     struct ResBeaFileEntry : public ResNintendoWareSubHeader {
-        u16     compression_type;
-        u16     alignment;
+        u16     compression_type; /* No longer compression type? */
+        u16     alignment_pow2;
         u32     compressed_size;
-        u32     uncompressed_size;
+        u32     decompressed_size;
+        u32     magic0;
+        u32     magic1;
         u32     reserve0;
         size_t  file_offset;
         char   *file_name;
 
         static constexpr inline u32 cMagic = util::TCharCode32("ASST");
     };
-    static_assert(sizeof(ResBeaFileEntry) == 0x30);
+    static_assert(sizeof(ResBeaFileEntry) == 0x38);
 
     struct ResBea : public ResNintendoWareFileHeader {
-        s64                         file_count;
+        u32                         file_count;
+        u32                         reserve0;
+        ResBeaFileEntry            *file_entry_head;
         ResBeaFileEntry           **file_entry_array;
         ResNintendoWareDictionary  *file_dictionary;
-        u64                         reserve0;
-        char                       *archive_name;
+        const char                 *archive_name;
+        const char                 *compression_name;
+        const char                **reserve1;
 
         static ResBea *ResCast(void *file) {
             ResBea *bea = reinterpret_cast<ResBea*>(file);
-            if (bea == nullptr || bea->ResNintendoWareFileHeader::IsValid(cMagic, 1, 1) == false) { return nullptr; }
+            if (bea == nullptr || bea->ResNintendoWareFileHeader::IsValid(cMagic, cTargetMajorVersion, cTargetMinorVersion) == false) { return nullptr; }
             bea->Relocate();
             return bea;
         }
 
         static bool IsValid(void *file) {
             ResBea *bea = reinterpret_cast<ResBea*>(file);
-            return bea->ResNintendoWareFileHeader::IsValid(cMagic, 1, 1, 0);
+            return bea->ResNintendoWareFileHeader::IsValid(cMagic, cTargetMajorVersion, cTargetMinorVersion, 0);
         }
 
         ALWAYS_INLINE ResBeaFileEntry *TryGetFileEntryByPath(const char *file_path) {
@@ -74,8 +64,10 @@ namespace vp::res {
             return file_dictionary->GetKeyByEntryIndex(entry_index);
         }
 
-        static constexpr inline u64 cMagic = util::TCharCode32("SCNE");
+        static constexpr inline u64 cMagic              = util::TCharCode32("SCNE");
+        static constexpr inline u32 cTargetMajorVersion = 5;
+        static constexpr inline u32 cTargetMinorVersion = 0;
     };
-    static_assert(sizeof(ResBea) == 0x48);
+    static_assert(sizeof(ResBea) == 0x58);
 }
 

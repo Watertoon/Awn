@@ -15,6 +15,8 @@
  */
 #include <vp.hpp>
 
+#ifdef VP_TARGET_ARCHITECTURE_x86
+
 namespace vp::codec {
 
 	void GenerateNisasystKey(NisasystKey *out_key, vp::res::NintendoWareRandom *random) {
@@ -53,3 +55,5 @@ namespace vp::codec {
         return;
 	}
 }
+
+#endif

@@ -56,63 +56,63 @@ namespace vp::util {
                     }
             };
         private:
-            u32   m_max_pointers;
-            u32   m_used_pointers;
-            T   **m_pointer_array;
+            u32   m_max_count;
+            u32   m_used_count;
+            T   **m_array;
         public:
-            constexpr ALWAYS_INLINE PointerArray() : m_max_pointers(0), m_used_pointers(0), m_pointer_array(nullptr) {/*...*/}
+            constexpr ALWAYS_INLINE PointerArray() : m_max_count(0), m_used_count(0), m_array(nullptr) {/*...*/}
             constexpr ~PointerArray() {/*...*/}
 
             constexpr Iterator begin() {
-                return Iterator(m_pointer_array);
+                return Iterator(m_array);
             }
             constexpr Iterator end() {
-                return Iterator(m_pointer_array + m_used_pointers);
+                return Iterator(m_array + m_used_count);
             }
 
             constexpr ALWAYS_INLINE T *operator[](u32 index) {
-                if (index < m_used_pointers) {
-                    VP_ASSERT(index < m_used_pointers);
+                if (m_used_count <= index) {
+                    VP_ASSERT(index < m_used_count);
                     index = 0;
-                    VP_ASSERT(0 < m_max_pointers);
+                    VP_ASSERT(0 < m_max_count);
                 }
-                return m_pointer_array[index];
+                return m_array[index];
             }
 
             constexpr ALWAYS_INLINE const T *operator[](u32 index) const {
-                if (index < m_used_pointers) {
-                    VP_ASSERT(index < m_used_pointers);
+                if (m_used_count <= index) {
+                    VP_ASSERT(index < m_used_count);
                     index = 0;
-                    VP_ASSERT(0 < m_max_pointers);
+                    VP_ASSERT(0 < m_max_count);
                 }
-                return m_pointer_array[index];
+                return m_array[index];
             }
 
             ALWAYS_INLINE void Initialize(imem::IHeap *heap, u32 pointer_count, s32 alignment = 8) {
 
                 /* Integrity checks */
                 if (pointer_count == 0) { return; }
-                VP_ASSERT(m_pointer_array == nullptr && m_max_pointers == 0);
+                VP_ASSERT(m_array == nullptr && m_max_count == 0);
 
                 /* Allocate pointer array */
-                m_pointer_array = new (heap, alignment) T*[pointer_count];
-                VP_ASSERT(m_pointer_array != nullptr);
+                m_array = new (heap, alignment) T*[pointer_count];
+                VP_ASSERT(m_array != nullptr);
 
                 /* Set state */
-                m_used_pointers = 0;
-                m_max_pointers  = pointer_count;
+                m_used_count = 0;
+                m_max_count  = pointer_count;
 
                 return;
             }
 
             ALWAYS_INLINE void Finalize() {
 
-                if (m_pointer_array != nullptr) {
-                    delete [] m_pointer_array;
+                if (m_array != nullptr) {
+                    delete [] m_array;
                 }
-                m_used_pointers = 0;
-                m_max_pointers  = 0;
-                m_pointer_array = nullptr;
+                m_used_count = 0;
+                m_max_count  = 0;
+                m_array = nullptr;
 
                 return;
             }
@@ -123,43 +123,51 @@ namespace vp::util {
                 VP_ASSERT(pointer_buffer != nullptr && pointer_count != 0);
 
                 /* Set state */
-                m_pointer_array = pointer_buffer;
-                m_used_pointers = 0;
-                m_max_pointers  = pointer_count;
+                m_array      = pointer_buffer;
+                m_used_count = 0;
+                m_max_count  = pointer_count;
             
                 return;
             }
-            
+
             constexpr ALWAYS_INLINE void PushPointer(T *pointer) {
-                VP_ASSERT(m_used_pointers < m_max_pointers);
-                m_pointer_array[m_used_pointers] = pointer;
-                ++m_used_pointers;
+                VP_ASSERT(m_used_count < m_max_count);
+                m_array[m_used_count] = pointer;
+                ++m_used_count;
             }
 
             constexpr ALWAYS_INLINE T *PopPointer() {
-                T *ret = m_pointer_array[m_used_pointers - 1];
-                m_pointer_array[m_used_pointers - 1] = nullptr;
-                --m_used_pointers;
+                T *ret = m_array[m_used_count - 1];
+                m_array[m_used_count - 1] = nullptr;
+                --m_used_count;
                 return ret;
             }
 
             ALWAYS_INLINE void RemoveRange(u32 base_index, u32 number_of_elements) {
 
                 const u32 move_element_index = base_index + number_of_elements;
-                const u32 move_element_count = m_used_pointers - move_element_index;
-                VP_ASSERT(move_element_index <= m_used_pointers);
+                const u32 move_element_count = m_used_count - move_element_index;
+                VP_ASSERT(move_element_index <= m_used_count);
 
                 if (move_element_count != 0) {
-                    ::memmove(std::addressof(m_pointer_array[base_index], std::addressof(m_pointer_array[move_element_index]), move_element_count * sizeof(T**)));
+                    ::memmove(std::addressof(m_array[base_index], std::addressof(m_array[move_element_index]), move_element_count * sizeof(T**)));
                 }
-                m_used_pointers = m_used_pointers - number_of_elements;
+                m_used_count = m_used_count - number_of_elements;
 
                 return;
             }
 
-            void Clear() { m_used_pointers = 0; }
+            void Clear() { m_used_count = 0; }
 
-            constexpr u32 GetUsedCount() const { return m_used_pointers; }
-            constexpr u32 GetMaxCount()  const { return m_max_pointers; }
+            constexpr u32 GetUsedCount() const { return m_used_count; }
+            constexpr u32 GetMaxCount()  const { return m_max_count; }
+            
+            constexpr void SetUsedCount(u32 count) { m_used_count = count; }
+            constexpr void SetPointer(u32 index, T *pointer) {
+                VP_ASSERT(index < m_used_count);
+                m_array[index] = pointer;
+            }
+
+            constexpr bool IsValid() const { return m_array != nullptr; }
     };
 }

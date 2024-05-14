@@ -139,7 +139,10 @@ namespace awn::res {
 
             virtual Result CheckDirectoryExistsImpl(const char *path) { VP_ASSERT(false); VP_UNUSED(path); }
 
-            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { VP_ASSERT(false); VP_UNUSED(out_formatted_path, path); }
+            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { 
+                *out_formatted_path = path;
+                RESULT_RETURN_SUCCESS;
+            }
 
             virtual u32 GetDriveSize() const { return 0; }
         public:

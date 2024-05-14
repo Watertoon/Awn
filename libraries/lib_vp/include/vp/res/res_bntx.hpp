@@ -81,7 +81,7 @@ namespace vp::res {
             return std::addressof(user_data_array[entry_id]);
         }
     };
-    static_assert(sizeof(ResBntxTextureInfo) == 0xA0);
+    static_assert(sizeof(ResBntxTextureInfo) == 0xa0);
 
     struct ResBntx : public ResNintendoWareFileHeader {
         ResBntxTextureContainer texture_container;

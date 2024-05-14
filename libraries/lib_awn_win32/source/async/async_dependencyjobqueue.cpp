@@ -81,7 +81,7 @@ namespace awn::async {
 
             /* Clear next job if blocked */
             JobQueueNode *last = nullptr;
-            vp::util::InterlockedCompareExchange(std::addressof(last), std::addressof(m_thread_control_array[i]->m_next_job), reinterpret_cast<JobQueueNode*>(DependencyJobThreadControl::cIsBlocked), static_cast<JobQueueNode*>(nullptr));
+            vp::util::InterlockedCompareExchange(std::addressof(last), std::addressof(m_thread_control_array[i]->m_next_job), reinterpret_cast<JobQueueNode*>(reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)), static_cast<JobQueueNode*>(nullptr));
 
             /* Signal wakeup */
             m_thread_control_array[i]->m_out_of_jobs_event.Signal();
@@ -149,10 +149,10 @@ namespace awn::async {
 
         /* Set from null to blocked */
         JobQueueNode *original = nullptr;
-        vp::util::InterlockedCompareExchange(std::addressof(original), std::addressof(thread_control->m_next_job), static_cast<JobQueueNode*>(nullptr), reinterpret_cast<JobQueueNode*>(DependencyJobThreadControl::cIsBlocked));
+        vp::util::InterlockedCompareExchange(std::addressof(original), std::addressof(thread_control->m_next_job), static_cast<JobQueueNode*>(nullptr), reinterpret_cast<JobQueueNode*>(reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)));
 
         /* Check if a job was queued */
-        if (DependencyJobThreadControl::cIsBlocked < original) { return; }
+        if (reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked) < original) { return; }
 
         /* Attempt to set next job from local ring if null */
         if (nullptr == original) { 
@@ -160,12 +160,12 @@ namespace awn::async {
         }
 
         /* Check if a new job has been added */
-        if (m_job_priority_queue.GetUsedCount() == 0 && thread_control->m_next_job == DependencyJobThreadControl::cIsBlocked) {
+        if (m_job_priority_queue.GetUsedCount() == 0 && thread_control->m_next_job == reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)) {
 
             /* Try clear wait bit */
             JobQueueNode *wait = nullptr;
-            vp::util::InterlockedCompareExchange(std::addressof(wait), std::addressof(thread_control->m_next_job), reinterpret_cast<JobQueueNode*>(DependencyJobThreadControl::cIsBlocked), static_cast<JobQueueNode*>(nullptr));
-            if (wait == DependencyJobThreadControl::cIsBlocked) { return; }
+            vp::util::InterlockedCompareExchange(std::addressof(wait), std::addressof(thread_control->m_next_job), reinterpret_cast<JobQueueNode*>(reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)), static_cast<JobQueueNode*>(nullptr));
+            if (wait == reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)) { return; }
         }
 
         /* Wait */
@@ -182,12 +182,12 @@ namespace awn::async {
 
             /* Try to atomicly swap next job if empty */
             JobQueueNode *original = m_thread_control_array[i]->m_next_job;
-            while (original <= DependencyJobThreadControl::cIsBlocked) {
+            while (original <= reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)) {
 
                 JobQueueNode *swapped = nullptr;
                 vp::util::InterlockedCompareExchange(std::addressof(swapped), std::addressof(m_thread_control_array[i]->m_next_job), node, original);
                 if (swapped == original) {
-                    if (swapped == DependencyJobThreadControl::cIsBlocked) { m_thread_control_array[i]->m_out_of_jobs_event.Signal(); }
+                    if (swapped == reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)) { m_thread_control_array[i]->m_out_of_jobs_event.Signal(); }
                     return;
                 }
 
@@ -208,7 +208,7 @@ namespace awn::async {
     u32 DependencyJobQueue::ScheduleNextJob(JobQueueNode **out_queue_node, DependencyJobThreadControl *thread_control) {
 
         /* Check if the next job is set */
-        if (DependencyJobThreadControl::cIsBlocked < thread_control->m_next_job) {
+        if (reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked) < thread_control->m_next_job) {
 
             thread_control->SetNextJobFromLocalRing();
 
@@ -377,12 +377,12 @@ namespace awn::async {
 
             /* Wake any waiting workers to take care of remaining jobs */
             for (u32 i = 0; i < m_thread_control_array.GetUsedCount() && i < remaining_job_count; ++i) {
-                if (m_thread_control_array[i]->m_is_ready_to_exit == true || m_thread_control_array[i]->m_next_job != DependencyJobThreadControl::cIsBlocked) { continue; }
+                if (m_thread_control_array[i]->m_is_ready_to_exit == true || m_thread_control_array[i]->m_next_job != reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)) { continue; }
 
                 JobQueueNode *last_job = nullptr;
-                vp::util::InterlockedCompareExchange(std::addressof(last_job), std::addressof(m_thread_control_array[i]->m_next_job), reinterpret_cast<JobQueueNode*>(DependencyJobThreadControl::cIsBlocked), static_cast<JobQueueNode*>(nullptr));
+                vp::util::InterlockedCompareExchange(std::addressof(last_job), std::addressof(m_thread_control_array[i]->m_next_job), reinterpret_cast<JobQueueNode*>(reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)), static_cast<JobQueueNode*>(nullptr));
 
-                if (last_job != DependencyJobThreadControl::cIsBlocked) { continue; }
+                if (last_job != reinterpret_cast<void*>(DependencyJobThreadControl::cIsBlocked)) { continue; }
 
                 m_thread_control_array[i]->m_out_of_jobs_event.Signal();
 

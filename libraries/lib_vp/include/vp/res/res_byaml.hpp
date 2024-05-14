@@ -90,12 +90,24 @@ namespace vp::res {
         return ByamlDataType::Null;
     }
 
+    constexpr ALWAYS_INLINE bool IsPrimitiveType(ByamlDataType data_type) {
+        const u8 value = (static_cast<u8>(data_type) & 0xf0);
+        return (value == 0xd0);
+    }
     constexpr ALWAYS_INLINE bool IsBigDataType(ByamlDataType data_type) {
         return (static_cast<u8>(data_type) < 0xd0) & (0xd3 < static_cast<u8>(data_type));
     }
     constexpr ALWAYS_INLINE bool IsContainerType(ByamlDataType data_type) {
         const u8 value = (static_cast<u8>(data_type) & 0xf0);
-        return (value == 0xc0) | (value == 0x20);
+        return (value == 0xc0) || (value == 0x20);
+    }
+    constexpr ALWAYS_INLINE bool IsArrayType(ByamlDataType data_type) {
+        const u8 value = static_cast<u8>(data_type);
+        return (value == 0xc0) || (value == 0xc8);
+    }
+    constexpr ALWAYS_INLINE bool IsDictionaryType(ByamlDataType data_type) {
+        const u8 value = static_cast<u8>(data_type);
+        return (value == 0xc1) || (value == 0xc4);
     }
 
     struct ResByamlContainer {

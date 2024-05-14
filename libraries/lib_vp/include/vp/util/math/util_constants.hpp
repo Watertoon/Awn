@@ -17,26 +17,23 @@
 
 namespace vp::util {
 
-    constexpr inline float cInfinity = INFINITY;
-
-    constexpr inline float cEpsilon = 9.094947e-14;
-
-    constexpr inline float cFloatPi = 3.1415927;
-
-    constexpr inline float cFloat2Pi = 6.2831855;
-
-    constexpr inline float cFloatPiDivided2 = 1.5707964;
-
-    constexpr inline float cFloat3PiDivided2 = 4.712389;
-
-    constexpr inline float cFloat1Divided2Pi = 0.15915494;
-
-    constexpr inline float cFloatDegree180 = 180.0;
-
+    constexpr inline float cFloatInfinity           = INFINITY;
+    constexpr inline float cFloatEpsilon            = 9.094947e-14;
+    constexpr inline float cFloatPi                 = 3.1415927;
+    constexpr inline float cFloat2Pi                = 6.2831855;
+    constexpr inline float cFloatPiDivided2         = 1.5707964;
+    constexpr inline float cFloat3PiDivided2        = 4.712389;
+    constexpr inline float cFloat1Divided2Pi        = 0.15915494;
+    constexpr inline float cFloatDegree180          = 180.0;
     constexpr inline float cFloatQuarternionEpsilon = 1.0E-5;
+    constexpr inline float cFloatUlp                = 1.1920929E-7;
 
-    /* Ulp stands for "Unit of least precision" as in '1 / 2^23' */
-    constexpr inline float cFloatUlp = 1.1920929E-7;
+    constexpr inline double cDoublePi                 = 3.1415927;
+    constexpr inline double cDouble2Pi                = 6.2831855;
+    constexpr inline double cDoublePiDivided2         = 1.5707964;
+    constexpr inline double cDouble3PiDivided2        = 4.712389;
+    constexpr inline double cDouble1Divided2Pi        = 0.15915494;
+    constexpr inline double cDoubleDegree180          = 180.0;
 
     template<typename T, T Degrees> requires std::is_floating_point<T>::value
     constexpr inline T TRadians = (Degrees * cFloatPi / cFloatDegree180);

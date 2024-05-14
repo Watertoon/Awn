@@ -44,6 +44,7 @@ namespace awn::res {
 
     struct AsyncResourceManagerInfo {
         IAsyncResourceApplicationImpl        *app_impl;
+        size_t                                zsdic_heap_size;
         const char                           *resource_size_table_path;
         u32                                   max_thread_local_archive_count;
         u32                                   max_resource_unit_count;
@@ -124,6 +125,7 @@ namespace awn::res {
 
             ResourceSizeTableManager       m_resource_size_table_manager;
 
+            mem::Heap                     *m_zsdic_heap;
             DecompressorManager            m_decompressor_manager;
 
             sys::ServiceCriticalSection    m_managed_thread_array_cs;
@@ -209,9 +211,8 @@ namespace awn::res {
             m_async_queue_thread_control(), m_async_queue_thread_memory(), m_async_queue_control(), m_async_queue_memory(), m_async_queue_load(), m_async_queue_load_thread_array(), m_async_task_allocator_load(),
             m_free_frame_cs(), m_resource_unit_free_frame_buffer(), 
             m_default_archive_file_device(), m_default_archive_file_device_for_size_prepare(), m_default_archive_binder(), m_default_archive_reference_count(), m_thread_local_archive_manager(), m_resource_size_table_manager(),
-            m_managed_thread_array_cs(), m_managed_thread_array(), m_enable_managed(),
+            m_zsdic_heap(), m_decompressor_manager(), m_managed_thread_array_cs(), m_managed_thread_array(), m_enable_managed(),
             m_task_for_calculate(), m_task_for_load_sync(), m_task_for_clear_cache_for_allocate(), m_task_for_force_reserve_unload(), m_task_for_force_clear_all_caches(),
-
             m_calc_exe(this, CalculateExe), m_load_async_exe(this, LoadAsyncExe), m_schedule_load_exe(this, ScheduleLoadExe), m_schedule_load_result(this, ScheduleLoadResult), m_load_file_exe(this, LoadFileExe), 
             m_reserve_unload_exe(this, ReserveUnloadExe), m_clear_cache_for_allocate_exe(this, ClearCacheForAllocateExe), m_heap_adjust_exe(HeapAdjustExe), m_clear_cache_exe(ClearCacheExe), m_clear_cache_result(ClearCacheResult),
             m_unload_exe(UnloadExe), m_unload_result(UnloadResult), m_unload_for_sync_exe(UnloadForSyncExe), m_unload_for_sync_result(UnloadForSyncResult) {/*...*/}

@@ -86,14 +86,14 @@ namespace vp::res {
     static_assert(sizeof(ResBfresKeyShape) == 0x14);
 
     struct ResBfresBounding {
-        util::Vector3f center_position;
-        util::Vector3f extent;
+        util::Float3 center_position;
+        util::Float3 extent;
     };
     static_assert(sizeof(ResBfresBounding) == 0x18);
 
     struct ResBfresBoundingSphere {
-        util::Vector3f center_position;
-        float          radius;
+        util::Float3 center_position;
+        float        radius;
     };
     static_assert(sizeof(ResBfresBoundingSphere) == 0x10);
 

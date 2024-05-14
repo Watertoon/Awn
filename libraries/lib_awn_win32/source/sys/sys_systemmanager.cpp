@@ -18,7 +18,7 @@
 namespace awn::sys {
 
     namespace {
-        constinit vp::util::TypeStorage<SystemManager> sSystemManagerStorage = {};
+        constinit vp::util::TypedStorage<SystemManager> sSystemManagerStorage = {};
     }
 
     void InitializeSystemManager() {

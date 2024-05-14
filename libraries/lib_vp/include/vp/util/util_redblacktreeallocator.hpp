@@ -38,6 +38,9 @@ namespace vp::util {
                 m_allocator.Finalize();
             }
 
+            ALWAYS_INLINE TreeType::iterator begin() { return m_tree.begin(); }
+            ALWAYS_INLINE TreeType::iterator end()   { return m_tree.end(); }
+
             template <typename ... Args>
             ParentType *Allocate(KeyType key, Args &&... args) {
                 ParentType *new_node = m_allocator.Allocate(std::forward<Args>(args) ...);
@@ -57,5 +60,6 @@ namespace vp::util {
             ParentType *Find(KeyType key) { return m_tree.Find(key); }
 
             constexpr TreeType *GetTree() { return std::addressof(m_tree); }
+            constexpr bool IsValid() const { return m_allocator.IsValid(); }
     };
 }

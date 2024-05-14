@@ -156,7 +156,7 @@ namespace vp::util {
             virtual ~LambdaFunction() override {/*...*/}
 
             virtual Return Invoke(Args ...args) override {
-                return (m_lambda)(args...);
+                return Return((m_lambda)(args...));
             }
 
             constexpr virtual bool IsValid() const override { return true; }
@@ -200,7 +200,7 @@ namespace vp::util {
             ALWAYS_INLINE ~AnyFunction() { std::destroy_at(m_any.template GetType<IFunction<Return(Args...)>>()); }
 
             ALWAYS_INLINE Return Invoke(Args ...args) {
-                return m_any.template GetType<IFunction<Return(Args...)>>()->Invoke(args...);
+                return Return(m_any.template GetType<IFunction<Return(Args...)>>()->Invoke(args...));
             }
             ALWAYS_INLINE bool IsValid() const {
                 return m_any.template GetType<IFunction<Return(Args...)>>()->IsValid();
@@ -216,6 +216,11 @@ namespace vp::util {
     template <class FunctionType, class Lambda>
         requires (sizeof(Lambda) <= 0x18)
     constexpr ALWAYS_INLINE auto MakeLambdaFunction(const Lambda &lambda) {
+        return LambdaFunction<Lambda, FunctionType>(std::move(lambda));
+    }
+
+    template <class FunctionType, class Lambda>
+    constexpr ALWAYS_INLINE auto MakeLargeLambdaFunction(const Lambda &lambda) {
         return LambdaFunction<Lambda, FunctionType>(std::move(lambda));
     }
 

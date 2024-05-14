@@ -64,7 +64,6 @@ namespace awn::async {
         /* Post execute */
         {
             std::scoped_lock l(m_queue->m_queue_mutex);
-
             this->PostExecute();
         }
 
@@ -177,7 +176,11 @@ namespace awn::async {
         m_result_function        = push_info->result_function;
         m_cancel_function        = push_info->cancel_function;
         m_user_data              = push_info->user_data;
-        m_is_signal_finish_event = (push_info->is_sync == true) | (push_info->is_skip_finish_event == false);
+        
+        const bool is_signal_event = (push_info->is_sync == true) | (push_info->is_skip_finish_event == false);
+        m_is_signal_finish_event = is_signal_event;
+        m_is_free_for_allocator  = false;
+        if (is_signal_event == true) { m_finish_event.Clear(); }
         this->FormatPushInfo(push_info);
 
         /* Try invoke sync */

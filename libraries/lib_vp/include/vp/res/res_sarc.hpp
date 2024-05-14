@@ -231,7 +231,7 @@ namespace vp::res {
                 const u32 hash_seed = (is_reverse_endian == false) ? m_sfat->hash_seed : vp::util::SwapEndian(m_sfat->hash_seed);
                 u32 hash = 0;
                 while (*path != '\0') {
-                    hash = hash * hash_seed + static_cast<int>(*path);
+                    hash = hash * hash_seed + static_cast<u32>(*path);
                     path = path + 1;
                 }
 

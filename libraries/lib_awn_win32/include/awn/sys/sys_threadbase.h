@@ -81,7 +81,7 @@ namespace awn::sys {
 
             virtual void StartThread()                                         {/*...*/}
             virtual void ExitThread() {
-                m_message_queue.SendMessage(m_exit_message);
+                m_message_queue.JamMessage(m_exit_message);
                 this->WaitForThreadExit();
             }
             virtual void WaitForThreadExit()                                   {/*...*/}

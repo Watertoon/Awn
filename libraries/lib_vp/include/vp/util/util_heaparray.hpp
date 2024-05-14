@@ -120,11 +120,14 @@ namespace vp::util {
                 return m_object_array[index];
             }
 
+            constexpr ALWAYS_INLINE T *GetArray() { return m_object_array; }
             constexpr ALWAYS_INLINE u32 GetCount() const { return m_array_count; }
 
             constexpr ALWAYS_INLINE u32 GetIndexOf(T *element) const {
                 return element - m_object_array;
             }
+
+            constexpr bool IsValid() const { return m_object_array != nullptr; }
 
             constexpr void Sort() {
                 std::sort(m_object_array, m_object_array + m_array_count);

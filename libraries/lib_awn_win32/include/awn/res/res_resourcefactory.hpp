@@ -126,6 +126,5 @@ namespace awn::res {
 
                 RESULT_RETURN_SUCCESS;
             }
-
     };
 }

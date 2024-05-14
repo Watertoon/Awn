@@ -42,13 +42,13 @@ namespace vp::util {
             }
 
             constexpr void GetVirtualCanvasSize(float *out_x, float *out_y) const {
-                *out_x = m_virtual_size[0];
-                *out_y = m_virtual_size[1];
+                *out_x = m_virtual_size.x;
+                *out_y = m_virtual_size.y;
             }
 
             constexpr void GetDimensions(float *out_x, float *out_y) const {
-                *out_x = m_dimensions[0];
-                *out_y = m_dimensions[1];
+                *out_x = m_dimensions.x;
+                *out_y = m_dimensions.y;
             }
             constexpr void GetVirtualCanvasSize(vp::util::Vector2f *out_vec2f) const {
                 *out_vec2f = m_virtual_size;

@@ -241,6 +241,15 @@ namespace awn::res {
         }
         manager->SetThreadLocalArchive(archive_binder);
     }
+    void ScopedThreadLocalArchive::SetArchive(ResourceBinder *archive_binder) {
+        ThreadLocalArchiveManager *manager       = AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager();
+        LocalArchiveBinder *local_archive_binder = manager->GetThreadLocalArchive();
+        if (local_archive_binder != nullptr) {
+            m_last_binder.ReferenceBinderSync(std::addressof(local_archive_binder->resource_binder));
+            local_archive_binder->resource_binder.Finalize();
+        }
+        manager->SetThreadLocalArchive(archive_binder);
+    }
     ScopedThreadLocalArchive::~ScopedThreadLocalArchive() {
         ThreadLocalArchiveManager *manager = AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager();
         LocalArchiveBinder *local_archive_binder = manager->GetThreadLocalArchive();
@@ -248,5 +257,14 @@ namespace awn::res {
             local_archive_binder->resource_binder.Finalize();
         }
         manager->SetThreadLocalArchive(std::addressof(m_last_binder));
+    }
+
+    ScopedThreadLocalArchiveReference::ScopedThreadLocalArchiveReference() {
+        ThreadLocalArchiveManager *manager = AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager();
+        manager->ReferenceThreadLocalArchive();
+    }
+    ScopedThreadLocalArchiveReference::~ScopedThreadLocalArchiveReference() {
+        ThreadLocalArchiveManager *manager = AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager();
+        manager->ReleaseThreadLocalArchive();
     }
 }

@@ -184,6 +184,19 @@ namespace vp::res {
             return (character_width_section_offset == 0) ? 0 : reinterpret_cast<ResBffntCharacterWidths*>(reinterpret_cast<uintptr_t>(file_base) + character_width_section_offset - 0x8);
         }
 
+        ResBffntCharacterWidthData GetCharacterWidthData(void *file_base, u32 glyph_index) {
+
+            ResBffntCharacterWidths *char_widths;
+            u32 char_width_offset = character_width_section_offset;
+            while (char_width_offset != 0) {
+                char_widths = reinterpret_cast<ResBffntCharacterWidths*>(reinterpret_cast<uintptr_t>(file_base) + character_width_section_offset - 0x8);
+                if (char_widths->first_entry_index <= glyph_index && glyph_index <= char_widths->last_entry_index) { return char_widths->width_data_array[glyph_index]; }
+                char_width_offset = char_widths->next_character_width_offset;
+            }
+
+            return default_character_widths;
+        }
+
         ResBffntCodeMap *GetCodeMapByCharacter(void *file_base, u32 key_code) const {
 
             /* Search code map list */

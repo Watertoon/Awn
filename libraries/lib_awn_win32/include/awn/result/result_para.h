@@ -15,15 +15,9 @@
  */
 #pragma once
 
-namespace vp::util {
-    
-    /* Rotates a vector by "angle" along the specified axis */
-    void RotateVectorAxisX(Vector3f *out_vector, const Vector3f& rot_vector, float angle);
+namespace awn::para {
 
-    void RotateVectorAxisY(Vector3f *out_vector, const Vector3f& rot_vector, float angle);
-
-    void RotateVectorAxisZ(Vector3f *out_vector, const Vector3f& rot_vector, float angle);
-
-    /* Makes the vector "to_parallelize" parallel to "base"  */
-    void Parallelize(Vector3f *out_vector, const Vector3f& base, const Vector3f& to_parallelize);
+    DECLARE_RESULT_MODULE(16);
+    DECLARE_RESULT(NoComposite,    1);
+    DECLARE_RESULT(FoundComposite, 2);
 }

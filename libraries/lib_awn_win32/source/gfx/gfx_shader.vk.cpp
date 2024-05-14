@@ -303,8 +303,8 @@ namespace awn::gfx {
             /* Set shader state */
             m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_VERTEX_BIT;
             shader_stage_mask                          |= static_cast<u32>(ShaderStage::Vertex);
-            code_array[shader_count]                    = vertex_code_info->shader_code;
-            code_size_array[shader_count]               = vertex_code_info->shader_code_size;
+            code_array[shader_count]                    = vertex_code_info->code;
+            code_size_array[shader_count]               = vertex_code_info->code_size;
 
             /* Advance shader iter */
             ++shader_count;
@@ -318,8 +318,8 @@ namespace awn::gfx {
             /* Set shader state */
             m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
             shader_stage_mask                          |= static_cast<u32>(ShaderStage::TessellationControl);
-            code_array[shader_count]                    = tessellation_control_code_info->shader_code;
-            code_size_array[shader_count]               = tessellation_control_code_info->shader_code_size;
+            code_array[shader_count]                    = tessellation_control_code_info->code;
+            code_size_array[shader_count]               = tessellation_control_code_info->code_size;
 
             /* Advance shader iter */
             ++shader_count;
@@ -333,8 +333,8 @@ namespace awn::gfx {
             /* Set shader state */
             m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
             shader_stage_mask                          |= static_cast<u32>(ShaderStage::TessellationEvaluation);
-            code_array[shader_count]                    = tessellation_evaluation_code_info->shader_code;
-            code_size_array[shader_count]               = tessellation_evaluation_code_info->shader_code_size;
+            code_array[shader_count]                    = tessellation_evaluation_code_info->code;
+            code_size_array[shader_count]               = tessellation_evaluation_code_info->code_size;
 
             /* Advance shader iter */
             ++shader_count;
@@ -348,8 +348,8 @@ namespace awn::gfx {
             /* Set shader state */
             m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_GEOMETRY_BIT;
             shader_stage_mask                          |= static_cast<u32>(ShaderStage::Geometry);
-            code_array[shader_count]                    = geometry_code_info->shader_code;
-            code_size_array[shader_count]               = geometry_code_info->shader_code_size;
+            code_array[shader_count]                    = geometry_code_info->code;
+            code_size_array[shader_count]               = geometry_code_info->code_size;
 
             /* Advance shader iter */
             ++shader_count;
@@ -363,8 +363,8 @@ namespace awn::gfx {
             /* Set shader state */
             m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_FRAGMENT_BIT;
             shader_stage_mask                          |= static_cast<u32>(ShaderStage::Fragment);
-            code_array[shader_count]                    = fragment_code_info->shader_code;
-            code_size_array[shader_count]               = fragment_code_info->shader_code_size;
+            code_array[shader_count]                    = fragment_code_info->code;
+            code_size_array[shader_count]               = fragment_code_info->code_size;
 
             /* Advance shader iter */
             ++shader_count;
@@ -378,8 +378,8 @@ namespace awn::gfx {
             /* Set shader state */
             m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_COMPUTE_BIT;
             shader_stage_mask                          |= static_cast<u32>(ShaderStage::Compute);
-            code_array[shader_count]                    = compute_code_info->shader_code;
-            code_size_array[shader_count]               = compute_code_info->shader_code_size;
+            code_array[shader_count]                    = compute_code_info->code;
+            code_size_array[shader_count]               = compute_code_info->code_size;
 
             /* Advance shader iter */
             ++shader_count;

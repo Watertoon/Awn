@@ -167,6 +167,7 @@ namespace awn::res {
 
         return resource_unit;
     }
+
     void AsyncResourceManager::FreeResourceUnit(ResourceUnit *resource_unit) {
         m_resource_unit_allocator.Free(resource_unit);
     }
@@ -275,6 +276,8 @@ namespace awn::res {
             },
         };
         resource_unit->m_load_task.PushTask(std::addressof(push_info));
+
+        load_info->m_resource_binder->m_status = ResourceBinder::Status::InLoad;
 
         return;
     }
@@ -407,18 +410,7 @@ namespace awn::res {
         binder->m_resource_unit = nullptr;
 
         /* Push unload */
-        LoadTaskPushInfo push_info = {
-            {
-                .queue_thread  = m_async_queue_thread_control,
-                .task_function = std::addressof(m_unload_exe),
-                .user_data     = resource_unit,
-                .priority      = 5,
-            },
-        };
-        async::AsyncTaskScheduleInfo schedule_info = {
-            .push_info = std::addressof(push_info),
-        };
-        m_async_task_allocator_load.ScheduleTask(std::addressof(schedule_info));
+        this->RequestUnloadResourceUnit(resource_unit);
         
         return;
     }
@@ -640,6 +632,9 @@ namespace awn::res {
         VP_ASSERT(0 < manager_info->max_resource_unit_count);
         m_resource_unit_allocator.Initialize(system_heap, manager_info->max_resource_unit_count);
 
+        /* Initialize free frames */
+        m_resource_unit_free_frame_buffer.Initialize(system_heap, manager_info->max_resource_unit_count);
+
         /* Initialize task allocator */
         auto load_task_create_lambda   = []([[maybe_unused]] async::AsyncTaskAllocator*, mem::Heap *heap) { return new (heap, alignof(LoadTask)) LoadTask(); };
         auto load_task_create_function = vp::util::MakeLambdaFunction<async::AsyncTaskForAllocator*(async::AsyncTaskAllocator*, mem::Heap*)>(load_task_create_lambda);
@@ -713,7 +708,9 @@ namespace awn::res {
         m_decompressor_manager.Initialize(system_heap, manager_info->load_thread_count);
 
         /* Create Zsdic Heap */
-        
+        if (manager_info->zsdic_heap_size != 0) {
+            m_zsdic_heap = mem::FrameHeap::TryCreate("awn::res::AsyncResourceManager_ZsDicHeap", system_heap, manager_info->zsdic_heap_size, 0x20, false);
+        }
 
         /* Initialize resource size table manager */
         m_resource_size_table_manager.Initialize(manager_info->resource_size_table_path);
@@ -809,8 +806,16 @@ namespace awn::res {
         /* Finalize memory manager */
         m_memory_manager.Finalize();
 
+        /* Finalize zsdic heap */
+        if (m_zsdic_heap != nullptr) {
+            m_zsdic_heap->Finalize();
+            delete m_zsdic_heap;
+            m_zsdic_heap = nullptr;
+        }
+
         /* Destroy manager heap */
         m_system_heap->Finalize();
+        delete m_system_heap;
         m_system_heap = nullptr;
 
         return;

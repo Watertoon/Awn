@@ -64,13 +64,14 @@
     #ifdef InterlockedCompareExchangeRelease
         #undef InterlockedCompareExchangeRelease
     #endif
+
+    /* zstd */
+    #define ZSTD_STATIC_LINKING_ONLY
+    #include <zstd.h>
 #elif VP_TARGET_PLATFORM_nx
     //#include <vp/nn.hpp>
 #endif
 
-/* zstd */
-#define ZSTD_STATIC_LINKING_ONLY
-#include <zstd.h>
 
 /* Vulkan */
 #ifdef VP_TARGET_GRAPHICS_API_vk

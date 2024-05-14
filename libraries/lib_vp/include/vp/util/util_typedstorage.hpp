@@ -15,13 +15,10 @@
  */
 #pragma once
 
-/* While the initial idea of some elements were inspired by Atmosphère-NX (https://github.com/Atmosphere-NX/Atmosphere), for this implementation I only used cppreference and vague mental notes from months ago */
-/* If you can make a case for infringement please let me know and I'll correct it */
-
 namespace vp::util {
 
     template<typename T, size_t S = sizeof(T), size_t A = alignof(T)>
-    struct TypeStorage {
+    struct TypedStorage {
         using UnderlyingType = T;
         std::aligned_storage<S, A>::type _storage;
     };

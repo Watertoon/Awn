@@ -114,6 +114,7 @@ namespace awn::res {
             MaxPathString                m_file_path;
             FileDeviceBase              *m_file_device;
             ResourceFactoryBase         *m_resource_factory;
+            ResourceUserContext         *m_resource_user_context;
             ResourceBinder               m_archive_binder;
             ArchiveResource             *m_archive_resource;
             Resource                    *m_resource;
@@ -223,13 +224,8 @@ namespace awn::res {
 
             constexpr Resource *GetResource() { return m_resource; }
         public:
-            ResourceUnit() : m_state(), m_status(Status::Uninitialized), m_reference_count(), m_deferred_adjust_count{}, m_resource_initialize_guard(), m_user_resource_size(), m_file_alignment(), m_resource_unit_manager(),
-                             m_resource_unit_manager_tree_node(), m_file_path(), m_file_device(), m_resource_factory(), m_archive_binder(), m_archive_resource(), m_resource(), m_load_task(), m_heap_adjust_task(), m_unload_task(), 
-                             m_resource_heap(), m_gpu_heap(), m_memory_manager(), m_finalize_async_res_mgr_list_node(), m_memory_manager_node(), m_memory_manager_free_cache_node(), m_status_update_event() 
-            {
-                m_status_update_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
-            }
-            ~ResourceUnit() {/*...*/}
+            ResourceUnit();
+            ~ResourceUnit();
 
             void Initialize(ResourceUnitInfo *unit_info);
     };

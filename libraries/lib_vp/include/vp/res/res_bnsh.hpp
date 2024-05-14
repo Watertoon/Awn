@@ -19,25 +19,26 @@ namespace vp::res {
 
     struct ResBnshShaderCodeInfo {
         void *runtime_user_shader_code_buffer_address;
-        void *shader_control;
-        void *shader_code;
-        u32   shader_code_size;
-        u32   shader_control_size;
-        void *shader_control_extra_info;
-        u32   exact_scratch_memory;
-        u32   scaled_scratch_memory;
+        void *control;
+        void *code;
+        u32   code_size;
+        u32   control_size;
+        void *control_extra_info;
+        u32   scratch_memory_size_recommended;
+        u32   scratch_memory_size_per_warp;
         void *shader_ext_data;
         u64   reserve0;
     };
     static_assert(sizeof(ResBnshShaderCodeInfo) == 0x40);
 
     struct ResBnshExtendedInterfaceInfo {
-        ResNintendoWareDictionary *reserve1_dictionary;
-        ResNintendoWareDictionary *reserve2_dictionary;
-        u32                        reserve1_base_index;
-        u32                        reserve2_base_index;
+        ResNintendoWareDictionary *separate_texture_dictionary;
+        ResNintendoWareDictionary *separate_sampler_dictionary;
+        u32                        separate_texture_base_index;
+        u32                        separate_sampler_base_index;
+        char                       reserve0[0x18];
     };
-    static_assert(sizeof(ResBnshExtendedInterfaceInfo) == 0x18);
+    static_assert(sizeof(ResBnshExtendedInterfaceInfo) == 0x30);
 
     struct ResBnshShaderInterfaceInfo {
         ResNintendoWareDictionary    *input_attribute_dictionary;
@@ -50,11 +51,11 @@ namespace vp::res {
         u32                           constant_buffer_base_index;
         u32                           storage_buffer_base_index;
         u32                          *interface_slot_array;
-        s32                           work_group_x;
-        s32                           work_group_y;
-        s32                           work_group_z;
-        u32                           reserve0_base_index;
-        ResNintendoWareDictionary    *reserve0_dictionary;
+        s32                           work_group_count_x;
+        s32                           work_group_count_y;
+        s32                           work_group_count_z;
+        u32                           image_base_index;
+        ResNintendoWareDictionary    *image_dictionary;
         ResBnshExtendedInterfaceInfo *extended_interface_info;
     };
     static_assert(sizeof(ResBnshShaderInterfaceInfo) == 0x60);
@@ -80,9 +81,9 @@ namespace vp::res {
         Sampler         = 0x2,
         ConstantBuffer  = 0x3,
         StorageBuffer   = 0x4,
-        Reserve0        = 0x5,
-        Reserve1        = 0x6,
-        Reserve2        = 0x7,
+        Image           = 0x5,
+        SeparateTexture = 0x6,
+        SeparateSampler = 0x7,
     };
 
     struct ResBnshShaderInterfaceInfoTable {
@@ -167,7 +168,7 @@ namespace vp::res {
     static_assert(sizeof(ResBnshShaderContainer) == 0x60);
 
     struct ResBnsh : public ResNintendoWareFileHeader {
-        u64 reserve0[8];
+        u32 reserve0[16];
 
         static constexpr u64 cMagic              = util::TCharCode32("BNSH");
         static constexpr u16 cTargetVersionMajor = 2;
