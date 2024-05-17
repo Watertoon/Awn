@@ -44,7 +44,7 @@ namespace vp::util {
         if (aligned_size != 0) {
             while (string != string_leftover) {
                 const u64 val = (std::is_constant_evaluated() == false) ? *reinterpret_cast<const u64*>(string) : TLoadU64FromString(string);
-                state = ((((val * cMurmur64Constant) ^ ((val * cMurmur64Constant) >> cShift) * cMurmur64Constant)) ^ state) * cMurmur64Constant;
+                state = (((((val * cMurmur64Constant) ^ ((val * cMurmur64Constant) >> cShift)) * cMurmur64Constant)) ^ state) * cMurmur64Constant;
                 string = string + 8;
             }
         }
@@ -52,32 +52,33 @@ namespace vp::util {
         /* Finish out unaligned bytes*/
         switch (size & 7) {
             case 7:
-                state = state ^ static_cast<u64>(string_leftover[6]) << 0x30;
+                state = state ^ (static_cast<u64>(string_leftover[6]) << 0x30);
                 [[fallthrough]];
             case 6:
-                state = state ^ static_cast<u64>(string_leftover[5]) << 0x28;
+                state = state ^ (static_cast<u64>(string_leftover[5]) << 0x28);
                 [[fallthrough]];
             case 5:
-                state = state ^ static_cast<u64>(string_leftover[4]) << 0x20;
+                state = state ^ (static_cast<u64>(string_leftover[4]) << 0x20);
                 [[fallthrough]];
             case 4:
-                state = state ^ static_cast<u64>(string_leftover[3]) << 0x18;
+                state = state ^ (static_cast<u64>(string_leftover[3]) << 0x18);
                 [[fallthrough]];
             case 3:
-                state = state ^ static_cast<u64>(string_leftover[2]) << 0x10;
+                state = state ^ (static_cast<u64>(string_leftover[2]) << 0x10);
                 [[fallthrough]];
             case 2:
-                state = state ^ static_cast<u64>(string_leftover[1]) << 0x8;
+                state = state ^ (static_cast<u64>(string_leftover[1]) << 0x8);
                 [[fallthrough]];
             case 1:
-                state = (state ^ static_cast<u64>(string_leftover[0])) * cMurmur64Constant;
+                state = (state ^ string_leftover[0]) * cMurmur64Constant;
                 [[fallthrough]];
             case 0:
             default:
-                state = (state ^ state >> cShift) * cMurmur64Constant;
-        }
+                break;
+        };
 
-        return (state ^ state >> cShift);
+        state = (state ^ (state >> cShift)) * cMurmur64Constant;
+        return (state ^ (state >> cShift));
     }
 
     constexpr ALWAYS_INLINE u64 DualHashMurmur64(const char *string0, const char *string1) {
