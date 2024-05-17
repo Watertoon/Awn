@@ -53,9 +53,20 @@ namespace awn::async {
         m_is_finished = false;
         do {
 
-            /* Schedule next task */
-            AsyncTask *task = m_queue->AcquireNextTask(this);
-            if (task == nullptr) { break; }
+            /* Acquire next task */
+            AsyncTask *task = nullptr;
+            {
+                std::scoped_lock l(m_queue->m_queue_mutex);
+
+                task = m_queue->AcquireNextTask(this);
+                
+                /* Signal finished and update completion if no task */
+                if (task == nullptr) {
+                    m_is_finished = true;
+                    m_queue->UpdateCompletion();
+                    return;
+                }
+            }
 
             /* Execute task */
             const Result result = task->Invoke();
@@ -76,9 +87,12 @@ namespace awn::async {
 
                 /* Memory barrier */
                 vp::util::MemoryBarrierReadWrite();
+
+                /* Complete if out of tasks */
+                if (m_queue->m_task_count == 0) { break; }
             }
 
-            /* Handle yield */
+            /* Yield thread if request count is reached */
             if (0 < m_requests_per_yield) {
                 yield_iter = yield_iter - 1;
                 if (yield_iter == 0) {
@@ -87,8 +101,9 @@ namespace awn::async {
                 }
             }
 
-            /* Peek next message */
-            this->TryPeekMessage(std::addressof(message));
+            /* Peek next message to ensure we are not force terminating the thread */
+            const bool result1 = this->TryPeekMessage(std::addressof(message));
+            if (result1 == false) { message = 0; }
 
         } while (message != m_exit_message);
 
@@ -105,10 +120,10 @@ namespace awn::async {
         /* Change status */
         Status     last_status;
         const bool result = vp::util::InterlockedCompareExchange(std::addressof(last_status), std::addressof(m_status), Status::Suspended, Status::Active);
-        m_suspend_event.Wait();
         if (result == false) { return; }
 
         /* Set message */
+        m_suspend_event.Wait();
         m_suspend_event.Clear();
         this->JamMessage(static_cast<uintptr_t>(Message::Suspend));
         m_suspend_event.Wait();
@@ -124,10 +139,10 @@ namespace awn::async {
         /* Change status */
         Status     last_status;
         const bool result = vp::util::InterlockedCompareExchange(std::addressof(last_status), std::addressof(m_status), Status::Active, Status::Suspended);
-        m_suspend_event.Wait();
         if (result == false) { return; }
 
         /* Set message */
+        m_suspend_event.Wait();
         m_suspend_event.Clear();
         this->JamMessage(static_cast<uintptr_t>(Message::Resume));
         m_suspend_event.Wait();

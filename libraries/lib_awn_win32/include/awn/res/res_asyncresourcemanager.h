@@ -138,9 +138,9 @@ namespace awn::res {
             async::AsyncTask              *m_task_for_force_reserve_unload;
             async::AsyncTask              *m_task_for_force_clear_all_caches;
             MemberTaskFunction             m_calc_exe;
-            MemberTaskFunction             m_load_async_exe;
-            MemberTaskFunction             m_schedule_load_exe;
-            MemberResultFunction           m_schedule_load_result;
+            MemberTaskFunction             m_load_control_exe;
+            MemberTaskFunction             m_load_memory_exe;
+            MemberResultFunction           m_load_memory_result;
             MemberTaskFunction             m_load_file_exe;
             MemberTaskFunction             m_reserve_unload_exe;
             MemberTaskFunction             m_clear_cache_for_allocate_exe;
@@ -171,10 +171,10 @@ namespace awn::res {
             void AddResourceUnitToFinalizeList(ResourceUnit *resource_unit);
             void RemoveResourceUnitFromFinalizeList(ResourceUnit *resource_unit);
         private:
-            void LoadAsyncExe(void *load_task_user_data_arg);
+            void LoadControlExe(void *load_task_user_data_arg);
 
-            void   ScheduleLoadExe(void *resource_unit);
-            Result ScheduleLoadResult(async::TaskResultInvokeInfo *result_info);
+            void   LoadMemoryExe(void *resource_unit);
+            Result LoadMemoryResult(async::TaskResultInvokeInfo *result_info);
 
             void LoadFileExe(void *resource_unit);
             
@@ -213,7 +213,7 @@ namespace awn::res {
             m_default_archive_file_device(), m_default_archive_file_device_for_size_prepare(), m_default_archive_binder(), m_default_archive_reference_count(), m_thread_local_archive_manager(), m_resource_size_table_manager(),
             m_zsdic_heap(), m_decompressor_manager(), m_managed_thread_array_cs(), m_managed_thread_array(), m_enable_managed(),
             m_task_for_calculate(), m_task_for_load_sync(), m_task_for_clear_cache_for_allocate(), m_task_for_force_reserve_unload(), m_task_for_force_clear_all_caches(),
-            m_calc_exe(this, CalculateExe), m_load_async_exe(this, LoadAsyncExe), m_schedule_load_exe(this, ScheduleLoadExe), m_schedule_load_result(this, ScheduleLoadResult), m_load_file_exe(this, LoadFileExe), 
+            m_calc_exe(this, CalculateExe), m_load_control_exe(this, LoadControlExe), m_load_memory_exe(this, LoadMemoryExe), m_load_memory_result(this, LoadMemoryResult), m_load_file_exe(this, LoadFileExe), 
             m_reserve_unload_exe(this, ReserveUnloadExe), m_clear_cache_for_allocate_exe(this, ClearCacheForAllocateExe), m_heap_adjust_exe(HeapAdjustExe), m_clear_cache_exe(ClearCacheExe), m_clear_cache_result(ClearCacheResult),
             m_unload_exe(UnloadExe), m_unload_result(UnloadResult), m_unload_for_sync_exe(UnloadForSyncExe), m_unload_for_sync_result(UnloadForSyncResult) {/*...*/}
 

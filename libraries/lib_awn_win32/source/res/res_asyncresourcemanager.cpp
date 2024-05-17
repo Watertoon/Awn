@@ -145,7 +145,7 @@ namespace awn::res {
         resource_unit = m_resource_unit_allocator.Allocate();
         if (resource_unit != nullptr) { return resource_unit; }
 
-        /* Force clear caches */
+        /* Schedule force clear caches sync */
         async::AsyncTaskPushInfo push_info = {
             .queue_thread  = m_async_queue_thread_memory,
             .task_function = std::addressof(m_clear_cache_for_allocate_exe),
@@ -208,9 +208,9 @@ namespace awn::res {
         return true;
     }
 
-    void AsyncResourceManager::LoadAsyncExe(void *load_task_user_data_arg) {
+    void AsyncResourceManager::LoadControlExe(void *load_task_user_data_arg) {
 
-        /* Get load data */
+        /* Get user data of load task */
         LoadTask::LoadUserData *load_info = reinterpret_cast<LoadTask::LoadUserData*>(load_task_user_data_arg);
 
         /* Schedule pending unloads */
@@ -236,12 +236,12 @@ namespace awn::res {
             load_info->m_async_load_info.resource_factory = resource_factory;
         }
 
-        /* Set default file alignment if not provided */
+        /* Set file alignment to factory default if not provided */
         if (load_info->m_async_load_info.file_alignment == 0) {                    
             load_info->m_async_load_info.file_alignment = resource_factory->GetFileAlignment();
         }
 
-        /* Set default file alignment if not provided */
+        /* Set compression type to factory default if not provided */
         if (load_info->m_async_load_info.compression_type == static_cast<u32>(CompressionType::Auto)) {                    
             load_info->m_async_load_info.compression_type = static_cast<u32>(resource_factory->GetDefaultCompressionType());
         }
@@ -269,8 +269,8 @@ namespace awn::res {
         LoadTaskPushInfo push_info = {
             {                
                 .queue_thread    = m_async_queue_thread_memory,
-                .task_function   = std::addressof(m_schedule_load_exe),
-                .result_function = std::addressof(m_schedule_load_result),
+                .task_function   = std::addressof(m_load_memory_exe),
+                .result_function = std::addressof(m_load_memory_result),
                 .user_data       = resource_unit,
                 .priority        = convert_priority,
             },
@@ -282,11 +282,11 @@ namespace awn::res {
         return;
     }
 
-    void AsyncResourceManager::ScheduleLoadExe(void *resource_unit) {
-        reinterpret_cast<ResourceUnit*>(resource_unit)->ScheduleLoad();
+    void AsyncResourceManager::LoadMemoryExe(void *resource_unit) {
+        reinterpret_cast<ResourceUnit*>(resource_unit)->LoadMemory();
     }
 
-    Result AsyncResourceManager::ScheduleLoadResult(async::TaskResultInvokeInfo *result_info) {
+    Result AsyncResourceManager::LoadMemoryResult(async::TaskResultInvokeInfo *result_info) {
 
         /* Break if transitoned out of schedule load */
         ResourceUnit *resource_unit = reinterpret_cast<ResourceUnit*>(result_info->user_data);
@@ -302,7 +302,7 @@ namespace awn::res {
                 .priority      = convert_priority,
             },
         };
-        RESULT_RETURN_IF(result_info->task->PushTask(std::addressof(push_info)) == ResultSuccess, async::ResultRescheduled);
+        RESULT_RETURN_IF(RESULT_SUCCEEDED(result_info->task->PushTask(std::addressof(push_info))), async::ResultRescheduled);
 
         RESULT_RETURN_SUCCESS;
     }
@@ -411,7 +411,7 @@ namespace awn::res {
 
         /* Push unload */
         this->RequestUnloadResourceUnit(resource_unit);
-        
+
         return;
     }
 
@@ -421,8 +421,8 @@ namespace awn::res {
         ResourceUnit *resource_unit = binder->m_resource_unit;
         if (resource_unit == nullptr) { return; }
         binder->m_resource_unit = nullptr;
-        
-        /* Schedule unload async if control thread */
+
+        /* Schedule unload async if we are the control thread */
         sys::ThreadBase *thread = sys::GetCurrentThread();
         if (thread == m_async_queue_thread_control) {
             resource_unit->AdjustReferenceCount(-1);
@@ -430,7 +430,7 @@ namespace awn::res {
             return;
         }
 
-        /* Push unload */
+        /* Schedule unload task for sync */
         LoadTaskPushInfo push_info = {
             async::AsyncTaskPushInfo {
                 .queue_thread    = m_async_queue_thread_control,
@@ -451,12 +451,12 @@ namespace awn::res {
 
     Result AsyncResourceManager::TryLoadAsync(const char *path, ResourceBinder *binder, const AsyncResourceLoadInfo *in_load_info) {
 
-        /* Format constants of push info */
+        /* Format push info for async with copy of load info */
         AsyncResourceLoadInfo load_info = (in_load_info == nullptr) ? AsyncResourceLoadInfo{} : *in_load_info;
         LoadTaskPushInfo push_info = {
             async::AsyncTaskPushInfo {
                 .queue_thread   = m_async_queue_thread_control,
-                .task_function  = std::addressof(m_load_async_exe),
+                .task_function  = std::addressof(m_load_control_exe),
                 .is_sync        = false,
             },
             binder,
@@ -465,14 +465,14 @@ namespace awn::res {
         };
         AsyncResourceLoadInfo *push_load_info = std::addressof(load_info);
 
-        /* Get archive binder auto */
+        /* Try get thread local archive or default archive binder */
         bool is_default_archive = false;
         ON_SCOPE_EXIT {
             if (is_default_archive == true) { this->ReleaseDefaultArchive(); }
         };
         if (push_load_info->archive_binder == nullptr) {
 
-            /* Attempt to get the thread local archive */
+            /* Attempt to get a thread local archive */
             ResourceBinder *archive_binder = m_thread_local_archive_manager.GetThreadLocalArchiveBinder();
             if (archive_binder == nullptr) { is_default_archive = this->AcquireDefaultArchive(std::addressof(archive_binder)); }
             push_load_info->archive_binder = archive_binder;
@@ -482,9 +482,9 @@ namespace awn::res {
         const bool is_managed      = this->IsManagedThread() & (push_load_info->is_managed != 0);
         push_load_info->is_managed = is_managed;
 
-        /* Increase priority if a local archive exists */
+        /* Boost priority by 1 if the thread local archive exists */
         const bool is_active_local_archive = m_thread_local_archive_manager.IsThreadLocalArchiveInReference();
-        const u32  priority                = push_load_info->priority + is_active_local_archive;
+        const u32  priority                = push_load_info->priority + static_cast<u32>(is_active_local_archive);
 
         /* Schedule load async */
         push_info.priority = priority;
@@ -500,12 +500,12 @@ namespace awn::res {
 
     Result AsyncResourceManager::TryLoadSync(const char *path, ResourceBinder *binder, const AsyncResourceLoadInfo *in_load_info) {
 
-        /* Format constants of push info */
+        /* Format push info for sync with copy of load info */
         AsyncResourceLoadInfo load_info = (in_load_info == nullptr) ? AsyncResourceLoadInfo{} : *in_load_info;
         LoadTaskPushInfo push_info = {
             async::AsyncTaskPushInfo {
                 .queue_thread   = m_async_queue_thread_control,
-                .task_function  = std::addressof(m_load_async_exe),
+                .task_function  = std::addressof(m_load_control_exe),
                 .is_sync        = true,
             },
             binder,
@@ -531,25 +531,25 @@ namespace awn::res {
         const bool is_managed      = this->IsManagedThread() & (push_load_info->is_managed != 0);
         push_load_info->is_managed = is_managed;
 
-        /* Check for existence */
+        /* Check if thread local archive is active */
         const bool is_active_local_archive = m_thread_local_archive_manager.IsThreadLocalArchiveInReference();
 
         /* Check if loading threads are active */
         u32 priority = push_load_info->priority;
         if (is_active_local_archive == false) {
 
-            /* Fail if a loading thread is inactive */
+            /* Ensure a loading thread is not suspended */
             if (this->IsLoadThreadSuspended() == true) {
                 binder->m_status = ResourceBinder::Status::RequiresReprocess;
                 binder->Complete(push_load_info->resource_user_context);
                 return ResultInactiveLoadThread;
             }
 
-            /* Force priority to normal */
+            /* Force priority for non-local archive to normal */
             priority = 4;
         }
 
-        /* Push load sync */
+        /* Schedule load for sync */
         push_info.priority = priority;
         async::AsyncTaskScheduleInfo schedule_info = {
             .task_for_allocator = m_task_for_load_sync,
@@ -601,7 +601,7 @@ namespace awn::res {
 
     void AsyncResourceManager::Initialize(mem::Heap *heap, AsyncResourceManagerInfo *manager_info) {
 
-        /* Set app impl */
+        /* Set application impl */
         IAsyncResourceApplicationImpl *app_impl = manager_info->app_impl;
         m_app_impl                              = app_impl;
         VP_ASSERT(app_impl != nullptr);
@@ -618,7 +618,7 @@ namespace awn::res {
         };
         m_memory_manager.Initialize(system_heap, std::addressof(memory_manager_info));
 
-        /* Initialize extension manager */
+        /* Initialize extension manager with application extensions */
         ExtensionManagerInfo ext_mgr_info = {
             .extension_count      = app_impl->GetExtensionArrayCount(),
             .extension_info_array = app_impl->GetExtensionArray(),
@@ -632,7 +632,7 @@ namespace awn::res {
         VP_ASSERT(0 < manager_info->max_resource_unit_count);
         m_resource_unit_allocator.Initialize(system_heap, manager_info->max_resource_unit_count);
 
-        /* Initialize free frames */
+        /* Initialize free frame buffer */
         m_resource_unit_free_frame_buffer.Initialize(system_heap, manager_info->max_resource_unit_count);
 
         /* Initialize task allocator */
@@ -640,13 +640,14 @@ namespace awn::res {
         auto load_task_create_function = vp::util::MakeLambdaFunction<async::AsyncTaskForAllocator*(async::AsyncTaskAllocator*, mem::Heap*)>(load_task_create_lambda);
         m_async_task_allocator_load.Initialize(system_heap, std::addressof(load_task_create_function), manager_info->load_task_count);
 
-        /* Initialize control queue and thread */
+        /* Initialize control queue */
         const async::AsyncQueueInfo control_queue_info = {
             .priority_level_count = cControlPriorityLevelCount,
             .queue_thread_count   = 1,
         };
         m_async_queue_control.Initialize(system_heap, std::addressof(control_queue_info));
-        
+
+        /* Initialize control thread with user settings */
         m_async_queue_thread_control = (manager_info->control_thread_create_function.IsValid() == true) ? manager_info->control_thread_create_function.Invoke(system_heap, std::addressof(m_async_queue_control), std::addressof(manager_info->control_thread_info)) : new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(m_async_queue_control), manager_info->control_thread_info.name, system_heap, manager_info->control_thread_info.stack_size, manager_info->control_thread_info.priority);
         VP_ASSERT(m_async_queue_thread_control != nullptr);
         VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(m_async_queue_thread_control->GetRuntimeTypeInfo()) == true);
@@ -654,13 +655,14 @@ namespace awn::res {
         m_async_queue_thread_control->SetCoreMask((1 << (manager_info->control_thread_info.core_number & 0x3f)));
         m_async_queue_thread_control->StartThread();
 
-        /* Initialize memory queue and thread */
+        /* Initialize memory queue */
         const async::AsyncQueueInfo memory_queue_info = {
             .priority_level_count = cMemoryPriorityLevelCount,
             .queue_thread_count   = 1,
         };
         m_async_queue_memory.Initialize(system_heap, std::addressof(memory_queue_info));
 
+        /* Initialize memory thread with user settings */
         m_async_queue_thread_memory = (manager_info->memory_thread_create_function.IsValid() == true) ? manager_info->memory_thread_create_function.Invoke(system_heap, std::addressof(m_async_queue_memory), std::addressof(manager_info->memory_thread_info)) : new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(m_async_queue_memory), manager_info->memory_thread_info.name, system_heap, manager_info->memory_thread_info.stack_size, manager_info->memory_thread_info.priority);
         VP_ASSERT(m_async_queue_thread_memory != nullptr);
         VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(m_async_queue_thread_memory->GetRuntimeTypeInfo()) == true);
@@ -668,13 +670,14 @@ namespace awn::res {
         m_async_queue_thread_memory->SetCoreMask((1 << (manager_info->memory_thread_info.core_number & 0x3f)));
         m_async_queue_thread_memory->StartThread();
 
-        /* Initialize load queue and threads */
+        /* Initialize load async queue with user thread count */
         const async::AsyncQueueInfo load_queue_info = {
             .priority_level_count = cLoadPriorityLevelCount,
             .queue_thread_count   = manager_info->load_thread_count,
         };
         m_async_queue_load.Initialize(system_heap, std::addressof(load_queue_info));
 
+        /* Initialize load async threads with user thread settings */
         m_async_queue_load_thread_array.Initialize(system_heap, manager_info->load_thread_count);
         if (manager_info->load_thread_create_function.IsValid() == true) {
             for (u32 i = 0; i < manager_info->load_thread_count; ++i) {
@@ -704,7 +707,7 @@ namespace awn::res {
         m_task_for_force_reserve_unload     = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
         m_task_for_force_clear_all_caches   = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
 
-        /* Initialize decompressors */
+        /* Initialize decompressor manager with a decompressor set for each load thread */
         m_decompressor_manager.Initialize(system_heap, manager_info->load_thread_count);
 
         /* Create Zsdic Heap */
@@ -712,12 +715,9 @@ namespace awn::res {
             m_zsdic_heap = mem::FrameHeap::TryCreate("awn::res::AsyncResourceManager_ZsDicHeap", system_heap, manager_info->zsdic_heap_size, 0x20, false);
         }
 
-        /* Initialize resource size table manager */
+        /* Initialize resource size table manager with main table path */
         m_resource_size_table_manager.Initialize(manager_info->resource_size_table_path);
 
-        /* Initialize free queue */
-        
-        
         /* Adjust system heap */
         system_heap->AdjustHeap();
 
@@ -735,7 +735,7 @@ namespace awn::res {
         this->SuspendLoadThreads();
         this->CancelLoadTasks();
 
-        /* Free free frame */
+        /* Free free frame buffer */
         m_resource_unit_free_frame_buffer.Finalize();
 
         /* Finalize resource size table manager */
@@ -907,7 +907,7 @@ namespace awn::res {
 
         /* Set archive binder */
         const Result result = m_default_archive_binder.ReferenceBinderSync(archive_binder);
-        if (result != ResultSuccess) { return false; }
+        if (RESULT_FAILED(result)) { return false; }
         vp::util::InterlockedIncrement(std::addressof(m_default_archive_reference_count));
 
         return true;                
@@ -948,11 +948,11 @@ namespace awn::res {
 
     void AsyncResourceManager::PrepareSize(ResourceSizePrepareResult *out_result, const ResourceSizePrepareInfo *prepare_info) {
     
-        /* Adjust alignment */
+        /* Get alignment, minimum 0x20 */
         const s32 alignment_base = prepare_info->file_alignment;
         const s32 alignment      = (alignment_base < 0x20) ? 0x20 : alignment_base;
 
-        /* Get file device auto */
+        /* Get file device from user, the default archive device if an archive is available, or either the user default device or system default device */
         FileDeviceBase *file_device = prepare_info->file_device;
         if (file_device == nullptr) {
             if (prepare_info->archive_resource == nullptr) {
@@ -967,23 +967,23 @@ namespace awn::res {
             }
         }
 
-        /* Set archive res if archive device */
+        /* Set archive resource if we are using an archive device */
         if (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(file_device->GetRuntimeTypeInfo()) == true) { reinterpret_cast<ArchiveFileDevice*>(file_device)->SetArchiveResource(prepare_info->archive_resource); }
 
-        /* Get out device */
+        /* Set resulting file device */
         out_result->file_device = file_device;
 
-        /* Handle user resource size */
+        /* Use user resource size if available */
         const size_t user_resource_size = prepare_info->user_resource_size;
         size_t       file_size          = 0;
         if (user_resource_size != 0) {
             const Result result = file_device->GetFileSize(std::addressof(file_size), prepare_info->formatted_path);
-            if (result != ResultSuccess) { return; }
-            out_result->resource_size = user_resource_size + alignment + sizeof(size_t);
+            if (RESULT_FAILED(result)) { return; }
+            out_result->resource_size = user_resource_size;
             return;
         }
 
-        /* Lookup resource size */
+        /* Lookup resource size by table */
         const size_t resource_size = m_resource_size_table_manager.GetResourceSize(prepare_info->original_path);
         if (resource_size != ResourceSizeTableManager::cInvalidSize) {
             out_result->resource_size = resource_size + alignment + sizeof(size_t);
@@ -999,23 +999,23 @@ namespace awn::res {
                 file_handle.Close();
             };
             const Result open_result = file_device->OpenFile(std::addressof(file_handle), prepare_info->formatted_path, OpenMode::Read);
-            if (open_result != ResultSuccess) { return; }
+            if (RESULT_FAILED(open_result)) { return; }
 
             /* Read enough of file to parse compressed header */
             char compressed_data[0x20] = {};
             size_t size_read = 0;
             const Result read_result = file_device->ReadFile(compressed_data, std::addressof(size_read), std::addressof(file_handle), 0x20, 0);
-            if (read_result != ResultSuccess) { return; }
+            if (RESULT_FAILED(read_result)) { return; }
 
             /* Parse zstd header */
             if (prepare_info->compression_type == CompressionType::Zstandard) {
                 const Result size_result = vp::codec::GetDecompressedSizeZstd(std::addressof(file_size), compressed_data, 0x20);
-                if (size_result != ResultSuccess) { return; }
+                if (RESULT_FAILED(size_result)) { return; }
             } else { return; }
 
         } else {            
             const Result result = file_device->GetFileSize(std::addressof(file_size), prepare_info->formatted_path);
-            if (result != ResultSuccess) { return; }
+            if (RESULT_FAILED(result)) { return; }
         }
         if (file_size == 0) { return; }
 

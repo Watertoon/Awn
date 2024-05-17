@@ -251,8 +251,6 @@ namespace awn::res {
         /* Set file device */
         m_file_device = (prepare_result->is_default_archive_file_device == true) ? nullptr : prepare_result->file_device;
 
-        /* TODO */
-
         return;
     }
 
@@ -372,7 +370,7 @@ namespace awn::res {
         return prepare_result.resource_size;
     }
 
-    Result ResourceUnit::ScheduleLoad() {
+    Result ResourceUnit::LoadMemory() {
 
         /* Handle transience */
         if (m_is_transient_on_load == true) { m_is_transient_on_load = false; AsyncResourceManager::GetInstance()->RequestUnloadResourceUnit(this); }
@@ -670,7 +668,7 @@ namespace awn::res {
 
     Result ResourceUnit::ClearCache() {
 
-        /* Still in reference */
+        /* Fail if still in reference */
         RESULT_RETURN_IF(0 < m_reference_count, ResultStillInReference);
 
         /* Cancel the resource */
@@ -688,7 +686,7 @@ namespace awn::res {
 
     Result ResourceUnit::TryLoadFile(const char *file_path) {
 
-        /* Setup load context */
+        /* Setup resource load context */
         ResourceLoadContext load_context = {
             .file_load_context = {                
                 .file_heap = (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device) == true) ? nullptr : m_resource_heap,
@@ -698,17 +696,17 @@ namespace awn::res {
             .resource_heap    = m_resource_heap,
         };
 
-        /* Load without decompression if none */
+        /* Load file with respect to decompression */
         const CompressionType decompressor_type = static_cast<CompressionType>(m_compression_type);
         if (decompressor_type == CompressionType::None) {
             return res::LoadResource(std::addressof(m_resource), file_path, std::addressof(load_context));
         }
 
         /* Select decompressor */
-        const u32             handle            = res::AllocateDecompressor();
-        IDecompressor *decompressor      = res::GetDecompressor(handle, decompressor_type, 0xd, (1 << (sys::GetCurrentCoreNumber() & 0x3f)));
+        const u32            handle = res::AllocateDecompressor();
+        IDecompressor *decompressor = res::GetDecompressor(handle, decompressor_type, 0xd, (1 << (sys::GetCurrentCoreNumber() & 0x3f)));
 
-        /* Load */
+        /* Load and decompress */
         const Result result = res::LoadResourceWithDecompressor(std::addressof(m_resource), file_path, std::addressof(load_context), decompressor);
 
         /* Free decompressor */
@@ -720,6 +718,7 @@ namespace awn::res {
     void ResourceUnit::CancelUnloadTask() {
         m_unload_task.CancelTask();
     }
+
     void ResourceUnit::UnregisterFromResourceUnitManager() {
         if (m_resource_unit_manager == nullptr) { return; }
         m_resource_unit_manager->UnregisterResourceUnit(this);
@@ -728,7 +727,7 @@ namespace awn::res {
     bool ResourceUnit::InitializeResource(ResourceUserContext *user_context) {
 
         /* Guard resource initialize */
-        const u32 last_count = vp::util::InterlockedIncrement(std::addressof(m_resource_initialize_guard));
+        const u32 last_count = vp::util::InterlockedFetchIncrement(std::addressof(m_resource_initialize_guard));
         if (0 < last_count) {
             m_status_update_event.Wait();
             const Status status = static_cast<Status>(m_status);

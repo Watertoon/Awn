@@ -24,9 +24,10 @@ namespace awn::async {
             friend class AsyncQueue;
         public:
             enum class Message : size_t {
-                Exit    = 0,
-                Resume  = 1,
-                Suspend = 2,
+                Exit     = 0,
+                Continue = 1,
+                Suspend  = 2,
+                Resume   = 3,
             };
             enum class Status : u32 {
                 None      = 0,
@@ -52,7 +53,7 @@ namespace awn::async {
         public:
             VP_RTTI_BASE(AsyncQueueThread);
         public:
-             AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority);
+            AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority);
             virtual ~AsyncQueueThread() override;
 
             virtual void ThreadMain(size_t message) override;

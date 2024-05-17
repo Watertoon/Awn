@@ -21,6 +21,13 @@ namespace vp::util {
 
     constexpr u32 StringLength(const char *string) {
 
+        /* Constexpr impl */
+        if (std::is_constant_evaluated() == true) {
+            u32 count = 0;
+            while (string[0] != '\0') { string += 1; ++count; }
+            return count;
+        }
+
         /* Handle unaligned string */
         const u32 unaligned = 0x20 - reinterpret_cast<uintptr_t>(string) & 0x1f;
         for (u32 i = 0; i < unaligned; ++i) {

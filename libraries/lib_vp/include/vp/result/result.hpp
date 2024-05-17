@@ -66,6 +66,14 @@ namespace vp {
             return return_result; \
         } \
     }
+    #define RESULT_THROW_ON_FAILED(result)  \
+        if ((result) != vp::ResultSuccess) { return result; }
+    #define RESULT_SUCCEEDED(result)  \
+        ((result) == vp::ResultSuccess)
+    #define RESULT_FAILED(result)  \
+        ((result) != vp::ResultSuccess)
+    #define RESULT_MATCHES(result0, result1)  \
+        ((result0) == (result1))
 
     #define RESULT_ABORT_UNLESS(result_expression)  \
     { \

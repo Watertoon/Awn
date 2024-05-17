@@ -175,7 +175,7 @@ namespace awn::res {
                 return (async::AsyncTask::Status::Cancelled == status) || (((async::AsyncTask::Status::Uninitialized == status) || (async::AsyncTask::Status::Complete == status)) && (m_status != Status::InLoad));
             }
             constexpr bool IsResourceInitialized() const {
-                if (m_status == Status::ResourceInitialized) { return true; }
+                if (m_status == Status::ResourcePostInitialized) { return true; }
                 return (m_resource != nullptr) && (m_status == Status::Loaded) && (m_is_resource_initializable == false);
             }
             constexpr bool IsErrorStatus() const { return static_cast<u32>(Status::Error) <= static_cast<u32>(m_status);}
@@ -194,7 +194,7 @@ namespace awn::res {
             void PrepareSizeImpl(ResourceSizePrepareResult *prepare_result, const ResourceSizePrepareInfo *prepare_info);
 
             size_t PrepareResourceLoad();
-            Result ScheduleLoad();
+            Result LoadMemory();
             Result LoadFile();
 
             Result Unload();
@@ -233,25 +233,25 @@ namespace awn::res {
     constexpr Resource *ResourceBinder::GetResourceDirect() const {
 
         /* Check load guard */
-        if (m_complete_guard == false) { return nullptr; }
+        if (m_load_guard == false) { return nullptr; }
         /* Check watcher is pending */
         if (m_watcher.IsPending() == true) { return nullptr; }
         /* Check resource unit exists */
         if (m_resource_unit == nullptr) { return nullptr; }
         /* Check resource unit is initialized */
         if (m_resource_unit->IsResourceInitialized() == false) { return nullptr; }
-        /* Check completion state */
+        /* Check completion guard */
         if (m_complete_guard == false) { return nullptr; }
 
         Resource *resource = m_resource_unit->m_resource;
-        /* Succeed if resource unit is initialized */
-        if (m_resource_unit->m_status == ResourceUnit::Status::Loaded) { return resource; }
+        /* Succeed if resource is post initialized */
+        if (m_resource_unit->m_status == ResourceUnit::Status::ResourcePostInitialized) { return resource; }
         /* Check resource exists */
         if (resource == nullptr) { return nullptr; }
-        /* Check resource unit status */
+        /* Check if the resource unit is loaded */
         if (m_resource_unit->m_status != ResourceUnit::Status::Loaded) { return nullptr; }
-        /* Check resource is initialized */
-        //if (m_resource_unit->m_is_require_resource_initalize == true) { return nullptr; }
+        /* Check if the resource doesn't need initialization */
+        if (m_resource_unit->m_is_resource_initializable == true) { return nullptr; }
 
         return m_resource_unit->m_resource;
     }

@@ -75,37 +75,23 @@ namespace vp::util {
             return ~seed;
         } else {
 
-            u32 seed = context;
-            
-            /* Perform 8 byte aligned version of crc32 */
-            const size_t size = ::strlen(string);
-            const size_t aligned_size = (size & ~7);
-            const char *string_leftover = string + aligned_size;
-            
-            if (aligned_size != 0) {
-                while (string != string_leftover) {
-                    const size_t val = *reinterpret_cast<const size_t*>(string);
-                    seed = Crc32b_64(val, seed);
-                    string = string + 8;
-                }
+            /* Setup context */
+            u32       seed           = context;
+            const u32 data_size      = StringLength(string);
+            const u32 unaligned_size = (data_size & 7);
+            const u32 aligned_size   = (data_size >> 3);
+
+            /* Unaligned crc32b */
+            const u8 *unaligned_iter = reinterpret_cast<const u8*>(string);
+            for (u32 i = 0; i < unaligned_size; ++i) {
+                seed = cCrc32bTable[(unaligned_iter[i] ^ seed) & 0xff] ^ seed >> 8;
             }
-            
-            /* 4 byte fallback */
-            if ((size & 4) != 0) {
-                const u32 val = *reinterpret_cast<const u32*>(string);
-                seed = Crc32b_32(val, seed);
-                string_leftover = string_leftover + 4;
-            }
-            
-            /* Fallback for rest of string */
-            if (string_leftover[0] != '\0') {
-                seed = cCrc32bTable[(string_leftover[0] ^ seed) & 0xff] ^ seed >> 8;
-            }
-            if (string_leftover[1] != '\0') {
-                seed = cCrc32bTable[(string_leftover[1] ^ seed) & 0xff] ^ seed >> 8;
-            }
-            if (string_leftover[2] != '\0') {
-                seed = cCrc32bTable[(string_leftover[2] ^ seed) & 0xff] ^ seed >> 8;
+
+            /* Aligned crc32b */
+            const u64 *data_iter = reinterpret_cast<const u64*>(reinterpret_cast<uintptr_t>(string) + unaligned_size);
+            for (u32 i = 0; i < aligned_size; ++i) {
+                const u64 val = data_iter[i];
+                seed = Crc32b_64(val, seed);
             }
             
             return ~seed;
@@ -134,39 +120,22 @@ namespace vp::util {
 
     ALWAYS_INLINE u32 HashDataCrc32bWithContext(u32 context, void *data, size_t data_size) {
 
-        u32 seed = context;
+        /* Setup context */
+        u32       seed           = context;
+        const u32 unaligned_size = (data_size & 7);
+        const u32 aligned_size   = (data_size >> 3);
 
-        /* Perform 8 byte aligned version of crc32 */
-        const size_t aligned_size = (data_size & ~7);
-        const u64 *data_iter     = reinterpret_cast<const u64*>(data);
-        const u64 *data_leftover = reinterpret_cast<const u64*>(reinterpret_cast<uintptr_t>(data) + aligned_size);
-
-        if (aligned_size != 0) {
-            while (data_iter != data_leftover) {
-                const size_t val = *data_iter;
-                seed = Crc32b_64(val, seed);
-                data_iter = data_iter + 1;
-            }
+        /* Unaligned crc32b */
+        const u8 *unaligned_iter = reinterpret_cast<const u8*>(data);
+        for (u32 i = 0; i < unaligned_size; ++i) {
+            seed = cCrc32bTable[(unaligned_iter[i] ^ seed) & 0xff] ^ seed >> 8;
         }
 
-        /* 4 byte fallback */
-        const u8 *leftover_iter = reinterpret_cast<const u8*>(data_leftover);
-        if ((data_size & 4) != 0) {
-            const u32 val = *reinterpret_cast<const u32*>(leftover_iter);
-            seed = Crc32b_32(val, seed);
-            leftover_iter = leftover_iter + 4;
-        }
-
-        /* Fallback for rest of string */
-        u32 count = (data_size & 3);
-        if (0 < count) {
-            seed = cCrc32bTable[(leftover_iter[0] ^ seed) & 0xff] ^ seed >> 8;
-        }
-        if (1 < count) {
-            seed = cCrc32bTable[(leftover_iter[1] ^ seed) & 0xff] ^ seed >> 8;
-        }
-        if (2 < count) {
-            seed = cCrc32bTable[(leftover_iter[2] ^ seed) & 0xff] ^ seed >> 8;
+        /* Aligned crc32b */
+        const u64 *data_iter = reinterpret_cast<const u64*>(reinterpret_cast<uintptr_t>(data) + unaligned_size);
+        for (u32 i = 0; i < aligned_size; ++i) {
+            const u64 val = data_iter[i];
+            seed = Crc32b_64(val, seed);
         }
 
         return ~seed;

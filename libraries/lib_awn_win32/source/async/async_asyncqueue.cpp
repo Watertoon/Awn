@@ -19,7 +19,7 @@ namespace awn::async {
 
 	AsyncTask *AsyncQueue::AcquireNextTask(AsyncQueueThread *queue_thread) {
 
-        /* Lock for scheduling */
+        /* Lock queue for acquisition */
         std::scoped_lock l(m_queue_mutex);
         vp::util::MemoryBarrierReadWrite();
 
@@ -45,6 +45,7 @@ namespace awn::async {
 
 		/* Bail if no task */
 		if (next_task == nullptr) {
+            this->UpdateAllTaskCompletion();
 			queue_thread->m_current_task = nullptr;
 			return nullptr;
 		}
@@ -72,6 +73,7 @@ namespace awn::async {
 		for (AsyncQueueThread *&queue_thread : m_task_thread_array) {
 			if (queue_thread->m_is_finished == true) { continue; }
 			is_all_finished = false;
+            break;
 		}
 		if (is_all_finished == true) {
 			m_all_task_complete_event.Signal();
@@ -79,6 +81,7 @@ namespace awn::async {
 
 		return is_all_finished;
 	}
+
 	void AsyncQueue::UpdatePriorityLevelCompletion() {
 
 		/* Signal priority level completion if priority is empty */
@@ -90,6 +93,7 @@ namespace awn::async {
 				if (queue_thread->m_current_task == nullptr)       { continue; }
 				if (queue_thread->m_current_task->m_priority != i) { continue; }
 				is_level_finished = false;
+                break;
 			}
 			if (is_level_finished == true && m_priority_level_array[i].async_task_head == nullptr) {
 				m_priority_level_array[i].priority_cleared_event.Signal();

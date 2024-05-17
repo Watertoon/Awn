@@ -59,7 +59,6 @@
 #include <vp/util/util_keyindexmap.hpp>
 #include <vp/util/util_intrusiveslimredblacktree.hpp>
 #include <vp/util/util_intrusivetreenode.hpp>
-#include <vp/util/util_murmur32.hpp>
 #include <vp/util/util_pointerarrayallocator.hpp>
 #include <vp/util/util_ringbuffer.hpp>
 #include <vp/util/util_color4.hpp>
@@ -80,9 +79,7 @@
     #include <vp/util/math/util_int128.avx2.hpp>
     #include <vp/util/math/util_int256.avx2.hpp>
     #include <vp/util/math/util_float128.avx2.hpp>
-    #include <vp/util/util_crc32b.x86.hpp>
 #elif VP_TARGET_ARCHITECTURE_aarch64
-    #include <vp/util/util_crc32b.aarch64.hpp>
     //#include <vp/util/math/util_int128.neon.hpp>
     //#include <vp/util/math/util_float128.neon.hpp>
 #endif
@@ -105,6 +102,14 @@
 #include <vp/util/util_charactercode.hpp>
 #include <vp/util/util_bufferstring.hpp>
 #include <vp/util/util_pathutil.hpp>
+
+#ifdef VP_TARGET_ARCHITECTURE_x86
+    #include <vp/util/util_crc32b.x86.hpp>
+#elif VP_TARGET_ARCHITECTURE_aarch64
+    #include <vp/util/util_crc32b.aarch64.hpp>
+#endif
+#include <vp/util/util_murmur32.hpp>
+#include <vp/util/util_murmur64.hpp>
 
 #include <vp/res/res_nintendowaredictionary.hpp>
 
