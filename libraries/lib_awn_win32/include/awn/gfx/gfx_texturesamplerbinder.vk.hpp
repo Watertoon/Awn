@@ -47,11 +47,11 @@ namespace awn::gfx {
             }
 
             Texture *GetTexture() {
-                return TextureSamplerManager::GetInstance()->TryGetTextureByHandle(m_texture_slot);
+                return TextureSamplerManager::GetInstance()->GetTexture(m_texture_slot);
             }
 
             TextureView *GetTextureView() {
-                return TextureSamplerManager::GetInstance()->TryGetTextureViewByHandle(m_texture_slot);
+                return TextureSamplerManager::GetInstance()->GetTextureView(m_texture_slot);
             }
     };
 
@@ -81,7 +81,7 @@ namespace awn::gfx {
             }
 
             Sampler *GetSampler() {
-                return TextureSamplerManager::GetInstance()->TryGetSamplerByHandle(m_sampler_slot);
+                return TextureSamplerManager::GetInstance()->GetSampler(m_sampler_slot);
             }
     };
 

@@ -59,8 +59,10 @@ namespace awn::gfx {
 
                 if (m_vk_sampler != VK_NULL_HANDLE) {
                     ::pfn_vkDestroySampler(Context::GetInstance()->GetVkDevice(), m_vk_sampler, Context::GetInstance()->GetVkAllocationCallbacks());
+                    m_vk_sampler = VK_NULL_HANDLE;
                 }
-                m_vk_sampler = VK_NULL_HANDLE;
+
+                return;
             }
 
             constexpr ALWAYS_INLINE VkSampler GetVkSampler() const { return m_vk_sampler; }

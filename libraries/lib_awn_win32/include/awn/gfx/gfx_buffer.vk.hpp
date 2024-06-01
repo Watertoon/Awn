@@ -31,7 +31,7 @@ namespace awn::gfx {
 			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(VK_NULL_HANDLE), m_vk_device_address(0), m_buffer_gpu_memory_address() {/*...*/}
             constexpr ALWAYS_INLINE ~Buffer() {/*...*/}
 
-			void Initialize(void *gpu_memory_address, BufferInfo *buffer_info) {
+			void Initialize(void *gpu_memory_address, const BufferInfo *buffer_info) {
 
                 /* Set gpu address */
                 m_buffer_gpu_memory_address = gpu_memory_address;
@@ -40,12 +40,7 @@ namespace awn::gfx {
                 m_vk_buffer = gfx::CreateVkBuffer(gpu_memory_address, buffer_info);
 
                 /* Query VkDeviceAddress */
-                const VkBufferDeviceAddressInfo device_address_info = {
-                    .sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
-                    .buffer = m_vk_buffer
-                    
-                };
-                m_vk_device_address = ::vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(device_address_info));
+                m_vk_device_address = gfx::GetVkDeviceAddress(m_vk_buffer);
 
                 return;
 			}
@@ -66,12 +61,7 @@ namespace awn::gfx {
                 VP_ASSERT(result1 == VK_SUCCESS);
 
                 /* Query VkDeviceAddress */
-                const VkBufferDeviceAddressInfo device_address_info = {
-                    .sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
-                    .buffer = m_vk_buffer
-                    
-                };
-                m_vk_device_address = ::vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(device_address_info));
+                m_vk_device_address = gfx::GetVkDeviceAddress(m_vk_buffer);
 
                 return;
 			}
@@ -81,9 +71,9 @@ namespace awn::gfx {
                 /* Delete VkBuffer */
                 if (m_vk_buffer != VK_NULL_HANDLE) {
                     ::pfn_vkDestroyBuffer(Context::GetInstance()->GetVkDevice(), m_vk_buffer, Context::GetInstance()->GetVkAllocationCallbacks());
+                    m_vk_buffer         = VK_NULL_HANDLE;
+                    m_vk_device_address = 0;
                 }
-                m_vk_buffer         = VK_NULL_HANDLE;
-                m_vk_device_address = 0;
             }
 
             static GpuMemoryRequirements GetMemoryRequirements(const BufferInfo *buffer_info) {

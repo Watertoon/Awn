@@ -160,18 +160,22 @@ namespace awn::frm {
             .gpu_host_uncached_size_array      = { graphics_info->gpu_host_uncached_memory_size },
         };
         gpu_heap_mgr->Initialize(awn_graphics_heap, std::addressof(gpu_heap_mgr_info));
+        mem::Heap *gpu_heap_gpu_host_uncached = gpu_heap_mgr->GetGpuRootHeapGpuHostUncached(0);
 
         /* Initialize command pool mgr */
         gfx::CommandPoolManager *cmd_pool_mgr = gfx::CommandPoolManager::CreateInstance(awn_graphics_heap);
         cmd_pool_mgr->Initialize();
 
+        /* Initialize descriptor memory manager */
+        gfx::DescriptorMemoryManager *desc_memory_mgr = gfx::DescriptorMemoryManager::CreateInstance(awn_graphics_heap);
+        desc_memory_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, graphics_info->per_stage_descriptor_memory_size);
+
         /* Initialize texture sampler mgr */
-        mem::Heap *gpu_heap_gpu_host_uncached = gpu_heap_mgr->GetGpuRootHeapGpuHostUncached(0);
         gfx::TextureSamplerManager *tex_samp_mgr = gfx::TextureSamplerManager::CreateInstance(awn_graphics_heap);
         const gfx::TextureSamplerManagerInfo texture_sampler_mgr_info = {
-            .max_texture_handles = graphics_info->texture_handle_count,
-            .max_sampler_handles = graphics_info->sampler_handle_count,
-            .texture_memory_size = graphics_info->texture_memory_size,
+            .max_texture_unit_count = graphics_info->texture_handle_count,
+            .max_sampler_unit_count = graphics_info->sampler_handle_count,
+            .texture_memory_size    = graphics_info->texture_memory_size,
         };
         tex_samp_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, std::addressof(texture_sampler_mgr_info));
 
@@ -202,6 +206,9 @@ namespace awn::frm {
 
             gfx::TextureSamplerManager::GetInstance()->Finalize();
             gfx::TextureSamplerManager::DeleteInstance();
+
+            gfx::DescriptorMemoryManager::GetInstance()->Finalize();
+            gfx::DescriptorMemoryManager::DeleteInstance();
 
             gfx::CommandPoolManager::GetInstance()->Finalize();
             gfx::CommandPoolManager::DeleteInstance();

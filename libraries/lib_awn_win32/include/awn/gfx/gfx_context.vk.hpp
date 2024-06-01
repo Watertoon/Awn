@@ -86,41 +86,104 @@ namespace awn::gfx {
             static constexpr size_t cTargetDescriptorBufferAlignment = 0x40;
 
             /* Max resource sizes */
-            static constexpr size_t cTargetMaxUniformBufferSize     = 0x10000;
-            static constexpr size_t cTargetMaxTextureDescriptorSize = 0x20;
-            static constexpr size_t cTargetMaxSamplerDescriptorSize = 0x20;
+            static constexpr size_t cTargetMaxUniformBufferSize             = 0x10000;
+            static constexpr size_t cTargetMaxTextureDescriptorSize         = 0x4;
+            static constexpr size_t cTargetMaxSamplerDescriptorSize         = 0x4;
+
+            static constexpr size_t cTargetMaxTextureSamplerDescriptorSize  = 0x4;
+            static constexpr size_t cTargetMaxImageDescriptorSize           = 0x4;
+            static constexpr size_t cTargetMaxUniformBufferDescriptorSize   = 0x8;
+            static constexpr size_t cTargetMaxStorageBufferDescriptorSize   = 0x10;
+            static constexpr size_t cTargetMaxSeparateTextureDescriptorSize = 0x4;
+            static constexpr size_t cTargetMaxSeparateSamplerDescriptorSize = 0x4;
 
             /* Global descriptor resource limits */
-            static constexpr size_t cTargetMaxTextureDescriptorCount = 0x2000;
-            static constexpr size_t cTargetMaxSamplerDescriptorCount = 0xfa0;
-            static constexpr size_t cTargetMaxDescriptorCount        = cTargetMaxTextureDescriptorCount + cTargetMaxSamplerDescriptorCount;
-            static constexpr size_t cTargetMaxSetUniformBufferCount  = 14;
-            static constexpr size_t cTargetMaxSetStorageBufferCount  = 16;
-            static constexpr size_t cTargetMaxPushDescriptorCount    = cTargetMaxSetUniformBufferCount + cTargetMaxSetStorageBufferCount;
-            static constexpr size_t cTargetDescriptorSetLayoutCount  = 3;
+            static constexpr size_t cTargetMaxTextureDescriptorCount    = 0x2000;
+            static constexpr size_t cTargetMaxSamplerDescriptorCount    = 0xfa0;
+            static constexpr u32    cTargetDescriptorSetLayoutCountGraphics = 31;
+            static constexpr u32    cTargetDescriptorSetLayoutCountCompute  = 7;
 
-            /* Layout bindings */
-            static constexpr size_t cTargetTextureLayoutBinding       = 0;
-            static constexpr size_t cTargetSamplerLayoutBinding       = 0;
-            static constexpr size_t cTargetUniformBufferLayoutBinding = 0;
-            static constexpr size_t cTargetStorageBufferLayoutBinding = 0;
-            
+            /* Descriptor buffer index */
+            static constexpr u32 cTargetDescriptorBufferIndexTexture  = 0;
+            static constexpr u32 cTargetDescriptorBufferIndexSampler  = 1;
+            static constexpr u32 cTargetDescriptorBufferIndexPerStage = 2;
+
+            /* Base descriptor set layout bindings */
+            static constexpr size_t cCombinedBindingBaseTextureSampler = 0;
+            static constexpr size_t cCombinedBindingBaseImage          = 32;
+            static constexpr size_t cCombinedBindingBaseUniformBuffer  = 40;
+            static constexpr size_t cCombinedBindingBaseStorageBuffer  = 54;
+
+            /* Layout sets */
+            static constexpr size_t cTargetTextureLayoutSet = 0;
+            static constexpr size_t cTargetSamplerLayoutSet = 1;
+
+            static constexpr size_t cTargetPerStageLayoutSetTextureSamplerVertex                         = 2;
+            static constexpr size_t cTargetPerStageLayoutSetTextureSamplerGeometry                       = 3;
+            static constexpr size_t cTargetPerStageLayoutSetTextureSamplerFragment                       = 4;
+            static constexpr size_t cTargetPerStageLayoutSetTextureSamplerTask                           = 5;
+            static constexpr size_t cTargetPerStageLayoutSetTextureSamplerMesh                           = 6;
+            static constexpr size_t cTargetPerStageLayoutSetImageVertex                                  = 7;
+            static constexpr size_t cTargetPerStageLayoutSetImageGeometry                                = 8;
+            static constexpr size_t cTargetPerStageLayoutSetImageFragment                                = 9;
+            static constexpr size_t cTargetPerStageLayoutSetImageTask                                    = 10;
+            static constexpr size_t cTargetPerStageLayoutSetImageMesh                                    = 11;
+            static constexpr size_t cTargetPerStageLayoutSetUniformBufferVertex                          = 12;
+            static constexpr size_t cTargetPerStageLayoutSetUniformBufferGeometry                        = 13;
+            static constexpr size_t cTargetPerStageLayoutSetUniformBufferFragment                        = 14;
+            static constexpr size_t cTargetPerStageLayoutSetUniformBufferTask                            = 15;
+            static constexpr size_t cTargetPerStageLayoutSetUniformBufferMesh                            = 16;
+            static constexpr size_t cTargetPerStageLayoutSetStorageBufferVertex                          = 17;
+            static constexpr size_t cTargetPerStageLayoutSetStorageBufferGeometry                        = 18;
+            static constexpr size_t cTargetPerStageLayoutSetStorageBufferFragment                        = 19;
+            static constexpr size_t cTargetPerStageLayoutSetStorageBufferTask                            = 20;
+            static constexpr size_t cTargetPerStageLayoutSetStorageBufferMesh                            = 21;
+            static constexpr size_t cTargetPerStageLayoutSetCombinedTessellationEvaluation               = 22;
+            static constexpr size_t cTargetPerStageLayoutSetCombinedTessellationControl                  = 23;
+            static constexpr size_t cTargetPerStageLayoutSetSeparateTextureSamplerVertex                 = 24;
+            static constexpr size_t cTargetPerStageLayoutSetSeparateTextureSamplerTessellationEvaluation = 25;
+            static constexpr size_t cTargetPerStageLayoutSetSeparateTextureSamplerTessellationControl    = 26;
+            static constexpr size_t cTargetPerStageLayoutSetSeparateTextureSamplerGeometry               = 27;
+            static constexpr size_t cTargetPerStageLayoutSetSeparateTextureSamplerFragment               = 28;
+            static constexpr size_t cTargetPerStageLayoutSetSeparateTextureSamplerTask                   = 29;
+            static constexpr size_t cTargetPerStageLayoutSetSeparateTextureSamplerMesh                   = 30;
+
+            static constexpr size_t cTargetPerStageLayoutSetTextureSamplerCompute         = 2;
+            static constexpr size_t cTargetPerStageLayoutSetImageCompute                  = 3;
+            static constexpr size_t cTargetPerStageLayoutSetUniformBufferCompute          = 4;
+            static constexpr size_t cTargetPerStageLayoutSetStorageBufferCompute          = 5;
+            static constexpr size_t cTargetPerStageLayoutSetSeparateTextureSamplerCompute = 6;
+
             /* Push constant ranges */
             static constexpr size_t cTargetAllStagePushConstantRangeCount = 1;
             static constexpr size_t cTargetPushConstantOffset             = 0;
-            static constexpr size_t cTargetPushConstantSize               = 128;
+            static constexpr size_t cTargetPushConstantSize               = 0x80;
 
             /* Per Shader stage resource limits */
             static constexpr size_t cTargetMaxSimultaneousShaderStageCount = 5;
             static constexpr size_t cTargetMaxMeshShaderStageCount         = 3;
             static constexpr size_t cTargetMaxPrimitiveShaderStageCount    = 5;
             static constexpr size_t cTargetMaxComputeShaderStageCount      = 1;
+
+            static constexpr size_t cTargetMaxPerStageTextureSamplerCount  = 32;
+            static constexpr size_t cTargetMaxPerStageImageCount           = 8;
             static constexpr size_t cTargetMaxPerStageUniformBufferCount   = 14;
             static constexpr size_t cTargetMaxPerStageStorageBufferCount   = 16;
-            static constexpr size_t cTargetMaxPerStageTextureCount         = 32;
-            static constexpr size_t cTargetMaxPerStageSamplerCount         = 32;
-            static constexpr size_t cTargetMaxPerStageStorageImageCount    = 8;
-            
+            static constexpr size_t cTargetMaxPerStageSeparateTextureCount = 128;
+            static constexpr size_t cTargetMaxPerStageSeparateSamplerCount = 32;
+
+            static constexpr size_t cTargetMaxPerStageMemorySizeTextureSampler  = 0x80;
+            static constexpr size_t cTargetMaxPerStageMemorySizeImage           = 0x40;
+            static constexpr size_t cTargetMaxPerStageMemorySizeUniformBuffer   = 0x80;
+            static constexpr size_t cTargetMaxPerStageMemorySizeStorageBuffer   = 0x100;
+            static constexpr size_t cTargetMaxPerStageMemorySizeSeparateTexture = 0x200;
+            static constexpr size_t cTargetMaxPerStageMemorySizeSeparateSampler = 0x80;
+
+            static constexpr size_t cTargetMaxPerStageMemorySizeCombined               = cTargetMaxPerStageMemorySizeTextureSampler + cTargetMaxPerStageMemorySizeImage + cTargetMaxPerStageMemorySizeUniformBuffer + cTargetMaxPerStageMemorySizeStorageBuffer;
+            static constexpr size_t cTargetMaxPerStageMemorySizeSeparateTextureSampler = cTargetMaxPerStageMemorySizeSeparateTexture + cTargetMaxPerStageMemorySizeSeparateSampler;
+
+            static constexpr size_t cTargetMaxPerStageMemorySizeTotal = cTargetMaxPerStageMemorySizeCombined + cTargetMaxPerStageMemorySizeSeparateTextureSampler;
+
             /* Command buffer nesting limits */
             static constexpr size_t cTargetCommandBufferNestingLevel = 256;
         private:
@@ -143,9 +206,42 @@ namespace awn::gfx {
             VkQueue                                                      m_vk_optical_flow_queue;
             VkDescriptorSetLayout                                        m_vk_texture_descriptor_set_layout;
             VkDescriptorSetLayout                                        m_vk_sampler_descriptor_set_layout;
-            VkDescriptorSetLayout                                        m_vk_storage_buffer_descriptor_set_layout;
-            VkDescriptorSetLayout                                        m_vk_uniform_buffer_descriptor_set_layout;
-            VkPipelineLayout                                             m_vk_pipeline_layout;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_texture_sampler_compute;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_texture_sampler_task;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_image_vertex;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_image_geometry;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_image_fragment;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_image_compute;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_image_task;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_image_mesh;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_uniform_buffer_task;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_storage_buffer_compute;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_storage_buffer_task;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_combined_tessellation_control;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task;
+            VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh;
+            VkPipelineLayout                                             m_vk_pipeline_layout_graphics;
+            VkPipelineLayout                                             m_vk_pipeline_layout_compute;
             VkPushConstantRange                                          m_vk_push_constant_range;
 
             /* Vulkan all physical device properties and features */
@@ -196,6 +292,60 @@ namespace awn::gfx {
             AWN_SINGLETON_TRAITS(Context);
         public:
             constexpr ALWAYS_INLINE Context() :
+            m_vk_instance(VK_NULL_HANDLE),
+            m_vk_physical_device(VK_NULL_HANDLE),
+            m_vk_device(VK_NULL_HANDLE),
+            m_queue_family_count(),
+            m_graphics_queue_family_index(),
+            m_compute_queue_family_index(),
+            m_transfer_queue_family_index(),
+            m_video_decode_queue_family_index(),
+            m_video_encode_queue_family_index(),
+            m_optical_flow_queue_family_index(),
+            m_vk_graphics_queue(VK_NULL_HANDLE),
+            m_vk_compute_queue(VK_NULL_HANDLE),
+            m_vk_transfer_queue(VK_NULL_HANDLE),
+            m_vk_video_decode_queue(VK_NULL_HANDLE),
+            m_vk_video_encode_queue(VK_NULL_HANDLE),
+            m_vk_optical_flow_queue(VK_NULL_HANDLE),
+            m_vk_texture_descriptor_set_layout(VK_NULL_HANDLE),
+            m_vk_sampler_descriptor_set_layout(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_compute(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_task(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_image_vertex(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_image_geometry(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_image_fragment(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_image_compute(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_image_task(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_image_mesh(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_task(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_compute(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_task(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_combined_tessellation_control(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task(VK_NULL_HANDLE),
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh(VK_NULL_HANDLE),
+            m_vk_pipeline_layout_graphics(VK_NULL_HANDLE),
+            m_vk_pipeline_layout_compute(VK_NULL_HANDLE),
             m_vk_push_constant_range {
                 .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT | VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT,
                 .offset     = cTargetPushConstantOffset,
@@ -420,16 +570,149 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE       u32              GetVideoEncodeQueueFamilyIndex()          const { return m_video_encode_queue_family_index; }
             constexpr ALWAYS_INLINE       u32              GetOpticalFlowQueueFamilyIndex()          const { return m_optical_flow_queue_family_index; }
 
-            constexpr ALWAYS_INLINE const VkPushConstantRange   *GetVkPushConstantRangeArray()     const { return std::addressof(m_vk_push_constant_range); }
-            constexpr ALWAYS_INLINE const VkDescriptorSetLayout *GetVkDescriptorSetLayoutArray()   const { return std::addressof(m_vk_texture_descriptor_set_layout); }
-            constexpr ALWAYS_INLINE       VkDescriptorSetLayout  GetTextureVkDescriptorSetLayout() const { return m_vk_texture_descriptor_set_layout; }
-            constexpr ALWAYS_INLINE       VkDescriptorSetLayout  GetSamplerVkDescriptorSetLayout() const { return m_vk_sampler_descriptor_set_layout; }
-            constexpr ALWAYS_INLINE       VkPipelineLayout       GetVkPipelineLayout()             const { return m_vk_pipeline_layout; }
+            constexpr ALWAYS_INLINE const VkPushConstantRange   *GetVkPushConstantRangeArray()   const { return std::addressof(m_vk_push_constant_range); }
+            constexpr ALWAYS_INLINE const VkDescriptorSetLayout *GetVkDescriptorSetLayoutArray() const { return std::addressof(m_vk_texture_descriptor_set_layout); }
+
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetTextureVkDescriptorSetLayout() const { return m_vk_texture_descriptor_set_layout; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetSamplerVkDescriptorSetLayout() const { return m_vk_sampler_descriptor_set_layout; }
+
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutTextureSamplerVertex()                         const { return m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutTextureSamplerGeometry()                       const { return m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutTextureSamplerFragment()                       const { return m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutTextureSamplerTask()                           const { return m_vk_per_stage_descriptor_set_layout_texture_sampler_task; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutTextureSamplerMesh()                           const { return m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutImageVertex()                                  const { return m_vk_per_stage_descriptor_set_layout_image_vertex; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutImageGeometry()                                const { return m_vk_per_stage_descriptor_set_layout_image_geometry; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutImageFragment()                                const { return m_vk_per_stage_descriptor_set_layout_image_fragment; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutImageTask()                                    const { return m_vk_per_stage_descriptor_set_layout_image_task; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutImageMesh()                                    const { return m_vk_per_stage_descriptor_set_layout_image_mesh; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutUniformBufferVertex()                          const { return m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutUniformBufferGeometry()                        const { return m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutUniformBufferFragment()                        const { return m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutUniformBufferTask()                            const { return m_vk_per_stage_descriptor_set_layout_uniform_buffer_task; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutUniformBufferMesh()                            const { return m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutStorageBufferVertex()                          const { return m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutStorageBufferGeometry()                        const { return m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutStorageBufferFragment()                        const { return m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutStorageBufferTask()                            const { return m_vk_per_stage_descriptor_set_layout_storage_buffer_task; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutStorageBufferMesh()                            const { return m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutCombinedTessellationEvaluation()               const { return m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutCombinedTessellationControl()                  const { return m_vk_per_stage_descriptor_set_layout_combined_tessellation_control; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerVertex()                 const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTessellationEvaluation() const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTessellationControl()    const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerGeometry()               const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerFragment()               const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTask()                   const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerMesh()                   const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh; }
+
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutTextureSamplerCompute()         const { return m_vk_per_stage_descriptor_set_layout_texture_sampler_compute; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutImageCompute()                  const { return m_vk_per_stage_descriptor_set_layout_image_compute; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutUniformBufferCompute()          const { return m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutStorageBufferCompute()          const { return m_vk_per_stage_descriptor_set_layout_storage_buffer_compute; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerCompute() const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute; }
+
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutTextureSampler(ShaderStage shader_stage) const {
+
+                /* Get desc layout by shader stage */
+                const u32 stage_index = static_cast<u32>(shader_stage);
+                VkDescriptorSetLayout desc_layout;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    desc_layout = std::addressof(m_vk_per_stage_descriptor_set_layout_combined_tessellation_control)[stage_index - 1];
+                } else {
+                    desc_layout = (1 < stage_index) ? std::addressof(m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex)[stage_index - 2] : m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex;
+                }
+
+                return desc_layout;
+            }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutImage(ShaderStage shader_stage) const {
+
+                /* Get desc layout by shader stage */
+                const u32 stage_index = static_cast<u32>(shader_stage);
+                VkDescriptorSetLayout desc_layout;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    desc_layout = std::addressof(m_vk_per_stage_descriptor_set_layout_combined_tessellation_control)[stage_index - 1];
+                } else {
+                    desc_layout = (1 < stage_index) ? std::addressof(m_vk_per_stage_descriptor_set_layout_image_vertex)[stage_index - 2] : m_vk_per_stage_descriptor_set_layout_image_vertex;
+                }
+
+                return desc_layout;
+            }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutUniformBuffer(ShaderStage shader_stage) const {
+
+                /* Get desc layout by shader stage */
+                const u32 stage_index = static_cast<u32>(shader_stage);
+                VkDescriptorSetLayout desc_layout;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    desc_layout = std::addressof(m_vk_per_stage_descriptor_set_layout_combined_tessellation_control)[stage_index - 1];
+                } else {
+                    desc_layout = (1 < stage_index) ? std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex)[stage_index - 2] : m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex;
+                }
+
+                return desc_layout;
+            }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutStorageBuffer(ShaderStage shader_stage) const {
+
+                /* Get desc layout by shader stage */
+                const u32 stage_index = static_cast<u32>(shader_stage);
+                VkDescriptorSetLayout desc_layout;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    desc_layout = std::addressof(m_vk_per_stage_descriptor_set_layout_combined_tessellation_control)[stage_index - 1];
+                } else {
+                    desc_layout = (1 < stage_index) ? std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex)[stage_index - 2] : m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex;
+                }
+
+                return desc_layout;
+            }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSampler(ShaderStage shader_stage) const {
+
+                /* Get desc layout by shader stage */
+                const u32 stage_index = static_cast<u32>(shader_stage);
+                VkDescriptorSetLayout desc_layout;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    desc_layout = std::addressof(m_vk_per_stage_descriptor_set_layout_combined_tessellation_control)[stage_index - 1];
+                } else {
+                    desc_layout = (1 < stage_index) ? std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex)[stage_index - 2] : m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex;
+                }
+
+                return desc_layout;
+            }
+
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseTextureSampler(ShaderStage shader_stage) {
+                /* Get desc layout by shader stage */
+                const u32 binding_base = (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) ? cCombinedBindingBaseTextureSampler : 0;
+                return binding_base;
+            }
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseImage(ShaderStage shader_stage) {
+                /* Get desc layout by shader stage */
+                const u32 binding_base = (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) ? cCombinedBindingBaseImage : 0;
+                return binding_base;
+            }
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseUniformBuffer(ShaderStage shader_stage) {
+                /* Get desc layout by shader stage */
+                const u32 binding_base = (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) ? cCombinedBindingBaseUniformBuffer : 0;
+                return binding_base;
+            }
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseStorageBuffer(ShaderStage shader_stage) {
+                /* Get desc layout by shader stage */
+                const u32 binding_base = (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) ? cCombinedBindingBaseStorageBuffer : 0;
+                return binding_base;
+            }
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateTexture(ShaderStage shader_stage) { return 0; }
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateSampler(ShaderStage shader_stage) { return 128; }
+
+
+            constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutGraphics() const { return m_vk_pipeline_layout_graphics; }
+            constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutCompute()  const { return m_vk_pipeline_layout_compute; }
 
             constexpr ALWAYS_INLINE const VkPhysicalDeviceProperties2 *GetPhysicalDeviceProperties() const { return std::addressof(m_vk_physical_device_properties); }
 
-            constexpr ALWAYS_INLINE size_t GetTextureDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.sampledImageDescriptorSize; }
-            constexpr ALWAYS_INLINE size_t GetSamplerDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.samplerDescriptorSize; }
-            constexpr ALWAYS_INLINE size_t GetDescriptorAlignment()   const { return m_vk_physical_device_descriptor_buffer_properties.descriptorBufferOffsetAlignment; }
+            constexpr ALWAYS_INLINE size_t GetSeparateTextureDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.sampledImageDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetSeparateSamplerDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.samplerDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetTextureSamplerDescriptorSize()  const { return m_vk_physical_device_descriptor_buffer_properties.combinedImageSamplerDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetImageDescriptorSize()           const { return m_vk_physical_device_descriptor_buffer_properties.storageImageDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetUniformBufferDescriptorSize()   const { return m_vk_physical_device_descriptor_buffer_properties.uniformBufferDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetStorageBufferDescriptorSize()   const { return m_vk_physical_device_descriptor_buffer_properties.storageBufferDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetDescriptorOffsetAlignment()     const { return m_vk_physical_device_descriptor_buffer_properties.descriptorBufferOffsetAlignment; }
     };
 }

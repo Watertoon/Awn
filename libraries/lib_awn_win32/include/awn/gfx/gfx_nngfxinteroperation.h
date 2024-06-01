@@ -17,6 +17,38 @@
 
 namespace awn::gfx {
 
+    enum class ShaderStage : u32 {
+        Vertex                 = 0,
+        TessellationEvaluation = 1,
+        TessellationControl    = 2,
+        Geometry               = 3,
+        Fragment               = 4,
+        Compute                = 5,
+        Task                   = 6,
+        Mesh                   = 7,
+        Ray                    = 8,
+        AnyHit                 = 9,
+        ClosestHit             = 10,
+        Miss                   = 11,
+        Callable               = 12,
+    };
+
+    enum class ShaderStageMask : u32 {
+        Vertex                 = (1 << 0),
+        TessellationEvaluation = (1 << 1),
+        TessellationControl    = (1 << 2),
+        Geometry               = (1 << 3),
+        Fragment               = (1 << 4),
+        Compute                = (1 << 5),
+        Task                   = (1 << 6),
+        Mesh                   = (1 << 7),
+        Ray                    = (1 << 8),
+        AnyHit                 = (1 << 9),
+        ClosestHit             = (1 << 10),
+        Miss                   = (1 << 11),
+        Callable               = (1 << 12),
+    };
+
     /* Resource sizes */
     constexpr inline const size_t cMaxGfxMemoryPoolSize  = 0x120;
     constexpr inline const size_t cMaxGfxBufferSize      = 0x48;

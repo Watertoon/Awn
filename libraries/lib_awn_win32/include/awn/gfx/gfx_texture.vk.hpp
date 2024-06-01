@@ -80,7 +80,10 @@ namespace awn::gfx {
                 /* Delete VkImage */
                 if (m_vk_image != VK_NULL_HANDLE) {
                     ::pfn_vkDestroyImage(Context::GetInstance()->GetVkDevice(), m_vk_image, Context::GetInstance()->GetVkAllocationCallbacks());
+                    m_vk_image = VK_NULL_HANDLE;
                 }
+
+                return;
             }
 
             static GpuMemoryRequirements GetMemoryRequirements(TextureInfo *texture_info) {

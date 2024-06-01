@@ -58,10 +58,13 @@ namespace awn::gfx {
 
             void Finalize() {
 
+                /* Finalize vk image view */
                 if (m_vk_image_view != VK_NULL_HANDLE) {
                     ::pfn_vkDestroyImageView(Context::GetInstance()->GetVkDevice(), m_vk_image_view, Context::GetInstance()->GetVkAllocationCallbacks());
+                    m_vk_image_view = VK_NULL_HANDLE;
                 }
-                m_vk_image_view = VK_NULL_HANDLE;
+
+                return;
             }
 
             constexpr ALWAYS_INLINE u32 GetLayerCount() const { return m_image_view_info.array_layer_count; }

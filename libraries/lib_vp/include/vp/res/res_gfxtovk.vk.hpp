@@ -173,7 +173,7 @@ namespace vp::res {
         return static_cast<VkImageType>(static_cast<u8>(image_storage_dimension) - 1);
     }
 
-    constexpr inline VkImageCreateFlags ResGfxTextureInfoToVkImageCreateFlags(ResGfxTextureInfo *texture_info) {
+    constexpr inline VkImageCreateFlags ResGfxTextureInfoToVkImageCreateFlags(const ResGfxTextureInfo *texture_info) {
 
         u32 flags = 0;
         //if (texture_info->storage_dimension == static_cast<u8>(GfxImageStorageDimension::Type2D) { flags |= VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT; }
@@ -245,7 +245,7 @@ namespace vp::res {
     }
 
     template <typename T>
-    constexpr inline VkImageAspectFlags GfxTextureViewInfoToVkImageAspectFlags(ResGfxTextureViewInfo<T> *texture_view_info) {
+    constexpr inline VkImageAspectFlags GfxTextureViewInfoToVkImageAspectFlags(const ResGfxTextureViewInfo<T> *texture_view_info) {
 
         u32 flags = 0;
         if (static_cast<GfxTypeFormat>(texture_view_info->image_format & 0xff) != GfxTypeFormat::Depth) {

@@ -25,11 +25,11 @@ namespace awn::sys {
         {
             std::scoped_lock l(m_list_cs);
             for (ThreadBase &thread : m_thread_list) {
+                if (std::addressof(thread) == vp::util::GetPointer(m_main_thread)) { continue; }
                 thread.WaitForThreadExit();
             }
-            for (ThreadBase &thread : m_thread_list) {
-                this->RemoveThreadUnsafe(std::addressof(thread));
-            }
+
+            m_thread_list.Clear();
         }
 
         /* Free current service thread tls slot */

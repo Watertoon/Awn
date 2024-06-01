@@ -34,16 +34,18 @@ namespace awn::frm {
         size_t host_cached_memory_size;
         size_t gpu_host_uncached_memory_size;
         size_t texture_memory_size;
+        size_t per_stage_descriptor_memory_size;
         u32    texture_handle_count;
         u32    sampler_handle_count;
 
         constexpr void SetDefaults() {
-            host_uncached_memory_size     = vp::util::c32MB;
-            host_cached_memory_size       = vp::util::c32MB;
-            gpu_host_uncached_memory_size = vp::util::c32MB;
-            texture_memory_size           = vp::util::c32MB;
-            texture_handle_count          = 0x100;
-            sampler_handle_count          = 0x100;
+            host_uncached_memory_size        = vp::util::c32MB;
+            host_cached_memory_size          = vp::util::c32MB;
+            gpu_host_uncached_memory_size    = vp::util::c32MB;
+            texture_memory_size              = vp::util::c32MB;
+            per_stage_descriptor_memory_size = vp::util::c4MB;
+            texture_handle_count             = 0x100;
+            sampler_handle_count             = 0x40;
         }
     };
 

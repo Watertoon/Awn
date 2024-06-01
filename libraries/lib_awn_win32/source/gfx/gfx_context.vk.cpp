@@ -156,10 +156,10 @@ namespace awn::gfx {
         }
 
         /* Property checks */
-        if (m_vk_physical_device_properties_12.maxUpdateAfterBindDescriptorsInAllPools       < cTargetMaxDescriptorCount)        { VP_ASSERT(false); return false; }
+        //if (m_vk_physical_device_properties_12.maxUpdateAfterBindDescriptorsInAllPools       < cTargetMaxDescriptorCount)        { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_properties_12.maxDescriptorSetUpdateAfterBindSampledImages  < cTargetMaxTextureDescriptorCount) { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_properties_12.maxDescriptorSetUpdateAfterBindSamplers       < cTargetMaxSamplerDescriptorCount) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_push_descriptor_properties.maxPushDescriptors               < cTargetMaxPushDescriptorCount)    { VP_ASSERT(false); return false; }
+        //if (m_vk_physical_device_push_descriptor_properties.maxPushDescriptors               < cTargetMaxPushDescriptorCount)    { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_extended_dynamic_state_3_properties.dynamicPrimitiveTopologyUnrestricted == false)              { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_nested_command_buffer_properties.maxCommandBufferNestingLevel < cTargetCommandBufferNestingLevel)              { VP_ASSERT(false); return false; }
         //if (m_vk_physical_device_host_image_copy_properties.identicalMemoryTypeRequirements == false)                            { VP_ASSERT(false); return false; }
@@ -713,6 +713,7 @@ namespace awn::gfx {
                 VK_EXT_HOST_IMAGE_COPY_EXTENSION_NAME,
                 VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME,
                 VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
+                VK_KHR_MAINTENANCE_5_EXTENSION_NAME,
                 VK_KHR_MAINTENANCE_6_EXTENSION_NAME,
                 VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME,
                 VK_KHR_INDEX_TYPE_UINT8_EXTENSION_NAME,
@@ -804,7 +805,7 @@ namespace awn::gfx {
 
             const VkDescriptorSetLayoutBinding texture_set_binding_array[] = { 
                 {
-                    .binding         = cTargetTextureLayoutBinding,
+                    .binding         = 0,
                     .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
                     .descriptorCount = cTargetMaxTextureDescriptorCount,
                     .stageFlags      = VK_SHADER_STAGE_ALL,
@@ -835,7 +836,7 @@ namespace awn::gfx {
 
             const VkDescriptorSetLayoutBinding sampler_set_binding_array[] = { 
                 {
-                    .binding         = cTargetSamplerLayoutBinding,
+                    .binding         = 0,
                     .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
                     .descriptorCount = cTargetMaxSamplerDescriptorCount,
                     .stageFlags      = VK_SHADER_STAGE_ALL,
@@ -853,85 +854,2386 @@ namespace awn::gfx {
             VP_ASSERT(result6 == VK_SUCCESS);
         }
 
-        /* Initialize storage buffer descriptor layout */
-        {
-            const VkDescriptorBindingFlags  storage_buffer_set_binding_flag_array[] = {
-                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
+        /* Initialize per stage texture sampler descriptor layout */
+        const auto init_per_stage_texture_sampler_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {
+
+            /* Initialize descriptor set layout */
+            const VkDescriptorBindingFlags  per_stage_set_binding_flag_array[] = {
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
             };
-            const VkDescriptorSetLayoutBindingFlagsCreateInfo storage_buffer_set_binding_info = {
+            const VkDescriptorSetLayoutBindingFlagsCreateInfo per_stage_set_binding_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-                .bindingCount = sizeof(storage_buffer_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
-                .pBindingFlags = storage_buffer_set_binding_flag_array
+                .bindingCount = sizeof(per_stage_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
+                .pBindingFlags = per_stage_set_binding_flag_array
             };
-
-            const VkDescriptorSetLayoutBinding storage_buffer_set_binding_array[] = { 
+            const VkDescriptorSetLayoutBinding per_stage_set_binding_array[] = {
                 {
-                    .binding         = cTargetStorageBufferLayoutBinding,
-                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                    .descriptorCount = cTargetMaxSetStorageBufferCount,
-                    .stageFlags      = VK_SHADER_STAGE_ALL,
-                }
+                    .binding         = 0,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 1,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 2,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 3,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 4,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 5,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 6,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 7,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 8,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 9,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 10,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 11,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 12,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 13,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 14,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 15,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 16,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 17,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 18,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 19,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 20,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 21,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 22,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 23,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 24,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 25,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 26,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 27,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 28,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 29,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 30,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 31,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
             };
 
-            const VkDescriptorSetLayoutCreateInfo storage_buffer_set_layout_info = {
+            const VkDescriptorSetLayoutCreateInfo per_stage_set_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-                .pNext = std::addressof(storage_buffer_set_binding_info),
+                .pNext = std::addressof(per_stage_set_binding_info),
                 .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
-                .bindingCount = sizeof(storage_buffer_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
-                .pBindings = storage_buffer_set_binding_array
+                .bindingCount = sizeof(per_stage_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
+                .pBindings = per_stage_set_binding_array
             };
-            const u32 result6 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(storage_buffer_set_layout_info), nullptr, std::addressof(m_vk_storage_buffer_descriptor_set_layout));
-            VP_ASSERT(result6 == VK_SUCCESS);
-        }
+            const u32 result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(per_stage_set_layout_info), nullptr, set_layout);
+            VP_ASSERT(result0 == VK_SUCCESS);
 
-        /* Initialize uniform buffer descriptor layout */
-        {
-            const VkDescriptorBindingFlags  uniform_buffer_set_binding_flag_array[] = {
-                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT
+            const u32              desc_size     = this->GetTextureSamplerDescriptorSize();
+            const u32              binding       = 31;
+            VkDeviceSize           desc_offset   = 0;
+            ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(m_vk_device, *set_layout, binding, std::addressof(desc_offset));
+            VP_ASSERT(desc_offset + desc_size <= cTargetMaxPerStageMemorySizeTextureSampler);
+
+            return;
+        };
+
+        init_per_stage_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex),                  VK_SHADER_STAGE_VERTEX_BIT);
+        init_per_stage_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry),                VK_SHADER_STAGE_GEOMETRY_BIT);
+        init_per_stage_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment),                VK_SHADER_STAGE_FRAGMENT_BIT);
+        init_per_stage_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_texture_sampler_compute),                 VK_SHADER_STAGE_COMPUTE_BIT);
+        init_per_stage_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_texture_sampler_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
+        init_per_stage_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
+
+        /* Initialize per stage image descriptor layout */
+        const auto init_per_stage_image_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {
+
+            /* Initialize descriptor set layout */
+            const VkDescriptorBindingFlags  per_stage_set_binding_flag_array[] = {
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
             };
-            const VkDescriptorSetLayoutBindingFlagsCreateInfo uniform_buffer_set_binding_info = {
+            const VkDescriptorSetLayoutBindingFlagsCreateInfo per_stage_set_binding_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-                .bindingCount = sizeof(uniform_buffer_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
-                .pBindingFlags = uniform_buffer_set_binding_flag_array
+                .bindingCount = sizeof(per_stage_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
+                .pBindingFlags = per_stage_set_binding_flag_array
+            };
+            const VkDescriptorSetLayoutBinding per_stage_set_binding_array[] = {
+                {
+                    .binding         = 0,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 1,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 2,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 3,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 4,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 5,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 6,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 7,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
             };
 
-            const VkDescriptorSetLayoutBinding uniform_buffer_set_binding_array[] = { 
+            const VkDescriptorSetLayoutCreateInfo per_stage_set_layout_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+                .pNext = std::addressof(per_stage_set_binding_info),
+                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
+                .bindingCount = sizeof(per_stage_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
+                .pBindings = per_stage_set_binding_array
+            };
+            const u32 result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(per_stage_set_layout_info), nullptr, set_layout);
+            VP_ASSERT(result0 == VK_SUCCESS);
+
+            const u32    desc_size     = this->GetImageDescriptorSize();
+            const u32    binding       = 7;
+            VkDeviceSize desc_offset   = 0;
+            ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(m_vk_device, *set_layout, binding, std::addressof(desc_offset));
+            VP_ASSERT(desc_offset + desc_size <= cTargetMaxPerStageMemorySizeImage);
+
+            return;
+        };
+
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_vertex),                  VK_SHADER_STAGE_VERTEX_BIT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_geometry),                VK_SHADER_STAGE_GEOMETRY_BIT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_fragment),                VK_SHADER_STAGE_FRAGMENT_BIT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_compute),                 VK_SHADER_STAGE_COMPUTE_BIT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
+
+        /* Initialize per stage uniform buffer descriptor layout */
+        const auto init_per_stage_uniform_buffer_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {
+
+            /* Initialize descriptor set layout */
+            const VkDescriptorBindingFlags  per_stage_set_binding_flag_array[] = {
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+            };
+            const VkDescriptorSetLayoutBindingFlagsCreateInfo per_stage_set_binding_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+                .bindingCount = sizeof(per_stage_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
+                .pBindingFlags = per_stage_set_binding_flag_array
+            };
+            const VkDescriptorSetLayoutBinding per_stage_set_binding_array[] = {
                 {
-                    .binding         = cTargetUniformBufferLayoutBinding,
+                    .binding         = 0,
                     .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                    .descriptorCount = cTargetMaxSetUniformBufferCount,
-                    .stageFlags      = VK_SHADER_STAGE_ALL,
-                }
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 1,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 2,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 3,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 4,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 5,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 6,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 7,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 8,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 9,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 10,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 11,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 12,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 13,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
             };
 
-            const VkDescriptorSetLayoutCreateInfo uniform_buffer_set_layout_info = {
+            const VkDescriptorSetLayoutCreateInfo per_stage_set_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-                .pNext = std::addressof(uniform_buffer_set_binding_info),
+                .pNext = std::addressof(per_stage_set_binding_info),
                 .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
-                .bindingCount = sizeof(uniform_buffer_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
-                .pBindings = uniform_buffer_set_binding_array
+                .bindingCount = sizeof(per_stage_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
+                .pBindings = per_stage_set_binding_array
             };
-            const u32 result6 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(uniform_buffer_set_layout_info), nullptr, std::addressof(m_vk_uniform_buffer_descriptor_set_layout));
-            VP_ASSERT(result6 == VK_SUCCESS);
-        }
+            const u32 result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(per_stage_set_layout_info), nullptr, set_layout);
+            VP_ASSERT(result0 == VK_SUCCESS);
 
-        /* Initialize pipeline layout */
+            const u32    desc_size     = this->GetUniformBufferDescriptorSize();
+            const u32    binding       = 13;
+            VkDeviceSize desc_offset   = 0;
+            ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(m_vk_device, *set_layout, binding, std::addressof(desc_offset));
+            VP_ASSERT(desc_offset + desc_size <= cTargetMaxPerStageMemorySizeUniformBuffer);
+
+            return;
+        };
+
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex),                  VK_SHADER_STAGE_VERTEX_BIT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry),                VK_SHADER_STAGE_GEOMETRY_BIT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment),                VK_SHADER_STAGE_FRAGMENT_BIT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute),                 VK_SHADER_STAGE_COMPUTE_BIT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
+
+        /* Initialize per stage storage buffer descriptor layout */
+        const auto init_per_stage_storage_buffer_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {
+
+            /* Initialize descriptor set layout */
+            const VkDescriptorBindingFlags  per_stage_set_binding_flag_array[] = {
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+            };
+            const VkDescriptorSetLayoutBindingFlagsCreateInfo per_stage_set_binding_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+                .bindingCount = sizeof(per_stage_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
+                .pBindingFlags = per_stage_set_binding_flag_array
+            };
+            const VkDescriptorSetLayoutBinding per_stage_set_binding_array[] = {
+                {
+                    .binding         = 0,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 1,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 2,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 3,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 4,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 5,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 6,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 7,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 8,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 9,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 10,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 11,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 12,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 13,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 14,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 15,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+            };
+
+            const VkDescriptorSetLayoutCreateInfo per_stage_set_layout_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+                .pNext = std::addressof(per_stage_set_binding_info),
+                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
+                .bindingCount = sizeof(per_stage_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
+                .pBindings = per_stage_set_binding_array
+            };
+            const u32 result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(per_stage_set_layout_info), nullptr, set_layout);
+            VP_ASSERT(result0 == VK_SUCCESS);
+
+            const u32    desc_size     = this->GetStorageBufferDescriptorSize();
+            const u32    binding       = 15;
+            VkDeviceSize desc_offset   = 0;
+            ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(m_vk_device, *set_layout, binding, std::addressof(desc_offset));
+            VP_ASSERT(desc_offset + desc_size <= cTargetMaxPerStageMemorySizeStorageBuffer);
+
+            return;
+        };
+
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex),                  VK_SHADER_STAGE_VERTEX_BIT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry),                VK_SHADER_STAGE_GEOMETRY_BIT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment),                VK_SHADER_STAGE_FRAGMENT_BIT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_compute),                 VK_SHADER_STAGE_COMPUTE_BIT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
+
+        /* Initialize per stage combined descriptor layout for tessellation */
+        const auto init_per_stage_combined_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {
+
+            /* Initialize descriptor set layout */
+            const VkDescriptorBindingFlags  per_stage_set_binding_flag_array[] = {
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+            };
+            const VkDescriptorSetLayoutBindingFlagsCreateInfo per_stage_set_binding_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+                .bindingCount = sizeof(per_stage_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
+                .pBindingFlags = per_stage_set_binding_flag_array
+            };
+            const VkDescriptorSetLayoutBinding per_stage_set_binding_array[] = {
+                {
+                    .binding         = 0,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 1,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 2,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 3,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 4,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 5,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 6,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 7,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 8,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 9,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 10,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 11,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 12,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 13,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 14,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 15,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 16,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 17,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 18,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 19,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 20,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 21,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 22,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 23,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 24,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 25,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 26,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 27,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 28,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 29,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 30,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 31,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 32,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 33,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 34,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 35,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 36,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 37,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 38,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 39,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 40,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 41,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 42,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 43,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 44,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 45,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 46,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 47,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 48,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 49,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 50,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 51,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 52,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 53,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 54,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 55,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 56,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 57,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 58,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 59,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 60,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 61,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 62,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 63,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 64,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 65,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 66,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 67,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 68,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 69,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+            };
+
+            const VkDescriptorSetLayoutCreateInfo per_stage_set_layout_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+                .pNext = std::addressof(per_stage_set_binding_info),
+                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
+                .bindingCount = sizeof(per_stage_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
+                .pBindings = per_stage_set_binding_array
+            };
+            const u32 result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(per_stage_set_layout_info), nullptr, set_layout);
+            VP_ASSERT(result0 == VK_SUCCESS);
+
+            const u32    desc_size     = this->GetStorageBufferDescriptorSize();
+            const u32    binding       = 69;
+            VkDeviceSize desc_offset   = 0;
+            ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(m_vk_device, *set_layout, binding, std::addressof(desc_offset));
+            VP_ASSERT(desc_offset + desc_size <= cTargetMaxPerStageMemorySizeCombined);
+
+            return;
+        };
+
+        init_per_stage_combined_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_combined_tessellation_control),    VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+        init_per_stage_combined_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation), VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+
+        /* Initialize per stage separate texture and separate sampler descriptor layout */
+        const auto init_per_stage_separate_texture_sampler_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {
+
+            /* Initialize descriptor set layout */
+            const VkDescriptorBindingFlags  per_stage_set_binding_flag_array[] = {
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+            };
+            const VkDescriptorSetLayoutBindingFlagsCreateInfo per_stage_set_binding_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+                .bindingCount = sizeof(per_stage_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
+                .pBindingFlags = per_stage_set_binding_flag_array
+            };
+            const VkDescriptorSetLayoutBinding per_stage_set_binding_array[] = {
+                {
+                    .binding         = 0,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 1,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 2,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 3,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 4,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 5,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 6,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 7,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 8,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 9,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 10,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 11,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 12,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 13,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 14,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 15,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 16,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 17,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 18,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 19,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 20,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 21,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 22,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 23,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 24,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 25,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 26,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 27,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 28,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 29,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 30,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 31,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 32,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 33,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 34,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 35,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 36,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 37,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 38,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 39,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 40,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 41,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 42,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 43,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 44,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 45,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 46,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 47,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 48,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 49,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 50,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 51,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 52,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 53,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 54,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 55,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 56,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 57,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 58,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 59,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 60,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 61,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 62,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 63,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 64,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 65,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 66,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 67,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 68,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 69,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 70,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 71,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 72,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 73,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 74,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 75,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 76,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 77,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 78,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 79,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 80,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 81,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 82,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 83,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 84,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 85,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 86,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 87,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 88,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 89,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 90,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 91,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 92,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 93,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 94,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 95,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 96,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 97,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 98,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 99,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 100,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 101,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 102,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 103,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 104,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 105,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 106,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 107,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 108,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 109,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 110,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 111,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 112,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 113,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 114,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 115,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 116,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 117,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 118,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 119,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 120,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 121,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 122,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 123,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 124,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 125,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 126,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 127,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 128,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 129,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 130,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 131,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 132,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 133,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 134,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 135,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 136,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 137,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 138,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 139,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 140,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 141,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 142,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 143,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 144,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 145,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 146,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 147,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 148,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 149,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 150,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 151,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 152,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 153,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 154,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 155,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 156,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 157,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 158,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+                {
+                    .binding         = 159,
+                    .descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags      = stage_bit,
+                },
+            };
+
+            const VkDescriptorSetLayoutCreateInfo per_stage_set_layout_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+                .pNext = std::addressof(per_stage_set_binding_info),
+                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT,
+                .bindingCount = sizeof(per_stage_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
+                .pBindings = per_stage_set_binding_array
+            };
+            const u32 result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(per_stage_set_layout_info), nullptr, set_layout);
+            VP_ASSERT(result0 == VK_SUCCESS);
+
+            const u32    desc_size     = this->GetSeparateSamplerDescriptorSize();
+            const u32    binding       = 159;
+            VkDeviceSize desc_offset   = 0;
+            ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(m_vk_device, *set_layout, binding, std::addressof(desc_offset));
+            VP_ASSERT(desc_offset + desc_size <= cTargetMaxPerStageMemorySizeSeparateTextureSampler);
+
+            return;
+        };
+
+        init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex),                  VK_SHADER_STAGE_VERTEX_BIT);
+        init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control),    VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+        init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation), VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+        init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry),                VK_SHADER_STAGE_GEOMETRY_BIT);
+        init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment),                VK_SHADER_STAGE_FRAGMENT_BIT);
+        init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute),                 VK_SHADER_STAGE_COMPUTE_BIT);
+        init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
+        init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
+
+        /* Initialize graphics pipeline layout */
         {
             const VkDescriptorSetLayout descriptor_set_layout_array[] = {
                 m_vk_texture_descriptor_set_layout,
                 m_vk_sampler_descriptor_set_layout,
-                m_vk_storage_buffer_descriptor_set_layout,
-                m_vk_uniform_buffer_descriptor_set_layout,
+                m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex,
+                m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry,
+                m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment,
+                m_vk_per_stage_descriptor_set_layout_texture_sampler_task,
+                m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh,
+                m_vk_per_stage_descriptor_set_layout_image_vertex,
+                m_vk_per_stage_descriptor_set_layout_image_geometry,
+                m_vk_per_stage_descriptor_set_layout_image_fragment,
+                m_vk_per_stage_descriptor_set_layout_image_task,
+                m_vk_per_stage_descriptor_set_layout_image_mesh,
+                m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex,
+                m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry,
+                m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment,
+                m_vk_per_stage_descriptor_set_layout_uniform_buffer_task,
+                m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh,
+                m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex,
+                m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry,
+                m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment,
+                m_vk_per_stage_descriptor_set_layout_storage_buffer_task,
+                m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh,
+                m_vk_per_stage_descriptor_set_layout_combined_tessellation_control,
+                m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation,
+                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex,
+                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control,
+                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation,
+                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry,
+                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment,
+                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task,
+                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh,
             };
-
             const VkPushConstantRange push_constant_range_array[] = {
                 {
                     .stageFlags = VK_SHADER_STAGE_ALL,
                     .offset = cTargetPushConstantOffset,
                     .size   = cTargetPushConstantSize,
-                }
+                },
             };
-
             const VkPipelineLayoutCreateInfo pipeline_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                 .setLayoutCount = sizeof(descriptor_set_layout_array) / sizeof(VkDescriptorSetLayout),
@@ -940,8 +3242,38 @@ namespace awn::gfx {
                 .pPushConstantRanges = push_constant_range_array
             };
 
-            const u32 result9 = ::pfn_vkCreatePipelineLayout(m_vk_device, std::addressof(pipeline_layout_info), nullptr, std::addressof(m_vk_pipeline_layout));
+            const u32 result9 = ::pfn_vkCreatePipelineLayout(m_vk_device, std::addressof(pipeline_layout_info), nullptr, std::addressof(m_vk_pipeline_layout_graphics));
             VP_ASSERT(result9 == VK_SUCCESS);
+        }
+
+        /* Initialize compute pipeline layout */
+        {
+            const VkDescriptorSetLayout descriptor_set_layout_array[] = {
+                m_vk_texture_descriptor_set_layout,
+                m_vk_sampler_descriptor_set_layout,
+                m_vk_per_stage_descriptor_set_layout_texture_sampler_compute,
+                m_vk_per_stage_descriptor_set_layout_image_compute,
+                m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute,
+                m_vk_per_stage_descriptor_set_layout_storage_buffer_compute,
+                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute,
+            };
+            const VkPushConstantRange push_constant_range_array[] = {
+                {
+                    .stageFlags = VK_SHADER_STAGE_ALL,
+                    .offset = cTargetPushConstantOffset,
+                    .size   = cTargetPushConstantSize,
+                },
+            };
+            const VkPipelineLayoutCreateInfo pipeline_layout_info = {
+                .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                .setLayoutCount = sizeof(descriptor_set_layout_array) / sizeof(VkDescriptorSetLayout),
+                .pSetLayouts = descriptor_set_layout_array,
+                .pushConstantRangeCount = sizeof(push_constant_range_array) / sizeof(VkPushConstantRange),
+                .pPushConstantRanges = push_constant_range_array
+            };
+
+            const u32 result10 = ::pfn_vkCreatePipelineLayout(m_vk_device, std::addressof(pipeline_layout_info), nullptr, std::addressof(m_vk_pipeline_layout_compute));
+            VP_ASSERT(result10 == VK_SUCCESS);
         }
 
         return;
@@ -949,7 +3281,7 @@ namespace awn::gfx {
 
     void Context::Finalize() {
 
-        /* Finalize Vulkan objects */
+        /* Ensure all queue and device operations complete */
         ::pfn_vkQueueWaitIdle(m_vk_graphics_queue);
         ::pfn_vkQueueWaitIdle(m_vk_compute_queue);
         ::pfn_vkQueueWaitIdle(m_vk_transfer_queue);
@@ -958,23 +3290,191 @@ namespace awn::gfx {
         ::pfn_vkQueueWaitIdle(m_vk_optical_flow_queue);
         ::pfn_vkDeviceWaitIdle(m_vk_device);
 
-        ::pfn_vkDestroyPipelineLayout(m_vk_device, m_vk_pipeline_layout, nullptr);
-        ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_texture_descriptor_set_layout, nullptr);
-        ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_sampler_descriptor_set_layout, nullptr);
-        ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_storage_buffer_descriptor_set_layout, nullptr);
-        ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_uniform_buffer_descriptor_set_layout, nullptr);
+        /* Destroy pipeline layouts */
+        if (m_vk_pipeline_layout_graphics != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyPipelineLayout(m_vk_device, m_vk_pipeline_layout_graphics, nullptr);
+            m_vk_pipeline_layout_graphics = VK_NULL_HANDLE;
+        }
+        if (m_vk_pipeline_layout_compute != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyPipelineLayout(m_vk_device, m_vk_pipeline_layout_compute, nullptr);
+            m_vk_pipeline_layout_compute = VK_NULL_HANDLE;
+        }
 
-        ::pfn_vkDestroyDevice(m_vk_device, nullptr);
+        /* Destroy descriptor set layouts */
+        if (m_vk_texture_descriptor_set_layout != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_texture_descriptor_set_layout, nullptr);
+            m_vk_texture_descriptor_set_layout = VK_NULL_HANDLE;
+        }
+        if (m_vk_sampler_descriptor_set_layout != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_sampler_descriptor_set_layout, nullptr);
+            m_vk_sampler_descriptor_set_layout = VK_NULL_HANDLE;
+        }
+
+        if (m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex, nullptr);
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry, nullptr);
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment, nullptr);
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_texture_sampler_compute != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_texture_sampler_compute, nullptr);
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_compute = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_texture_sampler_task != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_texture_sampler_task, nullptr);
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_task = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh, nullptr);
+            m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh = VK_NULL_HANDLE;
+        }
+
+        if (m_vk_per_stage_descriptor_set_layout_image_vertex != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_image_vertex, nullptr);
+            m_vk_per_stage_descriptor_set_layout_image_vertex = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_image_geometry != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_image_geometry, nullptr);
+            m_vk_per_stage_descriptor_set_layout_image_geometry = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_image_fragment != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_image_fragment, nullptr);
+            m_vk_per_stage_descriptor_set_layout_image_fragment = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_image_compute != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_image_compute, nullptr);
+            m_vk_per_stage_descriptor_set_layout_image_compute = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_image_task != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_image_task, nullptr);
+            m_vk_per_stage_descriptor_set_layout_image_task = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_image_mesh != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_image_mesh, nullptr);
+            m_vk_per_stage_descriptor_set_layout_image_mesh = VK_NULL_HANDLE;
+        }
+
+        if (m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex, nullptr);
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry, nullptr);
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment, nullptr);
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute, nullptr);
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_uniform_buffer_task != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_uniform_buffer_task, nullptr);
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_task = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh, nullptr);
+            m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh = VK_NULL_HANDLE;
+        }
+
+        if (m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex, nullptr);
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry, nullptr);
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment, nullptr);
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_storage_buffer_compute != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_storage_buffer_compute, nullptr);
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_compute = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_storage_buffer_task != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_storage_buffer_task, nullptr);
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_task = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh, nullptr);
+            m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh = VK_NULL_HANDLE;
+        }
+
+        if (m_vk_per_stage_descriptor_set_layout_combined_tessellation_control != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_combined_tessellation_control, nullptr);
+            m_vk_per_stage_descriptor_set_layout_combined_tessellation_control = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation, nullptr);
+            m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation = VK_NULL_HANDLE;
+        }
+
+        if (m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex, nullptr);
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control, nullptr);
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation, nullptr);
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry, nullptr);
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment, nullptr);
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute, nullptr);
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task, nullptr);
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task = VK_NULL_HANDLE;
+        }
+        if (m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDescriptorSetLayout(m_vk_device, m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh, nullptr);
+            m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh = VK_NULL_HANDLE;
+        }
+
+        /* Destroy device */
+        if (m_vk_device != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyDevice(m_vk_device, nullptr);
+            m_vk_device = VK_NULL_HANDLE;
+        }
 
         #if defined(VP_DEBUG)
-        ::pfn_vkDestroyDebugUtilsMessengerEXT(m_vk_instance, m_debug_messenger, nullptr);
+            /* Destroy debugging utilities */
+            if (m_debug_messenger != VK_NULL_HANDLE) {
+                ::pfn_vkDestroyDebugUtilsMessengerEXT(m_vk_instance, m_debug_messenger, nullptr);
+                m_debug_messenger = VK_NULL_HANDLE;
+            }
         #endif
 
-        ::pfn_vkDestroyInstance(m_vk_instance, nullptr);
+        /* Destroy instance */
+        if (m_vk_instance != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyInstance(m_vk_instance, nullptr);
+            m_vk_instance = VK_NULL_HANDLE;
+        }
 
         return;
     }
-    
+
     void Context::SubmitCommandList(CommandList command_list, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count) {
 
         /* Integrity checks */

@@ -37,7 +37,7 @@ namespace awn::gfx {
         return buffer;
     }
 
-    VkImage CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, gfx::TextureInfo *texture_info) {
+    VkImage CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
 
         /* Create VkImage */
         VkImage image = 0;
@@ -72,11 +72,28 @@ namespace awn::gfx {
         return image;
     }
 
-	VkBuffer CreateVkBuffer(void *gpu_address, BufferInfo *buffer_info) {
+	VkBuffer CreateVkBuffer(void *gpu_address, const BufferInfo *buffer_info) {
         return CreateVkBuffer(gpu_address, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
     }
-	VkImage  CreateVkImage(void *gpu_address, TextureInfo *texture_info) {
+	VkImage  CreateVkImage(void *gpu_address, const TextureInfo *texture_info) {
         return CreateVkImage(gpu_address, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info);
+    }
+
+    void DestroyVkBuffer(VkBuffer vk_buffer) {
+        Context *context = Context::GetInstance();
+        ::pfn_vkDestroyBuffer(context->GetVkDevice(), vk_buffer, context->GetVkAllocationCallbacks());
+    }
+    void DestroyVkImage(VkImage vk_image) {
+        Context *context = Context::GetInstance();
+        ::pfn_vkDestroyImage(context->GetVkDevice(), vk_image, context->GetVkAllocationCallbacks());
+    }
+
+    VkDeviceAddress GetVkDeviceAddress(VkBuffer vk_buffer) {
+        const VkBufferDeviceAddressInfo address_info = {
+            .sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR,
+            .buffer = vk_buffer,
+        };
+        return ::pfn_vkGetBufferDeviceAddress(gfx::Context::GetInstance()->GetVkDevice(), std::addressof(address_info));
     }
 
     void FlushCpuCache(void *gpu_address, size_t size) {

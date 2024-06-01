@@ -20,6 +20,10 @@ namespace awn::gfx {
     struct GpuBufferAddress {
         gfx::Buffer *buffer;
         size_t       offset;
+
+        constexpr VkDeviceAddress GetVkDeviceAddress() const {
+            return buffer->GetVkDeviceAddress() + offset;
+        }
     };
 
     struct CommandList {
@@ -60,25 +64,219 @@ namespace awn::gfx {
 
     class CommandBufferBase {
         protected:
-            CommandList m_command_list;
-        private:
+            CommandList               m_command_list;
+            bool                      m_is_rendering;
+            bool                      m_is_render_target_dirty;
+            u32                       m_color_target_count;
+            RenderTargetColor        *m_color_target_array[Context::cTargetMaxBoundRenderTargetColorCount];
+            RenderTargetDepthStencil *m_depth_stencil_target;
+            struct {
+                u8 m_texture_sampler_dirty;
+                struct {
+                    u8 m_texture_sampler_dirty_vertex   : 1;
+                    u8 m_texture_sampler_dirty_geometry : 1;
+                    u8 m_texture_sampler_dirty_fragment : 1;
+                    u8 m_texture_sampler_dirty_compute  : 1;
+                    u8 m_texture_sampler_dirty_task     : 1;
+                    u8 m_texture_sampler_dirty_mesh     : 1;
+                    u8 m_reserve0                       : 2;
+                };
+            };
+            struct {
+                u8 m_image_dirty;
+                struct {
+                    u8 m_image_dirty_vertex   : 1;
+                    u8 m_image_dirty_geometry : 1;
+                    u8 m_image_dirty_fragment : 1;
+                    u8 m_image_dirty_compute  : 1;
+                    u8 m_image_dirty_task     : 1;
+                    u8 m_image_dirty_mesh     : 1;
+                    u8 m_reserve1             : 2;
+                };
+            };
+            struct {
+                u8 m_uniform_buffer_dirty;
+                struct {
+                    u8 m_uniform_buffer_dirty_vertex   : 1;
+                    u8 m_uniform_buffer_dirty_geometry : 1;
+                    u8 m_uniform_buffer_dirty_fragment : 1;
+                    u8 m_uniform_buffer_dirty_compute  : 1;
+                    u8 m_uniform_buffer_dirty_task     : 1;
+                    u8 m_uniform_buffer_dirty_mesh     : 1;
+                    u8 m_reserve2                      : 2;
+                };
+            };
+            struct {
+                u8 m_storage_buffer_dirty;
+                struct {
+                    u8 m_storage_buffer_dirty_vertex   : 1;
+                    u8 m_storage_buffer_dirty_geometry : 1;
+                    u8 m_storage_buffer_dirty_fragment : 1;
+                    u8 m_storage_buffer_dirty_compute  : 1;
+                    u8 m_storage_buffer_dirty_task     : 1;
+                    u8 m_storage_buffer_dirty_mesh     : 1;
+                    u8 m_reserve3                      : 2;
+                };
+            };
+            struct {
+                u8 m_combined_dirty;
+                struct {
+                    u8 m_combined_dirty_tessellation_control    : 1;
+                    u8 m_combined_dirty_tessellation_evaluation : 1;
+                    u8 m_reserve4                               : 6;
+                };
+            };
+            struct {
+                u8 m_separate_texture_sampler_dirty;
+                struct {
+                    u8 m_separate_texture_sampler_dirty_vertex   : 1;
+                    u8 m_separate_texture_sampler_dirty_geometry : 1;
+                    u8 m_separate_texture_sampler_dirty_fragment : 1;
+                    u8 m_separate_texture_sampler_dirty_compute  : 1;
+                    u8 m_separate_texture_sampler_dirty_task     : 1;
+                    u8 m_separate_texture_sampler_dirty_mesh     : 1;
+                    u8 m_reserve5                                : 6;
+                };
+            };
+            char m_descriptor_memory_texture_sampler[6][Context::cTargetMaxPerStageMemorySizeTextureSampler];
+            char m_descriptor_memory_image[6][Context::cTargetMaxPerStageMemorySizeImage];
+            char m_descriptor_memory_uniform_buffer[6][Context::cTargetMaxPerStageMemorySizeUniformBuffer];
+            char m_descriptor_memory_storage_buffer[6][Context::cTargetMaxPerStageMemorySizeStorageBuffer];
+            char m_descriptor_memory_combined[2][Context::cTargetMaxPerStageMemorySizeCombined];
+            char m_descriptor_memory_separate_texture_sampler[8][Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler];
+        protected:
             struct SyncScopeInfo {
                 u32 vk_src_stage_mask;
                 u32 vk_src_access_mask;
                 u32 vk_dst_stage_mask;
                 u32 vk_dst_access_mask;
             };
-        private:
+        protected:
+            constexpr void *GetDescriptorMemoryTextureSampler(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                void      *memory;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    memory = this->GetDescriptorMemoryCombined(shader_stage);
+                } else {
+                    memory = (0 < stage_index) ? m_descriptor_memory_texture_sampler[stage_index - 2] : m_descriptor_memory_texture_sampler[0];
+                }
+                return memory;
+            }
+            constexpr void *GetDescriptorMemoryImage(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                void      *memory;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    memory = this->GetDescriptorMemoryCombined(shader_stage);
+                } else {
+                    memory = (0 < stage_index) ? m_descriptor_memory_texture_sampler[stage_index - 2] : m_descriptor_memory_texture_sampler[0];
+                }
+                return memory;
+            }
+            constexpr void *GetDescriptorMemoryUniformBuffer(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                void      *memory;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    memory = this->GetDescriptorMemoryCombined(shader_stage);
+                } else {
+                    memory = (0 < stage_index) ? m_descriptor_memory_texture_sampler[stage_index - 2] : m_descriptor_memory_texture_sampler[0];
+                }
+                return memory;
+            }
+            constexpr void *GetDescriptorMemoryStorageBuffer(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                void      *memory;
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    memory = this->GetDescriptorMemoryCombined(shader_stage);
+                } else {
+                    memory = (0 < stage_index) ? m_descriptor_memory_texture_sampler[stage_index - 2] : m_descriptor_memory_texture_sampler[0];
+                }
+                return memory;
+            }
+            constexpr void *GetDescriptorMemoryCombined(ShaderStage shader_stage) {
+                const u32 stage_index = static_cast<u32>(shader_stage);
+                return m_descriptor_memory_combined[stage_index - 1];
+            }
+            constexpr void *GetDescriptorMemorySeparateTextureSampler(ShaderStage shader_stage) {
+                const u32 stage_index = static_cast<u32>(shader_stage);
+                return m_descriptor_memory_texture_sampler[stage_index];
+            }
+
+            constexpr void SetTextureSamplerDirty(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    m_combined_dirty |= (1 << (stage_index - 1));
+                } else {
+                    const u32 dirty_bit      = (0 < stage_index) ? (1 << (stage_index - 2)) : 1;
+                    m_texture_sampler_dirty |= dirty_bit;
+                }
+                return;
+            }
+            constexpr void SetImageDirty(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    m_combined_dirty |= (1 << (stage_index - 1));
+                } else {
+                    const u32 dirty_bit  = (0 < stage_index) ? (1 << (stage_index - 2)) : 1;
+                    m_image_dirty       |= dirty_bit;
+                }
+                return;
+            }
+            constexpr void SetUniformBufferDirty(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    m_combined_dirty |= (1 << (stage_index - 1));
+                } else {
+                    const u32 dirty_bit     = (0 < stage_index) ? (1 << (stage_index - 2)) : 1;
+                    m_uniform_buffer_dirty |= dirty_bit;
+                }
+                return;
+            }
+            constexpr void SetStorageBufferDirty(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    m_combined_dirty |= (1 << (stage_index - 1));
+                } else {
+                    const u32 dirty_bit     = (0 < stage_index) ? (1 << (stage_index - 2)) : 1;
+                    m_storage_buffer_dirty |= dirty_bit;
+                }
+                return;
+            }
+            constexpr void SetSeparateTextureSamplerDirty(ShaderStage shader_stage) {
+                const u32  stage_index = static_cast<u32>(shader_stage);
+                if (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) {
+                    m_combined_dirty |= (1 << (stage_index - 1));
+                } else {
+                    const u32 dirty_bit               = (0 < stage_index) ? (1 << (stage_index - 2)) : 1;
+                    m_separate_texture_sampler_dirty |= dirty_bit;
+                }
+                return;
+            }
+
             void TransitionRenderTargetsImpl(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target, SyncScopeInfo *sync_scope, VkImageLayout image_layout);
+
+            void CommitDescriptorMemory(VkPipelineBindPoint bind_point, VkPipelineLayout pipeline_layout, u32 base_set, void *desc_memory, u32 memory_size);
+
+            void CommitTextureSamplerDescriptors();
+            void CommitImageDescriptors();
+            void CommitUniformBufferDescriptors();
+            void CommitStorageBufferDescriptors();
+            void CommitCombinedDescriptors();
+            void CommitSeparateTextureSamplerDescriptors();
+
+            void CommitDescriptors();
+
+            void BeginRenderingIfNotRendering();
+            void EndRenderingIfRendering();
         public:
-            constexpr ALWAYS_INLINE CommandBufferBase() : m_command_list() {/*...*/}
+            constexpr CommandBufferBase() : m_command_list(), m_is_rendering(), m_is_render_target_dirty(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_texture_sampler_dirty(), m_image_dirty(), m_uniform_buffer_dirty(), m_storage_buffer_dirty(), m_combined_dirty(), m_separate_texture_sampler_dirty() {/*...*/}
             constexpr ~CommandBufferBase() {/*...*/}
+
+            void SetSystemDescriptorBuffers();
 
             void TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
             void TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
 
-            void BeginRendering(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
-            void EndRendering();
+            void SetRenderTargets(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
 
             void Draw(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count);
             void DrawInstanced(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count, u32 base_instance, u32 instance_count);
@@ -86,16 +284,19 @@ namespace awn::gfx {
             void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count);
 
             void DrawMeshTasks(u32 x, u32 y, u32 z);
-            
+
             void Dispatch(u32 x, u32 y, u32 z);
 
             void SetVertexBuffer(GpuBufferAddress vertex_buffer_address, u32 binding, u32 stride, u32 size);
 
             void SetShader(Shader *shader);
 
-            void SetUniformBuffer(u32 location, gfx::ShaderStage shader_stage_flags, GpuBufferAddress constant_buffer_address, size_t size);
-            void SetStorageBuffer(u32 location, gfx::ShaderStage shader_stage_flags, GpuBufferAddress storage_buffer_address, size_t size);
-            void SetTextureAndSampler(u32 location, gfx::ShaderStage shader_stage_flags, DescriptorSlot texture_slot, DescriptorSlot sampler_slot);
+            void SetTextureAndSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot);
+            void SetImage(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
+            void SetUniformBuffer(u32 location, gfx::ShaderStage shader_stage, GpuBufferAddress constant_buffer_address, size_t size);
+            void SetStorageBuffer(u32 location, gfx::ShaderStage shader_stage, GpuBufferAddress storage_buffer_address, size_t size);
+            void SetSeparateTexture(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
+            void SetSeparateSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot sampler_slot);
 
             void SetBlendState(BlendState *blend_state);
             void SetDepthStencilState(DepthStencilState *depth_stencil_state);

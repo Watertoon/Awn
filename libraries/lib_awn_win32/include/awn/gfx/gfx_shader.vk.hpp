@@ -17,22 +17,6 @@
 
 namespace awn::gfx {
 
-    enum class ShaderStage : u32 {
-        Vertex                 = (1 << 1),
-        TessellationEvaluation = (1 << 2),
-        TessellationControl    = (1 << 3),
-        Geometry               = (1 << 4),
-        Fragment               = (1 << 5),
-        Compute                = (1 << 6),
-        Task                   = (1 << 7),
-        Mesh                   = (1 << 8),
-        Ray                    = (1 << 9),
-        AnyHit                 = (1 << 10),
-        ClosestHit             = (1 << 11),
-        Miss                   = (1 << 12),
-        Callable               = (1 << 13),
-    };
-
     struct PrimitiveShaderInfo {
         u32   vertex_code_size;
         u32   tessellation_control_code_size;
