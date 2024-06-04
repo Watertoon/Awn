@@ -18,6 +18,7 @@
 namespace awn::sys {
 
     struct SystemManager {
+        bool        init_guard;
         u32         active_processor_count;
         u32         process_core_count;
         u64         process_core_mask;
@@ -28,7 +29,7 @@ namespace awn::sys {
     };
 
     void InitializeSystemManager();
-    
+
     bool IsSystemManagerInitialized();
 
     SystemManager *GetSystemManager();
@@ -38,4 +39,9 @@ namespace awn::sys {
     u32 GetCurrentCoreNumber();
     
     SYSTEM_INFO *GetSystemInfo();
+    
+    vp::util::Rectanglef GetVirtualScreenRectangle();
+    u32                  GetMonitorAndMirrorCount();
+    u32                  GetMonitorCount();
+    void                 GetMonitorIndexArray(u32 *out_index_array, u32 max_indice_count);
 }

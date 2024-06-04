@@ -18,10 +18,15 @@
 namespace awn::sys {
 
     namespace {
-        constinit vp::util::TypedStorage<SystemManager> sSystemManagerStorage = {};
+        constinit vp::util::TypedStorage<SystemManager> sSystemManagerStorage   = {};
+        bool                                            sSystemManagerInitGuard = false;
     }
 
     void InitializeSystemManager() {
+
+        /* Check init guard */
+        if (sSystemManagerInitGuard == true) { return; }
+        sSystemManagerInitGuard = true;
 
         /* Construct system manager */
         vp::util::ConstructAt(sSystemManagerStorage);
@@ -43,13 +48,18 @@ namespace awn::sys {
         VP_ASSERT(instance->process_core_mask != 0 && instance->system_core_mask != 0);
 
         instance->process_core_count = vp::util::CountOneBits64(instance->process_core_mask);
+        
+        return;
     }
+
+    bool IsSystemManagerInitialized() { return sSystemManagerInitGuard; }
 
     SystemManager *GetSystemManager() { return vp::util::GetPointer(sSystemManagerStorage); }
 
     u32 GetServiceCoreCount() {
         return GetSystemManager()->process_core_count;
     }
+
     u32 GetCoreCount() {
         return ukern::GetCoreCount();
     }
@@ -60,5 +70,63 @@ namespace awn::sys {
 
     SYSTEM_INFO *GetSystemInfo() {
         return std::addressof(GetSystemManager()->system_info);
+    }
+
+    vp::util::Rectanglef GetVirtualScreenRectangle() {
+        const s32 x      = ::GetSystemMetrics(SM_XVIRTUALSCREEN);
+        const s32 y      = ::GetSystemMetrics(SM_YVIRTUALSCREEN);
+        const s32 width  = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        const s32 height = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        return { .left = static_cast<float>(x), .top = static_cast<float>(y), .right = static_cast<float>(x + width), .bottom = static_cast<float>(y + height), };
+    }
+
+    u32 GetMonitorAndMirrorCount() {
+
+        u32  i      = 0;
+        bool result = ::EnumDisplayDevicesA(nullptr, i, nullptr, 0);
+        while(result == true) {
+            ++i;
+            result = ::EnumDisplayDevicesA(nullptr, i, nullptr, 0);
+        }
+
+        return i;
+    }
+
+    u32 GetMonitorCount() {
+
+        DISPLAY_DEVICEA display_device = {
+            .cb = sizeof(DISPLAY_DEVICEA),
+        };
+        u32  count  = 0;
+        u32  i      = 0;
+        bool result = ::EnumDisplayDevicesA(nullptr, i, std::addressof(display_device), 0);
+        while(result == true) {
+            if ((display_device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) == 0) { ++count; }
+            ++i;
+            result = ::EnumDisplayDevicesA(nullptr, i, std::addressof(display_device), 0);
+        }
+
+        return i;
+    }
+
+    void GetMonitorIndexArray(u32 *out_index_array, u32 max_indice_count) {
+
+        DISPLAY_DEVICEA display_device = {
+            .cb = sizeof(DISPLAY_DEVICEA),
+        };
+        u32  count  = 0;
+        u32  i      = 0;
+        bool result = ::EnumDisplayDevicesA(nullptr, i, std::addressof(display_device), 0);
+        while(result == true) {
+            if ((display_device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) == 0) { 
+                out_index_array[count] = i;
+                ++count; 
+                if (max_indice_count <= count) { return; }
+            }
+            ++i;
+            result = ::EnumDisplayDevicesA(nullptr, i, std::addressof(display_device), 0);
+        }
+
+        return;
     }
 }

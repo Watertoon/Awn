@@ -165,6 +165,8 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxPrimitiveShaderStageCount    = 5;
             static constexpr size_t cTargetMaxComputeShaderStageCount      = 1;
 
+            static constexpr size_t cTargetMaxPerStageInputCount           = 32;
+            static constexpr size_t cTargetMaxPerStageOutputCount          = 32;
             static constexpr size_t cTargetMaxPerStageTextureSamplerCount  = 32;
             static constexpr size_t cTargetMaxPerStageImageCount           = 8;
             static constexpr size_t cTargetMaxPerStageUniformBufferCount   = 14;
@@ -698,8 +700,8 @@ namespace awn::gfx {
                 const u32 binding_base = (shader_stage == ShaderStage::TessellationEvaluation || shader_stage == ShaderStage::TessellationControl) ? cCombinedBindingBaseStorageBuffer : 0;
                 return binding_base;
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateTexture(ShaderStage shader_stage) { return 0; }
-            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateSampler(ShaderStage shader_stage) { return 128; }
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateTexture(ShaderStage shader_stage) { VP_UNUSED(shader_stage); return 0; }
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateSampler(ShaderStage shader_stage) { VP_UNUSED(shader_stage); return 128; }
 
 
             constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutGraphics() const { return m_vk_pipeline_layout_graphics; }

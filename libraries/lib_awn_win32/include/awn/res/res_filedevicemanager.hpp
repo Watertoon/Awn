@@ -30,62 +30,18 @@ namespace awn::res {
             constexpr ALWAYS_INLINE  FileDeviceManager() : m_device_tree_cs(), m_mounted_file_device_tree(), m_main_file_device() {/*...*/}
             constexpr ALWAYS_INLINE ~FileDeviceManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap) {
+            void Initialize(mem::Heap *heap);
 
-                /* Allocate and initialize ContentFileDevice */
-                ContentFileDevice *content_device = new (heap, alignof(ContentFileDevice)) ContentFileDevice();
-                VP_ASSERT(content_device != nullptr);
-
-                std::construct_at(content_device);
-
-                m_main_file_device = content_device;
-
-                this->AddFileDevice(content_device);
-
-                return;
-            }
-
-            void Finalize() {
-                if (m_main_file_device != nullptr) {
-                    delete m_main_file_device;
-                }
-                m_main_file_device = nullptr;
-            }
+            void Finalize();
 
             constexpr FileDeviceBase *GetDefaultFileDevice() { return m_main_file_device; }
 
-            void AddFileDevice(FileDeviceBase *file_device) {
-                VP_ASSERT(file_device != nullptr);
-                std::scoped_lock l(m_device_tree_cs);
-                m_mounted_file_device_tree.Insert(file_device);
-            }
+            void AddFileDevice(FileDeviceBase *file_device);
 
-            FileDeviceBase *GetFileDeviceByDrive(const char *drive) {
-                const u32 hash = vp::util::HashCrc32b(drive);
-                std::scoped_lock l(m_device_tree_cs);
-                return m_mounted_file_device_tree.Find(hash);
-            }
+            FileDeviceBase *GetFileDeviceByDrive(const char *drive);
 
-            FileDeviceBase *GetFileDeviceByPath(const char *path) {
+            FileDeviceBase *GetFileDeviceByPath(const char *path);
 
-                /* Get drive */
-                MaxDriveString drive;
-                vp::util::GetDrive(std::addressof(drive), path);
-
-                return this->GetFileDeviceByDrive(drive.GetString());
-            }
-
-            Result LoadFile(const char *path, FileLoadContext *file_load_context) {
-
-                /* Find file device */
-                FileDeviceBase *device = this->GetFileDeviceByPath(path);
-
-                /* Get path without drive */
-                vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
-                vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
-
-                /* Load */
-                return device->LoadFile(path_no_drive.GetString(), file_load_context);
-            }
+            Result LoadFile(const char *path, FileLoadContext *file_load_context);
     };
 }

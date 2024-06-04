@@ -89,6 +89,10 @@ namespace vp::res {
         if constexpr (std::is_same<std::add_cv_t<T>, std::add_cv_t<const char*>>::value) { return ByamlDataType::StringIndex; }
         return ByamlDataType::Null;
     }
+    template <typename T>
+    consteval ByamlDataType TGetByamlDataTypeValue() {
+        return ByamlDataType::Null;
+    }
 
     constexpr ALWAYS_INLINE bool IsPrimitiveType(ByamlDataType data_type) {
         const u8 value = (static_cast<u8>(data_type) & 0xf0);

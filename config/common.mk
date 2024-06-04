@@ -125,27 +125,35 @@ endif
 ifeq ($(GRAPHICS_API), vk)
 %.vert.spv : %.vert.sh
 	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.vert.d -DDD_VERTEX_SHADER                  -mfmt=bin --target-env=vulkan1.3 -fshader-stage=vert        -I$(CURDIR)/../shader/include -Werror -Os -c $< -o $(CURDIR)/../build/resource/shader/$*.vert.spv
+	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.vert.d -DVP_VERTEX_SHADER                  -mfmt=bin --target-env=vulkan1.3 -fshader-stage=vert        -I$(CURDIR)/../shader/include -Werror -Os -c $< -o $(CURDIR)/../build/resource/shader/$*.vert.spv
+
+%.tsev.spv : %.tsev.sh
+	@echo $(notdir $<)
+	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.tsev.d -DVP_TESSELLATION_EVALUATION_SHADER -mfmt=bin --target-env=vulkan1.3 -fshader-stage=tesseval    -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.tsev.spv
+
+%.tsct.spv : %.tsct.sh
+	@echo $(notdir $<)
+	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.tsct.d -DVP_TESSELLATION_CONTROL_SHADER    -mfmt=bin --target-env=vulkan1.3 -fshader-stage=tesscontrol -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.tsct.spv
+
+%.geom.spv : %.geom.sh
+	@echo $(notdir $<)	
+	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.geom.d -DVP_GEOMETRY_SHADER                -mfmt=bin --target-env=vulkan1.3 -fshader-stage=geom        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.geom.spv
 
 %.frag.spv : %.frag.sh
 	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.frag.d -DDD_FRAGMENT_SHADER                -mfmt=bin --target-env=vulkan1.3 -fshader-stage=frag        -I$(CURDIR)/../shader/include -Werror -Os -c $< -o $(CURDIR)/../build/resource/shader/$*.frag.spv
+	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.frag.d -DVP_FRAGMENT_SHADER                -mfmt=bin --target-env=vulkan1.3 -fshader-stage=frag        -I$(CURDIR)/../shader/include -Werror -Os -c $< -o $(CURDIR)/../build/resource/shader/$*.frag.spv
 
-%.tsct.spv : %.frag.sh
+%.comp.spv : %.comp.sh
 	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.tsct.d -DDD_TESSELLATION_CONTROL_SHADER    -mfmt=bin --target-env=vulkan1.3 -fshader-stage=tesscontrol -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.tsct.spv
+	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.comp.d -DVP_COMPUTE_SHADER                 -mfmt=bin --target-env=vulkan1.3 -fshader-stage=comp        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.comp.spv
 
-%.tsev.spv : %.frag.sh
+%.task.spv : %.task.sh
 	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.tsev.d -DDD_TESSELLATION_EVALUATION_SHADER -mfmt=bin --target-env=vulkan1.3 -fshader-stage=tesseval    -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.tsev.spv
+	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.comp.d -DVP_TASK_SHADER                    -mfmt=bin --target-env=vulkan1.3 -fshader-stage=task        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.task.spv
 
-%.geom.spv : %.frag.sh
-	@echo $(notdir $<)	
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.geom.d -DDD_GEOMETRY_SHADER                -mfmt=bin --target-env=vulkan1.3 -fshader-stage=geom        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.geom.spv
-
-%.comp.spv : %.frag.sh
+%.mesh.spv : %.mesh.sh
 	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.comp.d -DDD_COMPUTE_SHADER                 -mfmt=bin --target-env=vulkan1.3 -fshader-stage=comp        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.comp.spv
+	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.comp.d -DVP_MESH_SHADER                    -mfmt=bin --target-env=vulkan1.3 -fshader-stage=mesh        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.mesh.spv
 endif
 
 # Windows exe build rules

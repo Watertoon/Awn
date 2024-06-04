@@ -60,7 +60,7 @@ namespace vp::util {
             VP_RTTI_DERIVED(FrustumProjection, Projection);
         public:
             constexpr FrustumProjection() {/*...*/}
-            constexpr FrustumProjection(float near, float far, const BoundingBox2<float>& bound_box) : Projection(), m_near(near), m_far(far), m_top(bound_box.max_y), m_bottom(bound_box.min_y), m_left(bound_box.max_x), m_right(bound_box.min_x) {/*...*/}
+            constexpr FrustumProjection(float near, float far, const BoundingBox2f& bound_box) : Projection(), m_near(near), m_far(far), m_top(bound_box.max_y), m_bottom(bound_box.min_y), m_left(bound_box.max_x), m_right(bound_box.min_x) {/*...*/}
             constexpr FrustumProjection(float near, float far, float top, float bottom, float left, float right) : Projection(), m_near(near), m_far(far), m_top(top), m_bottom(bottom), m_left(left), m_right(right) {/*...*/}
             constexpr virtual ~FrustumProjection() override {/*...*/}
 

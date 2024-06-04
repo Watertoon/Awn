@@ -19,28 +19,23 @@ namespace vp::util {
 
     template <typename T>
     constexpr T Min(T value0, T value1) {
-        if (value0 > value1) {
-            return value1;
-        }
-        return value0;
+        return std::min(value0, value1);
     }
 
     template <typename T>
     constexpr T Max(T value0, T value1) {
-        if (value0 < value1) {
-            return value1;
-        }
-        return value0;
+        return std::max(value0, value1);
     }
 
     template <typename T>
     constexpr T Clamp(T value, T min, T max) {
-        if (value < min) {
-            return min;
-        }
-        if (max < value) {
-            return max;
-        }
-        return value;
+        const T clamp_min = Max(value, min);
+        const T clamp_max = Min(clamp_min, max);
+        return clamp_max;
+    }
+    
+    template <typename T>
+    constexpr T Abs(T value) {
+        return std::abs(value);
     }
 }

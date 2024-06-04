@@ -87,12 +87,12 @@ namespace vp::res {
     };
 
     struct ResBnshShaderInterfaceInfoTable {
-        ResBnshShaderInterfaceInfo *vertex_interface_info;
-        ResBnshShaderInterfaceInfo *tessellation_evaluation_interface_info;
-        ResBnshShaderInterfaceInfo *tessellation_control_interface_info;
-        ResBnshShaderInterfaceInfo *geometry_interface_info;
-        ResBnshShaderInterfaceInfo *fragment_interface_info;
-        ResBnshShaderInterfaceInfo *compute_interface_info;
+        ResBnshShaderInterfaceInfo *interface_info_vertex;
+        ResBnshShaderInterfaceInfo *interface_info_tessellation_evaluation;
+        ResBnshShaderInterfaceInfo *interface_info_tessellation_control;
+        ResBnshShaderInterfaceInfo *interface_info_geometry;
+        ResBnshShaderInterfaceInfo *interface_info_fragment;
+        ResBnshShaderInterfaceInfo *interface_info_compute;
         u64                         reserve0[2];
     };
     static_assert(sizeof(ResBnshShaderInterfaceInfoTable) == 0x40);
@@ -111,12 +111,12 @@ namespace vp::res {
         u8                               code_type;
         u16                              reserve2;
         u32                              reserve3;
-        ResBnshShaderCodeInfo           *vertex_info;
-        ResBnshShaderCodeInfo           *tessellation_control_info;
-        ResBnshShaderCodeInfo           *tessellation_evaluation_info;
-        ResBnshShaderCodeInfo           *geometry_info;
-        ResBnshShaderCodeInfo           *fragment_info;
-        ResBnshShaderCodeInfo           *compute_info;
+        ResBnshShaderCodeInfo           *code_info_vertex;
+        ResBnshShaderCodeInfo           *code_info_tessellation_control;
+        ResBnshShaderCodeInfo           *code_info_tessellation_evaluation;
+        ResBnshShaderCodeInfo           *code_info_geometry;
+        ResBnshShaderCodeInfo           *code_info_fragment;
+        ResBnshShaderCodeInfo           *code_info_compute;
         u64                              reserve4[5];
         u32                              object_size;
         u32                              reserve5;

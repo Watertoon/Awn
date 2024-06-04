@@ -39,7 +39,8 @@ namespace awn::gfx {
             }
 
             constexpr void AdvanceFrame() {
-                m_current_index = (1 < m_current_index) ? 0 : ++m_current_index;
+                const u32 index = m_current_index;
+                m_current_index = (1 < index) ? 0 : index + 1;
                 m_memory_iter   = 0;
             }
 

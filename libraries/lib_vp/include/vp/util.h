@@ -86,6 +86,8 @@
 //#include <vp/util/math/util_vector2.hpp>
 #include <vp/util/math/util_floattypes.hpp>
 #include <vp/util/math/util_doubletypes.hpp>
+#include <vp/util/math/util_inttypes.hpp>
+#include <vp/util/math/util_tmathtypes.h>
 #include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/util_floatcalc.hpp>
 #include <vp/util/math/util_doublecalc.hpp>
@@ -117,6 +119,7 @@
 #include <vp/util/util_enumreflection.hpp>
 #include <vp/util/util_enumtraitsv.hpp>
 
+#include <vp/util/util_rectangle.hpp>
 #include <vp/util/util_logicalframebuffer.hpp>
 #include <vp/util/util_viewport.hpp>
 #include <vp/util/util_camera.hpp>

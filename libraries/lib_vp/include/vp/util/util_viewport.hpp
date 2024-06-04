@@ -17,23 +17,13 @@
 
 namespace vp::util {
 
-    template <typename T>
-    struct BoundingBox2 {
-        T min_x;
-        T min_y;
-        T max_x;
-        T max_y;
-    };
-
-    using BoundingBox2f = BoundingBox2<float>;
-
     class Viewport {
         private:
             BoundingBox2f m_bounding_box;
         public:
             constexpr Viewport() {/*...*/}
             constexpr Viewport(float min_x, float min_y, float max_x, float max_y) : m_bounding_box{min_x, min_y, max_x, max_y } {/*...*/}
-            constexpr Viewport(const BoundingBox2<float>& bound_box) : m_bounding_box(bound_box) {/*...*/}
+            constexpr Viewport(const BoundingBox2f& bound_box) : m_bounding_box(bound_box) {/*...*/}
 
             constexpr Viewport(const LogicalFrameBuffer *framebuffer) : m_bounding_box() {
                 float width  = 0.0f;

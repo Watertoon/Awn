@@ -106,3 +106,4 @@ namespace vp::impl {
 #define VP_VMACRO(macro_name, ...) _VP_VMACRO_NAME_EXPAND(macro_name, _VP_COUNT_ARGS(__VA_ARGS__)) (__VA_ARGS__)
 #define VP_NAMED_VMACRO(name, macro_name, ...) _VP_VMACRO_NAME_EXPAND(macro_name, _VP_COUNT_ARGS(__VA_ARGS__)) (name, __VA_ARGS__)
 #define VP_CLASS_VMACRO(namespace, class_name, macro_name, ...) _VP_VMACRO_NAME_EXPAND(macro_name, _VP_COUNT_ARGS(__VA_ARGS__)) (namespace, class_name, __VA_ARGS__)
+#define VP_FOUR_ARG_VMACRO(arg0, arg1, arg2, arg3, macro_name, ...) _VP_VMACRO_NAME_EXPAND(macro_name, _VP_COUNT_ARGS(__VA_ARGS__)) (arg0, arg1, arg2, arg3, __VA_ARGS__)

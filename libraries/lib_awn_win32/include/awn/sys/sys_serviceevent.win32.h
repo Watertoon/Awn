@@ -42,7 +42,6 @@ namespace awn::sys {
 
                 TimeSpan time_left = TimeSpan::GetTimeLeftOnTarget(timeout_tick);
                 if (::IsThreadAFiber() == false) {
-                    u32 state;
                     u32 value = 1;
                     do {
                         const bool result = ::WaitOnAddress(std::addressof(m_state), std::addressof(value), sizeof(u32), time_left.GetMilliSeconds());

@@ -1207,12 +1207,12 @@ namespace awn::gfx {
             return;
         };
 
-        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_vertex),                  VK_SHADER_STAGE_VERTEX_BIT);
-        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_geometry),                VK_SHADER_STAGE_GEOMETRY_BIT);
-        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_fragment),                VK_SHADER_STAGE_FRAGMENT_BIT);
-        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_compute),                 VK_SHADER_STAGE_COMPUTE_BIT);
-        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
-        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_vertex),   VK_SHADER_STAGE_VERTEX_BIT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_geometry), VK_SHADER_STAGE_GEOMETRY_BIT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_fragment), VK_SHADER_STAGE_FRAGMENT_BIT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_compute),  VK_SHADER_STAGE_COMPUTE_BIT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_task),     VK_SHADER_STAGE_TASK_BIT_EXT);
+        init_per_stage_image_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_image_mesh),     VK_SHADER_STAGE_MESH_BIT_EXT);
 
         /* Initialize per stage uniform buffer descriptor layout */
         const auto init_per_stage_uniform_buffer_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {
@@ -1345,12 +1345,12 @@ namespace awn::gfx {
             return;
         };
 
-        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex),                  VK_SHADER_STAGE_VERTEX_BIT);
-        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry),                VK_SHADER_STAGE_GEOMETRY_BIT);
-        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment),                VK_SHADER_STAGE_FRAGMENT_BIT);
-        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute),                 VK_SHADER_STAGE_COMPUTE_BIT);
-        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
-        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex),   VK_SHADER_STAGE_VERTEX_BIT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry), VK_SHADER_STAGE_GEOMETRY_BIT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment), VK_SHADER_STAGE_FRAGMENT_BIT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute),  VK_SHADER_STAGE_COMPUTE_BIT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_task),     VK_SHADER_STAGE_TASK_BIT_EXT);
+        init_per_stage_uniform_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh),     VK_SHADER_STAGE_MESH_BIT_EXT);
 
         /* Initialize per stage storage buffer descriptor layout */
         const auto init_per_stage_storage_buffer_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {
@@ -1497,12 +1497,12 @@ namespace awn::gfx {
             return;
         };
 
-        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex),                  VK_SHADER_STAGE_VERTEX_BIT);
-        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry),                VK_SHADER_STAGE_GEOMETRY_BIT);
-        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment),                VK_SHADER_STAGE_FRAGMENT_BIT);
-        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_compute),                 VK_SHADER_STAGE_COMPUTE_BIT);
-        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
-        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex),   VK_SHADER_STAGE_VERTEX_BIT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry), VK_SHADER_STAGE_GEOMETRY_BIT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment), VK_SHADER_STAGE_FRAGMENT_BIT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_compute),  VK_SHADER_STAGE_COMPUTE_BIT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_task),     VK_SHADER_STAGE_TASK_BIT_EXT);
+        init_per_stage_storage_buffer_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh),     VK_SHADER_STAGE_MESH_BIT_EXT);
 
         /* Initialize per stage combined descriptor layout for tessellation */
         const auto init_per_stage_combined_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, u32 stage_bit) {

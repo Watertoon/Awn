@@ -41,7 +41,7 @@ namespace vp::util {
 
     constexpr inline u32 cCrc32bSeed = 0xedb88320;
 
-    consteval ALWAYS_INLINE std::array<u32, 0x100> GeneratecCrc32bTable() {
+    consteval ALWAYS_INLINE std::array<u32, 0x100> GenerateCrc32bTable() {
         std::array<u32, 0x100> context = {};
         
         for (u32 i = 0; i < 0x100; ++i) {
@@ -61,7 +61,7 @@ namespace vp::util {
         return context;
     }
 
-    constexpr inline std::array<u32, 0x100> cCrc32bTable = GeneratecCrc32bTable();
+    constexpr inline std::array<u32, 0x100> cCrc32bTable = GenerateCrc32bTable();
 
     constexpr u32 HashCrc32bWithContext(u32 context, const char *string) {
         if (std::is_constant_evaluated() == true) {
@@ -101,6 +101,7 @@ namespace vp::util {
     constexpr ALWAYS_INLINE u32 HashCrc32b(const char *string) {
         return HashCrc32bWithContext(0xffff'ffff, string);
     }
+    static_assert(vp::util::HashCrc32b("TestString") == 0x57a9fed8);
 
     consteval ALWAYS_INLINE u32 THashDataCrc32bWithContext(u32 context, u8 *data, size_t data_size) {
 

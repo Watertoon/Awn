@@ -29,20 +29,20 @@ namespace vp::util {
         }
 
         /* Handle unaligned string */
-        const u32 unaligned = 0x20 - reinterpret_cast<uintptr_t>(string) & 0x1f;
+        const u32 unaligned = 0x20 - (reinterpret_cast<uintptr_t>(string) & 0x1f);
         for (u32 i = 0; i < unaligned; ++i) {
             if (string[i] == '\0') { return i; }
         }
         string = string + unaligned;
 
         /* Handle aligned string */
-        u32 i = unaligned;
+        u32 i    = unaligned;
         u32 mask = 0;
         const v32c zero = {};
         for (;;) {
 
-            /* Load 32 characters, compare with zero, and convert result to a mask */
-            const v32c characters = avx2::vmovdqa(string + i);
+            /* Load 32 characters, compare if equal to zero, and convert result to a mask */
+            const v32c characters = avx2::vmovdqa(string);
             const v32c result     = avx2::vcmpeqb(zero, characters);
             mask                  = avx2::vpmovmskb(result);
 
@@ -53,7 +53,8 @@ namespace vp::util {
             }
 
             /* Advance while mask is not empty */
-            i = i + 0x20;
+            i      = i + 0x20;
+            string = string + 0x20;
         }
     }
 #else

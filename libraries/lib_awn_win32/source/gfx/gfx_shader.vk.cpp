@@ -349,12 +349,12 @@ namespace awn::gfx {
         VP_ASSERT(res_program->code_type == static_cast<u8>(vp::res::GfxShaderCodeType::Binary));
 
         /* Get code info */
-        vp::res::ResBnshShaderCodeInfo *vertex_code_info                  = res_program->vertex_info;
-        vp::res::ResBnshShaderCodeInfo *tessellation_control_code_info    = res_program->tessellation_control_info;
-        vp::res::ResBnshShaderCodeInfo *tessellation_evaluation_code_info = res_program->tessellation_evaluation_info;
-        vp::res::ResBnshShaderCodeInfo *geometry_code_info                = res_program->geometry_info;
-        vp::res::ResBnshShaderCodeInfo *fragment_code_info                = res_program->fragment_info;
-        vp::res::ResBnshShaderCodeInfo *compute_code_info                 = res_program->compute_info;
+        vp::res::ResBnshShaderCodeInfo *vertex_code_info                  = res_program->code_info_vertex;
+        vp::res::ResBnshShaderCodeInfo *tessellation_control_code_info    = res_program->code_info_tessellation_control;
+        vp::res::ResBnshShaderCodeInfo *tessellation_evaluation_code_info = res_program->code_info_tessellation_evaluation;
+        vp::res::ResBnshShaderCodeInfo *geometry_code_info                = res_program->code_info_geometry;
+        vp::res::ResBnshShaderCodeInfo *fragment_code_info                = res_program->code_info_fragment;
+        vp::res::ResBnshShaderCodeInfo *compute_code_info                 = res_program->code_info_compute;
 
         /* Get graphics descriptor set layouts */
         Context               *context = Context::GetInstance();
