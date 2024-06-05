@@ -96,11 +96,11 @@ namespace vp::util {
                 /* Free buffer */
                 if (m_object_array != nullptr) {
                     ::operator delete(m_object_array);
+                    m_object_array = nullptr;
+                    m_array_count  = 0;
                 }
 
-                /* Clear state */
-                m_array_count  = 0;
-                m_object_array = nullptr;
+                return;
             }
             
             constexpr Iterator begin() {

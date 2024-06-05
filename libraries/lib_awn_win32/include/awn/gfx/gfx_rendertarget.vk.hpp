@@ -72,35 +72,25 @@ namespace awn::gfx {
             u32           m_array_layer_count;
             u32           m_render_width;
             u32           m_render_height;
+            Texture       *m_texture;
         protected:
             void SetVkImageLayout(VkImageLayout vk_image_layout) { m_vk_image_layout = vk_image_layout; }
         public:
             constexpr RenderTargetBase() : m_vk_image_view(VK_NULL_HANDLE), m_vk_image(VK_NULL_HANDLE), m_vk_image_layout(VK_IMAGE_LAYOUT_UNDEFINED), m_array_layer_count(0), m_render_width(0), m_render_height(0) {/*...*/}
             constexpr ~RenderTargetBase() {/*...*/}
 
-            void Finalize() {
-
-                if (m_vk_image_view != VK_NULL_HANDLE) {
-                    ::pfn_vkDestroyImageView(Context::GetInstance()->GetVkDevice(), m_vk_image_view, Context::GetInstance()->GetVkAllocationCallbacks());
-                }
-                m_vk_image_view   = VK_NULL_HANDLE;
-                m_vk_image        = VK_NULL_HANDLE;
-                m_vk_image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-                m_vk_aspect_mask  = 0;
-                m_array_layer_count    = 0;
-                m_render_width    = 0;
-                m_render_height   = 0;
-            }
+            void Finalize();
 
             constexpr u32 GetViewCount()    const { return m_array_layer_count; }
             constexpr u32 GetViewMask()     const { return 0xffff'ffff; }
             constexpr u32 GetRenderWidth()  const { return m_render_width; }
             constexpr u32 GetRenderHeight() const { return m_render_height; }
 
-            constexpr VkImageView   GetVkImageView()   const { return m_vk_image_view; }
-            constexpr VkImage       GetVkImage()       const { return m_vk_image; }
-            constexpr VkImageLayout GetVkImageLayout() const { return m_vk_image_layout; }
-            constexpr u32           GetVkAspectMask()  const { return m_vk_aspect_mask; }
+            constexpr Texture       *GetTexture()       const { return m_texture; }
+            constexpr VkImageView    GetVkImageView()   const { return m_vk_image_view; }
+            constexpr VkImage        GetVkImage()       const { return m_vk_image; }
+            constexpr VkImageLayout  GetVkImageLayout() const { return m_vk_image_layout; }
+            constexpr u32            GetVkAspectMask()  const { return m_vk_aspect_mask; }
     };
 
     class RenderTargetColor : public RenderTargetBase {
@@ -108,79 +98,8 @@ namespace awn::gfx {
             constexpr RenderTargetColor() : RenderTargetBase() {/*...*/}
             constexpr ~RenderTargetColor() {/*...*/}
 
-            void Initialize(RenderTargetInfo *render_target_info) {
-
-                /* Create VkImageView */
-                const u32 image_aspect_mask = vp::res::GfxImageFormatToVkImageAspectFlags(static_cast<ImageFormat>(render_target_info->image_format));
-                const VkImageViewCreateInfo image_view_info = {
-                    .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                    .image    = render_target_info->texture->GetVkImage(),
-                    .viewType = vp::res::GfxImageDimensionToVkImageViewType(static_cast<ImageDimension>(render_target_info->image_dimension)),
-                    .format   = vp::res::GfxImageFormatToVkFormat(static_cast<ImageFormat>(render_target_info->image_format)),
-                    .components = {
-                        .r = VK_COMPONENT_SWIZZLE_R,
-                        .g = VK_COMPONENT_SWIZZLE_G,
-                        .b = VK_COMPONENT_SWIZZLE_B,
-                        .a = VK_COMPONENT_SWIZZLE_A,
-                    },
-                    .subresourceRange = {
-                        .aspectMask     = image_aspect_mask,
-                        .baseMipLevel   = render_target_info->base_mip_level,
-                        .levelCount     = 1,
-                        .baseArrayLayer = render_target_info->base_array_layer,
-                        .layerCount     = render_target_info->array_layer_count,
-                    }
-                };
-                const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
-                VP_ASSERT(result == VK_SUCCESS);
-
-                /* Set Info */
-                m_vk_image           = render_target_info->texture->GetVkImage();
-                m_vk_image_layout    = VK_IMAGE_LAYOUT_UNDEFINED;
-                m_vk_aspect_mask     = image_aspect_mask;
-                m_array_layer_count       = render_target_info->array_layer_count;
-                m_render_width       = render_target_info->texture->GetWidth();
-                m_render_height      = render_target_info->texture->GetHeight();
-
-                return;
-            }
-
-            void Initialize(RenderTargetImportInfo *render_target_import_info) {
-
-                /* Create VkImageView */
-                const u32 image_aspect_mask = vp::res::GfxImageFormatToVkImageAspectFlags(static_cast<ImageFormat>(render_target_import_info->image_format));
-                const VkImageViewCreateInfo image_view_info = {
-                    .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                    .image    = render_target_import_info->vk_image,
-                    .viewType = vp::res::GfxImageDimensionToVkImageViewType(static_cast<ImageDimension>(render_target_import_info->image_dimension)),
-                    .format   = vp::res::GfxImageFormatToVkFormat(static_cast<ImageFormat>(render_target_import_info->image_format)),
-                    .components = {
-                        .r = VK_COMPONENT_SWIZZLE_R,
-                        .g = VK_COMPONENT_SWIZZLE_G,
-                        .b = VK_COMPONENT_SWIZZLE_B,
-                        .a = VK_COMPONENT_SWIZZLE_A,
-                    },
-                    .subresourceRange = {
-                        .aspectMask     = image_aspect_mask,
-                        .baseMipLevel   = render_target_import_info->base_mip_level,
-                        .levelCount     = 1,
-                        .baseArrayLayer = render_target_import_info->base_array_layer,
-                        .layerCount     = render_target_import_info->array_layer_count,
-                    }
-                };
-                const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
-                VP_ASSERT(result == VK_SUCCESS);
-
-                /* Set Info */
-                m_vk_image           = render_target_import_info->vk_image;
-                m_vk_image_layout    = VK_IMAGE_LAYOUT_UNDEFINED;
-                m_vk_aspect_mask     = image_aspect_mask;
-                m_array_layer_count       = render_target_import_info->array_layer_count;
-                m_render_width       = render_target_import_info->render_width;
-                m_render_height      = render_target_import_info->render_height;
-
-                return;
-            }
+            void Initialize(RenderTargetInfo *render_target_info);
+            void Initialize(RenderTargetImportInfo *render_target_import_info);
     };
 
     class RenderTargetDepthStencil : public RenderTargetBase {
@@ -188,79 +107,8 @@ namespace awn::gfx {
             constexpr RenderTargetDepthStencil() : RenderTargetBase() {/*...*/}
             constexpr ~RenderTargetDepthStencil() {/*...*/}
 
-            void Initialize(RenderTargetInfo *render_target_info) {
-
-                /* Create VkImageView */
-                const u32 image_aspect_mask = vp::res::GfxImageFormatToVkImageAspectFlags(static_cast<ImageFormat>(render_target_info->image_format));
-                const VkImageViewCreateInfo image_view_info = {
-                    .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                    .image    = render_target_info->texture->GetVkImage(),
-                    .viewType = vp::res::GfxImageDimensionToVkImageViewType(static_cast<ImageDimension>(render_target_info->image_dimension)),
-                    .format   = vp::res::GfxImageFormatToVkFormat(static_cast<ImageFormat>(render_target_info->image_format)),
-                    .components = {
-                        .r = VK_COMPONENT_SWIZZLE_R,
-                        .g = VK_COMPONENT_SWIZZLE_G,
-                        .b = VK_COMPONENT_SWIZZLE_B,
-                        .a = VK_COMPONENT_SWIZZLE_A,
-                    },
-                    .subresourceRange = {
-                        .aspectMask     = image_aspect_mask,
-                        .baseMipLevel   = render_target_info->base_mip_level,
-                        .levelCount     = 1,
-                        .baseArrayLayer = render_target_info->base_array_layer,
-                        .layerCount     = render_target_info->array_layer_count,
-                    }
-                };
-                const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
-                VP_ASSERT(result == VK_SUCCESS);
-
-                /* Set Info */
-                m_vk_image           = render_target_info->texture->GetVkImage();
-                m_vk_image_layout    = VK_IMAGE_LAYOUT_UNDEFINED;
-                m_vk_aspect_mask     = image_aspect_mask;
-                m_array_layer_count       = render_target_info->array_layer_count;
-                m_render_width       = render_target_info->texture->GetWidth();
-                m_render_height      = render_target_info->texture->GetHeight();
-
-                return;
-            }
-
-            void Initialize(RenderTargetImportInfo *render_target_import_info) {
-
-                /* Create VkImageView */
-                const u32 image_aspect_mask = vp::res::GfxImageFormatToVkImageAspectFlags(static_cast<ImageFormat>(render_target_import_info->image_format));
-                const VkImageViewCreateInfo image_view_info = {
-                    .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                    .image    = render_target_import_info->vk_image,
-                    .viewType = vp::res::GfxImageDimensionToVkImageViewType(static_cast<ImageDimension>(render_target_import_info->image_dimension)),
-                    .format   = vp::res::GfxImageFormatToVkFormat(static_cast<ImageFormat>(render_target_import_info->image_format)),
-                    .components = {
-                        .r = VK_COMPONENT_SWIZZLE_R,
-                        .g = VK_COMPONENT_SWIZZLE_G,
-                        .b = VK_COMPONENT_SWIZZLE_B,
-                        .a = VK_COMPONENT_SWIZZLE_A,
-                    },
-                    .subresourceRange = {
-                        .aspectMask     = image_aspect_mask,
-                        .baseMipLevel   = render_target_import_info->base_mip_level,
-                        .levelCount     = 1,
-                        .baseArrayLayer = render_target_import_info->base_array_layer,
-                        .layerCount     = render_target_import_info->array_layer_count,
-                    }
-                };
-                const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_image_view));
-                VP_ASSERT(result == VK_SUCCESS);
-
-                /* Set Info */
-                m_vk_image           = render_target_import_info->vk_image;
-                m_vk_image_layout    = VK_IMAGE_LAYOUT_UNDEFINED;
-                m_vk_aspect_mask     = image_aspect_mask;
-                m_array_layer_count       = render_target_import_info->array_layer_count;
-                m_render_width       = render_target_import_info->render_width;
-                m_render_height      = render_target_import_info->render_height;
-
-                return;
-            }
+            void Initialize(RenderTargetInfo *render_target_info);
+            void Initialize(RenderTargetImportInfo *render_target_import_info);
 
             constexpr bool IsDepthFormat() { return true; }
             constexpr bool IsStencilFormat() { return false; }

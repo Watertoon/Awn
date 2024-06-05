@@ -30,6 +30,7 @@ namespace awn {
 #include <awn/sys.h>
 #include <awn/async.h>
 #include <awn/res.h>
+#include <awn/para.h>
 #include <awn/gfx.h>
 #include <awn/hid.h>
 #include <awn/frm.h>

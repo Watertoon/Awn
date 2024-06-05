@@ -17,6 +17,24 @@
 
 namespace awn::gfx {
 
+    enum class CopyFilter {
+        Nearest = 0,
+        Linear  = 1,
+    };
+
+    struct TextureCopyRegion {
+        u32 base_x;
+        u32 base_y;
+        u32 base_z;
+        u32 width;
+        u32 height;
+        u32 depth;
+        u16 base_mip_level;
+        u16 reserve0;
+        u32 base_array_layer;
+        u32 layer_count;
+    };
+
     struct GpuBufferAddress {
         gfx::Buffer *buffer;
         size_t       offset;
@@ -275,6 +293,8 @@ namespace awn::gfx {
 
             void TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
             void TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
+
+            void BlitImage(Texture *dest_texture, const TextureCopyRegion *dest_copy_region, Texture *source_texture, const TextureCopyRegion *source_copy_region, CopyFilter copy_filter);
 
             void SetRenderTargets(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
 

@@ -26,15 +26,15 @@ Vp is an included personal C++ library designed to carry common utilities and fi
   * Fixed String
 
 # Awn Features
-* An asynchronous file resource manager
-* A cooperative thread manager
-* A heap-tree based CPU and GPU memory manager
+* An asynchronous file resource manager for real-time file streaming
+* A parameter system to autogenerate and manage parameter classes for binary data
+* A thread manager designed to emulate cooperative threading
+* A CPU and GPU memory manager designed for real-time allocations
 * Graphics wrapper api
 * Basic mouse and keyboard support
 * Base framework for a mainloop with a single window
 
 # In Development
-* A parameter system that can autogenerate byaml parameter accessors
 * An AI behavior tree system
 * A revamped multi-threaded framework based on dependency graphs
 * An Actor and Scene system

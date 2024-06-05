@@ -510,6 +510,64 @@ namespace awn::gfx {
         return;
     }
 
+    void CommandBufferBase::BlitImage(Texture *dest_texture, const TextureCopyRegion *dest_copy_region, Texture *source_texture, const TextureCopyRegion *source_copy_region, CopyFilter copy_filter) {
+
+        this->EndRenderingIfRendering();
+
+        const VkImageBlit2 image_blit = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2,
+            .srcSubresource = {
+                .aspectMask     = source_texture->GetVkAspectMask(),
+                .mipLevel       = source_copy_region->base_mip_level,
+                .baseArrayLayer = source_copy_region->base_array_layer,
+                .layerCount     = source_copy_region->layer_count,
+            },
+            .srcOffsets = {
+                {
+                    .x = static_cast<s32>(source_copy_region->base_x),
+                    .y = static_cast<s32>(source_copy_region->base_y),
+                    .z = static_cast<s32>(source_copy_region->base_z),
+                },
+                {
+                    .x = static_cast<s32>(source_copy_region->base_x + dest_copy_region->width),
+                    .y = static_cast<s32>(source_copy_region->base_y + dest_copy_region->height),
+                    .z = static_cast<s32>(source_copy_region->base_z + dest_copy_region->depth),
+                },
+            },
+            .dstSubresource = {
+                .aspectMask     = dest_texture->GetVkAspectMask(),
+                .mipLevel       = dest_copy_region->base_mip_level,
+                .baseArrayLayer = dest_copy_region->base_array_layer,
+                .layerCount     = dest_copy_region->layer_count,
+            },
+            .dstOffsets = {
+                {
+                    .x = static_cast<s32>(dest_copy_region->base_x),
+                    .y = static_cast<s32>(dest_copy_region->base_y),
+                    .z = static_cast<s32>(dest_copy_region->base_z),
+                },
+                {
+                    .x = static_cast<s32>(dest_copy_region->base_x + dest_copy_region->width),
+                    .y = static_cast<s32>(dest_copy_region->base_y + dest_copy_region->height),
+                    .z = static_cast<s32>(dest_copy_region->base_z + dest_copy_region->depth),
+                },
+            },
+        };
+        const VkBlitImageInfo2 blit_image_2 = {
+            .sType          = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2,
+            .srcImage       = source_texture->GetVkImage(),
+            .srcImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .dstImage       = dest_texture->GetVkImage(),
+            .dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .regionCount    = 1,
+            .pRegions       = std::addressof(image_blit),
+            .filter         = (copy_filter == CopyFilter::Linear) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST,
+        };
+        ::pfn_vkCmdBlitImage2(m_command_list.vk_command_buffer, std::addressof(blit_image_2));
+
+        return;
+    }
+
     void CommandBufferBase::SetSystemDescriptorBuffers() {
 
         /* Set descriptor buffer */
@@ -551,12 +609,14 @@ namespace awn::gfx {
         ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
         ::pfn_vkCmdDraw(m_command_list.vk_command_buffer, vertex_count, 0, base_vertex, 0);
     }
+
     void CommandBufferBase::DrawInstanced(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count, u32 base_instance, u32 instance_count) {
         this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
         ::pfn_vkCmdSetPrimitiveTopology(m_command_list.vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
         ::pfn_vkCmdDraw(m_command_list.vk_command_buffer, vertex_count, instance_count, base_vertex, base_instance);
     }
+
     void CommandBufferBase::DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex) {
         this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
@@ -564,6 +624,7 @@ namespace awn::gfx {
         ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.buffer->GetVkBuffer(), 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
         ::pfn_vkCmdDrawIndexed(m_command_list.vk_command_buffer, index_count, 0, base_index, base_vertex, 0);
     }
+
     void CommandBufferBase::DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 base_index, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count) {
         this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
@@ -571,11 +632,13 @@ namespace awn::gfx {
         ::pfn_vkCmdBindIndexBuffer(m_command_list.vk_command_buffer, index_buffer_address.buffer->GetVkBuffer(), 0, vp::res::GfxIndexFormatToVkIndexType(index_format));
         ::pfn_vkCmdDrawIndexed(m_command_list.vk_command_buffer, index_count, instance_count, base_index, base_vertex, base_instance);
     }
+
     void CommandBufferBase::DrawMeshTasks(u32 x, u32 y, u32 z) {
         this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
         ::pfn_vkCmdDrawMeshTasksEXT(m_command_list.vk_command_buffer, x, y, z);
     }
+
     void CommandBufferBase::Dispatch(u32 x, u32 y, u32 z) {
         this->CommitDescriptors();
         ::pfn_vkCmdDispatch(m_command_list.vk_command_buffer, x, y, z);
@@ -598,6 +661,7 @@ namespace awn::gfx {
         TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         return;
     }
+
     void CommandBufferBase::TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
 
         SyncScopeInfo scope_info = {
