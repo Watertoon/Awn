@@ -74,6 +74,74 @@ namespace awn::para {
             return layout.*T; \
         }
 
+    template <typename T>
+    struct PropertyAccessorHelper {
+        using Type = IPropertyAccessor;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<bool> {
+        using Type = PropertyAccessor<bool>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<s32> {
+        using Type = PropertyAccessor<s32>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<u32> {
+        using Type = PropertyAccessor<u32>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<float> {
+        using Type = PropertyAccessor<float>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<s64> {
+        using Type = PropertyAccessor<s64>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<u64> {
+        using Type = PropertyAccessor<u64>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<double> {
+        using Type = PropertyAccessor<double>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<const char*> {
+        using Type = PropertyAccessor<const char*>;
+    };
+
+    template <typename T>
+    using TPropertyAccessor = PropertyAccessorHelper<T>::Type;
+
+    template <typename T>
+    constexpr TPropertyAccessor<T> TGetPropertyAccessor(T *value_address) {
+        static_assert(false, "Property type is invalid and not dummyable");
+        const IPropertyAccessor accessor{};
+        return accessor;
+    }
+    template <typename T>
+        requires (TIsEmbed<T>() || TIsComposite<T>())
+    constexpr TPropertyAccessor<T> TGetPropertyAccessor(T *value_address) {
+        VP_UNUSED(value_address);
+        const IPropertyAccessor accessor{};
+        return accessor;
+    }
+    template <typename T>
+        requires (TIsProperty<T>())
+    constexpr TPropertyAccessor<T> TGetPropertyAccessor(T *value_address) {
+        const TPropertyAccessor<T> accessor(value_address);
+        return accessor;
+    }
+
     /* Ensure common cases */
     static_assert(TIsProperty<const char*>()  == true);
     static_assert(TIsEmbed<const char*>()     == false);

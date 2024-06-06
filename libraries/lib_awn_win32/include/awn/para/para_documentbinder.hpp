@@ -18,6 +18,7 @@
 namespace awn::para {
 
     class Document;
+    class TypedParam;
 
     class DocumentBinder {
         public:
@@ -28,13 +29,17 @@ namespace awn::para {
             void LoadDocumentForResolve(const char *format_path);
         public:
             constexpr DocumentBinder() : m_document(nullptr) {/*...*/}
-            ~DocumentBinder() { this->ReleaseDocument(); }
+            ~DocumentBinder() { this->Release(); }
 
             constexpr bool IsValid() const { return m_document != nullptr; }
 
             DocumentBinder &operator=(const DocumentBinder &rhs);
 
             void LoadDocument(const char *file_name, const char *class_name, bool is_allow_dummy);
-            void ReleaseDocument();
+            void Release();
+
+            /* Defined in para_document.hpp */
+            template <typename T>
+            ALWAYS_INLINE TypedParam *GetTypedParam() const;
     };
 }

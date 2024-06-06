@@ -52,7 +52,7 @@ namespace awn::para {
 	}
 
 	DocumentBinder &DocumentBinder::operator=(const DocumentBinder &rhs) {
-		this->ReleaseDocument();
+		this->Release();
 		m_document = rhs.m_document;
 		if (m_document == nullptr) { return *this; }
 		vp::util::InterlockedIncrement(std::addressof(m_document->m_reference_count));
@@ -90,7 +90,8 @@ namespace awn::para {
 
 		return;
 	}
-	void DocumentBinder::ReleaseDocument() {
+
+	void DocumentBinder::Release() {
 
 		/* Check valid Document */
 		Document *document = m_document;

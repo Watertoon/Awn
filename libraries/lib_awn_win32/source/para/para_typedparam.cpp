@@ -17,7 +17,7 @@
 
 namespace awn::para {
 
-    AWN_PARA_DECLARE_TYPEDPARAM_IMPL(TypedParam);
+    AWN_PARA_DECLARE_TYPED_PARAM_IMPL(TypedParam);
 
     Result Composite::FindComposite(FindCompositeContext *out_find_info, const char *composite_name) {
         const u8   cur_char = *composite_name;
@@ -43,7 +43,7 @@ namespace awn::para {
     }
 
     void TypedParam::FreeParent() {
-        m_parent_document_binder.ReleaseDocument();
+        m_parent_document_binder.Release();
 
         const u16 handle = vp::util::InterlockedExchange(std::addressof(m_parent_handle), DocumentManager::HandleAllocator::cInvalidHandle);
         if (handle == DocumentManager::HandleAllocator::cInvalidHandle) { return; }
@@ -53,7 +53,7 @@ namespace awn::para {
         return;
     }
     void TypedParam::ReleaseParent() {
-        m_parent_document_binder.ReleaseDocument();
+        m_parent_document_binder.Release();
         m_parent_handle = 0;
     }
     

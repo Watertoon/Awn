@@ -654,6 +654,11 @@ namespace vp::util {
                 if (node == nullptr) { return nullptr; }
                 return Traits::GetParent(node);
             }
+            ALWAYS_INLINE const_pointer Find(key_type hash) const {
+                const node_type *node = this->FindImpl(m_root, hash);
+                if (node == nullptr) { return nullptr; }
+                return Traits::GetParent(node);
+            }
 
             iterator begin() {
 

@@ -25,6 +25,7 @@
 #define VP_UNLIKELY(expression) __builtin_expect((expression), 0)
 #define VP_LIKELY(expression)   __builtin_expect((expression), 1)
 
+#define BITSIZEOF(var) (sizeof(var) * 8)
 #define TOSTRING(var) #var
 
 #define _CONCAT_IMPL(left, right) left ## right

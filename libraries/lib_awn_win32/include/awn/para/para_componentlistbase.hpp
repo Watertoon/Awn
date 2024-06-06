@@ -27,7 +27,7 @@ namespace awn::para {
         AWN_PARA_LAYOUT_TYPE_TRAITS(ComponentListBase_Layout);
     };
 
-    AWN_PARA_DECLARE_TYPEDPARAM_AUTO_NAMEV(
+    AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(
         awn__para__ComponentListBase, ComponentListBase,
         awn::para::TypedParam, ComponentListBase_Layout,
         Label,

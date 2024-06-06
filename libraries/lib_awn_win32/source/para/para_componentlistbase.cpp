@@ -17,5 +17,5 @@
 
 namespace awn::para {
 
-    AWN_PARA_DECLARE_TYPEDPARAM_IMPL(ComponentListBase);
+    AWN_PARA_DECLARE_TYPED_PARAM_IMPL(ComponentListBase);
 }

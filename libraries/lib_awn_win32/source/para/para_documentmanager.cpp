@@ -91,6 +91,13 @@ namespace awn::para {
         m_remove_queue.Initialize(heap, mgr_info->remove_queue_count);
     }
 
+    void DocumentManager::Finalize() {
+        m_typed_param_parent_handle_array.Finalize();
+        m_typed_param_parent_handle_index_allocator.Finalize();
+        m_remove_queue.Finalize();
+        m_callback = nullptr;
+    }
+
     void DocumentManager::Calculate() {
 
         /* Attempt to lock manager */

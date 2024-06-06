@@ -49,6 +49,7 @@ namespace vp::res {
 
         constexpr const char *GetString() const { return nw_string; }
     };
+
     template <size_t StringLength>
     struct TFixedNintendoWareString {
         static constexpr size_t cStringLength = StringLength;
@@ -79,10 +80,11 @@ namespace vp::res {
             constexpr EnumDictionary(const char *class_name, const u32 *value_array) : m_class_name(class_name), m_value_array(value_array), m_res_dic() {/*...*/}
             constexpr ~EnumDictionary() {/*...*/}
 
-            ALWAYS_INLINE u32 ConvertStringToValue(const char *enum_value_name) const {
+            ALWAYS_INLINE bool TryGetValueByName(u32 *out_value, const char *enum_value_name) const {
                 const u32 index = m_res_dic.TryGetEntryIndexByKey(enum_value_name);
-                VP_ASSERT(index != vp::res::ResNintendoWareDictionary::cInvalidEntryIndex);
-                return m_value_array[index];
+                if (index == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex) { return false; }
+                *out_value = m_value_array[index];
+                return true;
             }
             constexpr ALWAYS_INLINE u32 GetEnumCount() const {
                 return m_res_dic.node_count;
@@ -146,19 +148,19 @@ namespace vp::res {
             constexpr EnumDictionaryManager() : m_tree() {/*...*/}
             constexpr ~EnumDictionaryManager() {/*...*/}
 
-            const EnumDictionary *GetEnumDictionary(const char *class_name) {
-                const u64 class_hash = vp::util::HashMurmur64(class_name);
-                EnumDictionaryNode *dic_node = m_tree.Find(class_hash);
-                VP_ASSERT(dic_node != nullptr);
-                return dic_node->m_dictionary;
-            }
-            u32 GetEnumValue(const char *class_name, const char *value_string) {
+            const EnumDictionary *GetEnumDictionary(const char *class_name) const {
                 const u64                 class_hash = vp::util::HashMurmur64(class_name);
                 const EnumDictionaryNode *dic_node   = m_tree.Find(class_hash);
                 VP_ASSERT(dic_node != nullptr);
-                const EnumDictionary *enum_dic    = dic_node->m_dictionary;
-                const u32             entry_index = enum_dic->ConvertStringToValue(value_string);
-                return entry_index;
+                return dic_node->m_dictionary;
+            }
+
+            u32 GetEnumValue(const char *class_name, const char *value_string) const {
+                const EnumDictionary *enum_dic   = this->GetEnumDictionary(class_name);
+                u32                   enum_value = 0;
+                const bool            result     = enum_dic->TryGetValueByName(std::addressof(enum_value), value_string);
+                VP_ASSERT(result == true);
+                return enum_value;
             }
     };
 

@@ -85,6 +85,7 @@ namespace awn::para {
             constexpr ALWAYS_INLINE ~DocumentManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, const DocumentManagerInfo *mgr_info);
+            void Finalize();
 
             void Calculate();
 

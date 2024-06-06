@@ -52,4 +52,14 @@ namespace awn::para {
 
             constexpr bool IsDummy() const { return m_file_path == "Dummy"; }
     };
+
+    template <typename T>
+    ALWAYS_INLINE TypedParam *DocumentBinder::GetTypedParam() const {
+        static_assert(TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) == true);
+        if (m_document == nullptr) { return nullptr; }
+        TypedParam *typed_param   = m_document->m_typed_param;
+        const bool  is_rtti_valid = T::CheckRuntimeTypeInfoStatic(typed_param);
+        T          *result        = (is_rtti_valid) ? reinterpret_cast<T*>(typed_param) : nullptr;
+        return result;
+    }
 }

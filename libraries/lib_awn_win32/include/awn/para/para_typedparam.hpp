@@ -191,8 +191,8 @@ namespace awn::para {
     
     struct TypedParamLayout { VP_STATIC_RTTI_BASE(TypedParamLayout); };
 
-    #define AWN_PARA_DECLARE_TYPEDPARAM_AUTO_NAMEV(class_name_for_mgr, class_name, base_type_name, layout_type_name, ...) VP_FOUR_ARG_VMACRO(class_name_for_mgr, class_name, base_type_name, layout_type_name, AWN_PARA_DECLARE_TYPEDPARAM_AUTO_NAME, __VA_ARGS__)
+    #define AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(class_name_for_mgr, class_name, base_type_name, layout_type_name, ...) VP_FOUR_ARG_VMACRO(class_name_for_mgr, class_name, base_type_name, layout_type_name, AWN_PARA_DECLARE_TYPEDPARAM_AUTO_NAME, __VA_ARGS__)
 
-    #define AWN_PARA_DECLARE_TYPEDPARAM_IMPL(class_name) \
+    #define AWN_PARA_DECLARE_TYPED_PARAM_IMPL(class_name) \
         static TypedParamFactory sTypedParamFactory_##class_name ( class_name ::cClassHash, CreateTypedParamImpl< class_name >)
 }
