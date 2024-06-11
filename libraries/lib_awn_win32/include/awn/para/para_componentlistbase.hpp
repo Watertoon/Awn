@@ -17,9 +17,7 @@
 
 namespace awn::para {
 
-    struct ComponentListBase_Layout : public TypedParamLayout {
-        VP_STATIC_RTTI_DERIVED(ComponentListBase_Layout, TypedParamLayout);
-
+    struct ComponentListBase_Layout {
         const char               *Category   = "";
         PropertyMap<const char*>  Components = {};
         const char               *Label      = "";

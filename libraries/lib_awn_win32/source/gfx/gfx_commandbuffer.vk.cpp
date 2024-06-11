@@ -571,8 +571,8 @@ namespace awn::gfx {
     void CommandBufferBase::SetSystemDescriptorBuffers() {
 
         /* Set descriptor buffer */
-        VkDeviceAddress        descriptor_buffer_address_array[3] = {};
-        TextureSamplerManager *tex_samp_manager = TextureSamplerManager::GetInstance();
+        VkDeviceAddress descriptor_buffer_address_array[3] = {};
+        TextureViewSamplerManager *tex_samp_manager = TextureViewSamplerManager::GetInstance();
         if (tex_samp_manager != nullptr) {
             descriptor_buffer_address_array[0] = tex_samp_manager->GetTextureDescriptorBufferAddress();
             descriptor_buffer_address_array[1] = tex_samp_manager->GetSamplerDescriptorBufferAddress();
@@ -701,12 +701,12 @@ namespace awn::gfx {
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
 
         /* Cache descriptor */
-        TextureSamplerManager *tex_samp_manager = TextureSamplerManager::GetInstance();
-        TextureView           *texture_view     = tex_samp_manager->GetTextureView(texture_slot);
-        Sampler               *sampler          = tex_samp_manager->GetSampler(sampler_slot);
+        TextureViewSamplerManager *tex_samp_manager = TextureViewSamplerManager::GetInstance();
+        const VkImageView          image_view       = tex_samp_manager->GetVkImageView(texture_slot);
+        const VkSampler            sampler          = tex_samp_manager->GetVkSampler(sampler_slot);
         const VkDescriptorImageInfo image_info = {
-            .sampler     = sampler->GetVkSampler(),
-            .imageView   = texture_view->GetVkImageView(),
+            .sampler     = sampler,
+            .imageView   = image_view,
             .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
         };
         const VkDescriptorGetInfoEXT get_info = {
@@ -741,10 +741,10 @@ namespace awn::gfx {
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
 
         /* Cache descriptor */
-        TextureSamplerManager *tex_samp_manager = TextureSamplerManager::GetInstance();
-        TextureView           *texture_view     = tex_samp_manager->GetTextureView(texture_slot);
+        TextureViewSamplerManager *tex_samp_manager = TextureViewSamplerManager::GetInstance();
+        const VkImageView          image_view       = tex_samp_manager->GetVkImageView(texture_slot);
         const VkDescriptorImageInfo image_info = {
-            .imageView   = texture_view->GetVkImageView(),
+            .imageView   = image_view,
             .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
         };
         const VkDescriptorGetInfoEXT get_info = {
@@ -848,25 +848,15 @@ namespace awn::gfx {
         VkDeviceSize           desc_offset   = 0;
         ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
 
+        /* Get cached descriptor */
+        TextureViewSamplerManager *tex_samp_manager = TextureViewSamplerManager::GetInstance();
+        const void                *desc_data        = tex_samp_manager->GetSeparateTextureDescriptor(texture_slot);
+        VP_ASSERT(desc_data != nullptr);
+
         /* Get memory offset */
         void *desc_memory   = this->GetDescriptorMemorySeparateTextureSampler(shader_stage);
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-
-        /* Cache descriptor */
-        TextureSamplerManager *tex_samp_manager = TextureSamplerManager::GetInstance();
-        TextureView           *texture_view     = tex_samp_manager->GetTextureView(texture_slot);
-        const VkDescriptorImageInfo image_info = {
-            .imageView   = texture_view->GetVkImageView(),
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-            .data = {
-                .pSampledImage = std::addressof(image_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
+        ::memcpy(memory_offset, desc_data, desc_size);
 
         /* Set dirty flag */
         this->SetSeparateTextureSamplerDirty(shader_stage);
@@ -886,22 +876,15 @@ namespace awn::gfx {
         VkDeviceSize           desc_offset   = 0;
         ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
 
+        /* Get cached descriptor */
+        TextureViewSamplerManager *tex_samp_manager = TextureViewSamplerManager::GetInstance();
+        const void                *desc_data        = tex_samp_manager->GetSeparateSamplerDescriptor(sampler_slot);
+        VP_ASSERT(desc_data != nullptr);
+
         /* Get memory offset */
         void *desc_memory   = this->GetDescriptorMemorySeparateTextureSampler(shader_stage);
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-
-        /* Cache descriptor */
-        TextureSamplerManager *tex_samp_manager = TextureSamplerManager::GetInstance();
-        Sampler               *sampler          = tex_samp_manager->GetSampler(sampler_slot);
-        VkSampler              vk_sampler       = sampler->GetVkSampler();
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-            .data = {
-                .pSampler = std::addressof(vk_sampler),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
+        ::memcpy(memory_offset, desc_data, desc_size);
 
         /* Set dirty flag */
         this->SetSeparateTextureSamplerDirty(shader_stage);

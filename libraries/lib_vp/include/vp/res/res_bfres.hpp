@@ -35,7 +35,7 @@ namespace vp::res {
         ResNintendoWareDictionary  *shape_anim_dictionary;
         ResBfresSceneAnim          *scene_anim_array;
         ResNintendoWareDictionary  *scene_anim_dictionary;
-        void                       *user_memory_pool;
+        void                       *runtime_user_memory_pool;
         ResGfxMemoryPoolInfo       *memory_pool_info;
         ResGfxEmbedFile            *embed_file_array;
         ResNintendoWareDictionary  *embed_file_dictionary;
@@ -64,17 +64,20 @@ namespace vp::res {
         u8                          reserve10;
 
         static constexpr u64 cMagic = util::TCharCode64("FRES    ");
+        static constexpr u16 cTargetVersionMajor = 10;
+        static constexpr u8  cTargetVersionMinor = 0;
+        static constexpr u8  cTargetVersionMicro = 0;
 
         static ResBfres *ResCast(void *file) {
             ResBfres *fres = reinterpret_cast<ResBfres*>(file);
-            if (fres == nullptr || fres->ResNintendoWareFileHeader::IsValid(cMagic, 10, 0, 0) == false) { return nullptr; }
+            if (fres == nullptr || fres->ResNintendoWareFileHeader::IsValid(cMagic, cTargetVersionMajor, cTargetVersionMinor, cTargetVersionMicro) == false) { return nullptr; }
             fres->Relocate();
             return fres;
         }
 
         static bool IsValid(void *file) {
             ResBfres *fres = reinterpret_cast<ResBfres*>(file);
-            return fres->ResNintendoWareFileHeader::IsValid(cMagic, 10, 0, 0);
+            return fres->ResNintendoWareFileHeader::IsValid(cMagic, cTargetVersionMajor, cTargetVersionMinor, cTargetVersionMicro);
         }
         
         void BindTextures(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {

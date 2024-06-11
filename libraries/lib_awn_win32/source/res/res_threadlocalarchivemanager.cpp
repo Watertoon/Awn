@@ -35,7 +35,7 @@ namespace awn::res {
             if (node.m_local_archive_binder != local_archive_binder) { continue; }
 
             if (local_archive_binder->reference_count != 0 || local_archive_binder->resource_binder.IsLoadGuard() == true) {
-                local_archive_binder->resource_binder.Finalize();
+                local_archive_binder->resource_binder.Release();
                 vp::util::InterlockedExchange(std::addressof(local_archive_binder->reference_count), 0u);
             }
 
@@ -102,7 +102,7 @@ namespace awn::res {
             VP_ASSERT(local_archive_binder != nullptr);
 
             if (local_archive_binder->reference_count != 0 || local_archive_binder->resource_binder.IsLoadGuard() == true) {
-                local_archive_binder->resource_binder.Finalize();
+                local_archive_binder->resource_binder.Release();
                 vp::util::InterlockedExchange(std::addressof(local_archive_binder->reference_count), 0u);
             }
 
@@ -227,7 +227,7 @@ namespace awn::res {
 
         LocalArchiveBinder *local_archive_binder = reinterpret_cast<LocalArchiveBinder*>(sys::GetTlsData(m_tls_slot));
         if (local_archive_binder == nullptr) { return; }
-        local_archive_binder->resource_binder.Finalize();
+        local_archive_binder->resource_binder.Release();
 
         return;
     }
@@ -237,7 +237,7 @@ namespace awn::res {
         LocalArchiveBinder *local_archive_binder = manager->GetThreadLocalArchive();
         if (local_archive_binder != nullptr) {
             m_last_binder.ReferenceBinderSync(std::addressof(local_archive_binder->resource_binder));
-            local_archive_binder->resource_binder.Finalize();
+            local_archive_binder->resource_binder.Release();
         }
         manager->SetThreadLocalArchive(archive_binder);
     }
@@ -246,7 +246,7 @@ namespace awn::res {
         LocalArchiveBinder *local_archive_binder = manager->GetThreadLocalArchive();
         if (local_archive_binder != nullptr) {
             m_last_binder.ReferenceBinderSync(std::addressof(local_archive_binder->resource_binder));
-            local_archive_binder->resource_binder.Finalize();
+            local_archive_binder->resource_binder.Release();
         }
         manager->SetThreadLocalArchive(archive_binder);
     }
@@ -254,7 +254,7 @@ namespace awn::res {
         ThreadLocalArchiveManager *manager = AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager();
         LocalArchiveBinder *local_archive_binder = manager->GetThreadLocalArchive();
         if (local_archive_binder != nullptr) {
-            local_archive_binder->resource_binder.Finalize();
+            local_archive_binder->resource_binder.Release();
         }
         manager->SetThreadLocalArchive(std::addressof(m_last_binder));
     }

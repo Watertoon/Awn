@@ -60,7 +60,7 @@ namespace awn::res {
             }
 
             constexpr ALWAYS_INLINE u32 GetResourceUnitIndex(ResourceUnit *resource_unit) const {
-                return m_resource_unit_array.GetIndexOf(resource_unit);
+                return m_resource_unit_array.IndexOf(resource_unit);
             }
     };
 }

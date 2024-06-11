@@ -23,11 +23,9 @@ namespace awn::res {
             virtual ~LoadTask() override {/*...*/}
 
             virtual void OnFinishExecute() override {
-
-                m_load_user_data.m_archive_binder_ref.Finalize();
-
-                return;
+                m_load_user_data.m_archive_binder_ref.Release();
             }
+
             virtual void FormatPushInfo(async::AsyncTaskPushInfo *load_task_push_info) override {
 
                 /* Allocate file path storage */

@@ -123,7 +123,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE T *GetArray() { return m_object_array; }
             constexpr ALWAYS_INLINE u32 GetCount() const { return m_array_count; }
 
-            constexpr ALWAYS_INLINE u32 GetIndexOf(T *element) const {
+            constexpr ALWAYS_INLINE u32 IndexOf(T *element) const {
                 return element - m_object_array;
             }
 
@@ -131,6 +131,52 @@ namespace vp::util {
 
             constexpr void Sort() {
                 std::sort(m_object_array, m_object_array + m_array_count);
+            }
+
+            template <auto Member>
+                requires (std::is_same<ParentType<Member>, T>::value)
+            constexpr void SortOn() {
+                struct CompareMember {
+                    constexpr bool operator()(ParentType<Member> *lhs, ParentType<Member> *rhs) {
+                        return lhs->*Member < rhs->*Member;
+                    }
+                };
+                std::sort(m_object_array, m_object_array + m_array_count, CompareMember());
+            }
+
+            /* This function requires the heap array to be sorted */
+            template <auto MemberPtr>
+                requires (std::is_same<ParentType<MemberPtr>, T>::value)
+            constexpr bool BinarySearchOn(u32 *out_index, const MemberType<MemberPtr> &find_element) {
+
+                /* Binary search for find element */
+                u32 entry_index = m_array_count / 2;
+                u32 high_iter   = m_array_count;
+                u32 low_iter    = 0;
+                u32 i           = 0;
+                T   current_obj = std::addressof(m_object_array[entry_index]);
+                while (find_element != current_obj->*MemberPtr) {
+
+                    u32 result = entry_index;
+                    i = low_iter;
+                    if (find_element < current_obj->*MemberPtr) {
+                        i = high_iter;
+                        high_iter = entry_index;
+                        result = low_iter;
+                    }
+
+                    low_iter = result;
+                    if (i == entry_index) { return false; }
+
+                    i = high_iter + low_iter;
+
+                    entry_index = i / 2;
+                    current_obj = std::addressof(m_object_array[entry_index]);
+                }
+
+                *out_index = entry_index;
+    
+                return true;
             }
     };
 }

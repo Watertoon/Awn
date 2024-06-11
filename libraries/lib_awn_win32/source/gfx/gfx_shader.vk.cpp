@@ -17,67 +17,14 @@
 
 namespace awn::gfx {
 
-    namespace {
-
-        void BuildDescriptorLayoutSetGraphics(Context *context, VkDescriptorSetLayout *set_layout_array) {
-            set_layout_array[Context::cTargetTextureLayoutSet] = context->GetTextureVkDescriptorSetLayout();
-            set_layout_array[Context::cTargetSamplerLayoutSet] = context->GetSamplerVkDescriptorSetLayout();
-
-            set_layout_array[Context::cTargetPerStageLayoutSetTextureSamplerVertex]                         = context->GetPerStageVkDescriptorSetLayoutTextureSamplerVertex();
-            set_layout_array[Context::cTargetPerStageLayoutSetTextureSamplerGeometry]                       = context->GetPerStageVkDescriptorSetLayoutTextureSamplerGeometry();
-            set_layout_array[Context::cTargetPerStageLayoutSetTextureSamplerFragment]                       = context->GetPerStageVkDescriptorSetLayoutTextureSamplerFragment();
-            set_layout_array[Context::cTargetPerStageLayoutSetTextureSamplerTask]                           = context->GetPerStageVkDescriptorSetLayoutTextureSamplerTask();
-            set_layout_array[Context::cTargetPerStageLayoutSetTextureSamplerMesh]                           = context->GetPerStageVkDescriptorSetLayoutTextureSamplerMesh();
-            set_layout_array[Context::cTargetPerStageLayoutSetImageVertex]                                  = context->GetPerStageVkDescriptorSetLayoutImageVertex();
-            set_layout_array[Context::cTargetPerStageLayoutSetImageGeometry]                                = context->GetPerStageVkDescriptorSetLayoutImageGeometry();
-            set_layout_array[Context::cTargetPerStageLayoutSetImageFragment]                                = context->GetPerStageVkDescriptorSetLayoutImageFragment();
-            set_layout_array[Context::cTargetPerStageLayoutSetImageTask]                                    = context->GetPerStageVkDescriptorSetLayoutImageTask();
-            set_layout_array[Context::cTargetPerStageLayoutSetImageMesh]                                    = context->GetPerStageVkDescriptorSetLayoutImageMesh();
-            set_layout_array[Context::cTargetPerStageLayoutSetUniformBufferVertex]                          = context->GetPerStageVkDescriptorSetLayoutUniformBufferVertex();
-            set_layout_array[Context::cTargetPerStageLayoutSetUniformBufferGeometry]                        = context->GetPerStageVkDescriptorSetLayoutUniformBufferGeometry();
-            set_layout_array[Context::cTargetPerStageLayoutSetUniformBufferFragment]                        = context->GetPerStageVkDescriptorSetLayoutUniformBufferFragment();
-            set_layout_array[Context::cTargetPerStageLayoutSetUniformBufferTask]                            = context->GetPerStageVkDescriptorSetLayoutUniformBufferTask();
-            set_layout_array[Context::cTargetPerStageLayoutSetUniformBufferMesh]                            = context->GetPerStageVkDescriptorSetLayoutUniformBufferMesh();
-            set_layout_array[Context::cTargetPerStageLayoutSetStorageBufferVertex]                          = context->GetPerStageVkDescriptorSetLayoutStorageBufferVertex();
-            set_layout_array[Context::cTargetPerStageLayoutSetStorageBufferGeometry]                        = context->GetPerStageVkDescriptorSetLayoutStorageBufferGeometry();
-            set_layout_array[Context::cTargetPerStageLayoutSetStorageBufferFragment]                        = context->GetPerStageVkDescriptorSetLayoutStorageBufferFragment();
-            set_layout_array[Context::cTargetPerStageLayoutSetStorageBufferTask]                            = context->GetPerStageVkDescriptorSetLayoutStorageBufferTask();
-            set_layout_array[Context::cTargetPerStageLayoutSetStorageBufferMesh]                            = context->GetPerStageVkDescriptorSetLayoutStorageBufferMesh();
-            set_layout_array[Context::cTargetPerStageLayoutSetCombinedTessellationEvaluation]               = context->GetPerStageVkDescriptorSetLayoutCombinedTessellationEvaluation();
-            set_layout_array[Context::cTargetPerStageLayoutSetCombinedTessellationControl]                  = context->GetPerStageVkDescriptorSetLayoutCombinedTessellationControl();
-            set_layout_array[Context::cTargetPerStageLayoutSetSeparateTextureSamplerVertex]                 = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerVertex();
-            set_layout_array[Context::cTargetPerStageLayoutSetSeparateTextureSamplerTessellationEvaluation] = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTessellationEvaluation();
-            set_layout_array[Context::cTargetPerStageLayoutSetSeparateTextureSamplerTessellationControl]    = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTessellationControl();
-            set_layout_array[Context::cTargetPerStageLayoutSetSeparateTextureSamplerGeometry]               = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerGeometry();
-            set_layout_array[Context::cTargetPerStageLayoutSetSeparateTextureSamplerFragment]               = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerFragment();
-            set_layout_array[Context::cTargetPerStageLayoutSetSeparateTextureSamplerTask]                   = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTask();
-            set_layout_array[Context::cTargetPerStageLayoutSetSeparateTextureSamplerMesh]                   = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerMesh();
-
-            return;
-        }
-        void BuildDescriptorLayoutSetCompute(Context *context, VkDescriptorSetLayout *set_layout_array) {
-            set_layout_array[Context::cTargetTextureLayoutSet] = context->GetTextureVkDescriptorSetLayout();
-            set_layout_array[Context::cTargetSamplerLayoutSet] = context->GetSamplerVkDescriptorSetLayout();
-
-            set_layout_array[Context::cTargetPerStageLayoutSetTextureSamplerCompute]         = context->GetPerStageVkDescriptorSetLayoutTextureSamplerCompute();
-            set_layout_array[Context::cTargetPerStageLayoutSetImageCompute]                  = context->GetPerStageVkDescriptorSetLayoutImageCompute();
-            set_layout_array[Context::cTargetPerStageLayoutSetUniformBufferCompute]          = context->GetPerStageVkDescriptorSetLayoutUniformBufferCompute();
-            set_layout_array[Context::cTargetPerStageLayoutSetStorageBufferCompute]          = context->GetPerStageVkDescriptorSetLayoutStorageBufferCompute();
-            set_layout_array[Context::cTargetPerStageLayoutSetSeparateTextureSamplerCompute] = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerCompute();
-
-            return;
-        }
-    }
-
     void Shader::Initialize(MeshShaderInfo *shader_info, const bool is_binary) {
 
         /* Integrity checks */
         VP_ASSERT((shader_info->mesh_code != nullptr) & (shader_info->fragment_code != nullptr));
 
         /* Get descriptor set layouts */
-        Context               *context = Context::GetInstance();
-        VkDescriptorSetLayout  set_layout_array[Context::cTargetDescriptorSetLayoutCountGraphics];
-        BuildDescriptorLayoutSetGraphics(context, set_layout_array);
+        Context                     *context = Context::GetInstance();
+        const VkDescriptorSetLayout *set_layout_array = context->GetVkDescriptorSetLayoutArrayGraphics();
 
         /* Setup mesh, fragment, and the optional task shader info */
         VkShaderCreateFlagsEXT  create_flags = static_cast<VkShaderCreateFlagsEXT>(VK_SHADER_CREATE_LINK_STAGE_BIT_EXT | ((shader_info->task_code == nullptr) ? VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT : 0));
@@ -208,9 +155,8 @@ namespace awn::gfx {
         }
 
         /* Get descriptor set layouts */
-        Context               *context = Context::GetInstance();
-        VkDescriptorSetLayout  set_layout_array[Context::cTargetDescriptorSetLayoutCountGraphics];
-        BuildDescriptorLayoutSetGraphics(context, set_layout_array);
+        Context                     *context = Context::GetInstance();
+        const VkDescriptorSetLayout *set_layout_array = context->GetVkDescriptorSetLayoutArrayGraphics();
 
         /* Setup mesh, fragment, and the optional task shader info */
         const VkShaderCreateInfoEXT vk_shader_create_info_array[Context::cTargetMaxPrimitiveShaderStageCount] = {
@@ -308,9 +254,8 @@ namespace awn::gfx {
         VP_ASSERT(shader_info->compute_code != nullptr);
 
         /* Get descriptor set layouts */
-        Context               *context = Context::GetInstance();
-        VkDescriptorSetLayout  set_layout_array[Context::cTargetDescriptorSetLayoutCountCompute];
-        BuildDescriptorLayoutSetCompute(context, set_layout_array);
+        Context                     *context = Context::GetInstance();
+        const VkDescriptorSetLayout *set_layout_array = context->GetVkDescriptorSetLayoutArrayCompute();
 
         /* Setup compute shader info */
         const VkShaderCreateInfoEXT vk_shader_create_info_array[Context::cTargetMaxComputeShaderStageCount] = {
@@ -343,10 +288,11 @@ namespace awn::gfx {
         return;
     }
 
-    void Shader::Initialize(vp::res::ResBnshShaderProgram *res_program) {
+    bool Shader::Initialize(vp::res::ResBnshShaderProgram *res_program) {
 
-        /* Integrity checks */
-        VP_ASSERT(res_program->code_type == static_cast<u8>(vp::res::GfxShaderCodeType::Binary));
+        /* Ensure the program is either binary or spirv */
+        if (res_program->code_type != static_cast<u8>(vp::res::GfxShaderCodeType::Binary) && res_program->code_type != static_cast<u8>(vp::res::GfxShaderCodeType::Intermediate)) { return false; }
+        const VkShaderCodeTypeEXT code_type = (res_program->code_type == static_cast<u8>(vp::res::GfxShaderCodeType::Binary)) ? VK_SHADER_CODE_TYPE_BINARY_EXT : VK_SHADER_CODE_TYPE_SPIRV_EXT;
 
         /* Get code info */
         vp::res::ResBnshShaderCodeInfo *vertex_code_info                  = res_program->code_info_vertex;
@@ -355,12 +301,8 @@ namespace awn::gfx {
         vp::res::ResBnshShaderCodeInfo *geometry_code_info                = res_program->code_info_geometry;
         vp::res::ResBnshShaderCodeInfo *fragment_code_info                = res_program->code_info_fragment;
         vp::res::ResBnshShaderCodeInfo *compute_code_info                 = res_program->code_info_compute;
-
-        /* Get graphics descriptor set layouts */
-        Context               *context = Context::GetInstance();
-        VkDescriptorSetLayout  set_layout_array_graphics[Context::cTargetDescriptorSetLayoutCountGraphics];
-        VkDescriptorSetLayout  set_layout_array_compute[Context::cTargetDescriptorSetLayoutCountCompute];
-        BuildDescriptorLayoutSetGraphics(context, set_layout_array_graphics);
+        vp::res::ResBnshShaderCodeInfo *task_code_info                    = res_program->code_info_task;
+        vp::res::ResBnshShaderCodeInfo *mesh_code_info                    = res_program->code_info_mesh;
 
         /* Calculate shader stages */
         VkShaderStageFlags  next_stage_array[Context::cTargetMaxPrimitiveShaderStageCount] = {};
@@ -371,6 +313,7 @@ namespace awn::gfx {
         u32 shader_count      = 0;
         u32 shader_stage_mask = 0;
 
+        /* Primitive pipeline */
         if (vertex_code_info != nullptr) {
 
             /* Set shader state */
@@ -428,6 +371,44 @@ namespace awn::gfx {
             ++shader_count;
             last_stage = VK_SHADER_STAGE_GEOMETRY_BIT;
         }
+
+        /* Vp Ext Mesh pipeline */
+        if (task_code_info != nullptr) {
+            
+            /* If last stage is set the program is invalid */
+            if (last_stage != 0xffff'ffff) { return false; }
+
+            /* Set shader state */
+            m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_TASK_BIT_EXT;
+            shader_stage_mask                          |= static_cast<u32>(ShaderStage::Task);
+            code_array[shader_count]                    = task_code_info->code;
+            code_size_array[shader_count]               = task_code_info->code_size;
+
+            /* Advance shader iter */
+            ++shader_count;
+            last_stage = VK_SHADER_STAGE_TASK_BIT_EXT;
+        }
+        if (mesh_code_info != nullptr) {
+            
+            /* If task shader doesn't exist and last stage is set the program is invalid */
+            if (task_code_info != nullptr) {
+                next_stage_array[shader_count - 1] = last_stage;
+            } else if (last_stage != 0xffff'ffff) {
+                return false;
+            }
+
+            /* Set shader state */
+            m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_MESH_BIT_EXT;
+            shader_stage_mask                          |= static_cast<u32>(ShaderStage::Mesh);
+            code_array[shader_count]                    = mesh_code_info->code;
+            code_size_array[shader_count]               = mesh_code_info->code_size;
+
+            /* Advance shader iter */
+            ++shader_count;
+            last_stage = VK_SHADER_STAGE_MESH_BIT_EXT;
+        }
+
+        /* Primitive or mesh*/
         if (fragment_code_info != nullptr) {
 
             /* Set last stage */
@@ -443,13 +424,12 @@ namespace awn::gfx {
             ++shader_count;
             last_stage = VK_SHADER_STAGE_FRAGMENT_BIT;
         }
+
+        /* Compute */
         if (compute_code_info != nullptr) {
 
-            /* Build compute set layout */
-            BuildDescriptorLayoutSetCompute(context, set_layout_array_compute);
-
-            /* Set last stage */
-            if (last_stage != 0xffff'ffff) { next_stage_array[shader_count - 1] = last_stage; }
+            /* If last stage is set the program is invalid */
+            if (last_stage != 0xffff'ffff) { return false; }
 
             /* Set shader state */
             m_vk_shader_stage_flag_array[shader_count]  = VK_SHADER_STAGE_COMPUTE_BIT;
@@ -461,7 +441,11 @@ namespace awn::gfx {
             ++shader_count;
             last_stage = VK_SHADER_STAGE_COMPUTE_BIT;
         }
-        VP_ASSERT(shader_count < Context::cTargetMaxPrimitiveShaderStageCount);
+
+        /* Get set layout set */
+        Context                     *context = Context::GetInstance();
+        const u32                    set_count = (last_stage != VK_SHADER_STAGE_COMPUTE_BIT) ? Context::cTargetDescriptorSetLayoutCountGraphics : Context::cTargetDescriptorSetLayoutCountCompute;
+        const VkDescriptorSetLayout *set_layout_array = (last_stage != VK_SHADER_STAGE_COMPUTE_BIT) ? context->GetVkDescriptorSetLayoutArrayGraphics() : context->GetVkDescriptorSetLayoutArrayCompute();
 
         /* Setup mesh, fragment, and the optional task shader info */
         const VkShaderCreateInfoEXT vk_shader_create_info_array[Context::cTargetMaxPrimitiveShaderStageCount] = {
@@ -470,12 +454,12 @@ namespace awn::gfx {
                 .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
                 .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[0]),
                 .nextStage              = next_stage_array[0],
-                .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                .codeType               = code_type,
                 .codeSize               = code_size_array[0],
                 .pCode                  = code_array[0],
                 .pName                  = "main",
-                .setLayoutCount         = (m_vk_shader_stage_flag_array[0] != VK_SHADER_STAGE_COMPUTE_BIT) ? Context::cTargetDescriptorSetLayoutCountGraphics : Context::cTargetDescriptorSetLayoutCountCompute,
-                .pSetLayouts            = (m_vk_shader_stage_flag_array[0] != VK_SHADER_STAGE_COMPUTE_BIT) ? set_layout_array_graphics : set_layout_array_compute,
+                .setLayoutCount         = set_count,
+                .pSetLayouts            = set_layout_array,
                 .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
                 .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
                 .pSpecializationInfo    = nullptr
@@ -485,12 +469,12 @@ namespace awn::gfx {
                 .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
                 .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[1]),
                 .nextStage              = next_stage_array[1],
-                .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                .codeType               = code_type,
                 .codeSize               = code_size_array[1],
                 .pCode                  = code_array[1],
                 .pName                  = "main",
-                .setLayoutCount         = (m_vk_shader_stage_flag_array[1] != VK_SHADER_STAGE_COMPUTE_BIT) ? Context::cTargetDescriptorSetLayoutCountGraphics : Context::cTargetDescriptorSetLayoutCountCompute,
-                .pSetLayouts            = (m_vk_shader_stage_flag_array[1] != VK_SHADER_STAGE_COMPUTE_BIT) ? set_layout_array_graphics : set_layout_array_compute,
+                .setLayoutCount         = set_count,
+                .pSetLayouts            = set_layout_array,
                 .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
                 .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
                 .pSpecializationInfo    = nullptr
@@ -500,12 +484,12 @@ namespace awn::gfx {
                 .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
                 .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[2]),
                 .nextStage              = next_stage_array[2],
-                .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                .codeType               = code_type,
                 .codeSize               = code_size_array[2],
                 .pCode                  = code_array[2],
                 .pName                  = "main",
-                .setLayoutCount         = (m_vk_shader_stage_flag_array[2] != VK_SHADER_STAGE_COMPUTE_BIT) ? Context::cTargetDescriptorSetLayoutCountGraphics : Context::cTargetDescriptorSetLayoutCountCompute,
-                .pSetLayouts            = (m_vk_shader_stage_flag_array[2] != VK_SHADER_STAGE_COMPUTE_BIT) ? set_layout_array_graphics : set_layout_array_compute,
+                .setLayoutCount         = set_count,
+                .pSetLayouts            = set_layout_array,
                 .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
                 .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
                 .pSpecializationInfo    = nullptr
@@ -515,12 +499,12 @@ namespace awn::gfx {
                 .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
                 .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[3]),
                 .nextStage              = next_stage_array[3],
-                .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                .codeType               = code_type,
                 .codeSize               = code_size_array[3],
                 .pCode                  = code_array[3],
                 .pName                  = "main",
-                .setLayoutCount         = (m_vk_shader_stage_flag_array[3] != VK_SHADER_STAGE_COMPUTE_BIT) ? Context::cTargetDescriptorSetLayoutCountGraphics : Context::cTargetDescriptorSetLayoutCountCompute,
-                .pSetLayouts            = (m_vk_shader_stage_flag_array[3] != VK_SHADER_STAGE_COMPUTE_BIT) ? set_layout_array_graphics : set_layout_array_compute,
+                .setLayoutCount         = set_count,
+                .pSetLayouts            = set_layout_array,
                 .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
                 .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
                 .pSpecializationInfo    = nullptr
@@ -530,12 +514,12 @@ namespace awn::gfx {
                 .flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
                 .stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[4]),
                 .nextStage              = next_stage_array[4],
-                .codeType               = VK_SHADER_CODE_TYPE_BINARY_EXT,
+                .codeType               = code_type,
                 .codeSize               = code_size_array[4],
                 .pCode                  = code_array[4],
                 .pName                  = "main",
-                .setLayoutCount         = (m_vk_shader_stage_flag_array[4] != VK_SHADER_STAGE_COMPUTE_BIT) ? Context::cTargetDescriptorSetLayoutCountGraphics : Context::cTargetDescriptorSetLayoutCountCompute,
-                .pSetLayouts            = (m_vk_shader_stage_flag_array[4] != VK_SHADER_STAGE_COMPUTE_BIT) ? set_layout_array_graphics : set_layout_array_compute,
+                .setLayoutCount         = set_count,
+                .pSetLayouts            = set_layout_array,
                 .pushConstantRangeCount = Context::cTargetAllStagePushConstantRangeCount,
                 .pPushConstantRanges    = Context::GetInstance()->GetVkPushConstantRangeArray(),
                 .pSpecializationInfo    = nullptr
@@ -544,14 +528,14 @@ namespace awn::gfx {
 
         /* Create shaders */
         const u32 vk_result = ::pfn_vkCreateShadersEXT(Context::GetInstance()->GetVkDevice(), shader_count, vk_shader_create_info_array, Context::GetInstance()->GetVkAllocationCallbacks(), m_vk_shader_array);
-        VP_ASSERT(vk_result == VK_SUCCESS);
+        if (vk_result != VK_SUCCESS) { return false; }
 
         /* Set state */
         m_shader_count      = shader_count;
         m_shader_stage_mask = shader_stage_mask;
         m_res_program       = res_program;
 
-        return;
+        return true;
     }
 
     void Shader::Finalize() {
@@ -577,5 +561,43 @@ namespace awn::gfx {
         return m_shader_count;
     }
 
-    u32 TryGetInterfaceSlot(u32 shader_stage, const char *key);
+    u32 Shader::TryGetInterfaceSlot(ShaderStage shader_stage, ShaderInterfaceType interface_type, const char *key) {
+
+        /* Fail if no res program */
+        if (m_res_program == nullptr) { return cInvalidInterfaceSlot; }
+
+        /* Select interface if our shader stage is not out of bounds */
+        const u32 stage_index = static_cast<u32>(shader_stage);
+        if (7 < stage_index) { return cInvalidInterfaceSlot; }
+        vp::res::ResBnshShaderInterfaceInfoTable *interface_info_table = m_res_program->shader_interface_info_table;
+        if (interface_info_table == nullptr) { return cInvalidInterfaceSlot; }
+        vp::res::ResBnshShaderInterfaceInfo *interface_info = std::addressof(interface_info_table->interface_info_vertex)[stage_index];
+        if (interface_info == nullptr) { return cInvalidInterfaceSlot; }
+
+        /* Select base index and dictionary for interface type */
+        vp::res::ResNintendoWareDictionary *dictionary           = nullptr;
+        u32                                 base_index           = 0;
+        const u32                           interface_type_index = static_cast<u32>(interface_type);
+        if (interface_type_index < static_cast<u32>(ShaderInterfaceType::Image)) {
+            dictionary = std::addressof(interface_info->input_attribute_dictionary)[interface_type_index];
+            base_index = (interface_type_index == 0) ? 0 : std::addressof(interface_info->base_index_output_attribute)[interface_type_index - 1];
+        } else if (interface_type == ShaderInterfaceType::Image) {
+            dictionary = interface_info->image_dictionary;
+            base_index = interface_info->base_index_image;
+        } else if (interface_type_index <= static_cast<u32>(ShaderInterfaceType::SeparateSampler)) {
+            if (interface_info->extended_interface_info == nullptr) { return cInvalidInterfaceSlot; }
+            const u32 adj_index = interface_type_index - static_cast<u32>(ShaderInterfaceType::Image);
+            dictionary = std::addressof(interface_info->extended_interface_info->separate_texture_dictionary)[adj_index];
+            base_index = std::addressof(interface_info->extended_interface_info->base_index_separate_texture)[adj_index];
+        }
+        if (dictionary == nullptr) { return false; }
+
+        /* Lookup local slot index */
+        const u32 index = dictionary->TryGetEntryIndexByKey(key);
+        if (index == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex) { return false; }
+
+        /* Get slot from global slot array */
+        const u32 slot_index = base_index + index;
+        return interface_info->interface_slot_array[slot_index];
+    }
 }

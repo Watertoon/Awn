@@ -72,12 +72,12 @@ namespace awn::sys {
         return std::addressof(GetSystemManager()->system_info);
     }
 
-    vp::util::Rectanglef GetVirtualScreenRectangle() {
+    vp::util::Rectanglei GetVirtualScreenRectangle() {
         const s32 x      = ::GetSystemMetrics(SM_XVIRTUALSCREEN);
         const s32 y      = ::GetSystemMetrics(SM_YVIRTUALSCREEN);
         const s32 width  = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
         const s32 height = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
-        return { .left = static_cast<float>(x), .top = static_cast<float>(y), .right = static_cast<float>(x + width), .bottom = static_cast<float>(y + height), };
+        return { .left = x, .top = y, .right = x + width, .bottom = y + height, };
     }
 
     u32 GetMonitorAndMirrorCount() {
@@ -109,7 +109,7 @@ namespace awn::sys {
         return i;
     }
 
-    void GetMonitorIndexArray(u32 *out_index_array, u32 max_indice_count) {
+    bool GetMonitorIndexArray(u32 *out_index_array, u32 max_indice_count) {
 
         DISPLAY_DEVICEA display_device = {
             .cb = sizeof(DISPLAY_DEVICEA),
@@ -118,15 +118,14 @@ namespace awn::sys {
         u32  i      = 0;
         bool result = ::EnumDisplayDevicesA(nullptr, i, std::addressof(display_device), 0);
         while(result == true) {
-            if ((display_device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) == 0) { 
-                out_index_array[count] = i;
-                ++count; 
-                if (max_indice_count <= count) { return; }
-            }
+            if ((display_device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) != 0) { ++i; continue; }
+            if (max_indice_count <= count) { return false; }
+            out_index_array[count] = i;
+            ++count; 
             ++i;
             result = ::EnumDisplayDevicesA(nullptr, i, std::addressof(display_device), 0);
         }
 
-        return;
+        return true;
     }
 }

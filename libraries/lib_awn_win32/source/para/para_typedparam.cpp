@@ -97,7 +97,7 @@ namespace awn::para {
 
         return true;
     }
-    
+
     bool TypedParam::VerifyParent() {
 
         /* Get parent */

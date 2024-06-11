@@ -18,5 +18,20 @@
 namespace awn::gfx {
 
     DECLARE_RESULT_MODULE(15);
-    DECLARE_RESULT(MaximumGpuHeaps, 1);
+    DECLARE_RESULT(MaximumGpuHeaps,                         1);
+    DECLARE_RESULT(InvalidPriority,                         2);
+    DECLARE_RESULT(NoBnsh,                                  3);
+    DECLARE_RESULT(NoTextureInfo,                           4);
+    DECLARE_RESULT(NoBufferInfo,                            5);
+    DECLARE_RESULT(MipLevelCountMismatch,                   6);
+    DECLARE_RESULT(MaxMipLevelCountExceeded,                7);
+    DECLARE_RESULT(InvalidMemoryPropertyFlags,              8);
+    DECLARE_RESULT(RegisterGuardSet,                        9);
+    DECLARE_RESULT(InvalidReferenceBinder,                  10);
+    DECLARE_RESULT(NoTexture,                               11);
+    DECLARE_RESULT(InvalidTextureBinder,                    12);
+    DECLARE_RESULT(TextureBinderAndTextureViewInfoMismatch, 13);
+    DECLARE_RESULT(ExhaustedTextureSlots,                   14);
+    DECLARE_RESULT(ExhaustedSamplerSlots,                   15);
+    DECLARE_RESULT(InvalidDescriptorSlot,                   16);
 }

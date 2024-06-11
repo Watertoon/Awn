@@ -131,7 +131,7 @@ namespace awn::res {
         /* Release archive binder */
         if (m_archive_resource != nullptr) {
             m_archive_resource = nullptr;
-            m_archive_binder.Finalize();
+            m_archive_binder.Release();
         }
 
         /* Free to resource unit allocator */
@@ -312,7 +312,7 @@ namespace awn::res {
 
                 /* Release archive since we failed to find the file in it */
                 m_archive_resource = nullptr;
-                m_archive_binder.Finalize();
+                m_archive_binder.Release();
                 m_allow_archive_reference = false;
             }
 
@@ -356,7 +356,7 @@ namespace awn::res {
 
         /* Remove archive resource */
         m_archive_resource = nullptr;
-        m_archive_binder.Finalize();
+        m_archive_binder.Release();
         m_allow_archive_reference = false;
 
         /* Use default file device */
@@ -464,7 +464,7 @@ namespace awn::res {
 
         /* Finalize archive binder */
         m_archive_resource = nullptr;
-        m_archive_binder.Finalize();
+        m_archive_binder.Release();
 
         /* Check if no resource or is not initializable */
         if (m_resource == nullptr || m_resource->IsRequireInitializeOnCreate() == false) {
@@ -516,7 +516,7 @@ namespace awn::res {
 
                     /* Free archive reference */
                     m_archive_resource = nullptr;
-                    m_archive_binder.Finalize();
+                    m_archive_binder.Release();
 
                     /* Request unload for transience */
                     if (m_load_task.IsCancelled() == true && m_is_transient_on_load == true) {
@@ -872,7 +872,7 @@ namespace awn::res {
 
                 /* Free archive reference */
                 m_archive_resource = nullptr;
-                m_archive_binder.Finalize();
+                m_archive_binder.Release();
 
                 /* Request unload for transience */
                 if (m_load_task.IsCancelled() == true && m_is_transient_on_load == true) {

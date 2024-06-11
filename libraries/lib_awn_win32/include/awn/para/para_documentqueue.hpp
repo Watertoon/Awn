@@ -102,8 +102,8 @@ namespace awn::para {
 
                 /* Release thread local archive reference on exit */
                 ON_SCOPE_EXIT {
-                    user_data->archive_binder.Finalize();
-                    user_data->bgyml_binder.Finalize();
+                    user_data->archive_binder.Release();
+                    user_data->bgyml_binder.Release();
                     if (user_data->is_reference_local_archive == true) { res::ReleaseThreadLocalArchive(); } 
                 };
 

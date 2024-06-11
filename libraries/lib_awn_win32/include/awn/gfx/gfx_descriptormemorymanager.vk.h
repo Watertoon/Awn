@@ -22,13 +22,13 @@ namespace awn::gfx {
             void            *m_memory_array[3];
             VkBuffer         m_descriptor_vk_buffer_array[3];
             VkDeviceAddress  m_descriptor_vk_device_address_array[3];
+            size_t           m_memory_size;
             u32              m_memory_iter;
-            u32              m_memory_size;
             u32              m_current_index;
         public:
             AWN_SINGLETON_TRAITS(DescriptorMemoryManager);
         public:
-            constexpr DescriptorMemoryManager() : m_memory_array{}, m_descriptor_vk_buffer_array{}, m_descriptor_vk_device_address_array{}, m_memory_iter(), m_memory_size(), m_current_index() {/*...*/}
+            constexpr DescriptorMemoryManager() : m_memory_array{}, m_descriptor_vk_buffer_array{}, m_descriptor_vk_device_address_array{}, m_memory_size(), m_memory_iter(), m_current_index() {/*...*/}
             constexpr ~DescriptorMemoryManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, size_t memory_size);

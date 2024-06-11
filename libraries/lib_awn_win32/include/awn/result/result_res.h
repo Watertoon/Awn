@@ -62,4 +62,5 @@ namespace awn::res {
     DECLARE_RESULT(FailedToLoadResource,        42);
     DECLARE_RESULT(MemoryAllocationFailure,     43);
     DECLARE_RESULT(NoExternalHeap,              44);
+    DECLARE_RESULT(LoadGuardSet,                45);
 }

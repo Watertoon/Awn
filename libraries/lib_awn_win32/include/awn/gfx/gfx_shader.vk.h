@@ -61,11 +61,12 @@ namespace awn::gfx {
             void Initialize(PrimitiveShaderInfo *shader_info, const bool is_binary = true);
             void Initialize(ComputeShaderInfo *shader_info, const bool is_binary = true);
 
-            void Initialize(vp::res::ResBnshShaderProgram *res_program);
+            bool Initialize(vp::res::ResBnshShaderProgram *res_program);
             void Finalize();
 
-            u32 TryGetInterfaceSlot(gfx::ShaderStage shader_stage, const char *key);
+            u32 TryGetInterfaceSlot(ShaderStage shader_stage, ShaderInterfaceType interface_type, const char *key);
         public:
             u32 SetupForCommandList(VkShaderEXT **out_shader_array, VkShaderStageFlagBits **out_shader_stage_array);
     };
+    static_assert(sizeof(Shader) <= cMaxGfxShaderSize);
 }

@@ -74,6 +74,9 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxColorBlendEquationCount     = 0x8;
             static constexpr size_t cTargetMaxViewportScissorCount        = 0x8;
 
+            /* Texture limits */
+            static constexpr size_t cTargetMaxMipLevelCount = 0x10;
+
             /* Memory pools must always be page aligned */
             static constexpr size_t cTargetMemoryPoolAlignment = 0x1000;
 
@@ -98,15 +101,15 @@ namespace awn::gfx {
             static constexpr size_t cTargetMaxSeparateSamplerDescriptorSize = 0x4;
 
             /* Global descriptor resource limits */
-            static constexpr size_t cTargetMaxTextureDescriptorCount    = 0x2000;
-            static constexpr size_t cTargetMaxSamplerDescriptorCount    = 0xfa0;
+            static constexpr size_t cTargetMaxTextureDescriptorCount        = 0x2000;
+            static constexpr size_t cTargetMaxSamplerDescriptorCount        = 0xfa0;
             static constexpr u32    cTargetDescriptorSetLayoutCountGraphics = 31;
             static constexpr u32    cTargetDescriptorSetLayoutCountCompute  = 7;
 
             /* Descriptor buffer index */
-            static constexpr u32 cTargetDescriptorBufferIndexTexture  = 0;
-            static constexpr u32 cTargetDescriptorBufferIndexSampler  = 1;
-            static constexpr u32 cTargetDescriptorBufferIndexPerStage = 2;
+            static constexpr u32 cTargetDescriptorBufferIndexTextureView = 0;
+            static constexpr u32 cTargetDescriptorBufferIndexSampler     = 1;
+            static constexpr u32 cTargetDescriptorBufferIndexPerStage    = 2;
 
             /* Base descriptor set layout bindings */
             static constexpr size_t cCombinedBindingBaseTextureSampler = 0;
@@ -242,6 +245,8 @@ namespace awn::gfx {
             VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute;
             VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task;
             VkDescriptorSetLayout                                        m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh;
+            VkDescriptorSetLayout                                        m_vk_descriptor_set_layout_array_graphics[cTargetDescriptorSetLayoutCountGraphics];
+            VkDescriptorSetLayout                                        m_vk_descriptor_set_layout_array_compute[cTargetDescriptorSetLayoutCountCompute];
             VkPipelineLayout                                             m_vk_pipeline_layout_graphics;
             VkPipelineLayout                                             m_vk_pipeline_layout_compute;
             VkPushConstantRange                                          m_vk_push_constant_range;
@@ -613,6 +618,9 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutUniformBufferCompute()          const { return m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute; }
             constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutStorageBufferCompute()          const { return m_vk_per_stage_descriptor_set_layout_storage_buffer_compute; }
             constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerCompute() const { return m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute; }
+
+            constexpr ALWAYS_INLINE const VkDescriptorSetLayout  *GetVkDescriptorSetLayoutArrayGraphics() const { return m_vk_descriptor_set_layout_array_graphics; }
+            constexpr ALWAYS_INLINE const VkDescriptorSetLayout  *GetVkDescriptorSetLayoutArrayCompute()  const { return m_vk_descriptor_set_layout_array_compute; }
 
             constexpr ALWAYS_INLINE VkDescriptorSetLayout  GetPerStageVkDescriptorSetLayoutTextureSampler(ShaderStage shader_stage) const {
 

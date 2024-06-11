@@ -20,7 +20,7 @@ namespace vp::util {
     template<typename T, size_t S = sizeof(T), size_t A = alignof(T)>
     struct TypedStorage {
         using UnderlyingType = T;
-        std::aligned_storage<S, A>::type _storage;
+        alignas(A) std::byte _storage[S];
     };
 
     template<typename T>

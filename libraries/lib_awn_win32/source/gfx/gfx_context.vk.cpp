@@ -165,6 +165,7 @@ namespace awn::gfx {
         //if (m_vk_physical_device_host_image_copy_properties.identicalMemoryTypeRequirements == false)                            { VP_ASSERT(false); return false; }
 
         /* Base feature checks */
+        if (m_vk_physical_device_supported_features.features.fullDrawIndexUint32 == false)                     { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_supported_features.features.independentBlend == false)                        { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_supported_features.features.geometryShader == false)                          { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_supported_features.features.tessellationShader == false)                      { VP_ASSERT(false); return false; }
@@ -184,6 +185,7 @@ namespace awn::gfx {
         if (m_vk_physical_device_supported_features.features.shaderSampledImageArrayDynamicIndexing == false)  { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_supported_features.features.shaderStorageBufferArrayDynamicIndexing == false) { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_supported_features.features.shaderStorageImageArrayDynamicIndexing == false)  { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_supported_features.features.sparseBinding == false)                           { VP_ASSERT(false); return false; }
 
         /* 1.1 feature checks */
         if (m_vk_physical_device_supported_features_11.variablePointersStorageBuffer == false)                 { VP_ASSERT(false); return false; }
@@ -678,6 +680,7 @@ namespace awn::gfx {
                 .sType                                       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
                 .pNext                                       = std::addressof(target_1_1_features),
                 .features = {
+                    .fullDrawIndexUint32                     = VK_TRUE,
                     .independentBlend                        = VK_TRUE,
                     .geometryShader                          = VK_TRUE,
                     .tessellationShader                      = VK_TRUE,
@@ -697,6 +700,7 @@ namespace awn::gfx {
                     .shaderSampledImageArrayDynamicIndexing  = VK_TRUE,
                     .shaderStorageBufferArrayDynamicIndexing = VK_TRUE,
                     .shaderStorageImageArrayDynamicIndexing  = VK_TRUE,
+                    .sparseBinding                           = VK_TRUE,
                 }
             };
 
@@ -3192,41 +3196,49 @@ namespace awn::gfx {
         init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task),                    VK_SHADER_STAGE_TASK_BIT_EXT);
         init_per_stage_separate_texture_sampler_desc_layout_lambda(std::addressof(m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh),                    VK_SHADER_STAGE_MESH_BIT_EXT);
 
+        /* Build descriptor set layout arrays */
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetTextureLayoutSet]                                              = this->GetTextureVkDescriptorSetLayout();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetSamplerLayoutSet]                                              = this->GetSamplerVkDescriptorSetLayout();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetTextureSamplerVertex]                         = this->GetPerStageVkDescriptorSetLayoutTextureSamplerVertex();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetTextureSamplerGeometry]                       = this->GetPerStageVkDescriptorSetLayoutTextureSamplerGeometry();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetTextureSamplerFragment]                       = this->GetPerStageVkDescriptorSetLayoutTextureSamplerFragment();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetTextureSamplerTask]                           = this->GetPerStageVkDescriptorSetLayoutTextureSamplerTask();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetTextureSamplerMesh]                           = this->GetPerStageVkDescriptorSetLayoutTextureSamplerMesh();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetImageVertex]                                  = this->GetPerStageVkDescriptorSetLayoutImageVertex();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetImageGeometry]                                = this->GetPerStageVkDescriptorSetLayoutImageGeometry();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetImageFragment]                                = this->GetPerStageVkDescriptorSetLayoutImageFragment();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetImageTask]                                    = this->GetPerStageVkDescriptorSetLayoutImageTask();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetImageMesh]                                    = this->GetPerStageVkDescriptorSetLayoutImageMesh();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetUniformBufferVertex]                          = this->GetPerStageVkDescriptorSetLayoutUniformBufferVertex();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetUniformBufferGeometry]                        = this->GetPerStageVkDescriptorSetLayoutUniformBufferGeometry();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetUniformBufferFragment]                        = this->GetPerStageVkDescriptorSetLayoutUniformBufferFragment();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetUniformBufferTask]                            = this->GetPerStageVkDescriptorSetLayoutUniformBufferTask();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetUniformBufferMesh]                            = this->GetPerStageVkDescriptorSetLayoutUniformBufferMesh();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetStorageBufferVertex]                          = this->GetPerStageVkDescriptorSetLayoutStorageBufferVertex();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetStorageBufferGeometry]                        = this->GetPerStageVkDescriptorSetLayoutStorageBufferGeometry();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetStorageBufferFragment]                        = this->GetPerStageVkDescriptorSetLayoutStorageBufferFragment();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetStorageBufferTask]                            = this->GetPerStageVkDescriptorSetLayoutStorageBufferTask();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetStorageBufferMesh]                            = this->GetPerStageVkDescriptorSetLayoutStorageBufferMesh();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetCombinedTessellationEvaluation]               = this->GetPerStageVkDescriptorSetLayoutCombinedTessellationEvaluation();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetCombinedTessellationControl]                  = this->GetPerStageVkDescriptorSetLayoutCombinedTessellationControl();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetSeparateTextureSamplerVertex]                 = this->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerVertex();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetSeparateTextureSamplerTessellationEvaluation] = this->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTessellationEvaluation();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetSeparateTextureSamplerTessellationControl]    = this->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTessellationControl();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetSeparateTextureSamplerGeometry]               = this->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerGeometry();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetSeparateTextureSamplerFragment]               = this->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerFragment();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetSeparateTextureSamplerTask]                   = this->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerTask();
+        m_vk_descriptor_set_layout_array_graphics[Context::cTargetPerStageLayoutSetSeparateTextureSamplerMesh]                   = this->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerMesh();
+
+        m_vk_descriptor_set_layout_array_compute[Context::cTargetTextureLayoutSet]                               = this->GetTextureVkDescriptorSetLayout();
+        m_vk_descriptor_set_layout_array_compute[Context::cTargetSamplerLayoutSet]                               = this->GetSamplerVkDescriptorSetLayout();
+        m_vk_descriptor_set_layout_array_compute[Context::cTargetPerStageLayoutSetTextureSamplerCompute]         = this->GetPerStageVkDescriptorSetLayoutTextureSamplerCompute();
+        m_vk_descriptor_set_layout_array_compute[Context::cTargetPerStageLayoutSetImageCompute]                  = this->GetPerStageVkDescriptorSetLayoutImageCompute();
+        m_vk_descriptor_set_layout_array_compute[Context::cTargetPerStageLayoutSetUniformBufferCompute]          = this->GetPerStageVkDescriptorSetLayoutUniformBufferCompute();
+        m_vk_descriptor_set_layout_array_compute[Context::cTargetPerStageLayoutSetStorageBufferCompute]          = this->GetPerStageVkDescriptorSetLayoutStorageBufferCompute();
+        m_vk_descriptor_set_layout_array_compute[Context::cTargetPerStageLayoutSetSeparateTextureSamplerCompute] = this->GetPerStageVkDescriptorSetLayoutSeparateTextureSamplerCompute();
+
         /* Initialize graphics pipeline layout */
         {
-            const VkDescriptorSetLayout descriptor_set_layout_array[] = {
-                m_vk_texture_descriptor_set_layout,
-                m_vk_sampler_descriptor_set_layout,
-                m_vk_per_stage_descriptor_set_layout_texture_sampler_vertex,
-                m_vk_per_stage_descriptor_set_layout_texture_sampler_geometry,
-                m_vk_per_stage_descriptor_set_layout_texture_sampler_fragment,
-                m_vk_per_stage_descriptor_set_layout_texture_sampler_task,
-                m_vk_per_stage_descriptor_set_layout_texture_sampler_mesh,
-                m_vk_per_stage_descriptor_set_layout_image_vertex,
-                m_vk_per_stage_descriptor_set_layout_image_geometry,
-                m_vk_per_stage_descriptor_set_layout_image_fragment,
-                m_vk_per_stage_descriptor_set_layout_image_task,
-                m_vk_per_stage_descriptor_set_layout_image_mesh,
-                m_vk_per_stage_descriptor_set_layout_uniform_buffer_vertex,
-                m_vk_per_stage_descriptor_set_layout_uniform_buffer_geometry,
-                m_vk_per_stage_descriptor_set_layout_uniform_buffer_fragment,
-                m_vk_per_stage_descriptor_set_layout_uniform_buffer_task,
-                m_vk_per_stage_descriptor_set_layout_uniform_buffer_mesh,
-                m_vk_per_stage_descriptor_set_layout_storage_buffer_vertex,
-                m_vk_per_stage_descriptor_set_layout_storage_buffer_geometry,
-                m_vk_per_stage_descriptor_set_layout_storage_buffer_fragment,
-                m_vk_per_stage_descriptor_set_layout_storage_buffer_task,
-                m_vk_per_stage_descriptor_set_layout_storage_buffer_mesh,
-                m_vk_per_stage_descriptor_set_layout_combined_tessellation_control,
-                m_vk_per_stage_descriptor_set_layout_combined_tessellation_evaluation,
-                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_vertex,
-                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_control,
-                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_tessellation_evaluation,
-                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_geometry,
-                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_fragment,
-                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_task,
-                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_mesh,
-            };
             const VkPushConstantRange push_constant_range_array[] = {
                 {
                     .stageFlags = VK_SHADER_STAGE_ALL,
@@ -3236,8 +3248,8 @@ namespace awn::gfx {
             };
             const VkPipelineLayoutCreateInfo pipeline_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-                .setLayoutCount = sizeof(descriptor_set_layout_array) / sizeof(VkDescriptorSetLayout),
-                .pSetLayouts = descriptor_set_layout_array,
+                .setLayoutCount = sizeof(m_vk_descriptor_set_layout_array_graphics) / sizeof(VkDescriptorSetLayout),
+                .pSetLayouts = m_vk_descriptor_set_layout_array_graphics,
                 .pushConstantRangeCount = sizeof(push_constant_range_array) / sizeof(VkPushConstantRange),
                 .pPushConstantRanges = push_constant_range_array
             };
@@ -3248,15 +3260,6 @@ namespace awn::gfx {
 
         /* Initialize compute pipeline layout */
         {
-            const VkDescriptorSetLayout descriptor_set_layout_array[] = {
-                m_vk_texture_descriptor_set_layout,
-                m_vk_sampler_descriptor_set_layout,
-                m_vk_per_stage_descriptor_set_layout_texture_sampler_compute,
-                m_vk_per_stage_descriptor_set_layout_image_compute,
-                m_vk_per_stage_descriptor_set_layout_uniform_buffer_compute,
-                m_vk_per_stage_descriptor_set_layout_storage_buffer_compute,
-                m_vk_per_stage_descriptor_set_layout_separate_texture_sampler_compute,
-            };
             const VkPushConstantRange push_constant_range_array[] = {
                 {
                     .stageFlags = VK_SHADER_STAGE_ALL,
@@ -3266,8 +3269,8 @@ namespace awn::gfx {
             };
             const VkPipelineLayoutCreateInfo pipeline_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-                .setLayoutCount = sizeof(descriptor_set_layout_array) / sizeof(VkDescriptorSetLayout),
-                .pSetLayouts = descriptor_set_layout_array,
+                .setLayoutCount = sizeof(m_vk_descriptor_set_layout_array_compute) / sizeof(VkDescriptorSetLayout),
+                .pSetLayouts = m_vk_descriptor_set_layout_array_compute,
                 .pushConstantRangeCount = sizeof(push_constant_range_array) / sizeof(VkPushConstantRange),
                 .pPushConstantRanges = push_constant_range_array
             };

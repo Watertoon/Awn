@@ -238,6 +238,30 @@ namespace awn::async {
 		return;
 	}
 
+    void AsyncQueue::Wait() {
+        m_all_task_complete_event.Wait();
+    }
+
+    void AsyncQueue::WaitForPriorityLevel(u32 priority) {
+        if (m_priority_level_array[priority].is_paused == true || m_priority_level_array[priority].async_task_head != nullptr) { return; }
+        m_priority_level_array[priority].priority_cleared_event.Wait();
+    }
+
+    void AsyncQueue::ForceCalcSyncOnThread(AsyncQueueThread *thread, u32 up_to_priority) {
+
+        /* Lock queue */
+        std::scoped_lock l(m_queue_mutex);
+
+        /* Calc tasks */
+        for (AsyncTask &task : m_task_list) {
+            if (task.m_priority < up_to_priority) { break; }
+            if (task.m_queue != nullptr) { task.m_queue->CancelTask(std::addressof(task)); }
+            task.InvokeSync(thread);
+        }
+
+        return;
+    }
+
     void AsyncQueue::CancelThreadPriorityLevel(u32 priority) {
 
             /* Lock queue */

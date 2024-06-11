@@ -53,9 +53,9 @@ namespace awn::res {
             void InitializeResource(ResourceUserContext *resource_user_context);
         public:
             constexpr  ResourceBinder() : m_state_mask(), m_status(Status::Uninitialized), m_resource_unit(), m_watcher() {/*...*/}
-            ~ResourceBinder() { this->Finalize(); }
+            ~ResourceBinder() { this->Release(); }
 
-            void Finalize();
+            void Release();
 
             Result TryLoadSync(const char *file_path, const AsyncResourceLoadInfo *bind_info);
             Result TryLoadAsync(const char *file_path, const AsyncResourceLoadInfo *bind_info);

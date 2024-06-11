@@ -171,11 +171,10 @@ namespace awn::frm {
         desc_memory_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, graphics_info->per_stage_descriptor_memory_size);
 
         /* Initialize texture sampler mgr */
-        gfx::TextureSamplerManager *tex_samp_mgr = gfx::TextureSamplerManager::CreateInstance(awn_graphics_heap);
-        const gfx::TextureSamplerManagerInfo texture_sampler_mgr_info = {
-            .max_texture_unit_count = graphics_info->texture_handle_count,
-            .max_sampler_unit_count = graphics_info->sampler_handle_count,
-            .texture_memory_size    = graphics_info->texture_memory_size,
+        gfx::TextureViewSamplerManager *tex_samp_mgr = gfx::TextureViewSamplerManager::CreateInstance(awn_graphics_heap);
+        const gfx::TextureViewSamplerManagerInfo texture_sampler_mgr_info = {
+            .max_texture_view_unit_count = graphics_info->texture_handle_count,
+            .max_sampler_unit_count      = graphics_info->sampler_handle_count,
         };
         tex_samp_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, std::addressof(texture_sampler_mgr_info));
 
@@ -204,8 +203,8 @@ namespace awn::frm {
         {
             mem::ScopedCurrentThreadHeap heap_scope(gfx_heap);
 
-            gfx::TextureSamplerManager::GetInstance()->Finalize();
-            gfx::TextureSamplerManager::DeleteInstance();
+            gfx::TextureViewSamplerManager::GetInstance()->Finalize();
+            gfx::TextureViewSamplerManager::DeleteInstance();
 
             gfx::DescriptorMemoryManager::GetInstance()->Finalize();
             gfx::DescriptorMemoryManager::DeleteInstance();

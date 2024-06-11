@@ -67,7 +67,7 @@ namespace awn::res {
         /* Release archive binder */
         if (resource_unit->m_archive_resource != nullptr) {
             resource_unit->m_archive_resource = nullptr;
-            resource_unit->m_archive_binder.Finalize();
+            resource_unit->m_archive_binder.Release();
         }
 
         /* Free to resource unit allocator */
@@ -577,7 +577,7 @@ namespace awn::res {
         };
         if (local_archive == nullptr) {
             is_default_archive = this->AcquireDefaultArchive(std::addressof(local_archive));
-            if (is_default_archive == false) { binder->Finalize(); return ResultNoLocalArchive; }
+            if (is_default_archive == false) { binder->Release(); return ResultNoLocalArchive; }
         }
 
         /* Reference binder */
@@ -712,7 +712,7 @@ namespace awn::res {
 
         /* Create Zsdic Heap */
         if (manager_info->zsdic_heap_size != 0) {
-            m_zsdic_heap = mem::FrameHeap::TryCreate("awn::res::AsyncResourceManager_ZsDicHeap", system_heap, manager_info->zsdic_heap_size, 0x20, false);
+            m_zsdic_heap = mem::FrameHeap::TryCreate("awn::res::AsyncResourceManager ZsDicHeap", system_heap, manager_info->zsdic_heap_size, 0x20, false);
         }
 
         /* Initialize resource size table manager with main table path */
@@ -930,7 +930,7 @@ namespace awn::res {
 
         /* Decrement reference and finalize if out of ref */
         const u32 last_value = vp::util::InterlockedDecrement(std::addressof(m_default_archive_reference_count));
-        if (last_value == 1) { m_default_archive_binder.Finalize(); }
+        if (last_value == 1) { m_default_archive_binder.Release(); }
 
         return;
     }

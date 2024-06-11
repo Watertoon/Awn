@@ -23,7 +23,7 @@ namespace awn::res {
         if (m_resource_unit != nullptr) { m_resource_unit->SetBinderStatusFromError(this); }
 
         this->HandleMemoryAllocationError();
-        this->Finalize();
+        this->Release();
 
         return;
     }
@@ -32,7 +32,7 @@ namespace awn::res {
 
         /* TODO; provide memory allocation error handling */
         auto finalize_on_error_guard = SCOPE_GUARD {
-            this->Finalize();
+            this->Release();
         };
         ON_SCOPE_EXIT {
             this->HandleMemoryAllocationError();
@@ -56,15 +56,15 @@ namespace awn::res {
         return;
     }
     
-    void ResourceBinder::Finalize() {
+    void ResourceBinder::Release() {
 
         /* Nothing to do if no load */
         if (m_load_guard == false) { return; }
 
         /* Set finalize flag and clear init and load guard */
-        m_is_finalize = (m_is_finalize & 0xf8) | 0x4;
+        m_state_mask = (m_state_mask & 0xf8) | 0x4;
 
-        /* Release task */
+        /* Cancel watcher */
         if (m_watcher.HasTask() == true) {
             m_watcher.CancelTask();
         }
@@ -82,7 +82,7 @@ namespace awn::res {
     Result ResourceBinder::TryLoadSync(const char *file_path, const AsyncResourceLoadInfo *bind_info) {
 
         /* Enforce load guard */
-        VP_ASSERT(m_load_guard != true);
+        RESULT_RETURN_IF(m_load_guard, ResultLoadGuardSet);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
         m_status     = Status::Uninitialized;
 
@@ -93,7 +93,7 @@ namespace awn::res {
     Result ResourceBinder::TryLoadAsync(const char *file_path, const AsyncResourceLoadInfo *bind_info) {
 
         /* Enforce load guard */
-        VP_ASSERT(m_load_guard != true);
+        RESULT_RETURN_IF(m_load_guard, ResultLoadGuardSet);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
         m_status     = Status::Uninitialized;
 
@@ -104,8 +104,9 @@ namespace awn::res {
     Result ResourceBinder::ReferenceBinderAsync(ResourceBinder *binder_to_reference) {
 
         /* Enforce load guard */
-        VP_ASSERT(m_load_guard != true);
+        RESULT_RETURN_IF(m_load_guard, ResultLoadGuardSet);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
+        m_status = Status::Uninitialized;
 
         /* Set resource unit */
         ResourceUnit *resource_unit = binder_to_reference->m_resource_unit;
@@ -152,7 +153,7 @@ namespace awn::res {
         if (m_complete_guard == true)      { return true; }
         /* Check if not finalized or complete, but in load */
         if ((m_state_mask & 0xe) != 2)       { return false; }
-        /* Check if the load task is still pending */
+        /* Check if the watcher is still pending */
         if (m_watcher.IsPending() == true) { return false; }
         /* Check if resource unit is in load */
         if (m_resource_unit != nullptr && m_resource_unit->IsInLoad() == true) { return false; }
@@ -161,7 +162,7 @@ namespace awn::res {
         Status exit_status = Status::Uninitialized;
         auto finalize_error_guard = SCOPE_GUARD {
             m_status = exit_status;
-            this->Finalize();
+            this->Release();
         };
 
         /* Complete flag update guard */
@@ -169,11 +170,11 @@ namespace awn::res {
             m_complete_guard = true;
         };
 
-        /* Check if resource unit does not exists */
+        /* Check if the watcher got cancelled */
         if (m_resource_unit == nullptr && m_watcher.IsCancelled() == true) { exit_status = Status::NoResourceUnitOnFinalize; return true; }
         /* Check if the binder had an error */
         if (this->IsErrorStatus() == true) { exit_status = m_status; return true; }
-        /* Check if uninitialized */
+        /* Check if the binder is uninitialized */
         if (m_resource_unit == nullptr || m_status == Status::Uninitialized) { return false; }
 
         /* Switch for 4 cases, uninitialized, requires initialize, handle error, complete */

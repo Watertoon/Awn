@@ -11,8 +11,8 @@ namespace awn::gfx {
             u32                          m_memory_iter;
             u32                          m_size;
 		public:
-			constexpr  BufferAllocator() : m_buffer_array(), m_current_index(), m_last_index(), m_gpu_memory(), m_memory_iter(), m_size() {/*...*/}
-			constexpr ~BufferAllocator() {/*...*/}
+			 BufferAllocator() : m_buffer_array(), m_current_index(), m_last_index(), m_gpu_memory(), m_memory_iter(), m_size() {/*...*/}
+			~BufferAllocator() {/*...*/}
 
             void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, GpuAccessFlags access_flags, u32 per_buffer_size, u32 buffer_count) {
 

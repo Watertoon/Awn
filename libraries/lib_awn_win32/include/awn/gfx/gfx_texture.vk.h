@@ -25,12 +25,11 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE Texture() : m_vk_image(VK_NULL_HANDLE), m_texture_info() {/*...*/}
             constexpr ALWAYS_INLINE ~Texture() {/*...*/}
 
-            void Initialize(void *gpu_memory_address, TextureInfo *texture_info);
-            void Initialize(VkDeviceMemory vk_device_memory, size_t memory_offset, TextureInfo *texture_info);
+            bool Initialize(void *gpu_memory_address, const TextureInfo *texture_info);
 
             void Finalize();
 
-            static GpuMemoryRequirements GetMemoryRequirements(TextureInfo *texture_info);
+            static GpuMemoryRequirements GetMemoryRequirements(const TextureInfo *texture_info);
 
             constexpr ALWAYS_INLINE u32 GetWidth() const {
                 return m_texture_info.width;
@@ -38,15 +37,27 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE u32 GetHeight() const {
                 return m_texture_info.height;
             }
-            constexpr ALWAYS_INLINE ImageFormat GetImageFormat() const {
-                return static_cast<ImageFormat>(m_texture_info.image_format);
+            constexpr ALWAYS_INLINE u32 GetDepth() const {
+                return m_texture_info.depth;
             }
+            constexpr ALWAYS_INLINE u32 GetMipLevelCount() const {
+                return m_texture_info.mip_levels;
+            }
+            constexpr ALWAYS_INLINE u32 GetArrayLayerCount() const {
+                return m_texture_info.array_layer_count;
+            }
+            constexpr ALWAYS_INLINE gfx::ImageFormat GetImageFormat() const {
+                return static_cast<gfx::ImageFormat>(m_texture_info.image_format);
+            }
+
             constexpr ALWAYS_INLINE VkImage GetVkImage() const {
                 return m_vk_image;
             }
             constexpr u32 GetVkAspectMask() const {
                 return vp::res::GfxImageFormatToVkImageAspectFlags(this->GetImageFormat());
             }
+
+            bool InitializeForDedicatedAllocation(const TextureInfo *texture_info);
     };
     static_assert(sizeof(Texture) <= cMaxGfxTextureSize);
 }

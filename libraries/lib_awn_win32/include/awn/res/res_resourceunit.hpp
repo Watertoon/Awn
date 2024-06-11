@@ -140,7 +140,6 @@ namespace awn::res {
 
             void SetToBinder(ResourceBinder *resource_binder);
             constexpr void SetBinderStatusFromError(ResourceBinder *binder) const {
-
                 /* Convert error */
                 if (m_is_file_not_found == true)            { binder->m_status = ResourceBinder::Status::FileNotFound;                return; }
                 if (m_is_fail_get_file_size == true)        { binder->m_status = ResourceBinder::Status::FailedToGetDecompressedSize; return; }
@@ -149,9 +148,7 @@ namespace awn::res {
                 if (m_is_bad_resource_size == true)         { binder->m_status = ResourceBinder::Status::InvalidResourceSize;         return; }
                 if (m_is_file_not_available == true)        { binder->m_status = ResourceBinder::Status::FileNotAvailable;            return; }
                 if (m_is_memory_allocation_failure == true) { binder->m_status = ResourceBinder::Status::MemoryAllocationFailure;     return; }
-
                 binder->m_status = ResourceBinder::Status::UnknownError;
-
                 return;
             }
 
@@ -231,87 +228,75 @@ namespace awn::res {
     };
 
     constexpr Resource *ResourceBinder::GetResourceDirect() const {
-
-        /* Check load guard */
-        if (m_load_guard == false) { return nullptr; }
-        /* Check watcher is pending */
-        if (m_watcher.IsPending() == true) { return nullptr; }
-        /* Check resource unit exists */
+        /* Fail if we did not schedule a load */
+        if (!m_load_guard) { return nullptr; }
+        /* Fail if the control task is still pending */
+        if (m_watcher.IsPending()) { return nullptr; }
+        /* Fail if the control task did not set a resource unit */
         if (m_resource_unit == nullptr) { return nullptr; }
-        /* Check resource unit is initialized */
-        if (m_resource_unit->IsResourceInitialized() == false) { return nullptr; }
-        /* Check completion guard */
-        if (m_complete_guard == false) { return nullptr; }
-
+        /* Fail if the resource is not initialized */
+        if (!m_resource_unit->IsResourceInitialized()) { return nullptr; }
+        /* Fail if we are not complete */
+        if (!m_complete_guard) { return nullptr; }
         Resource *resource = m_resource_unit->m_resource;
-        /* Succeed if resource is post initialized */
+        /* Succeed if the resource unit has initialized */
         if (m_resource_unit->m_status == ResourceUnit::Status::ResourcePostInitialized) { return resource; }
-        /* Check resource exists */
+        /* Fail if we do not have a resource */
         if (resource == nullptr) { return nullptr; }
-        /* Check if the resource unit is loaded */
+        /* Fail if the resource unit is not loaded */
         if (m_resource_unit->m_status != ResourceUnit::Status::Loaded) { return nullptr; }
-        /* Check if the resource doesn't need initialization */
+        /* Fail if the resource requires initialization */
         if (m_resource_unit->m_is_resource_initializable == true) { return nullptr; }
-
         return m_resource_unit->m_resource;
     }
 
     constexpr bool ResourceBinder::IsResourceInitialized() const {
-
-        /* Ensure load guard set */
-        if (m_load_guard == false)                { return false; }
-        /* Ensure watcher not pending */
-        if (m_watcher.IsPending() == true)        { return false; }
-        /* Ensure resource unit */
-        if (m_resource_unit == nullptr)           { return false; }
-        /* Ensure resource unit is loaded */
-        if (m_resource_unit->IsLoaded() == false) { return false; }
-        /* Ensure binder is completed */
-        if (m_complete_guard == false)            { return false; }
-
-        /* Check if resource is initialized */
+        /* Fail if we did not schedule a load */
+        if (!m_load_guard)                { return false; }
+        /* Fail if the control task is still pending */
+        if (m_watcher.IsPending())        { return false; }
+        /* Fail if the control task did not set a resource unit */
+        if (m_resource_unit == nullptr)   { return false; }
+        /* Fail if the resource unit is not loaded */
+        if (!m_resource_unit->IsLoaded()) { return false; }
+        /* Fail if we are not complete */
+        if (!m_complete_guard)            { return false; }
+        /* Defer to the resource unit */
         return m_resource_unit->IsResourceInitialized();
     }
 
     constexpr bool ResourceBinder::IsInLoad() const {
-
         /* Succeed if the watcher is pending */
         if (m_watcher.IsPending() == true) { return true; }
-        /* Ensure the load guard is set */
+        /* Fail if we have not scheduled a load */
         if (m_load_guard == false)         { return false; }
-        /* Ensure there's a resource unit */
+        /* Fail if we do not have a resource unit, as the control task is pending or it failed */
         if (m_resource_unit == nullptr)    { return false; }
-
-        /* Check if the resource unit is in load */
+        /* Defer to the resource unit */
         return m_resource_unit->IsInLoad();
     }
 
     constexpr bool ResourceBinder::IsLoaded() const {
-
-        /* Ensure the load guard is set */
-        if (m_load_guard == false)                    { return false; }
-        /* Ensure finalize guard is not set */
-        if (m_is_finalize == true)                    { return false; }
-        /* Ensure the load task is pending */
-        if (m_watcher.IsPending() == true)            { return false; }
-        /* Ensure there's a resource unit */
-        if (m_resource_unit == nullptr)               { return false; }
-
-        /* Check if the resource unit is loaded */
+        /* Fail if we have not scheduled a load */
+        if (!m_load_guard) { return false; }
+        /* Fail if we are finalized */
+        if (m_is_finalize) { return false; }
+        /* Fail if the control task is still pending */
+        if (m_watcher.IsPending()) { return false; }
+        /* Fail if the control task did not set a resource unit */
+        if (m_resource_unit == nullptr) { return false; }
+        /* Defer to the resource unit */
         return m_resource_unit->IsLoaded();
     }
 
     constexpr bool ResourceBinder::IsFailed() const {
-
-        /* Ensure not in load */
-        if (this->IsInLoad() == true) { return false; }
-        /* If there's a resource unit check if it's failed */
+        /* We haven't failed if we are still loading */
+        if (this->IsInLoad()) { return false; }
+        /* If we or our resource unit have an error status, we failed */
         bool is_res_unit_failed = false;
-        if (m_load_guard == true && m_resource_unit != nullptr) {
+        if (m_load_guard && m_resource_unit != nullptr) {
             is_res_unit_failed = m_resource_unit->IsErrorStatus();
         }
-
-        /* Check if binder had an error, or resource unit failed */
         return this->IsErrorStatus() | is_res_unit_failed;
     }
 }

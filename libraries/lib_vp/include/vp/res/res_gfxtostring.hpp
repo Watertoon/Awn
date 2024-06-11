@@ -17,6 +17,65 @@
 
 namespace vp::res {
 
+    constexpr inline void GfxMemoryPoolFlagsToString(vp::util::FixedString<0x80> *out_string, GfxMemoryPoolFlags memory_pool_flags) {
+
+        /* Reset string */
+        out_string->Clear();
+
+        /* Build string */
+        bool is_first = true;
+        const auto print_or_lambda = [&]() {
+            if (is_first == false) {
+                out_string->Append(" | ");
+            } else {                
+                is_first = false;
+            }
+        };
+        
+        if ((memory_pool_flags & GfxMemoryPoolFlags::CpuNoAccess) == GfxMemoryPoolFlags::CpuNoAccess) {
+            is_first = false;
+            out_string->Append("CpuNoAccess");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::CpuUncached) == GfxMemoryPoolFlags::CpuUncached) {
+            print_or_lambda();
+            out_string->Append("CpuUncached");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::CpuCached) == GfxMemoryPoolFlags::CpuCached) {
+            print_or_lambda();
+            out_string->Append("CpuCached");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::GpuNoAccess) == GfxMemoryPoolFlags::GpuNoAccess) {
+            print_or_lambda();
+            out_string->Append("GpuNoAccess");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::GpuUncached) == GfxMemoryPoolFlags::GpuUncached) {
+            print_or_lambda();
+            out_string->Append("GpuUncached");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::GpuCached) == GfxMemoryPoolFlags::GpuCached) {
+            print_or_lambda();
+            out_string->Append("GpuCached");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::ShaderCode) == GfxMemoryPoolFlags::ShaderCode) {
+            print_or_lambda();
+            out_string->Append("ShaderCode");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::Compressible) == GfxMemoryPoolFlags::Compressible) {
+            print_or_lambda();
+            out_string->Append("Compressible");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::Physical) == GfxMemoryPoolFlags::Physical) {
+            print_or_lambda();
+            out_string->Append("Physical");
+        }
+        if ((memory_pool_flags & GfxMemoryPoolFlags::Virtual) == GfxMemoryPoolFlags::Virtual) {
+            print_or_lambda();
+            out_string->Append("Virtual");
+        }
+
+        return;
+    }
+
     constexpr inline const char *GfxWrapModeToString(GfxWrapMode wrap_mode) {
         switch (wrap_mode) {
             case GfxWrapMode::Repeat:

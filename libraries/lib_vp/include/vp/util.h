@@ -34,6 +34,7 @@
     #include <vp/util/util_memorybarrier.aarch64.hpp>
 #endif
 
+#include <vp/util/util_tmintype.h>
 #include <vp/util/util_alignment.hpp>
 #include <vp/util/util_endian.hpp>
 #include <vp/util/util_sizeconstants.hpp>

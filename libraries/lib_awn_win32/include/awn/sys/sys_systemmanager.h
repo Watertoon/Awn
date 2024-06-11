@@ -40,8 +40,8 @@ namespace awn::sys {
     
     SYSTEM_INFO *GetSystemInfo();
     
-    vp::util::Rectanglef GetVirtualScreenRectangle();
+    vp::util::Rectanglei GetVirtualScreenRectangle();
     u32                  GetMonitorAndMirrorCount();
     u32                  GetMonitorCount();
-    void                 GetMonitorIndexArray(u32 *out_index_array, u32 max_indice_count);
+    bool                 GetMonitorIndexArray(u32 *out_index_array, u32 max_indice_count);
 }
