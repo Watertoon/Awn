@@ -53,9 +53,9 @@ namespace vp::res {
 
         constexpr bool IsValid(bool is_reverse_endian) const {
 
-            const u32 r_magic       = (is_reverse_endian == false) ? magic       : vp::util::SwapEndian(magic);
-            const u16 r_header_size = (is_reverse_endian == false) ? header_size : vp::util::SwapEndian(header_size);
-            const u16 r_file_count  = (is_reverse_endian == false) ? file_count  : vp::util::SwapEndian(file_count);
+            const u32 r_magic       = (!is_reverse_endian) ? magic       : vp::util::SwapEndian(magic);
+            const u16 r_header_size = (!is_reverse_endian) ? header_size : vp::util::SwapEndian(header_size);
+            const u16 r_file_count  = (!is_reverse_endian) ? file_count  : vp::util::SwapEndian(file_count);
             if (r_magic       != cMagic)              { return false; }
             if (r_header_size != sizeof(ResSarcSfat)) { return false; }
             if ((r_file_count >> 14) != 0)            { return false; }
@@ -74,8 +74,8 @@ namespace vp::res {
 
         constexpr bool IsValid(bool is_reverse_endian) const {
 
-            const u32 r_magic       = (is_reverse_endian == false) ? magic       : vp::util::SwapEndian(magic);
-            const u16 r_header_size = (is_reverse_endian == false) ? header_size : vp::util::SwapEndian(header_size);
+            const u32 r_magic       = (!is_reverse_endian) ? magic       : vp::util::SwapEndian(magic);
+            const u16 r_header_size = (!is_reverse_endian) ? header_size : vp::util::SwapEndian(header_size);
             if (r_magic       != cMagic)              { return false; }
             if (r_header_size != sizeof(ResSarcSfnt)) { return false; }
 
@@ -101,9 +101,9 @@ namespace vp::res {
         constexpr bool IsValid() const {
 
             const bool is_reverse_endian = this->IsReverseEndian();
-            const u32 r_magic            = (is_reverse_endian == false) ? magic       : vp::util::SwapEndian(magic);
-            const u16 r_header_size      = (is_reverse_endian == false) ? header_size : vp::util::SwapEndian(header_size);
-            const u16 r_version          = (is_reverse_endian == false) ? version     : vp::util::SwapEndian(version);
+            const u32 r_magic            = (!is_reverse_endian) ? magic       : vp::util::SwapEndian(magic);
+            const u16 r_header_size      = (!is_reverse_endian) ? header_size : vp::util::SwapEndian(header_size);
+            const u16 r_version          = (!is_reverse_endian) ? version     : vp::util::SwapEndian(version);
             if (r_magic       != cMagic)          { return false; }
             if (r_header_size != sizeof(ResSarc)) { return false; }
             if (r_version     != cTargetVersion)  { return false; }
@@ -172,7 +172,7 @@ namespace vp::res {
                 m_sarc = reinterpret_cast<ResSarc*>(sarc_file);
 
                 /* Validate sarc */
-                if (m_sarc->IsValid() == false) { return false; }
+                if (!m_sarc->IsValid()) { return false; }
 
                 /* Endianess check */
                 const bool is_reverse_endian = m_sarc->IsReverseEndian();
@@ -181,21 +181,21 @@ namespace vp::res {
                 m_sfat = reinterpret_cast<ResSarcSfat*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc));
 
                 /* Validate sfat */
-                if (m_sfat->IsValid(is_reverse_endian) == false) { return false; }
+                if (!m_sfat->IsValid(is_reverse_endian)) { return false; }
 
                 /* Get sfnt */
-                const u32 file_count = (is_reverse_endian == false) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count);
+                const u32 file_count = (!is_reverse_endian) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count);
                 ResSarcSfnt *sfnt = reinterpret_cast<ResSarcSfnt*>(reinterpret_cast<uintptr_t>(sarc_file) + sizeof(ResSarc) + sizeof(ResSarcSfat) + sizeof(ResSarcSfatEntry) * file_count);
 
                 /* Validate sfnt */
-                if (sfnt->IsValid(is_reverse_endian) == false) { return false; }
+                if (!sfnt->IsValid(is_reverse_endian)) { return false; }
 
                 /* Get file path table */
-                const u16 sfnt_header_size = (is_reverse_endian == false) ? sfnt->header_size : vp::util::SwapEndian(sfnt->header_size);
+                const u16 sfnt_header_size = (!is_reverse_endian) ? sfnt->header_size : vp::util::SwapEndian(sfnt->header_size);
                 m_path_table = reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(sfnt) + sfnt_header_size);
 
                 /* Get file region */
-                const u32 file_array_offset = (is_reverse_endian == false) ? m_sarc->file_array_offset : vp::util::SwapEndian(m_sarc->file_array_offset);
+                const u32 file_array_offset = (!is_reverse_endian) ? m_sarc->file_array_offset : vp::util::SwapEndian(m_sarc->file_array_offset);
                 m_file_region = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(sarc_file) + file_array_offset);
 
                 return true;
@@ -207,11 +207,11 @@ namespace vp::res {
                 const bool is_reverse_endian = m_sarc->IsReverseEndian();
 
                 /* Integrity check file count */
-                const u32 file_count = (is_reverse_endian == false) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count);
+                const u32 file_count = (!is_reverse_endian) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count);
                 if (file_count <= entry_index) { return nullptr; }
 
                 /* Integrity check name offset */
-                const u32 file_name_offset = ((is_reverse_endian == false) ? m_sfat->entry_array[entry_index].name_data & 0xff'ffff : vp::util::SwapEndian(m_sfat->entry_array[entry_index].name_data)) & 0xff'ffff;
+                const u32 file_name_offset = ((!is_reverse_endian) ? m_sfat->entry_array[entry_index].name_data & 0xff'ffff : vp::util::SwapEndian(m_sfat->entry_array[entry_index].name_data)) & 0xff'ffff;
                 if (m_file_region < m_path_table + (file_name_offset << 2)) { return nullptr; }
 
                 /* Get file path */
@@ -224,11 +224,11 @@ namespace vp::res {
                 const bool is_reverse_endian = m_sarc->IsReverseEndian();
 
                 /* Error on null file count */
-                const u32 file_count = (is_reverse_endian == false) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count);
+                const u32 file_count = (!is_reverse_endian) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count);
                 if (file_count == 0) { return cInvalidEntryIndex; }
 
                 /* Calculate file path hash */
-                const u32 hash_seed = (is_reverse_endian == false) ? m_sfat->hash_seed : vp::util::SwapEndian(m_sfat->hash_seed);
+                const u32 hash_seed = (!is_reverse_endian) ? m_sfat->hash_seed : vp::util::SwapEndian(m_sfat->hash_seed);
                 u32 hash = 0;
                 while (*path != '\0') {
                     hash = hash * hash_seed + static_cast<u32>(*path);
@@ -240,7 +240,7 @@ namespace vp::res {
                 u32 high_iter    = file_count;
                 u32 low_iter     = 0;
                 u32 i            = 0;
-                u32 current_hash = (is_reverse_endian == false) ? m_sfat->entry_array[entry_index].file_name_hash : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_name_hash);
+                u32 current_hash = (!is_reverse_endian) ? m_sfat->entry_array[entry_index].file_name_hash : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_name_hash);
                 while (hash != current_hash) {
 
                     u32 result = entry_index;
@@ -257,11 +257,11 @@ namespace vp::res {
                     i = high_iter + low_iter;
 
                     entry_index = i / 2;
-                    current_hash = (is_reverse_endian == false) ? m_sfat->entry_array[entry_index].file_name_hash : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_name_hash);
+                    current_hash = (!is_reverse_endian) ? m_sfat->entry_array[entry_index].file_name_hash : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_name_hash);
                 }
 
                 /* Handle collisions */
-                const u32 root_name_data = (is_reverse_endian == false) ? m_sfat->entry_array[entry_index].name_data : vp::util::SwapEndian(m_sfat->entry_array[entry_index].name_data);
+                const u32 root_name_data = (!is_reverse_endian) ? m_sfat->entry_array[entry_index].name_data : vp::util::SwapEndian(m_sfat->entry_array[entry_index].name_data);
                 const u32 root_collision_index = (root_name_data >> 0x18);
                 if (root_collision_index != 1) {
 
@@ -272,11 +272,11 @@ namespace vp::res {
                     while (entry_index < file_count) {
 
                         /* Check whether the hashes still match */
-                        const u32 entry_hash = (is_reverse_endian == false) ? m_sfat->entry_array[entry_index].file_name_hash : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_name_hash);
+                        const u32 entry_hash = (!is_reverse_endian) ? m_sfat->entry_array[entry_index].file_name_hash : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_name_hash);
                         if (entry_hash != hash) { return cInvalidEntryIndex; }
 
                         /* Check whether the path is valid */
-                        const u32 collision_entry_data  = (is_reverse_endian == false) ? m_sfat->entry_array[entry_index].name_data : vp::util::SwapEndian(m_sfat->entry_array[entry_index].name_data);
+                        const u32 collision_entry_data  = (!is_reverse_endian) ? m_sfat->entry_array[entry_index].name_data : vp::util::SwapEndian(m_sfat->entry_array[entry_index].name_data);
                         const u32 collision_name_offset = collision_entry_data & 0xff'ffff;
                         const char *file_path = m_path_table + (collision_name_offset << 2);
                         if (m_file_region < file_path) { return cInvalidEntryIndex; }
@@ -297,15 +297,15 @@ namespace vp::res {
                 const bool is_reverse_endian = m_sarc->IsReverseEndian();
 
                 /* Integrity check bounds */
-                const u32 file_count = (is_reverse_endian == false) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count);
+                const u32 file_count = (!is_reverse_endian) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count);
                 if (file_count < entry_index) { return nullptr; }
 
                 /* Get offset into file region */
-                const u32 start_offset = (is_reverse_endian == false) ? m_sfat->entry_array[entry_index].file_array_start_offset : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_array_start_offset);
+                const u32 start_offset = (!is_reverse_endian) ? m_sfat->entry_array[entry_index].file_array_start_offset : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_array_start_offset);
 
                 /* Return file size if necessary */
                 if (out_file_size != nullptr) {
-                    const u32 file_array_end_offset = (is_reverse_endian == false) ? m_sfat->entry_array[entry_index].file_array_end_offset : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_array_end_offset);
+                    const u32 file_array_end_offset = (!is_reverse_endian) ? m_sfat->entry_array[entry_index].file_array_end_offset : vp::util::SwapEndian(m_sfat->entry_array[entry_index].file_array_end_offset);
                     *out_file_size = file_array_end_offset - start_offset; 
                 }
 
@@ -324,7 +324,7 @@ namespace vp::res {
             
             constexpr ALWAYS_INLINE u32 GetFileCount() const {
                 const bool is_reverse_endian = m_sarc->IsReverseEndian();
-                return (is_reverse_endian == false) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count); 
+                return (!is_reverse_endian) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count); 
             }
     };
 }

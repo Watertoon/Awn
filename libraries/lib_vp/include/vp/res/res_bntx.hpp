@@ -60,8 +60,8 @@ namespace vp::res {
         u8                          reserve1[0x14];
         u32                         mipmap_total_size;
         u32                         texture_data_alignment;
-        GfxChannelSource            channel_sources[0x4];
-        GfxImageDimension           image_dimension;
+        u8                          channel_sources[0x4];
+        u8                          image_dimension;
         u8                          reserve2[0x3];
         char                       *name;
         ResBntxTextureContainer    *container;
@@ -96,7 +96,8 @@ namespace vp::res {
 
         static ResBntx *ResCast(void *file) {
             ResBntx *texture_file = reinterpret_cast<ResBntx*>(file);
-            if (texture_file->IsRelocated() == false) {
+            if (!IsValid(file)) { return nullptr; }
+            if (!texture_file->IsRelocated()) {
                 texture_file->GetRelocationTable()->Relocate(); 
             }
             return texture_file;

@@ -23,10 +23,10 @@ namespace vp::res {
             if (data_count < 0x100)   { return *reinterpret_cast<u8*>(reinterpret_cast<uintptr_t>(remap_table) + index * sizeof(u8)); }
             if (data_count < 0x10000) { 
                 u16 *remap_data = reinterpret_cast<u16*>(reinterpret_cast<uintptr_t>(remap_table) + index * sizeof(u16));
-                return (is_reverse_endian == false) ? *remap_data : vp::util::SwapEndian(*remap_data);
+                return (!is_reverse_endian) ? *remap_data : vp::util::SwapEndian(*remap_data);
             }
             u32 *remap_data = reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(remap_table) + index * sizeof(u32));
-            return (is_reverse_endian == false) ? *remap_data : vp::util::SwapEndian(*remap_data);
+            return (!is_reverse_endian) ? *remap_data : vp::util::SwapEndian(*remap_data);
         }
     }
 

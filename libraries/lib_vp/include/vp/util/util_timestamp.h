@@ -20,6 +20,6 @@ namespace vp::util {
     void InitializeTimeStamp();
 
     s64 GetSystemTick();
-    s32 GetSystemTickFrequency();
+    s64 GetSystemTickFrequency();
     s64 GetMaxTickToTimeSpan();
 }

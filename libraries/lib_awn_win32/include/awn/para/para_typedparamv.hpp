@@ -50,7 +50,7 @@ AWN_PARA_FIELD_TYPE_IMPL(0); \
 AWN_PARA_ASSERT_FIELD_TYPE(0); \
         public: \
 AWN_PARA_DEFAULT_IMPL(0); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
         public: \
@@ -110,7 +110,7 @@ AWN_PARA_ASSERT_FIELD_TYPE(1); \
         public: \
 AWN_PARA_DEFAULT_IMPL(0); \
 AWN_PARA_DEFAULT_IMPL(1); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -179,7 +179,7 @@ AWN_PARA_ASSERT_FIELD_TYPE(2); \
 AWN_PARA_DEFAULT_IMPL(0); \
 AWN_PARA_DEFAULT_IMPL(1); \
 AWN_PARA_DEFAULT_IMPL(2); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -257,7 +257,7 @@ AWN_PARA_DEFAULT_IMPL(0); \
 AWN_PARA_DEFAULT_IMPL(1); \
 AWN_PARA_DEFAULT_IMPL(2); \
 AWN_PARA_DEFAULT_IMPL(3); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -344,7 +344,7 @@ AWN_PARA_DEFAULT_IMPL(1); \
 AWN_PARA_DEFAULT_IMPL(2); \
 AWN_PARA_DEFAULT_IMPL(3); \
 AWN_PARA_DEFAULT_IMPL(4); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -440,7 +440,7 @@ AWN_PARA_DEFAULT_IMPL(2); \
 AWN_PARA_DEFAULT_IMPL(3); \
 AWN_PARA_DEFAULT_IMPL(4); \
 AWN_PARA_DEFAULT_IMPL(5); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -545,7 +545,7 @@ AWN_PARA_DEFAULT_IMPL(3); \
 AWN_PARA_DEFAULT_IMPL(4); \
 AWN_PARA_DEFAULT_IMPL(5); \
 AWN_PARA_DEFAULT_IMPL(6); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -659,7 +659,7 @@ AWN_PARA_DEFAULT_IMPL(4); \
 AWN_PARA_DEFAULT_IMPL(5); \
 AWN_PARA_DEFAULT_IMPL(6); \
 AWN_PARA_DEFAULT_IMPL(7); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -782,7 +782,7 @@ AWN_PARA_DEFAULT_IMPL(5); \
 AWN_PARA_DEFAULT_IMPL(6); \
 AWN_PARA_DEFAULT_IMPL(7); \
 AWN_PARA_DEFAULT_IMPL(8); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -914,7 +914,7 @@ AWN_PARA_DEFAULT_IMPL(6); \
 AWN_PARA_DEFAULT_IMPL(7); \
 AWN_PARA_DEFAULT_IMPL(8); \
 AWN_PARA_DEFAULT_IMPL(9); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -1055,7 +1055,7 @@ AWN_PARA_DEFAULT_IMPL(7); \
 AWN_PARA_DEFAULT_IMPL(8); \
 AWN_PARA_DEFAULT_IMPL(9); \
 AWN_PARA_DEFAULT_IMPL(10); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -1205,7 +1205,7 @@ AWN_PARA_DEFAULT_IMPL(8); \
 AWN_PARA_DEFAULT_IMPL(9); \
 AWN_PARA_DEFAULT_IMPL(10); \
 AWN_PARA_DEFAULT_IMPL(11); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -1364,7 +1364,7 @@ AWN_PARA_DEFAULT_IMPL(9); \
 AWN_PARA_DEFAULT_IMPL(10); \
 AWN_PARA_DEFAULT_IMPL(11); \
 AWN_PARA_DEFAULT_IMPL(12); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -1532,7 +1532,7 @@ AWN_PARA_DEFAULT_IMPL(10); \
 AWN_PARA_DEFAULT_IMPL(11); \
 AWN_PARA_DEFAULT_IMPL(12); \
 AWN_PARA_DEFAULT_IMPL(13); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -1709,7 +1709,7 @@ AWN_PARA_DEFAULT_IMPL(11); \
 AWN_PARA_DEFAULT_IMPL(12); \
 AWN_PARA_DEFAULT_IMPL(13); \
 AWN_PARA_DEFAULT_IMPL(14); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -1895,7 +1895,7 @@ AWN_PARA_DEFAULT_IMPL(12); \
 AWN_PARA_DEFAULT_IMPL(13); \
 AWN_PARA_DEFAULT_IMPL(14); \
 AWN_PARA_DEFAULT_IMPL(15); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -2090,7 +2090,7 @@ AWN_PARA_DEFAULT_IMPL(13); \
 AWN_PARA_DEFAULT_IMPL(14); \
 AWN_PARA_DEFAULT_IMPL(15); \
 AWN_PARA_DEFAULT_IMPL(16); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -2294,7 +2294,7 @@ AWN_PARA_DEFAULT_IMPL(14); \
 AWN_PARA_DEFAULT_IMPL(15); \
 AWN_PARA_DEFAULT_IMPL(16); \
 AWN_PARA_DEFAULT_IMPL(17); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -2507,7 +2507,7 @@ AWN_PARA_DEFAULT_IMPL(15); \
 AWN_PARA_DEFAULT_IMPL(16); \
 AWN_PARA_DEFAULT_IMPL(17); \
 AWN_PARA_DEFAULT_IMPL(18); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -2729,7 +2729,7 @@ AWN_PARA_DEFAULT_IMPL(16); \
 AWN_PARA_DEFAULT_IMPL(17); \
 AWN_PARA_DEFAULT_IMPL(18); \
 AWN_PARA_DEFAULT_IMPL(19); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -2960,7 +2960,7 @@ AWN_PARA_DEFAULT_IMPL(17); \
 AWN_PARA_DEFAULT_IMPL(18); \
 AWN_PARA_DEFAULT_IMPL(19); \
 AWN_PARA_DEFAULT_IMPL(20); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -3200,7 +3200,7 @@ AWN_PARA_DEFAULT_IMPL(18); \
 AWN_PARA_DEFAULT_IMPL(19); \
 AWN_PARA_DEFAULT_IMPL(20); \
 AWN_PARA_DEFAULT_IMPL(21); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -3449,7 +3449,7 @@ AWN_PARA_DEFAULT_IMPL(19); \
 AWN_PARA_DEFAULT_IMPL(20); \
 AWN_PARA_DEFAULT_IMPL(21); \
 AWN_PARA_DEFAULT_IMPL(22); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -3707,7 +3707,7 @@ AWN_PARA_DEFAULT_IMPL(20); \
 AWN_PARA_DEFAULT_IMPL(21); \
 AWN_PARA_DEFAULT_IMPL(22); \
 AWN_PARA_DEFAULT_IMPL(23); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -3974,7 +3974,7 @@ AWN_PARA_DEFAULT_IMPL(21); \
 AWN_PARA_DEFAULT_IMPL(22); \
 AWN_PARA_DEFAULT_IMPL(23); \
 AWN_PARA_DEFAULT_IMPL(24); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -4250,7 +4250,7 @@ AWN_PARA_DEFAULT_IMPL(22); \
 AWN_PARA_DEFAULT_IMPL(23); \
 AWN_PARA_DEFAULT_IMPL(24); \
 AWN_PARA_DEFAULT_IMPL(25); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -4535,7 +4535,7 @@ AWN_PARA_DEFAULT_IMPL(23); \
 AWN_PARA_DEFAULT_IMPL(24); \
 AWN_PARA_DEFAULT_IMPL(25); \
 AWN_PARA_DEFAULT_IMPL(26); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -4829,7 +4829,7 @@ AWN_PARA_DEFAULT_IMPL(24); \
 AWN_PARA_DEFAULT_IMPL(25); \
 AWN_PARA_DEFAULT_IMPL(26); \
 AWN_PARA_DEFAULT_IMPL(27); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -5132,7 +5132,7 @@ AWN_PARA_DEFAULT_IMPL(25); \
 AWN_PARA_DEFAULT_IMPL(26); \
 AWN_PARA_DEFAULT_IMPL(27); \
 AWN_PARA_DEFAULT_IMPL(28); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -5444,7 +5444,7 @@ AWN_PARA_DEFAULT_IMPL(26); \
 AWN_PARA_DEFAULT_IMPL(27); \
 AWN_PARA_DEFAULT_IMPL(28); \
 AWN_PARA_DEFAULT_IMPL(29); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -5765,7 +5765,7 @@ AWN_PARA_DEFAULT_IMPL(27); \
 AWN_PARA_DEFAULT_IMPL(28); \
 AWN_PARA_DEFAULT_IMPL(29); \
 AWN_PARA_DEFAULT_IMPL(30); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -6095,7 +6095,7 @@ AWN_PARA_DEFAULT_IMPL(28); \
 AWN_PARA_DEFAULT_IMPL(29); \
 AWN_PARA_DEFAULT_IMPL(30); \
 AWN_PARA_DEFAULT_IMPL(31); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -6434,7 +6434,7 @@ AWN_PARA_DEFAULT_IMPL(29); \
 AWN_PARA_DEFAULT_IMPL(30); \
 AWN_PARA_DEFAULT_IMPL(31); \
 AWN_PARA_DEFAULT_IMPL(32); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -6782,7 +6782,7 @@ AWN_PARA_DEFAULT_IMPL(30); \
 AWN_PARA_DEFAULT_IMPL(31); \
 AWN_PARA_DEFAULT_IMPL(32); \
 AWN_PARA_DEFAULT_IMPL(33); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -7139,7 +7139,7 @@ AWN_PARA_DEFAULT_IMPL(31); \
 AWN_PARA_DEFAULT_IMPL(32); \
 AWN_PARA_DEFAULT_IMPL(33); \
 AWN_PARA_DEFAULT_IMPL(34); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -7505,7 +7505,7 @@ AWN_PARA_DEFAULT_IMPL(32); \
 AWN_PARA_DEFAULT_IMPL(33); \
 AWN_PARA_DEFAULT_IMPL(34); \
 AWN_PARA_DEFAULT_IMPL(35); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -7880,7 +7880,7 @@ AWN_PARA_DEFAULT_IMPL(33); \
 AWN_PARA_DEFAULT_IMPL(34); \
 AWN_PARA_DEFAULT_IMPL(35); \
 AWN_PARA_DEFAULT_IMPL(36); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -8264,7 +8264,7 @@ AWN_PARA_DEFAULT_IMPL(34); \
 AWN_PARA_DEFAULT_IMPL(35); \
 AWN_PARA_DEFAULT_IMPL(36); \
 AWN_PARA_DEFAULT_IMPL(37); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -8657,7 +8657,7 @@ AWN_PARA_DEFAULT_IMPL(35); \
 AWN_PARA_DEFAULT_IMPL(36); \
 AWN_PARA_DEFAULT_IMPL(37); \
 AWN_PARA_DEFAULT_IMPL(38); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -9059,7 +9059,7 @@ AWN_PARA_DEFAULT_IMPL(36); \
 AWN_PARA_DEFAULT_IMPL(37); \
 AWN_PARA_DEFAULT_IMPL(38); \
 AWN_PARA_DEFAULT_IMPL(39); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -9470,7 +9470,7 @@ AWN_PARA_DEFAULT_IMPL(37); \
 AWN_PARA_DEFAULT_IMPL(38); \
 AWN_PARA_DEFAULT_IMPL(39); \
 AWN_PARA_DEFAULT_IMPL(40); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -9890,7 +9890,7 @@ AWN_PARA_DEFAULT_IMPL(38); \
 AWN_PARA_DEFAULT_IMPL(39); \
 AWN_PARA_DEFAULT_IMPL(40); \
 AWN_PARA_DEFAULT_IMPL(41); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -10319,7 +10319,7 @@ AWN_PARA_DEFAULT_IMPL(39); \
 AWN_PARA_DEFAULT_IMPL(40); \
 AWN_PARA_DEFAULT_IMPL(41); \
 AWN_PARA_DEFAULT_IMPL(42); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -10757,7 +10757,7 @@ AWN_PARA_DEFAULT_IMPL(40); \
 AWN_PARA_DEFAULT_IMPL(41); \
 AWN_PARA_DEFAULT_IMPL(42); \
 AWN_PARA_DEFAULT_IMPL(43); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -11204,7 +11204,7 @@ AWN_PARA_DEFAULT_IMPL(41); \
 AWN_PARA_DEFAULT_IMPL(42); \
 AWN_PARA_DEFAULT_IMPL(43); \
 AWN_PARA_DEFAULT_IMPL(44); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -11660,7 +11660,7 @@ AWN_PARA_DEFAULT_IMPL(42); \
 AWN_PARA_DEFAULT_IMPL(43); \
 AWN_PARA_DEFAULT_IMPL(44); \
 AWN_PARA_DEFAULT_IMPL(45); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -12125,7 +12125,7 @@ AWN_PARA_DEFAULT_IMPL(43); \
 AWN_PARA_DEFAULT_IMPL(44); \
 AWN_PARA_DEFAULT_IMPL(45); \
 AWN_PARA_DEFAULT_IMPL(46); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -12599,7 +12599,7 @@ AWN_PARA_DEFAULT_IMPL(44); \
 AWN_PARA_DEFAULT_IMPL(45); \
 AWN_PARA_DEFAULT_IMPL(46); \
 AWN_PARA_DEFAULT_IMPL(47); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -13082,7 +13082,7 @@ AWN_PARA_DEFAULT_IMPL(45); \
 AWN_PARA_DEFAULT_IMPL(46); \
 AWN_PARA_DEFAULT_IMPL(47); \
 AWN_PARA_DEFAULT_IMPL(48); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -13574,7 +13574,7 @@ AWN_PARA_DEFAULT_IMPL(46); \
 AWN_PARA_DEFAULT_IMPL(47); \
 AWN_PARA_DEFAULT_IMPL(48); \
 AWN_PARA_DEFAULT_IMPL(49); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -14075,7 +14075,7 @@ AWN_PARA_DEFAULT_IMPL(47); \
 AWN_PARA_DEFAULT_IMPL(48); \
 AWN_PARA_DEFAULT_IMPL(49); \
 AWN_PARA_DEFAULT_IMPL(50); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -14585,7 +14585,7 @@ AWN_PARA_DEFAULT_IMPL(48); \
 AWN_PARA_DEFAULT_IMPL(49); \
 AWN_PARA_DEFAULT_IMPL(50); \
 AWN_PARA_DEFAULT_IMPL(51); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -15104,7 +15104,7 @@ AWN_PARA_DEFAULT_IMPL(49); \
 AWN_PARA_DEFAULT_IMPL(50); \
 AWN_PARA_DEFAULT_IMPL(51); \
 AWN_PARA_DEFAULT_IMPL(52); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -15632,7 +15632,7 @@ AWN_PARA_DEFAULT_IMPL(50); \
 AWN_PARA_DEFAULT_IMPL(51); \
 AWN_PARA_DEFAULT_IMPL(52); \
 AWN_PARA_DEFAULT_IMPL(53); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -16169,7 +16169,7 @@ AWN_PARA_DEFAULT_IMPL(51); \
 AWN_PARA_DEFAULT_IMPL(52); \
 AWN_PARA_DEFAULT_IMPL(53); \
 AWN_PARA_DEFAULT_IMPL(54); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -16715,7 +16715,7 @@ AWN_PARA_DEFAULT_IMPL(52); \
 AWN_PARA_DEFAULT_IMPL(53); \
 AWN_PARA_DEFAULT_IMPL(54); \
 AWN_PARA_DEFAULT_IMPL(55); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -17270,7 +17270,7 @@ AWN_PARA_DEFAULT_IMPL(53); \
 AWN_PARA_DEFAULT_IMPL(54); \
 AWN_PARA_DEFAULT_IMPL(55); \
 AWN_PARA_DEFAULT_IMPL(56); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -17834,7 +17834,7 @@ AWN_PARA_DEFAULT_IMPL(54); \
 AWN_PARA_DEFAULT_IMPL(55); \
 AWN_PARA_DEFAULT_IMPL(56); \
 AWN_PARA_DEFAULT_IMPL(57); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -18407,7 +18407,7 @@ AWN_PARA_DEFAULT_IMPL(55); \
 AWN_PARA_DEFAULT_IMPL(56); \
 AWN_PARA_DEFAULT_IMPL(57); \
 AWN_PARA_DEFAULT_IMPL(58); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -18989,7 +18989,7 @@ AWN_PARA_DEFAULT_IMPL(56); \
 AWN_PARA_DEFAULT_IMPL(57); \
 AWN_PARA_DEFAULT_IMPL(58); \
 AWN_PARA_DEFAULT_IMPL(59); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -19580,7 +19580,7 @@ AWN_PARA_DEFAULT_IMPL(57); \
 AWN_PARA_DEFAULT_IMPL(58); \
 AWN_PARA_DEFAULT_IMPL(59); \
 AWN_PARA_DEFAULT_IMPL(60); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -20180,7 +20180,7 @@ AWN_PARA_DEFAULT_IMPL(58); \
 AWN_PARA_DEFAULT_IMPL(59); \
 AWN_PARA_DEFAULT_IMPL(60); \
 AWN_PARA_DEFAULT_IMPL(61); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -20789,7 +20789,7 @@ AWN_PARA_DEFAULT_IMPL(59); \
 AWN_PARA_DEFAULT_IMPL(60); \
 AWN_PARA_DEFAULT_IMPL(61); \
 AWN_PARA_DEFAULT_IMPL(62); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -21407,7 +21407,7 @@ AWN_PARA_DEFAULT_IMPL(60); \
 AWN_PARA_DEFAULT_IMPL(61); \
 AWN_PARA_DEFAULT_IMPL(62); \
 AWN_PARA_DEFAULT_IMPL(63); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -22034,7 +22034,7 @@ AWN_PARA_DEFAULT_IMPL(61); \
 AWN_PARA_DEFAULT_IMPL(62); \
 AWN_PARA_DEFAULT_IMPL(63); \
 AWN_PARA_DEFAULT_IMPL(64); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -22670,7 +22670,7 @@ AWN_PARA_DEFAULT_IMPL(62); \
 AWN_PARA_DEFAULT_IMPL(63); \
 AWN_PARA_DEFAULT_IMPL(64); \
 AWN_PARA_DEFAULT_IMPL(65); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -23315,7 +23315,7 @@ AWN_PARA_DEFAULT_IMPL(63); \
 AWN_PARA_DEFAULT_IMPL(64); \
 AWN_PARA_DEFAULT_IMPL(65); \
 AWN_PARA_DEFAULT_IMPL(66); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -23969,7 +23969,7 @@ AWN_PARA_DEFAULT_IMPL(64); \
 AWN_PARA_DEFAULT_IMPL(65); \
 AWN_PARA_DEFAULT_IMPL(66); \
 AWN_PARA_DEFAULT_IMPL(67); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -24632,7 +24632,7 @@ AWN_PARA_DEFAULT_IMPL(65); \
 AWN_PARA_DEFAULT_IMPL(66); \
 AWN_PARA_DEFAULT_IMPL(67); \
 AWN_PARA_DEFAULT_IMPL(68); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -25304,7 +25304,7 @@ AWN_PARA_DEFAULT_IMPL(66); \
 AWN_PARA_DEFAULT_IMPL(67); \
 AWN_PARA_DEFAULT_IMPL(68); \
 AWN_PARA_DEFAULT_IMPL(69); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -25985,7 +25985,7 @@ AWN_PARA_DEFAULT_IMPL(67); \
 AWN_PARA_DEFAULT_IMPL(68); \
 AWN_PARA_DEFAULT_IMPL(69); \
 AWN_PARA_DEFAULT_IMPL(70); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -26675,7 +26675,7 @@ AWN_PARA_DEFAULT_IMPL(68); \
 AWN_PARA_DEFAULT_IMPL(69); \
 AWN_PARA_DEFAULT_IMPL(70); \
 AWN_PARA_DEFAULT_IMPL(71); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -27374,7 +27374,7 @@ AWN_PARA_DEFAULT_IMPL(69); \
 AWN_PARA_DEFAULT_IMPL(70); \
 AWN_PARA_DEFAULT_IMPL(71); \
 AWN_PARA_DEFAULT_IMPL(72); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -28082,7 +28082,7 @@ AWN_PARA_DEFAULT_IMPL(70); \
 AWN_PARA_DEFAULT_IMPL(71); \
 AWN_PARA_DEFAULT_IMPL(72); \
 AWN_PARA_DEFAULT_IMPL(73); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -28799,7 +28799,7 @@ AWN_PARA_DEFAULT_IMPL(71); \
 AWN_PARA_DEFAULT_IMPL(72); \
 AWN_PARA_DEFAULT_IMPL(73); \
 AWN_PARA_DEFAULT_IMPL(74); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -29525,7 +29525,7 @@ AWN_PARA_DEFAULT_IMPL(72); \
 AWN_PARA_DEFAULT_IMPL(73); \
 AWN_PARA_DEFAULT_IMPL(74); \
 AWN_PARA_DEFAULT_IMPL(75); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -30260,7 +30260,7 @@ AWN_PARA_DEFAULT_IMPL(73); \
 AWN_PARA_DEFAULT_IMPL(74); \
 AWN_PARA_DEFAULT_IMPL(75); \
 AWN_PARA_DEFAULT_IMPL(76); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -31004,7 +31004,7 @@ AWN_PARA_DEFAULT_IMPL(74); \
 AWN_PARA_DEFAULT_IMPL(75); \
 AWN_PARA_DEFAULT_IMPL(76); \
 AWN_PARA_DEFAULT_IMPL(77); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -31757,7 +31757,7 @@ AWN_PARA_DEFAULT_IMPL(75); \
 AWN_PARA_DEFAULT_IMPL(76); \
 AWN_PARA_DEFAULT_IMPL(77); \
 AWN_PARA_DEFAULT_IMPL(78); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -32519,7 +32519,7 @@ AWN_PARA_DEFAULT_IMPL(76); \
 AWN_PARA_DEFAULT_IMPL(77); \
 AWN_PARA_DEFAULT_IMPL(78); \
 AWN_PARA_DEFAULT_IMPL(79); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -33290,7 +33290,7 @@ AWN_PARA_DEFAULT_IMPL(77); \
 AWN_PARA_DEFAULT_IMPL(78); \
 AWN_PARA_DEFAULT_IMPL(79); \
 AWN_PARA_DEFAULT_IMPL(80); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -34070,7 +34070,7 @@ AWN_PARA_DEFAULT_IMPL(78); \
 AWN_PARA_DEFAULT_IMPL(79); \
 AWN_PARA_DEFAULT_IMPL(80); \
 AWN_PARA_DEFAULT_IMPL(81); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -34859,7 +34859,7 @@ AWN_PARA_DEFAULT_IMPL(79); \
 AWN_PARA_DEFAULT_IMPL(80); \
 AWN_PARA_DEFAULT_IMPL(81); \
 AWN_PARA_DEFAULT_IMPL(82); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -35657,7 +35657,7 @@ AWN_PARA_DEFAULT_IMPL(80); \
 AWN_PARA_DEFAULT_IMPL(81); \
 AWN_PARA_DEFAULT_IMPL(82); \
 AWN_PARA_DEFAULT_IMPL(83); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -36464,7 +36464,7 @@ AWN_PARA_DEFAULT_IMPL(81); \
 AWN_PARA_DEFAULT_IMPL(82); \
 AWN_PARA_DEFAULT_IMPL(83); \
 AWN_PARA_DEFAULT_IMPL(84); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -37280,7 +37280,7 @@ AWN_PARA_DEFAULT_IMPL(82); \
 AWN_PARA_DEFAULT_IMPL(83); \
 AWN_PARA_DEFAULT_IMPL(84); \
 AWN_PARA_DEFAULT_IMPL(85); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -38105,7 +38105,7 @@ AWN_PARA_DEFAULT_IMPL(83); \
 AWN_PARA_DEFAULT_IMPL(84); \
 AWN_PARA_DEFAULT_IMPL(85); \
 AWN_PARA_DEFAULT_IMPL(86); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -38939,7 +38939,7 @@ AWN_PARA_DEFAULT_IMPL(84); \
 AWN_PARA_DEFAULT_IMPL(85); \
 AWN_PARA_DEFAULT_IMPL(86); \
 AWN_PARA_DEFAULT_IMPL(87); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -39782,7 +39782,7 @@ AWN_PARA_DEFAULT_IMPL(85); \
 AWN_PARA_DEFAULT_IMPL(86); \
 AWN_PARA_DEFAULT_IMPL(87); \
 AWN_PARA_DEFAULT_IMPL(88); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -40634,7 +40634,7 @@ AWN_PARA_DEFAULT_IMPL(86); \
 AWN_PARA_DEFAULT_IMPL(87); \
 AWN_PARA_DEFAULT_IMPL(88); \
 AWN_PARA_DEFAULT_IMPL(89); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -41495,7 +41495,7 @@ AWN_PARA_DEFAULT_IMPL(87); \
 AWN_PARA_DEFAULT_IMPL(88); \
 AWN_PARA_DEFAULT_IMPL(89); \
 AWN_PARA_DEFAULT_IMPL(90); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -42365,7 +42365,7 @@ AWN_PARA_DEFAULT_IMPL(88); \
 AWN_PARA_DEFAULT_IMPL(89); \
 AWN_PARA_DEFAULT_IMPL(90); \
 AWN_PARA_DEFAULT_IMPL(91); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -43244,7 +43244,7 @@ AWN_PARA_DEFAULT_IMPL(89); \
 AWN_PARA_DEFAULT_IMPL(90); \
 AWN_PARA_DEFAULT_IMPL(91); \
 AWN_PARA_DEFAULT_IMPL(92); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -44132,7 +44132,7 @@ AWN_PARA_DEFAULT_IMPL(90); \
 AWN_PARA_DEFAULT_IMPL(91); \
 AWN_PARA_DEFAULT_IMPL(92); \
 AWN_PARA_DEFAULT_IMPL(93); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -45029,7 +45029,7 @@ AWN_PARA_DEFAULT_IMPL(91); \
 AWN_PARA_DEFAULT_IMPL(92); \
 AWN_PARA_DEFAULT_IMPL(93); \
 AWN_PARA_DEFAULT_IMPL(94); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -45935,7 +45935,7 @@ AWN_PARA_DEFAULT_IMPL(92); \
 AWN_PARA_DEFAULT_IMPL(93); \
 AWN_PARA_DEFAULT_IMPL(94); \
 AWN_PARA_DEFAULT_IMPL(95); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -46850,7 +46850,7 @@ AWN_PARA_DEFAULT_IMPL(93); \
 AWN_PARA_DEFAULT_IMPL(94); \
 AWN_PARA_DEFAULT_IMPL(95); \
 AWN_PARA_DEFAULT_IMPL(96); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -47774,7 +47774,7 @@ AWN_PARA_DEFAULT_IMPL(94); \
 AWN_PARA_DEFAULT_IMPL(95); \
 AWN_PARA_DEFAULT_IMPL(96); \
 AWN_PARA_DEFAULT_IMPL(97); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -48707,7 +48707,7 @@ AWN_PARA_DEFAULT_IMPL(95); \
 AWN_PARA_DEFAULT_IMPL(96); \
 AWN_PARA_DEFAULT_IMPL(97); \
 AWN_PARA_DEFAULT_IMPL(98); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -49649,7 +49649,7 @@ AWN_PARA_DEFAULT_IMPL(96); \
 AWN_PARA_DEFAULT_IMPL(97); \
 AWN_PARA_DEFAULT_IMPL(98); \
 AWN_PARA_DEFAULT_IMPL(99); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -50600,7 +50600,7 @@ AWN_PARA_DEFAULT_IMPL(97); \
 AWN_PARA_DEFAULT_IMPL(98); \
 AWN_PARA_DEFAULT_IMPL(99); \
 AWN_PARA_DEFAULT_IMPL(100); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -51560,7 +51560,7 @@ AWN_PARA_DEFAULT_IMPL(98); \
 AWN_PARA_DEFAULT_IMPL(99); \
 AWN_PARA_DEFAULT_IMPL(100); \
 AWN_PARA_DEFAULT_IMPL(101); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -52529,7 +52529,7 @@ AWN_PARA_DEFAULT_IMPL(99); \
 AWN_PARA_DEFAULT_IMPL(100); \
 AWN_PARA_DEFAULT_IMPL(101); \
 AWN_PARA_DEFAULT_IMPL(102); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -53507,7 +53507,7 @@ AWN_PARA_DEFAULT_IMPL(100); \
 AWN_PARA_DEFAULT_IMPL(101); \
 AWN_PARA_DEFAULT_IMPL(102); \
 AWN_PARA_DEFAULT_IMPL(103); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -54494,7 +54494,7 @@ AWN_PARA_DEFAULT_IMPL(101); \
 AWN_PARA_DEFAULT_IMPL(102); \
 AWN_PARA_DEFAULT_IMPL(103); \
 AWN_PARA_DEFAULT_IMPL(104); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -55490,7 +55490,7 @@ AWN_PARA_DEFAULT_IMPL(102); \
 AWN_PARA_DEFAULT_IMPL(103); \
 AWN_PARA_DEFAULT_IMPL(104); \
 AWN_PARA_DEFAULT_IMPL(105); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -56495,7 +56495,7 @@ AWN_PARA_DEFAULT_IMPL(103); \
 AWN_PARA_DEFAULT_IMPL(104); \
 AWN_PARA_DEFAULT_IMPL(105); \
 AWN_PARA_DEFAULT_IMPL(106); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -57509,7 +57509,7 @@ AWN_PARA_DEFAULT_IMPL(104); \
 AWN_PARA_DEFAULT_IMPL(105); \
 AWN_PARA_DEFAULT_IMPL(106); \
 AWN_PARA_DEFAULT_IMPL(107); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -58532,7 +58532,7 @@ AWN_PARA_DEFAULT_IMPL(105); \
 AWN_PARA_DEFAULT_IMPL(106); \
 AWN_PARA_DEFAULT_IMPL(107); \
 AWN_PARA_DEFAULT_IMPL(108); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -59564,7 +59564,7 @@ AWN_PARA_DEFAULT_IMPL(106); \
 AWN_PARA_DEFAULT_IMPL(107); \
 AWN_PARA_DEFAULT_IMPL(108); \
 AWN_PARA_DEFAULT_IMPL(109); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -60605,7 +60605,7 @@ AWN_PARA_DEFAULT_IMPL(107); \
 AWN_PARA_DEFAULT_IMPL(108); \
 AWN_PARA_DEFAULT_IMPL(109); \
 AWN_PARA_DEFAULT_IMPL(110); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -61655,7 +61655,7 @@ AWN_PARA_DEFAULT_IMPL(108); \
 AWN_PARA_DEFAULT_IMPL(109); \
 AWN_PARA_DEFAULT_IMPL(110); \
 AWN_PARA_DEFAULT_IMPL(111); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -62714,7 +62714,7 @@ AWN_PARA_DEFAULT_IMPL(109); \
 AWN_PARA_DEFAULT_IMPL(110); \
 AWN_PARA_DEFAULT_IMPL(111); \
 AWN_PARA_DEFAULT_IMPL(112); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -63782,7 +63782,7 @@ AWN_PARA_DEFAULT_IMPL(110); \
 AWN_PARA_DEFAULT_IMPL(111); \
 AWN_PARA_DEFAULT_IMPL(112); \
 AWN_PARA_DEFAULT_IMPL(113); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -64859,7 +64859,7 @@ AWN_PARA_DEFAULT_IMPL(111); \
 AWN_PARA_DEFAULT_IMPL(112); \
 AWN_PARA_DEFAULT_IMPL(113); \
 AWN_PARA_DEFAULT_IMPL(114); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -65945,7 +65945,7 @@ AWN_PARA_DEFAULT_IMPL(112); \
 AWN_PARA_DEFAULT_IMPL(113); \
 AWN_PARA_DEFAULT_IMPL(114); \
 AWN_PARA_DEFAULT_IMPL(115); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -67040,7 +67040,7 @@ AWN_PARA_DEFAULT_IMPL(113); \
 AWN_PARA_DEFAULT_IMPL(114); \
 AWN_PARA_DEFAULT_IMPL(115); \
 AWN_PARA_DEFAULT_IMPL(116); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -68144,7 +68144,7 @@ AWN_PARA_DEFAULT_IMPL(114); \
 AWN_PARA_DEFAULT_IMPL(115); \
 AWN_PARA_DEFAULT_IMPL(116); \
 AWN_PARA_DEFAULT_IMPL(117); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -69257,7 +69257,7 @@ AWN_PARA_DEFAULT_IMPL(115); \
 AWN_PARA_DEFAULT_IMPL(116); \
 AWN_PARA_DEFAULT_IMPL(117); \
 AWN_PARA_DEFAULT_IMPL(118); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -70379,7 +70379,7 @@ AWN_PARA_DEFAULT_IMPL(116); \
 AWN_PARA_DEFAULT_IMPL(117); \
 AWN_PARA_DEFAULT_IMPL(118); \
 AWN_PARA_DEFAULT_IMPL(119); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -71510,7 +71510,7 @@ AWN_PARA_DEFAULT_IMPL(117); \
 AWN_PARA_DEFAULT_IMPL(118); \
 AWN_PARA_DEFAULT_IMPL(119); \
 AWN_PARA_DEFAULT_IMPL(120); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -72650,7 +72650,7 @@ AWN_PARA_DEFAULT_IMPL(118); \
 AWN_PARA_DEFAULT_IMPL(119); \
 AWN_PARA_DEFAULT_IMPL(120); \
 AWN_PARA_DEFAULT_IMPL(121); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -73799,7 +73799,7 @@ AWN_PARA_DEFAULT_IMPL(119); \
 AWN_PARA_DEFAULT_IMPL(120); \
 AWN_PARA_DEFAULT_IMPL(121); \
 AWN_PARA_DEFAULT_IMPL(122); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -74957,7 +74957,7 @@ AWN_PARA_DEFAULT_IMPL(120); \
 AWN_PARA_DEFAULT_IMPL(121); \
 AWN_PARA_DEFAULT_IMPL(122); \
 AWN_PARA_DEFAULT_IMPL(123); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -76124,7 +76124,7 @@ AWN_PARA_DEFAULT_IMPL(121); \
 AWN_PARA_DEFAULT_IMPL(122); \
 AWN_PARA_DEFAULT_IMPL(123); \
 AWN_PARA_DEFAULT_IMPL(124); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -77300,7 +77300,7 @@ AWN_PARA_DEFAULT_IMPL(122); \
 AWN_PARA_DEFAULT_IMPL(123); \
 AWN_PARA_DEFAULT_IMPL(124); \
 AWN_PARA_DEFAULT_IMPL(125); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -78485,7 +78485,7 @@ AWN_PARA_DEFAULT_IMPL(123); \
 AWN_PARA_DEFAULT_IMPL(124); \
 AWN_PARA_DEFAULT_IMPL(125); \
 AWN_PARA_DEFAULT_IMPL(126); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -79679,7 +79679,7 @@ AWN_PARA_DEFAULT_IMPL(124); \
 AWN_PARA_DEFAULT_IMPL(125); \
 AWN_PARA_DEFAULT_IMPL(126); \
 AWN_PARA_DEFAULT_IMPL(127); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -80882,7 +80882,7 @@ AWN_PARA_DEFAULT_IMPL(125); \
 AWN_PARA_DEFAULT_IMPL(126); \
 AWN_PARA_DEFAULT_IMPL(127); \
 AWN_PARA_DEFAULT_IMPL(128); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -82094,7 +82094,7 @@ AWN_PARA_DEFAULT_IMPL(126); \
 AWN_PARA_DEFAULT_IMPL(127); \
 AWN_PARA_DEFAULT_IMPL(128); \
 AWN_PARA_DEFAULT_IMPL(129); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -83315,7 +83315,7 @@ AWN_PARA_DEFAULT_IMPL(127); \
 AWN_PARA_DEFAULT_IMPL(128); \
 AWN_PARA_DEFAULT_IMPL(129); \
 AWN_PARA_DEFAULT_IMPL(130); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -84545,7 +84545,7 @@ AWN_PARA_DEFAULT_IMPL(128); \
 AWN_PARA_DEFAULT_IMPL(129); \
 AWN_PARA_DEFAULT_IMPL(130); \
 AWN_PARA_DEFAULT_IMPL(131); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -85784,7 +85784,7 @@ AWN_PARA_DEFAULT_IMPL(129); \
 AWN_PARA_DEFAULT_IMPL(130); \
 AWN_PARA_DEFAULT_IMPL(131); \
 AWN_PARA_DEFAULT_IMPL(132); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -87032,7 +87032,7 @@ AWN_PARA_DEFAULT_IMPL(130); \
 AWN_PARA_DEFAULT_IMPL(131); \
 AWN_PARA_DEFAULT_IMPL(132); \
 AWN_PARA_DEFAULT_IMPL(133); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -88289,7 +88289,7 @@ AWN_PARA_DEFAULT_IMPL(131); \
 AWN_PARA_DEFAULT_IMPL(132); \
 AWN_PARA_DEFAULT_IMPL(133); \
 AWN_PARA_DEFAULT_IMPL(134); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -89555,7 +89555,7 @@ AWN_PARA_DEFAULT_IMPL(132); \
 AWN_PARA_DEFAULT_IMPL(133); \
 AWN_PARA_DEFAULT_IMPL(134); \
 AWN_PARA_DEFAULT_IMPL(135); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -90830,7 +90830,7 @@ AWN_PARA_DEFAULT_IMPL(133); \
 AWN_PARA_DEFAULT_IMPL(134); \
 AWN_PARA_DEFAULT_IMPL(135); \
 AWN_PARA_DEFAULT_IMPL(136); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -92114,7 +92114,7 @@ AWN_PARA_DEFAULT_IMPL(134); \
 AWN_PARA_DEFAULT_IMPL(135); \
 AWN_PARA_DEFAULT_IMPL(136); \
 AWN_PARA_DEFAULT_IMPL(137); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -93407,7 +93407,7 @@ AWN_PARA_DEFAULT_IMPL(135); \
 AWN_PARA_DEFAULT_IMPL(136); \
 AWN_PARA_DEFAULT_IMPL(137); \
 AWN_PARA_DEFAULT_IMPL(138); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -94709,7 +94709,7 @@ AWN_PARA_DEFAULT_IMPL(136); \
 AWN_PARA_DEFAULT_IMPL(137); \
 AWN_PARA_DEFAULT_IMPL(138); \
 AWN_PARA_DEFAULT_IMPL(139); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -96020,7 +96020,7 @@ AWN_PARA_DEFAULT_IMPL(137); \
 AWN_PARA_DEFAULT_IMPL(138); \
 AWN_PARA_DEFAULT_IMPL(139); \
 AWN_PARA_DEFAULT_IMPL(140); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -97340,7 +97340,7 @@ AWN_PARA_DEFAULT_IMPL(138); \
 AWN_PARA_DEFAULT_IMPL(139); \
 AWN_PARA_DEFAULT_IMPL(140); \
 AWN_PARA_DEFAULT_IMPL(141); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -98669,7 +98669,7 @@ AWN_PARA_DEFAULT_IMPL(139); \
 AWN_PARA_DEFAULT_IMPL(140); \
 AWN_PARA_DEFAULT_IMPL(141); \
 AWN_PARA_DEFAULT_IMPL(142); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -100007,7 +100007,7 @@ AWN_PARA_DEFAULT_IMPL(140); \
 AWN_PARA_DEFAULT_IMPL(141); \
 AWN_PARA_DEFAULT_IMPL(142); \
 AWN_PARA_DEFAULT_IMPL(143); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -101354,7 +101354,7 @@ AWN_PARA_DEFAULT_IMPL(141); \
 AWN_PARA_DEFAULT_IMPL(142); \
 AWN_PARA_DEFAULT_IMPL(143); \
 AWN_PARA_DEFAULT_IMPL(144); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -102710,7 +102710,7 @@ AWN_PARA_DEFAULT_IMPL(142); \
 AWN_PARA_DEFAULT_IMPL(143); \
 AWN_PARA_DEFAULT_IMPL(144); \
 AWN_PARA_DEFAULT_IMPL(145); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -104075,7 +104075,7 @@ AWN_PARA_DEFAULT_IMPL(143); \
 AWN_PARA_DEFAULT_IMPL(144); \
 AWN_PARA_DEFAULT_IMPL(145); \
 AWN_PARA_DEFAULT_IMPL(146); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -105449,7 +105449,7 @@ AWN_PARA_DEFAULT_IMPL(144); \
 AWN_PARA_DEFAULT_IMPL(145); \
 AWN_PARA_DEFAULT_IMPL(146); \
 AWN_PARA_DEFAULT_IMPL(147); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -106832,7 +106832,7 @@ AWN_PARA_DEFAULT_IMPL(145); \
 AWN_PARA_DEFAULT_IMPL(146); \
 AWN_PARA_DEFAULT_IMPL(147); \
 AWN_PARA_DEFAULT_IMPL(148); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -108224,7 +108224,7 @@ AWN_PARA_DEFAULT_IMPL(146); \
 AWN_PARA_DEFAULT_IMPL(147); \
 AWN_PARA_DEFAULT_IMPL(148); \
 AWN_PARA_DEFAULT_IMPL(149); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -109625,7 +109625,7 @@ AWN_PARA_DEFAULT_IMPL(147); \
 AWN_PARA_DEFAULT_IMPL(148); \
 AWN_PARA_DEFAULT_IMPL(149); \
 AWN_PARA_DEFAULT_IMPL(150); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -111035,7 +111035,7 @@ AWN_PARA_DEFAULT_IMPL(148); \
 AWN_PARA_DEFAULT_IMPL(149); \
 AWN_PARA_DEFAULT_IMPL(150); \
 AWN_PARA_DEFAULT_IMPL(151); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -112454,7 +112454,7 @@ AWN_PARA_DEFAULT_IMPL(149); \
 AWN_PARA_DEFAULT_IMPL(150); \
 AWN_PARA_DEFAULT_IMPL(151); \
 AWN_PARA_DEFAULT_IMPL(152); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -113882,7 +113882,7 @@ AWN_PARA_DEFAULT_IMPL(150); \
 AWN_PARA_DEFAULT_IMPL(151); \
 AWN_PARA_DEFAULT_IMPL(152); \
 AWN_PARA_DEFAULT_IMPL(153); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -115319,7 +115319,7 @@ AWN_PARA_DEFAULT_IMPL(151); \
 AWN_PARA_DEFAULT_IMPL(152); \
 AWN_PARA_DEFAULT_IMPL(153); \
 AWN_PARA_DEFAULT_IMPL(154); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -116765,7 +116765,7 @@ AWN_PARA_DEFAULT_IMPL(152); \
 AWN_PARA_DEFAULT_IMPL(153); \
 AWN_PARA_DEFAULT_IMPL(154); \
 AWN_PARA_DEFAULT_IMPL(155); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -118220,7 +118220,7 @@ AWN_PARA_DEFAULT_IMPL(153); \
 AWN_PARA_DEFAULT_IMPL(154); \
 AWN_PARA_DEFAULT_IMPL(155); \
 AWN_PARA_DEFAULT_IMPL(156); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -119684,7 +119684,7 @@ AWN_PARA_DEFAULT_IMPL(154); \
 AWN_PARA_DEFAULT_IMPL(155); \
 AWN_PARA_DEFAULT_IMPL(156); \
 AWN_PARA_DEFAULT_IMPL(157); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -121157,7 +121157,7 @@ AWN_PARA_DEFAULT_IMPL(155); \
 AWN_PARA_DEFAULT_IMPL(156); \
 AWN_PARA_DEFAULT_IMPL(157); \
 AWN_PARA_DEFAULT_IMPL(158); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -122639,7 +122639,7 @@ AWN_PARA_DEFAULT_IMPL(156); \
 AWN_PARA_DEFAULT_IMPL(157); \
 AWN_PARA_DEFAULT_IMPL(158); \
 AWN_PARA_DEFAULT_IMPL(159); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -124130,7 +124130,7 @@ AWN_PARA_DEFAULT_IMPL(157); \
 AWN_PARA_DEFAULT_IMPL(158); \
 AWN_PARA_DEFAULT_IMPL(159); \
 AWN_PARA_DEFAULT_IMPL(160); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -125630,7 +125630,7 @@ AWN_PARA_DEFAULT_IMPL(158); \
 AWN_PARA_DEFAULT_IMPL(159); \
 AWN_PARA_DEFAULT_IMPL(160); \
 AWN_PARA_DEFAULT_IMPL(161); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -127139,7 +127139,7 @@ AWN_PARA_DEFAULT_IMPL(159); \
 AWN_PARA_DEFAULT_IMPL(160); \
 AWN_PARA_DEFAULT_IMPL(161); \
 AWN_PARA_DEFAULT_IMPL(162); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -128657,7 +128657,7 @@ AWN_PARA_DEFAULT_IMPL(160); \
 AWN_PARA_DEFAULT_IMPL(161); \
 AWN_PARA_DEFAULT_IMPL(162); \
 AWN_PARA_DEFAULT_IMPL(163); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -130184,7 +130184,7 @@ AWN_PARA_DEFAULT_IMPL(161); \
 AWN_PARA_DEFAULT_IMPL(162); \
 AWN_PARA_DEFAULT_IMPL(163); \
 AWN_PARA_DEFAULT_IMPL(164); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -131720,7 +131720,7 @@ AWN_PARA_DEFAULT_IMPL(162); \
 AWN_PARA_DEFAULT_IMPL(163); \
 AWN_PARA_DEFAULT_IMPL(164); \
 AWN_PARA_DEFAULT_IMPL(165); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -133265,7 +133265,7 @@ AWN_PARA_DEFAULT_IMPL(163); \
 AWN_PARA_DEFAULT_IMPL(164); \
 AWN_PARA_DEFAULT_IMPL(165); \
 AWN_PARA_DEFAULT_IMPL(166); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -134819,7 +134819,7 @@ AWN_PARA_DEFAULT_IMPL(164); \
 AWN_PARA_DEFAULT_IMPL(165); \
 AWN_PARA_DEFAULT_IMPL(166); \
 AWN_PARA_DEFAULT_IMPL(167); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -136382,7 +136382,7 @@ AWN_PARA_DEFAULT_IMPL(165); \
 AWN_PARA_DEFAULT_IMPL(166); \
 AWN_PARA_DEFAULT_IMPL(167); \
 AWN_PARA_DEFAULT_IMPL(168); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -137954,7 +137954,7 @@ AWN_PARA_DEFAULT_IMPL(166); \
 AWN_PARA_DEFAULT_IMPL(167); \
 AWN_PARA_DEFAULT_IMPL(168); \
 AWN_PARA_DEFAULT_IMPL(169); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -139535,7 +139535,7 @@ AWN_PARA_DEFAULT_IMPL(167); \
 AWN_PARA_DEFAULT_IMPL(168); \
 AWN_PARA_DEFAULT_IMPL(169); \
 AWN_PARA_DEFAULT_IMPL(170); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -141125,7 +141125,7 @@ AWN_PARA_DEFAULT_IMPL(168); \
 AWN_PARA_DEFAULT_IMPL(169); \
 AWN_PARA_DEFAULT_IMPL(170); \
 AWN_PARA_DEFAULT_IMPL(171); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -142724,7 +142724,7 @@ AWN_PARA_DEFAULT_IMPL(169); \
 AWN_PARA_DEFAULT_IMPL(170); \
 AWN_PARA_DEFAULT_IMPL(171); \
 AWN_PARA_DEFAULT_IMPL(172); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -144332,7 +144332,7 @@ AWN_PARA_DEFAULT_IMPL(170); \
 AWN_PARA_DEFAULT_IMPL(171); \
 AWN_PARA_DEFAULT_IMPL(172); \
 AWN_PARA_DEFAULT_IMPL(173); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -145949,7 +145949,7 @@ AWN_PARA_DEFAULT_IMPL(171); \
 AWN_PARA_DEFAULT_IMPL(172); \
 AWN_PARA_DEFAULT_IMPL(173); \
 AWN_PARA_DEFAULT_IMPL(174); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -147575,7 +147575,7 @@ AWN_PARA_DEFAULT_IMPL(172); \
 AWN_PARA_DEFAULT_IMPL(173); \
 AWN_PARA_DEFAULT_IMPL(174); \
 AWN_PARA_DEFAULT_IMPL(175); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -149210,7 +149210,7 @@ AWN_PARA_DEFAULT_IMPL(173); \
 AWN_PARA_DEFAULT_IMPL(174); \
 AWN_PARA_DEFAULT_IMPL(175); \
 AWN_PARA_DEFAULT_IMPL(176); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -150854,7 +150854,7 @@ AWN_PARA_DEFAULT_IMPL(174); \
 AWN_PARA_DEFAULT_IMPL(175); \
 AWN_PARA_DEFAULT_IMPL(176); \
 AWN_PARA_DEFAULT_IMPL(177); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -152507,7 +152507,7 @@ AWN_PARA_DEFAULT_IMPL(175); \
 AWN_PARA_DEFAULT_IMPL(176); \
 AWN_PARA_DEFAULT_IMPL(177); \
 AWN_PARA_DEFAULT_IMPL(178); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -154169,7 +154169,7 @@ AWN_PARA_DEFAULT_IMPL(176); \
 AWN_PARA_DEFAULT_IMPL(177); \
 AWN_PARA_DEFAULT_IMPL(178); \
 AWN_PARA_DEFAULT_IMPL(179); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -155840,7 +155840,7 @@ AWN_PARA_DEFAULT_IMPL(177); \
 AWN_PARA_DEFAULT_IMPL(178); \
 AWN_PARA_DEFAULT_IMPL(179); \
 AWN_PARA_DEFAULT_IMPL(180); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -157520,7 +157520,7 @@ AWN_PARA_DEFAULT_IMPL(178); \
 AWN_PARA_DEFAULT_IMPL(179); \
 AWN_PARA_DEFAULT_IMPL(180); \
 AWN_PARA_DEFAULT_IMPL(181); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -159209,7 +159209,7 @@ AWN_PARA_DEFAULT_IMPL(179); \
 AWN_PARA_DEFAULT_IMPL(180); \
 AWN_PARA_DEFAULT_IMPL(181); \
 AWN_PARA_DEFAULT_IMPL(182); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -160907,7 +160907,7 @@ AWN_PARA_DEFAULT_IMPL(180); \
 AWN_PARA_DEFAULT_IMPL(181); \
 AWN_PARA_DEFAULT_IMPL(182); \
 AWN_PARA_DEFAULT_IMPL(183); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -162614,7 +162614,7 @@ AWN_PARA_DEFAULT_IMPL(181); \
 AWN_PARA_DEFAULT_IMPL(182); \
 AWN_PARA_DEFAULT_IMPL(183); \
 AWN_PARA_DEFAULT_IMPL(184); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -164330,7 +164330,7 @@ AWN_PARA_DEFAULT_IMPL(182); \
 AWN_PARA_DEFAULT_IMPL(183); \
 AWN_PARA_DEFAULT_IMPL(184); \
 AWN_PARA_DEFAULT_IMPL(185); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -166055,7 +166055,7 @@ AWN_PARA_DEFAULT_IMPL(183); \
 AWN_PARA_DEFAULT_IMPL(184); \
 AWN_PARA_DEFAULT_IMPL(185); \
 AWN_PARA_DEFAULT_IMPL(186); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -167789,7 +167789,7 @@ AWN_PARA_DEFAULT_IMPL(184); \
 AWN_PARA_DEFAULT_IMPL(185); \
 AWN_PARA_DEFAULT_IMPL(186); \
 AWN_PARA_DEFAULT_IMPL(187); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -169532,7 +169532,7 @@ AWN_PARA_DEFAULT_IMPL(185); \
 AWN_PARA_DEFAULT_IMPL(186); \
 AWN_PARA_DEFAULT_IMPL(187); \
 AWN_PARA_DEFAULT_IMPL(188); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -171284,7 +171284,7 @@ AWN_PARA_DEFAULT_IMPL(186); \
 AWN_PARA_DEFAULT_IMPL(187); \
 AWN_PARA_DEFAULT_IMPL(188); \
 AWN_PARA_DEFAULT_IMPL(189); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -173045,7 +173045,7 @@ AWN_PARA_DEFAULT_IMPL(187); \
 AWN_PARA_DEFAULT_IMPL(188); \
 AWN_PARA_DEFAULT_IMPL(189); \
 AWN_PARA_DEFAULT_IMPL(190); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -174815,7 +174815,7 @@ AWN_PARA_DEFAULT_IMPL(188); \
 AWN_PARA_DEFAULT_IMPL(189); \
 AWN_PARA_DEFAULT_IMPL(190); \
 AWN_PARA_DEFAULT_IMPL(191); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -176594,7 +176594,7 @@ AWN_PARA_DEFAULT_IMPL(189); \
 AWN_PARA_DEFAULT_IMPL(190); \
 AWN_PARA_DEFAULT_IMPL(191); \
 AWN_PARA_DEFAULT_IMPL(192); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -178382,7 +178382,7 @@ AWN_PARA_DEFAULT_IMPL(190); \
 AWN_PARA_DEFAULT_IMPL(191); \
 AWN_PARA_DEFAULT_IMPL(192); \
 AWN_PARA_DEFAULT_IMPL(193); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -180179,7 +180179,7 @@ AWN_PARA_DEFAULT_IMPL(191); \
 AWN_PARA_DEFAULT_IMPL(192); \
 AWN_PARA_DEFAULT_IMPL(193); \
 AWN_PARA_DEFAULT_IMPL(194); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -181985,7 +181985,7 @@ AWN_PARA_DEFAULT_IMPL(192); \
 AWN_PARA_DEFAULT_IMPL(193); \
 AWN_PARA_DEFAULT_IMPL(194); \
 AWN_PARA_DEFAULT_IMPL(195); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -183800,7 +183800,7 @@ AWN_PARA_DEFAULT_IMPL(193); \
 AWN_PARA_DEFAULT_IMPL(194); \
 AWN_PARA_DEFAULT_IMPL(195); \
 AWN_PARA_DEFAULT_IMPL(196); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -185624,7 +185624,7 @@ AWN_PARA_DEFAULT_IMPL(194); \
 AWN_PARA_DEFAULT_IMPL(195); \
 AWN_PARA_DEFAULT_IMPL(196); \
 AWN_PARA_DEFAULT_IMPL(197); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \
@@ -187457,7 +187457,7 @@ AWN_PARA_DEFAULT_IMPL(195); \
 AWN_PARA_DEFAULT_IMPL(196); \
 AWN_PARA_DEFAULT_IMPL(197); \
 AWN_PARA_DEFAULT_IMPL(198); \
-        private: \
+        public: \
             template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const {{ if ((m_is_non_default_array[index] & 1) == true) {{ return std::addressof(this->m_layout.*value_offset); }} const class_name *out = this; const ::awn::para::TypedParam *parent_iter; while(parent_iter = out->GetParent(), parent_iter != nullptr) {{ if (CheckRuntimeTypeInfoStatic(parent_iter) == false || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1) == true)) break; }}  return std::addressof(out->m_layout.*value_offset); }} \
 AWN_PARA_GET_FIELD_IMPL( _0 , 0); \
 AWN_PARA_GET_FIELD_IMPL( _1 , 1); \

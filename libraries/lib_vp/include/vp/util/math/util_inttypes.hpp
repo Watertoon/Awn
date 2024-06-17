@@ -18,8 +18,18 @@
 namespace vp::util {
 
     struct Int2 {
-        s32 x;
-        s32 y;
+        union {
+            struct {
+                s32 x;
+                s32 y;
+            };
+            s32 array[2];
+        };
+
+        using VectorType                    = s32;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = false;
+        static constexpr bool cVectorCount  = 2;
 
         static const Int2 cUnitX;
         static const Int2 cUnitY;
@@ -30,9 +40,19 @@ namespace vp::util {
     static_assert(alignof(Int2) == 0x4);
 
     struct Int3 {
-        s32 x;
-        s32 y;
-        s32 z;
+        union {
+            struct {
+                s32 x;
+                s32 y;
+                s32 z;
+            };
+            s32 array[3];
+        };
+
+        using VectorType                    = s32;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = false;
+        static constexpr bool cVectorCount  = 3;
 
         static const Int3 cUnitX;
         static const Int3 cUnitY;
@@ -44,10 +64,20 @@ namespace vp::util {
     static_assert(alignof(Int3) == 0x4);
 
     struct Int4 {
-        s32 x;
-        s32 y;
-        s32 z;
-        s32 w;
+        union {
+            struct {
+                s32 x;
+                s32 y;
+                s32 z;
+                s32 w;
+            };
+            s32 array[4];
+        };
+
+        using VectorType                    = s32;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = false;
+        static constexpr bool cVectorCount  = 4;
 
         static const Int4 cUnitX;
         static const Int4 cUnitY;
@@ -211,9 +241,15 @@ namespace vp::util {
                 s32 x;
                 s32 y;
             };
+            s32 array[2];
             Int2Vector vector;
         };
 
+
+        using VectorType                    = s32;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = true;
+        static constexpr bool cVectorCount  = 2;
 
         static const Vector2i cUnitX;
         static const Vector2i cUnitY;
@@ -231,8 +267,14 @@ namespace vp::util {
                 s32 z;
                 s32 w;
             };
+            s32 array[4];
             Int3Vector vector;
         };
+
+        using VectorType                    = s32;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = true;
+        static constexpr bool cVectorCount  = 3;
 
         static const Vector3i cUnitX;
         static const Vector3i cUnitY;
@@ -251,8 +293,14 @@ namespace vp::util {
                 s32 z;
                 s32 w;
             };
+            s32 array[4];
             Int4Vector vector;
         };
+
+        using VectorType                    = s32;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = true;
+        static constexpr bool cVectorCount  = 4;
 
         static const Vector4i cUnitX;
         static const Vector4i cUnitY;

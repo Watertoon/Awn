@@ -36,3 +36,4 @@
 
 #include <awn/para/para_typedparamv.hpp>
 #include <awn/para/para_componentlistbase.hpp>
+#include <awn/para/para_combinationdatatabledata.h>

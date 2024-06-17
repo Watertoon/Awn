@@ -18,8 +18,18 @@
 namespace vp::util {
 
     struct Float2 {
-        float x;
-        float y;
+        union {
+            struct {
+                float x;
+                float y;
+            };
+            float array[2];
+        };
+
+        using VectorType                    = float;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = false;
+        static constexpr bool cVectorCount  = 2;
 
         static const Float2 cUnitX;
         static const Float2 cUnitY;
@@ -30,9 +40,19 @@ namespace vp::util {
     static_assert(alignof(Float2) == 0x4);
 
     struct Float3 {
-        float x;
-        float y;
-        float z;
+        union {
+            struct {
+                float x;
+                float y;
+                float z;
+            };
+            float array[3];
+        };
+
+        using VectorType                    = float;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = false;
+        static constexpr bool cVectorCount  = 3;
 
         static const Float3 cUnitX;
         static const Float3 cUnitY;
@@ -44,10 +64,20 @@ namespace vp::util {
     static_assert(alignof(Float3) == 0x4);
 
     struct Float4 {
-        float x;
-        float y;
-        float z;
-        float w;
+        union {
+            struct {
+                float x;
+                float y;
+                float z;
+                float w;
+            };
+            float array[4];
+        };
+
+        using VectorType                    = float;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = false;
+        static constexpr bool cVectorCount  = 4;
 
         static const Float4 cUnitX;
         static const Float4 cUnitY;
@@ -212,9 +242,14 @@ namespace vp::util {
                 float x;
                 float y;
             };
+            float array[2];
             Float2Vector vector;
         };
 
+        using VectorType                    = float;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = true;
+        static constexpr bool cVectorCount  = 2;
 
         static const Vector2f cUnitX;
         static const Vector2f cUnitY;
@@ -232,8 +267,15 @@ namespace vp::util {
                 float z;
                 float w;
             };
+            float array[4];
             Float3Vector vector;
         };
+
+        using VectorType                    = float;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = true;
+        static constexpr bool cVectorCount  = 3;
+
 
         static const Vector3f cUnitX;
         static const Vector3f cUnitY;
@@ -252,8 +294,15 @@ namespace vp::util {
                 float z;
                 float w;
             };
+            float array[4];
             Float4Vector vector;
         };
+
+        using VectorType                    = float;
+        static constexpr bool cIsVectorType = true;
+        static constexpr bool cIsVectorized = true;
+        static constexpr bool cVectorCount  = 4;
+
 
         static const Vector4f cUnitX;
         static const Vector4f cUnitY;

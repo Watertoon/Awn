@@ -17,17 +17,16 @@
 
 namespace awn::para {
 
+    using PropertyString = vp::util::FixedString<0x100>;
+
     class IPropertyAccessor {
-        public:
-            using PropertyString = vp::util::FixedString<0x100>;
-        private:
         public:
             constexpr IPropertyAccessor() {/*...*/}
             constexpr IPropertyAccessor([[maybe_unused]] void *dummy) {/*...*/}
             virtual constexpr ~IPropertyAccessor() {/*...*/}
 
             virtual bool  LoadByamlData(vp::res::ByamlIterator iter, vp::res::ByamlData data) { VP_UNUSED(iter, data); VP_ASSERT(false); }
-            virtual u32   Format(PropertyString *property_string) { VP_UNUSED(property_string); VP_ASSERT(false); }
+            virtual u32   Format(char *out_string, u32 string_length) { VP_UNUSED(out_string, string_length); VP_ASSERT(false); }
 
             virtual void  ClearValue() { VP_ASSERT(false); }
             virtual void  SetValue(const void *value_addr) { VP_UNUSED(value_addr); VP_ASSERT(false); }
@@ -36,20 +35,53 @@ namespace awn::para {
             virtual constexpr u32 GetValueSize()      { return 0; }
     };
 
+    #define AWN_PARA_PROPERTY_ACCESSOR_CUSTOM_TYPE_TRAITS(class_name) \
+        public: \
+            static constexpr bool cIsCustomTypeForPropertyAccessor = true
+
     template <typename T>
-        requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null)
+        requires ((vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null) || (T::cIsVectorType && T::cVectorCount <= 4) || (T::cIsCustomTypeForPropertyAccessor))
     class PropertyAccessor : public IPropertyAccessor {
         private:
             T *m_value_address;
+        public:
+            ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null) {
+                return iter.TryGetValueByData(m_value_address, data);
+            }
+            ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (T::cIsVectorType && T::cVectorCount <= 4) {
+
+                if constexpr (0 < T::cVectorCount) {
+                    const bool result = iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 0, "X");
+                    if (!result) { return false; }
+                }
+                if constexpr (1 < T::cVectorCount) {
+                    const bool result = iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 1, "Y");
+                    if (!result) { return false; }
+                }
+                if constexpr (2 < T::cVectorCount) {
+                    const bool result = iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 2, "Z");
+                    if (!result) { return false; }
+                }
+                if constexpr (3 < T::cVectorCount) {
+                    const bool result = iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 3, "W");
+                    if (!result) { return false; }
+                }
+
+                return true;
+            }
+            ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (T::IsCustomTypeForPropertyAccessor) {
+                return m_value_address->LoadByamlData(iter, data);
+            }
         public:
             constexpr PropertyAccessor(T *value_addr) : IPropertyAccessor(), m_value_address(value_addr) {/*...*/}
             virtual constexpr ~PropertyAccessor() override {/*...*/}
 
             virtual bool LoadByamlData(vp::res::ByamlIterator iter, vp::res::ByamlData data) override {
-                return iter.TryGetValueByData(m_value_address, data);
+                return this->LoadByamlDataImpl(iter, data);
             }
-            virtual u32 Format(PropertyString *property_string) override {
-                VP_UNUSED(property_string);
+
+            virtual u32 Format(char *out_string, u32 string_length) override {
+                VP_UNUSED(out_string, string_length);
                 return 0;
             }
             virtual void ClearValue()                     override { *m_value_address = T{}; }

@@ -23,10 +23,9 @@ namespace vp::resbui {
     }
     void ByamlNodeBigData::PushStrings(ByamlStringPoolBuilder *pool_builder) { m_big_data_node->PushStrings(pool_builder); }
 
-    void ByamlNodeBigData::Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) {
-        /* Write offset to big data */
+    void ByamlNodeBigData::Serialize(void *data_offset, vp::res::ResByaml *head) {
         const u32 offset = m_big_data_node->GetOffset();
-        *reinterpret_cast<u32*>(data_offset) = offset;
+        *reinterpret_cast<u32*>(data_offset) = (!head->IsReverseEndian()) ? offset : vp::util::SwapEndian(offset);
     }
 
     void ByamlNodeBigData::SerializeForBigData(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) {

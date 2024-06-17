@@ -39,7 +39,7 @@ namespace vp::codec {
 
     Result DecompressZstd(size_t *out_read_size, void *output, size_t output_size, void *zstd_stream, size_t zstd_stream_size) {
         const size_t result = ::ZSTD_decompress(output, output_size, zstd_stream, zstd_stream_size);
-        RESULT_RETURN_IF(::ZSTD_isError(result) == true, ResultZstdError);
+        RESULT_RETURN_IF(::ZSTD_isError(result), ResultZstdError);
         if (out_read_size != nullptr) {
             *out_read_size = result;
         }
@@ -48,7 +48,7 @@ namespace vp::codec {
 
     Result DecompressZstdWithContext(size_t *out_read_size, ZSTD_DCtx *context, void *output, size_t output_size, void *zstd_stream, size_t zstd_stream_size) {
         const size_t result = ::ZSTD_decompressDCtx(context, output, output_size, zstd_stream, zstd_stream_size);
-        RESULT_RETURN_IF(::ZSTD_isError(result) == true, ResultZstdError);
+        RESULT_RETURN_IF(::ZSTD_isError(result), ResultZstdError);
         if (out_read_size != nullptr) {
             *out_read_size = result;
         }
@@ -57,7 +57,7 @@ namespace vp::codec {
 
     Result DecompressZstdWithContext(size_t *out_read_size, ZSTD_DCtx *context, void *output, size_t output_size, void *zstd_stream, size_t zstd_stream_size, ZSTD_DDict *zstd_ddict) {
         const size_t result = ::ZSTD_decompress_usingDDict(context, output, output_size, zstd_stream, zstd_stream_size, zstd_ddict);
-        RESULT_RETURN_IF(::ZSTD_isError(result) == true, ResultZstdError);
+        RESULT_RETURN_IF(::ZSTD_isError(result), ResultZstdError);
         if (out_read_size != nullptr) {
             *out_read_size = result;
         }
@@ -66,7 +66,7 @@ namespace vp::codec {
 
     Result GetDecompressedSizeZstd(size_t *out_size, void *zstd_stream, size_t zstd_stream_size) {
         const size_t result = ::ZSTD_getFrameContentSize(zstd_stream, zstd_stream_size);
-        RESULT_RETURN_IF(::ZSTD_isError(result) == true, ResultZstdError);
+        RESULT_RETURN_IF(::ZSTD_isError(result), ResultZstdError);
         if (out_size != nullptr) {
             *out_size = result;
         }

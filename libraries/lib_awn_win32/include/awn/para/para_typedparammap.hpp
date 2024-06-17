@@ -44,13 +44,19 @@ namespace awn::para {
             bool VerifyMap(vp::res::ByamlIterator iter);
             void AllocateMap(mem::Heap *heap, vp::res::ByamlIterator iter);
         public:
-            constexpr TypedParamMapBase() : m_tree(), m_resolve_type(2), m_parent() {/*...*/}
+            constexpr TypedParamMapBase() : Composite(), m_tree(), m_resolve_type(2), m_parent() {/*...*/}
             virtual constexpr ~TypedParamMapBase() override {/*...*/}
 
             ALWAYS_INLINE auto begin() {
                 return m_tree.begin();
             }
-            ALWAYS_INLINE auto end() {
+            constexpr auto end() {
+                return m_tree.end();
+            }
+            ALWAYS_INLINE auto begin() const {
+                return m_tree.begin();
+            }
+            constexpr auto end() const {
                 return m_tree.end();
             }
 
@@ -76,7 +82,10 @@ namespace awn::para {
             constexpr TypedParamMap() : TypedParamMapBase() {/*...*/}
             virtual constexpr ~TypedParamMap() override {/*...*/}
 
-            virtual u64 GetBaseClassHash() const override { return T::GetClassHash(); }
+            virtual u64 GetBaseClassHash() const override {
+                const u64 hash = vp::util::HashMurmur64(T::cClassName);
+                return hash;
+            }
             virtual TypedParam *CreateTypedParam(mem::Heap *heap, [[maybe_unused]] Document *document, u64 class_hash) const override {
                 TypedParam *typed_param = para::CreateTypedParam(heap, class_hash);
                 VP_ASSERT(T::CheckRuntimeTypeInfoStatic(typed_param->GetRuntimeTypeInfo()) == true);

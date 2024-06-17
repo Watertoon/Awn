@@ -29,6 +29,7 @@ namespace awn::gfx {
         DescriptorSlotIndexType index      = 0;
         u16                     free_count = cInvalidDescriptorSlotFreeCount;
     };
+    static_assert(sizeof(DescriptorSlot) <= sizeof(u64));
 
     struct TextureViewSamplerManagerInfo {
         u32 max_texture_view_unit_count;
@@ -136,7 +137,7 @@ namespace awn::gfx {
         public:
             AWN_SINGLETON_TRAITS(TextureViewSamplerManager);
         public:
-            constexpr TextureViewSamplerManager() {/*...*/}
+            constexpr TextureViewSamplerManager() : m_texture_descriptor_vk_buffer(), m_sampler_descriptor_vk_buffer(), m_texture_vk_device_address(), m_sampler_vk_device_address(), m_texture_descriptor_gpu_address(), m_sampler_descriptor_gpu_address(), m_texture_slot_allocator(), m_texture_view_unit_array(), m_sampler_map(), m_sampler_slot_allocator(), m_sampler_unit_array(), m_sampler_cs() {/*...*/}
             constexpr ~TextureViewSamplerManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, const TextureViewSamplerManagerInfo *manager_info);

@@ -49,7 +49,7 @@ namespace vp::util {
         return time;
     }
 
-    s32 GetSystemTickFrequency() {
+    s64 GetSystemTickFrequency() {
         return sSystemFrequency;
     }
     

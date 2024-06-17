@@ -28,8 +28,9 @@ namespace vp::util {
 		private:
 			uintptr_t m_pointer;
 		public:
+			constexpr PointerBitFlag() : m_pointer(0) {/*...*/}
 			ALWAYS_INLINE  PointerBitFlag(T *pointer) : m_pointer(reinterpret_cast<uintptr_t>(pointer)) {/*...*/}
-			ALWAYS_INLINE ~PointerBitFlag() {/*...*/}
+			constexpr ~PointerBitFlag() {/*...*/}
 
             ALWAYS_INLINE T &operator->() {
                 return *reinterpret_cast<T*>(m_pointer & cPointerMask);

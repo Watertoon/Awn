@@ -70,7 +70,7 @@ namespace awn::para {
         template <auto T> \
             requires (TIsProperty<vp::util::MemberType<T>>() && std::is_standard_layout<vp::util::MemberType<T>>::value) \
         static constexpr auto TGetPropertyDefault() { \
-            const layout_type_name layout = {}; \
+            layout_type_name layout = {}; \
             return layout.*T; \
         }
 
@@ -117,6 +117,51 @@ namespace awn::para {
     template <>
     struct PropertyAccessorHelper<const char*> {
         using Type = PropertyAccessor<const char*>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Float2> {
+        using Type = PropertyAccessor<vp::util::Float2>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Float3> {
+        using Type = PropertyAccessor<vp::util::Float3>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Float4> {
+        using Type = PropertyAccessor<vp::util::Float4>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Double2> {
+        using Type = PropertyAccessor<vp::util::Double2>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Double3> {
+        using Type = PropertyAccessor<vp::util::Double3>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Double4> {
+        using Type = PropertyAccessor<vp::util::Double4>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Int2> {
+        using Type = PropertyAccessor<vp::util::Int2>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Int3> {
+        using Type = PropertyAccessor<vp::util::Int3>;
+    };
+
+    template <>
+    struct PropertyAccessorHelper<vp::util::Int4> {
+        using Type = PropertyAccessor<vp::util::Int4>;
     };
 
     template <typename T>

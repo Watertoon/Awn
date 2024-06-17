@@ -95,8 +95,8 @@ namespace vp::resbui {
             virtual constexpr ~ByamlNodeU32() {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::U32; }
-            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
-                *reinterpret_cast<u32*>(data_offset) = m_value;
+            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+                *reinterpret_cast<u32*>(data_offset) = (!head->IsReverseEndian()) ? m_value : vp::util::SwapEndian(m_value);
             }
 
             constexpr void SetValue(u32 value) {
@@ -112,25 +112,25 @@ namespace vp::resbui {
             virtual constexpr ~ByamlNodeS32() {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::S32; }
-            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
-                *reinterpret_cast<s32*>(data_offset) = m_value;
+            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+                *reinterpret_cast<s32*>(data_offset) = (!head->IsReverseEndian()) ? m_value : vp::util::SwapEndian(m_value);
             }
 
             constexpr void SetValue(s32 value) {
                 m_value = value;
             }
     };
-    class ByamlNodeFloat : public ByamlNodeBase {
+    class ByamlNodeF32 : public ByamlNodeBase {
         private:
             float m_value;
         public:
-			constexpr ByamlNodeFloat() : ByamlNodeBase(), m_value() {/*...*/}
-			constexpr ByamlNodeFloat(float value) : ByamlNodeBase(), m_value(value) {/*...*/}
-            virtual constexpr ~ByamlNodeFloat() {/*...*/}
+			constexpr ByamlNodeF32() : ByamlNodeBase(), m_value() {/*...*/}
+			constexpr ByamlNodeF32(float value) : ByamlNodeBase(), m_value(value) {/*...*/}
+            virtual constexpr ~ByamlNodeF32() {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::F32; }
-            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
-                *reinterpret_cast<float*>(data_offset) = m_value;
+            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+                *reinterpret_cast<float*>(data_offset) = (!head->IsReverseEndian()) ? m_value : vp::util::SwapEndian(m_value);
             }
 
             constexpr void SetValue(float value) {
@@ -146,8 +146,8 @@ namespace vp::resbui {
             virtual constexpr ~ByamlNodeBool() {/*...*/}
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::Bool; }
-            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
-                *reinterpret_cast<bool*>(data_offset) = m_value;
+            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+                *reinterpret_cast<bool*>(data_offset) = (!head->IsReverseEndian()) ? m_value : vp::util::SwapEndian(m_value);
             }
 
             constexpr void SetValue(bool value) {
@@ -162,10 +162,10 @@ namespace vp::resbui {
 			constexpr ByamlNodeString(const char *value) : ByamlNodeBase(), m_string(value) {/*...*/}
             virtual constexpr ~ByamlNodeString() {/*...*/}
 
-
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::StringIndex; }
-            virtual void Serialize(void *data_offset, [[maybe_unused]] vp::res::ResByaml *head) override {
-                *reinterpret_cast<u32*>(data_offset) = m_string.GetKeyIndex();
+            virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
+                const u32 string_index = m_string.GetKeyIndex();
+                *reinterpret_cast<u32*>(data_offset) = (!head->IsReverseEndian()) ? string_index : vp::util::SwapEndian(string_index);
             }
 
             constexpr void SetValue(const char *value) {

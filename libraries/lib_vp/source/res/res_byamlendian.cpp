@@ -30,17 +30,17 @@ namespace vp::res {
         bool Cache(u32 data) {
 
             /* Check if data is in cache */
-            if (map.Find(data) != nullptr) { return false; }
+            if (this->map.Find(data) != nullptr) { return false; }
 
             /* Allocate a new cache node  */
-            BigDataNode *node = new (heap, alignof(BigDataNode)) BigDataNode();
+            BigDataNode *node = new (this->heap, alignof(BigDataNode)) BigDataNode();
             VP_ASSERT(node != nullptr);
 
             /* Set key to byaml data offset */
             node->node.SetKey(data);
 
             /* Push to tree map */
-            map.Insert(node);
+            this->map.Insert(node);
 
             return true;
         }
@@ -48,13 +48,13 @@ namespace vp::res {
         void FreeAll() {
 
             /* Free all nodes */
-            BigDataMap::iterator iter     = map.begin();
-            BigDataMap::iterator end_iter = map.end();
+            BigDataMap::iterator iter     = this->map.begin();
+            BigDataMap::iterator end_iter = this->map.end();
             while (iter != end_iter) {
                 BigDataNode *node = std::addressof(*iter);
                 ++iter;
                 map.Remove(node);
-                ::operator delete (node, heap, alignof(BigDataNode));
+                ::operator delete (node, this->heap, alignof(BigDataNode));
             }
 
             return;
@@ -120,7 +120,7 @@ namespace vp::res {
                 const bool is_big_data_swapped = big_data_cache->Cache(swapped_data);
 
                 /* Swap big data */
-                if (is_big_data_swapped == true) { 
+                if (is_big_data_swapped) { 
                     this->SwapEndianForBigData(data_type, swapped_data, big_data_cache);
                 }
 
@@ -135,7 +135,7 @@ namespace vp::res {
 
     void ResByaml::SwapEndianForBigData(ByamlDataType data_type, u32 data, ByamlBigDataCache *big_data_cache) {
 
-        const u32 r_offset = (this->IsReverseEndian() == false) ? data : vp::util::SwapEndian(data);
+        const u32 r_offset = (!this->IsReverseEndian()) ? data : vp::util::SwapEndian(data);
 
         void *big_data = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + r_offset);
         switch (data_type) {
@@ -348,11 +348,11 @@ namespace vp::res {
 
         /* Cache big data offset */
         const bool is_already_swapped = big_data_cache->Cache(table_offset);
-        if (is_already_swapped == false) { return; }
+        if (!is_already_swapped) { return; }
 
         /* Get root dictionary */
         ResByamlContainer *root_dic = reinterpret_cast<vp::res::ResByamlContainer*>(reinterpret_cast<uintptr_t>(this) + table_offset);
-        if (IsContainerType(static_cast<ByamlDataType>(root_dic->data_type)) == false) { return; }
+        if (!IsContainerType(static_cast<ByamlDataType>(root_dic->data_type))) { return; }
 
         /* Swap endian */
         this->SwapEndianDataContainer(root_dic, big_data_cache);
@@ -367,7 +367,7 @@ namespace vp::res {
 
         /* Cache big data offset */
         const bool is_already_swapped = big_data_cache->Cache(table_offset);
-        if (is_already_swapped == false) { return; }
+        if (!is_already_swapped) { return; }
 
         /* Get table */
         ResByamlContainer *string_table = reinterpret_cast<vp::res::ResByamlContainer*>(reinterpret_cast<uintptr_t>(this) + table_offset);
@@ -375,7 +375,7 @@ namespace vp::res {
 
         /* Swap endian */
         string_table->SwapEndian();
-        const u32 string_count = (this->IsReverseEndian() == false) ? string_table->count : vp::util::SwapEndian24(string_table->count);
+        const u32 string_count = (!this->IsReverseEndian()) ? string_table->count : vp::util::SwapEndian24(string_table->count);
         const u32 index_count = string_count + 1;
         u32 *index_array = reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(string_table) + sizeof(ResByamlContainer));
         for (u32 i = 0; i < index_count; ++i) {
@@ -392,7 +392,7 @@ namespace vp::res {
 
         /* Cache big data offset */
         const bool is_already_swapped = big_data_cache->Cache(table_offset);
-        if (is_already_swapped == false) { return; }
+        if (!is_already_swapped) { return; }
 
         /* Get table */
         ResByamlContainer *key_table = reinterpret_cast<vp::res::ResByamlContainer*>(reinterpret_cast<uintptr_t>(this) + table_offset);
@@ -400,7 +400,7 @@ namespace vp::res {
 
         /* Swap endian */
         key_table->SwapEndian();
-        const u32 string_count = (this->IsReverseEndian() == false) ? key_table->count : vp::util::SwapEndian24(key_table->count);
+        const u32 string_count = (!this->IsReverseEndian()) ? key_table->count : vp::util::SwapEndian24(key_table->count);
         const u32 index_count = string_count + 1;
         u32 *index_array = reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(key_table) + sizeof(ResByamlContainer));
         for (u32 i = 0; i < index_count; ++i) {
@@ -425,13 +425,13 @@ namespace vp::res {
         data_offset         = vp::util::SwapEndian(data_offset);
 
         /* Swap table endians */
-        const u32 r_key_table_offset = (this->IsReverseEndian() == false) ? key_table_offset : vp::util::SwapEndian(key_table_offset);
+        const u32 r_key_table_offset = (!this->IsReverseEndian()) ? key_table_offset : vp::util::SwapEndian(key_table_offset);
         this->SwapKeyTableEndian(r_key_table_offset, std::addressof(big_data_cache));
 
-        const u32 r_string_table_offset = (this->IsReverseEndian() == false) ? string_table_offset : vp::util::SwapEndian(string_table_offset);
+        const u32 r_string_table_offset = (!this->IsReverseEndian()) ? string_table_offset : vp::util::SwapEndian(string_table_offset);
         this->SwapStringTableEndian(r_string_table_offset, std::addressof(big_data_cache));
 
-        const u32 r_data_offset = (this->IsReverseEndian() == false) ? data_offset : vp::util::SwapEndian(data_offset);
+        const u32 r_data_offset = (!this->IsReverseEndian()) ? data_offset : vp::util::SwapEndian(data_offset);
         this->SwapRootContainerEndian(r_data_offset, std::addressof(big_data_cache));
 
         /* Free cache */

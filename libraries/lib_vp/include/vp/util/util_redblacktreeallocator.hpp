@@ -39,7 +39,9 @@ namespace vp::util {
             }
 
             ALWAYS_INLINE TreeType::iterator begin() { return m_tree.begin(); }
-            ALWAYS_INLINE TreeType::iterator end()   { return m_tree.end(); }
+            constexpr TreeType::iterator end()   { return m_tree.end(); }
+            ALWAYS_INLINE TreeType::const_iterator begin() const { return m_tree.begin(); }
+            constexpr TreeType::const_iterator end() const { return m_tree.end(); }
 
             template <typename ... Args>
             ParentType *Allocate(KeyType key, Args &&... args) {
