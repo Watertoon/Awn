@@ -162,6 +162,10 @@ namespace vp::resbui {
 			constexpr ByamlNodeString(const char *value) : ByamlNodeBase(), m_string(value) {/*...*/}
             virtual constexpr ~ByamlNodeString() {/*...*/}
 
+            virtual void PushStrings(ByamlStringPoolBuilder *pool_builder) override {
+                pool_builder->AddString(std::addressof(m_string));
+            }
+
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::StringIndex; }
             virtual void Serialize(void *data_offset, vp::res::ResByaml *head) override {
                 const u32 string_index = m_string.GetKeyIndex();

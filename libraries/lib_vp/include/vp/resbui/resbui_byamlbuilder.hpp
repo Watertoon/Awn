@@ -43,7 +43,7 @@ namespace vp::resbui {
             constexpr void SetRootNode(ByamlNodeBase *node) {
                 m_root_node = node;
             }
-            constexpr void SetRootNode(bool is_reverse_endian) {
+            constexpr void SetIsReverseEndian(bool is_reverse_endian) {
                 m_is_reverse_endian = is_reverse_endian;
             }
             constexpr void SetVersion(u16 version) {

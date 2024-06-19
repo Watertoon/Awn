@@ -53,7 +53,7 @@ namespace vp::resbui {
 		if (memory_info->location_string_pool.size != 0) {
 
 			/* Gather string pool */
-			ByamlStringPoolBuilder string_pool_builder(false);
+			ByamlStringPoolBuilder string_pool_builder(true);
             string_pool_builder.SetIsReverseEndian(m_is_reverse_endian);
 			m_root_node->PushStrings(std::addressof(string_pool_builder));
 
@@ -91,14 +91,11 @@ namespace vp::resbui {
 		/* Write single data type for non container */
 		void *root_value_offset           = container_base;
 		res::ByamlDataType root_data_type = m_root_node->GetByamlDataType();
-		if (res::IsContainerType(root_data_type) == false && root_data_type != res::ByamlDataType::Null) {
+		if (res::IsContainerType(root_data_type) || root_data_type == res::ByamlDataType::Null) { return; }
 
-			u8 *data_type     = reinterpret_cast<u8*>(container_base);
-			*data_type        = static_cast<u8>(root_data_type);
-			root_value_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(container_base) + sizeof(u32));
-		}
-
-		/* Serialize root value */
+        u8 *data_type     = reinterpret_cast<u8*>(container_base);
+        *data_type        = static_cast<u8>(root_data_type);
+        root_value_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(container_base) + sizeof(u32));
 		m_root_node->Serialize(root_value_offset, head);
 
 		return;
@@ -135,7 +132,7 @@ namespace vp::resbui {
 		out_memory_info->location_key_table.alignment = key_table_memory_info.max_alignment;
 
 		/* Gather string pool */
-		ByamlStringPoolBuilder string_pool_builder(false);
+		ByamlStringPoolBuilder string_pool_builder(true);
 		m_root_node->PushStrings(std::addressof(string_pool_builder));
 
 		/* Calculate memory info */
@@ -150,9 +147,9 @@ namespace vp::resbui {
 		out_memory_info->location_string_pool.size      = string_pool_memory_info.total_size;
 		out_memory_info->location_string_pool.alignment = string_pool_memory_info.max_alignment;
 
-		const size_t big_data_base = out_memory_info->location_string_pool.offset + out_memory_info->location_string_pool.size;
-		uintptr_t container_iter  = big_data_base;
-		uintptr_t big_data_iter   = big_data_base;
+		const size_t big_data_base  = out_memory_info->location_string_pool.offset + out_memory_info->location_string_pool.size;
+		uintptr_t    container_iter = big_data_base;
+		uintptr_t    big_data_iter  = big_data_base;
 		if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(m_root_node)) {
 
 			/* Calculate big data and container end */

@@ -106,13 +106,13 @@ namespace vp::util {
 	template<typename T, typename K, class Traits, Traits::ComparisonFunction Compare, Traits::CollisionFunction Collision>
 	class IntrusiveRedBlackTree : public IntrusiveRedBlackTreeBase {
 		public:
-            using value_type       = T;
-            using reference        = T&;
-            using const_reference  = const T&;
-            using pointer          = T*;
-            using const_pointer    = const T*;
-            using node_type        = IntrusiveRedBlackTreeNode<K>;
-            using key_type         = K;
+            using value_type      = T;
+            using reference       = T&;
+            using const_reference = const T&;
+            using pointer         = T*;
+            using const_pointer   = const T*;
+            using node_type       = IntrusiveRedBlackTreeNode<K>;
+            using key_type        = K;
         public:
             class Iterator {
                 private:
@@ -267,14 +267,7 @@ namespace vp::util {
 			constexpr ALWAYS_INLINE ~IntrusiveRedBlackTree() {/*...*/}
 
             ALWAYS_INLINE void Insert(pointer node) {
-
-                /* Insert node into tree */
-                this->InsertImpl(Traits::GetTreeNode(node));
-
-                /* Paint root black */
-                m_root->m_parent_color.SetFlagsAndClearPointer(1);
-
-                return;
+                this->Insert(Traits::GetTreeNode(node));
             }
             ALWAYS_INLINE void Insert(node_type *node) {
 
@@ -288,8 +281,7 @@ namespace vp::util {
             }
 
             ALWAYS_INLINE void Remove(pointer node) {
-                this->RemoveImpl(Traits::GetTreeNode(node)->GetKey());
-                if (m_root != nullptr) { m_root->m_parent_color.SetFlagsAndClearPointer(1); }
+                this->Remove(Traits::GetTreeNode(node));
             }
             ALWAYS_INLINE void Remove(node_type *node) {
                 this->RemoveImpl(node->GetKey());
@@ -341,7 +333,7 @@ namespace vp::util {
             }
             static node_type *GetNext(node_type *node) {
                 node_type *next = reinterpret_cast<node_type*>(node->GetNext());
-                return (next != nullptr) ? next : nullptr;
+                return next;
             }
             static const_pointer GetNext(const_pointer node) {
                 const node_type *next = reinterpret_cast<const node_type*>(Traits::GetTreeNode(node)->GetNext());
@@ -349,7 +341,7 @@ namespace vp::util {
             }
             static const node_type *GetNext(const node_type *node) {
                 const node_type *next = reinterpret_cast<const node_type*>(node->GetNext());
-                return (next != nullptr) ? next : nullptr;
+                return next;
             }
 
             constexpr void ForceReset() { m_root = nullptr; }

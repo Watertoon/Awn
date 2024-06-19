@@ -68,7 +68,7 @@ namespace vp::resbui {
                 }
 
                 /* Serialize */
-                node.Serialize(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(value_array) + i), head);
+                node.Serialize(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(value_array) + i * sizeof(u32)), head);
                 ++i;
             }
 
@@ -87,7 +87,7 @@ namespace vp::resbui {
                 }
 
                 /* Serialize */
-                node.Serialize(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(value_array) + i), head);
+                node.Serialize(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(value_array) + i * sizeof(u32)), head);
                 ++i;
             }
 

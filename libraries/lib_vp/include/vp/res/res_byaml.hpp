@@ -167,26 +167,26 @@ namespace vp::res {
             const bool is_reverse_endian = this->IsReverseEndian();
 
             /* Header checks */
-            const u32 r_magic   = (is_reverse_endian == false) ? magic : vp::util::SwapEndian(magic);
-            const u32 r_version = (is_reverse_endian == false) ? version : vp::util::SwapEndian(version);
+            const u32 r_magic   = (!is_reverse_endian) ? magic : vp::util::SwapEndian(magic);
+            const u32 r_version = (!is_reverse_endian) ? version : vp::util::SwapEndian(version);
             if (r_magic != cMagic || cTargetVersion < r_version) { return false; }
 
             /* String table checks */
-            const u32 r_key_table_offset    = (is_reverse_endian == false) ? key_table_offset : vp::util::SwapEndian(key_table_offset);
-            const u32 r_string_table_offset = (is_reverse_endian == false) ? string_table_offset : vp::util::SwapEndian(string_table_offset);
-            if (r_key_table_offset != 0    && VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_key_table_offset), is_reverse_endian) == false)       { return false; }
-            if (r_string_table_offset != 0 && VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_string_table_offset), is_reverse_endian) == false) { return false; }
+            const u32 r_key_table_offset    = (!is_reverse_endian) ? key_table_offset : vp::util::SwapEndian(key_table_offset);
+            const u32 r_string_table_offset = (!is_reverse_endian) ? string_table_offset : vp::util::SwapEndian(string_table_offset);
+            if (r_key_table_offset != 0    && !VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_key_table_offset), is_reverse_endian))       { return false; }
+            if (r_string_table_offset != 0 && !VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_string_table_offset), is_reverse_endian)) { return false; }
 
             /* Table offset checks */
             const ResByamlContainer *string_table = reinterpret_cast<ResByamlContainer*>(reinterpret_cast<uintptr_t>(this) + r_string_table_offset);
-            const u32 r_string_count              = (is_reverse_endian == false) ? string_table->count : vp::util::SwapEndian24(string_table->count);
+            const u32 r_string_count              = (!is_reverse_endian) ? string_table->count : vp::util::SwapEndian24(string_table->count);
             const u32 final_string_offset         = (r_string_table_offset != 0) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(string_table) + sizeof(u32) * (r_string_count + 1)) : 0;
-            const u32 r_final_string_offset       = (is_reverse_endian == false) ? final_string_offset : vp::util::SwapEndian(final_string_offset);
+            const u32 r_final_string_offset       = (!is_reverse_endian) ? final_string_offset : vp::util::SwapEndian(final_string_offset);
 
             const ResByamlContainer *key_table = reinterpret_cast<ResByamlContainer*>(reinterpret_cast<uintptr_t>(this) + r_key_table_offset);
-            const u32 r_key_count              = (is_reverse_endian == false) ? key_table->count : vp::util::SwapEndian24(key_table->count);
+            const u32 r_key_count              = (!is_reverse_endian) ? key_table->count : vp::util::SwapEndian24(key_table->count);
             const u32 final_key_offset         = (r_key_table_offset != 0) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(key_table) + sizeof(u32) * (r_key_count + 1)) : 0;
-            const u32 r_final_key_offset       = (is_reverse_endian == false) ? final_key_offset : vp::util::SwapEndian(final_key_offset);
+            const u32 r_final_key_offset       = (!is_reverse_endian) ? final_key_offset : vp::util::SwapEndian(final_key_offset);
 
             if ((r_string_table_offset | r_key_table_offset) != 0 && data_offset == 0) { return false; }
             if (r_key_table_offset != 0) {
@@ -203,7 +203,7 @@ namespace vp::res {
         }
 
         static ALWAYS_INLINE ResByaml *ResCast(void *file) {
-            if (file == nullptr || reinterpret_cast<ResByaml*>(file)->IsValid() == false) { return nullptr; }
+            if (file == nullptr || !reinterpret_cast<ResByaml*>(file)->IsValid()) { return nullptr; }
             return reinterpret_cast<ResByaml*>(file);
         }
 
@@ -214,15 +214,15 @@ namespace vp::res {
             if (static_cast<ByamlDataType>(header->data_type) != ByamlDataType::KeyTable) { return false; }
 
             /* Verify we have strings */
-            const u32 string_count = (is_reverse_endian == false) ? header->count : vp::util::SwapEndian24(header->count);
+            const u32 string_count = (!is_reverse_endian) ? header->count : vp::util::SwapEndian24(header->count);
             if (string_count == 0) { return false; }
 
             for (u32 i = 0; i < string_count; ++i) {
                 /* Find offsets at start and end of string */
                 const u32 *start_addr  = reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(header) + sizeof(ResByamlContainer) + i * sizeof(u32));
                 const u32 *end_addr    = reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(start_addr) + sizeof(u32));
-                const u32 offset_start = (is_reverse_endian == false) ? *start_addr : vp::util::SwapEndian(*start_addr);
-                const u32 offset_end   = (is_reverse_endian == false) ? *end_addr : vp::util::SwapEndian(*end_addr);;
+                const u32 offset_start = (!is_reverse_endian) ? *start_addr : vp::util::SwapEndian(*start_addr);
+                const u32 offset_end   = (!is_reverse_endian) ? *end_addr : vp::util::SwapEndian(*end_addr);;
 
                 /* Verify all sucessive string indices point to after a null terminator */
                 if (*reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(header) + offset_end - 1) != '\0') { return false; }
@@ -272,8 +272,8 @@ namespace vp::res {
 
         constexpr ALWAYS_INLINE void SetPair(const ResByamlDictionaryPair *pair, u32 is_reverse_endian) {
             data_type = pair->data_type;
-            key_index = (is_reverse_endian == false) ? pair->key_index : vp::util::SwapEndian24(pair->key_index);
-            u32_value = (is_reverse_endian == false) ? pair->u32_value : vp::util::SwapEndian(pair->u32_value);
+            key_index = (!is_reverse_endian) ? pair->key_index : vp::util::SwapEndian24(pair->key_index);
+            u32_value = (!is_reverse_endian) ? pair->u32_value : vp::util::SwapEndian(pair->u32_value);
         }
 
         constexpr ALWAYS_INLINE bool IsKeyIndexValid() const {

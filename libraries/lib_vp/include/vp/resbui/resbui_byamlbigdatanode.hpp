@@ -78,7 +78,9 @@ namespace vp::resbui {
         public:
             constexpr ByamlBigDataNodeArray() : ByamlBigDataNodeContainerBase(), m_data_type_mode(ByamlArrayDataTypeMode::Auto) {/*...*/}
             virtual ~ByamlBigDataNodeArray() override {/*...*/}
-    
+
+            constexpr void SetArrayMode(ByamlArrayDataTypeMode mode) { m_data_type_mode = mode; }
+
             void AddNode(ByamlNodeBase *node);
             void RemoveNode(ByamlNodeBase *node);
 
