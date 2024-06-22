@@ -25,24 +25,33 @@ namespace vp::util {
     typedef float  v8f __attribute__((vector_size(32)));
     typedef double v4d __attribute__((vector_size(32)));
 
+    struct v256f {
+        union {
+            v8f     f;
+            v4d     d;
+            __m256  mmf;
+            __m256d mmd;
+        };
+    };
+
     typedef float  v4f __attribute__((vector_size(16)));
     typedef double v2d __attribute__((vector_size(16)));
 
     struct v128f {
         union {
-            v4f f;
-            v2d d;
-            __m128 mm;
+            v4f     f;
+            v2d     d;
+            __m128  mmf;
+            __m128d mmd;
         };
+    };
 
-        constexpr ALWAYS_INLINE v128f() : mm() {}
-        constexpr ALWAYS_INLINE v128f(const v128f& copy) : mm(copy.mm) {}
+    typedef float v2f __attribute__((vector_size(8)));
 
-        constexpr ALWAYS_INLINE v128f(const v4f& copy) : f(copy) {}
-        constexpr ALWAYS_INLINE v128f(const v2d& copy) : d(copy) {}
-
-        constexpr ALWAYS_INLINE v128f(float x, float y, float z, float w) : f{x,y,z,w} {}
-        constexpr ALWAYS_INLINE v128f(double x, double y) : d{x,y} {}
+    struct v64f {
+        union {
+            v2f f;
+        };
     };
 
     typedef long long          v2sll __attribute__((vector_size(16)));
@@ -68,28 +77,6 @@ namespace vp::util {
             v16uc uc;
             __m128i mm;
         };
-
-        constexpr ALWAYS_INLINE v128i() : mm() {/*...*/}
-        constexpr ALWAYS_INLINE v128i(const v128i& rhs) : mm(rhs.mm) {/*...*/}
-
-        constexpr ALWAYS_INLINE v128i(__m128i rhs) : mm(rhs) {/*Takes care of v2sll*/}
-        constexpr ALWAYS_INLINE v128i(v4si rhs)  : si(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128i(v4ui rhs)  : ui(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128i(v2ull rhs) : ull(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128i(v8ss rhs)  : ss(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128i(v8us rhs)  : us(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128i(v16sc rhs) : sc(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v128i(v16uc rhs) : uc(rhs) {/*...*/}
-
-        constexpr ALWAYS_INLINE v128i(int x, int y = 0, int z = 0, int w = 0) : si{x,y,z,w} {/*...*/}
-        constexpr ALWAYS_INLINE v128i(unsigned int x, unsigned int y = 0, unsigned int z = 0, unsigned int w = 0) : ui{x,y,z,w} {/*...*/}
-        constexpr ALWAYS_INLINE v128i(long long x, long long y = 0) : sll{x,y} {/*...*/}
-        constexpr ALWAYS_INLINE v128i(unsigned long long x, unsigned long long y = 0) : ull{x,y} {/*...*/}
-        constexpr ALWAYS_INLINE v128i(short x, short y = 0, short z = 0, short w = 0, short x2 = 0, short y2 = 0, short z2 = 0, short w2 = 0) : ss{x,y,z,w,x2,y2,z2,w2} {/*...*/}
-        constexpr ALWAYS_INLINE v128i(unsigned short x, unsigned short y = 0, unsigned short z = 0, unsigned short w = 0, unsigned short x2 = 0, unsigned short y2 = 0, unsigned short z2 = 0, unsigned short w2 = 0) : us{x,y,z,w,x2,y2,z2,w2} {/*...*/}
-        constexpr ALWAYS_INLINE v128i(char x1, char y1 = 0, char z1 = 0, char w1 = 0, char x2 = 0, char y2 = 0, char z2 = 0, char w2 = 0, char x3 = 0, char y3 = 0, char z3 = 0, char w3 = 0, char x4 = 0, char y4 = 0, char z4 = 0, char w4 = 0) : cc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
-        constexpr ALWAYS_INLINE v128i(signed char x1, signed char y1 = 0, signed char z1 = 0, signed char w1 = 0, signed char x2 = 0, signed char y2 = 0, signed char z2 = 0, signed char w2 = 0, signed char x3 = 0, signed char y3 = 0, signed char z3 = 0, signed char w3 = 0, signed char x4 = 0, signed char y4 = 0, signed char z4 = 0, signed char w4 = 0) : sc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
-        constexpr ALWAYS_INLINE v128i(unsigned char x1, unsigned char y1 = 0, unsigned char z1 = 0, unsigned char w1 = 0, unsigned char x2 = 0, unsigned char y2 = 0, unsigned char z2 = 0, unsigned char w2 = 0, unsigned char x3 = 0, unsigned char y3 = 0, unsigned char z3 = 0, unsigned char w3 = 0, unsigned char x4 = 0, unsigned char y4 = 0, unsigned char z4 = 0, unsigned char w4 = 0) : uc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
     };
 
     typedef v128i v2ll;
@@ -125,31 +112,6 @@ namespace vp::util {
             v4sll mm;
 #endif
         };
-
-        constexpr ALWAYS_INLINE v256i() : mm() {/*...*/}
-        constexpr ALWAYS_INLINE v256i(const v256i& rhs) : mm(rhs.mm) {/*...*/}
-
-#ifdef VP_TARGET_ARCHITECTURE_x86
-        constexpr ALWAYS_INLINE v256i(__m256i rhs) : mm(rhs) {/*Takes care of v4sll*/}
-#endif
-        constexpr ALWAYS_INLINE v256i(v8si rhs)  : si(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v256i(v8ui rhs)  : ui(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v256i(v4ull rhs) : ull(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v256i(v16ss rhs)  : ss(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v256i(v16us rhs)  : us(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v256i(v32cc rhs) : cc(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v256i(v32sc rhs) : sc(rhs) {/*...*/}
-        constexpr ALWAYS_INLINE v256i(v32uc rhs) : uc(rhs) {/*...*/}
-
-        //constexpr ALWAYS_INLINE v256i(int x, int y = 0, int z = 0, int w = 0) : si{x,y,z,w} {/*...*/}
-        //constexpr ALWAYS_INLINE v256i(unsigned int x, unsigned int y = 0, unsigned int z = 0, unsigned int w = 0) : ui{x,y,z,w} {/*...*/}
-        //constexpr ALWAYS_INLINE v256i(long long x, long long y = 0) : sll{x,y} {/*...*/}
-        //constexpr ALWAYS_INLINE v256i(unsigned long long x, unsigned long long y = 0) : ull{x,y} {/*...*/}
-        //constexpr ALWAYS_INLINE v256i(short x, short y = 0, short z = 0, short w = 0, short x2 = 0, short y2 = 0, short z2 = 0, short w2 = 0) : ss{x,y,z,w,x2,y2,z2,w2} {/*...*/}
-        //constexpr ALWAYS_INLINE v256i(unsigned short x, unsigned short y = 0, unsigned short z = 0, unsigned short w = 0, unsigned short x2 = 0, unsigned short y2 = 0, unsigned short z2 = 0, unsigned short w2 = 0) : us{x,y,z,w,x2,y2,z2,w2} {/*...*/}
-        //constexpr ALWAYS_INLINE v256i(char x1, char y1 = 0, char z1 = 0, char w1 = 0, char x2 = 0, char y2 = 0, char z2 = 0, char w2 = 0, char x3 = 0, char y3 = 0, char z3 = 0, char w3 = 0, char x4 = 0, char y4 = 0, char z4 = 0, char w4 = 0) : cc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
-        //constexpr ALWAYS_INLINE v256i(signed char x1, signed char y1 = 0, signed char z1 = 0, signed char w1 = 0, signed char x2 = 0, signed char y2 = 0, signed char z2 = 0, signed char w2 = 0, signed char x3 = 0, signed char y3 = 0, signed char z3 = 0, signed char w3 = 0, signed char x4 = 0, signed char y4 = 0, signed char z4 = 0, signed char w4 = 0) : sc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
-        //constexpr ALWAYS_INLINE v256i(unsigned char x1, unsigned char y1 = 0, unsigned char z1 = 0, unsigned char w1 = 0, unsigned char x2 = 0, unsigned char y2 = 0, unsigned char z2 = 0, unsigned char w2 = 0, unsigned char x3 = 0, unsigned char y3 = 0, unsigned char z3 = 0, unsigned char w3 = 0, unsigned char x4 = 0, unsigned char y4 = 0, unsigned char z4 = 0, unsigned char w4 = 0) : uc{x1,y1,z1,w1,x2,y2,z2,w2,x3,y3,z3,w3,x4,y4,z4,w4} {/*...*/}
     };
 
     typedef v256i v4ll;

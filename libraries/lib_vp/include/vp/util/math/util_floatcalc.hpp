@@ -17,12 +17,30 @@
 
 namespace vp::util {
 
+    constexpr Vector2f operator+(const Vector2f &left, const Vector2f &right) {
+        const Vector2f out = { .vector = left.vector.f + right.vector.f };
+        return out;
+    }
+    constexpr Vector2f operator-(const Vector2f &left, const Vector2f &right) {
+        const Vector2f out = { .vector = left.vector.f - right.vector.f };
+        return out;
+    }
+
     constexpr Vector3f operator+(const Vector3f &left, const Vector3f &right) {
-        const Vector3f out = { .vector = left.vector + right.vector };
+        const Vector3f out = { .vector = left.vector.f + right.vector.f };
         return out;
     }
     constexpr Vector3f operator-(const Vector3f &left, const Vector3f &right) {
-        const Vector3f out = { .vector = left.vector - right.vector };
+        const Vector3f out = { .vector = left.vector.f - right.vector.f };
+        return out;
+    }
+
+    constexpr Vector4f operator+(const Vector4f &left, const Vector4f &right) {
+        const Vector4f out = { .vector = left.vector.f + right.vector.f };
+        return out;
+    }
+    constexpr Vector4f operator-(const Vector4f &left, const Vector4f &right) {
+        const Vector4f out = { .vector = left.vector.f - right.vector.f };
         return out;
     }
 
@@ -31,7 +49,7 @@ namespace vp::util {
         return out;
 	}
 	constexpr Vector3f CastVector(const Vector3d &vector) {
-		const Vector3f out = { static_cast<float>(vector.x), static_cast<float>(vector.y), static_cast<float>(vector.z) };
+		const Vector3f out = { static_cast<float>(vector.x), static_cast<float>(vector.y), static_cast<float>(vector.z), static_cast<float>(vector.array[3]) };
         return out;
 	}
 	constexpr Vector4f CastVector(const Vector4d &vector) {
@@ -39,8 +57,24 @@ namespace vp::util {
         return out;
 	}
 
+    constexpr Vector2f ScalarMultiply(const Vector2f &vector, float scalar) {
+        const Vector2f out = { .vector = vector.vector.f * scalar };
+        return out;
+    }
+
     constexpr Vector3f ScalarMultiply(const Vector3f &vector, float scalar) {
-        const Vector3f out = { .vector = vector.vector * scalar };
+        const Vector3f out = { .vector = vector.vector.f * scalar };
+        return out;
+    }
+
+    constexpr Vector4f ScalarMultiply(const Vector4f &vector, float scalar) {
+        const Vector4f out = { .vector = vector.vector.f * scalar };
+        return out;
+    }
+
+    constexpr float Magnitude(const Vector2f &vector) {
+        const float squared_summation = vector.x * vector.x + vector.y * vector.y;
+        const float out               = ::sqrtf(squared_summation);
         return out;
     }
 
@@ -48,6 +82,30 @@ namespace vp::util {
         const float squared_summation = vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
         const float out               = ::sqrtf(squared_summation);
         return out;
+    }
+
+    constexpr float Magnitude(const Vector4f &vector) {
+        const float squared_summation = vector.x * vector.x + vector.y * vector.y + vector.z * vector.z + vector.w * vector.w;
+        const float out               = ::sqrtf(squared_summation);
+        return out;
+    }
+
+    constexpr Vector2f Normalize(const Vector2f &vector) {
+        
+        Vector2f vec     = vector;  
+        const float mag0 = Magnitude(vector);
+        if (mag0 == cFloatInfinity) {
+            vec              = ScalarMultiply(vec, 3.129822e-20f);
+            const float mag1 = Magnitude(vec);
+            vec              = ScalarMultiply(vec, mag1);
+        } else if (cFloatEpsilon < mag0) {
+            const float reciprocal_mag = 1.0f / mag0;
+            vec                        = ScalarMultiply(vec, reciprocal_mag);
+        } else {
+            vec = {0.0f, 0.0f};
+        }
+
+        return vec;
     }
 
     constexpr Vector3f Normalize(const Vector3f &vector) {
@@ -68,13 +126,31 @@ namespace vp::util {
         return vec;
     }
 
+    constexpr Vector4f Normalize(const Vector4f &vector) {
+        
+        Vector4f vec     = vector;  
+        const float mag0 = Magnitude(vector);
+        if (mag0 == cFloatInfinity) {
+            vec              = ScalarMultiply(vec, 3.129822e-20f);
+            const float mag1 = Magnitude(vec);
+            vec              = ScalarMultiply(vec, mag1);
+        } else if (cFloatEpsilon < mag0) {
+            const float reciprocal_mag = 1.0f / mag0;
+            vec                        = ScalarMultiply(vec, reciprocal_mag);
+        } else {
+            vec = {0.0f, 0.0f, 0.0f, 0.0f};
+        }
+
+        return vec;
+    }
+
 #ifdef VP_TARGET_ARCHITECTURE_x86
     constexpr Vector3f Cross(const Vector3f &left, const Vector3f &right) {
-        const v4f a = avx2::shufps(left.vector, left.vector, avx2::ShuffleToOrder(1,2,0,3));
-        const v4f b = avx2::shufps(right.vector, right.vector, avx2::ShuffleToOrder(2,0,1,3));
-        const v4f c = avx2::mulps(a, right.vector);
-        const v4f d = avx2::mulps(a, b);
-        const v4f e = avx2::shufps(c, c, avx2::ShuffleToOrder(1, 2, 0, 3));
+        const v128f a { .mmf = avx2::shufps(left.vector, left.vector, avx2::ShuffleToOrder(1,2,0,3)) };
+        const v128f b { .mmf = avx2::shufps(right.vector, right.vector, avx2::ShuffleToOrder(2,0,1,3)) };
+        const v128f c { .mmf = avx2::mulps(a, right.vector) };
+        const v128f d { .mmf = avx2::mulps(a, b) };
+        const v128f e { .mmf = avx2::shufps(c, c, avx2::ShuffleToOrder(1, 2, 0, 3)) };
         return Vector3f{ .vector = avx2::subps(d, e) };
     }
 #else
@@ -85,9 +161,8 @@ namespace vp::util {
         return Vector3f{ out_x, out_y, out_z };
     }
 #endif
-
     constexpr float Dot(const Vector3f &left, const Vector3f &right) {
-        const Vector3f temp = { .vector = left.vector * right.vector };
+        const Vector3f temp = { .vector = left.vector.f * right.vector.f };
         return temp.x + temp.y + temp.z;
     }
 
@@ -136,7 +211,11 @@ namespace vp::util {
         out_vector->y = to_parallelize.y * dot;
         out_vector->x = to_parallelize.x * dot;
     }
-    
+
+    //constexpr void MatrixMultiply(MatrixRowMajor4x4f *out_matrix, const MatrixRowMajor4x4f &lhs, const MatrixRowMajor4x4f &rhs) {
+
+    //}
+
     constexpr void RotateLocalX(MatrixRowMajor4x3f *out_rot_matrix, float theta) {
         const float index = theta * (static_cast<float>(cAngleIndexHalfRound) / cFloatPi);
         const float sin = SampleSin(index);

@@ -160,141 +160,145 @@ namespace awn::gfx {
         if (m_vk_physical_device_properties_12.maxDescriptorSetUpdateAfterBindSampledImages  < cTargetMaxTextureDescriptorCount) { VP_ASSERT(false); return false; }
         if (m_vk_physical_device_properties_12.maxDescriptorSetUpdateAfterBindSamplers       < cTargetMaxSamplerDescriptorCount) { VP_ASSERT(false); return false; }
         //if (m_vk_physical_device_push_descriptor_properties.maxPushDescriptors               < cTargetMaxPushDescriptorCount)    { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_extended_dynamic_state_3_properties.dynamicPrimitiveTopologyUnrestricted == false)              { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_nested_command_buffer_properties.maxCommandBufferNestingLevel < cTargetCommandBufferNestingLevel)              { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_extended_dynamic_state_3_properties.dynamicPrimitiveTopologyUnrestricted == false) { VP_ASSERT(false); return false; }
+        if (m_vk_physical_device_nested_command_buffer_properties.maxCommandBufferNestingLevel < cTargetCommandBufferNestingLevel) { VP_ASSERT(false); return false; }
+        if ((m_vk_physical_device_cooperative_matrix_properties.cooperativeMatrixSupportedStages & VK_SHADER_STAGE_COMPUTE_BIT) != VK_SHADER_STAGE_COMPUTE_BIT) { VP_ASSERT(false); return false; }
         //if (m_vk_physical_device_host_image_copy_properties.identicalMemoryTypeRequirements == false)                            { VP_ASSERT(false); return false; }
 
         /* Base feature checks */
-        if (m_vk_physical_device_supported_features.features.fullDrawIndexUint32 == false)                     { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.independentBlend == false)                        { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.geometryShader == false)                          { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.tessellationShader == false)                      { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.logicOp == false)                                 { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.depthClamp == false)                              { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.depthBiasClamp == false)                          { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.fillModeNonSolid == false)                        { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.depthBounds == false)                             { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.wideLines == false)                               { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.largePoints == false)                             { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.multiViewport == false)                           { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.samplerAnisotropy == false)                       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.textureCompressionBC == false)                    { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.fragmentStoresAndAtomics == false)                { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.shaderStorageImageExtendedFormats == false)       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.shaderUniformBufferArrayDynamicIndexing == false) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.shaderSampledImageArrayDynamicIndexing == false)  { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.shaderStorageBufferArrayDynamicIndexing == false) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.shaderStorageImageArrayDynamicIndexing == false)  { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features.features.sparseBinding == false)                           { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.fullDrawIndexUint32)                     { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.independentBlend)                        { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.geometryShader)                          { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.tessellationShader)                      { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.logicOp)                                 { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.depthClamp)                              { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.depthBiasClamp)                          { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.fillModeNonSolid)                        { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.depthBounds)                             { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.wideLines)                               { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.largePoints)                             { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.multiViewport)                           { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.samplerAnisotropy)                       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.textureCompressionBC)                    { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.fragmentStoresAndAtomics)                { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.shaderStorageImageExtendedFormats)       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.shaderUniformBufferArrayDynamicIndexing) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.shaderSampledImageArrayDynamicIndexing)  { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.shaderStorageBufferArrayDynamicIndexing) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.shaderStorageImageArrayDynamicIndexing)  { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features.features.sparseBinding)                           { VP_ASSERT(false); return false; }
 
         /* 1.1 feature checks */
-        if (m_vk_physical_device_supported_features_11.variablePointersStorageBuffer == false)                 { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_11.variablePointers == false)                              { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_11.variablePointersStorageBuffer)                 { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_11.variablePointers)                              { VP_ASSERT(false); return false; }
 
         /* 1.2 feature checks */
-        if (m_vk_physical_device_supported_features_12.descriptorIndexing == false)                                 { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderInputAttachmentArrayDynamicIndexing == false)          { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderUniformTexelBufferArrayDynamicIndexing == false)       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderStorageTexelBufferArrayDynamicIndexing == false)       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderUniformBufferArrayNonUniformIndexing == false)         { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderSampledImageArrayNonUniformIndexing == false)          { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderStorageBufferArrayNonUniformIndexing == false)         { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderStorageImageArrayNonUniformIndexing == false)          { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderInputAttachmentArrayNonUniformIndexing == false)       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderUniformTexelBufferArrayNonUniformIndexing == false)    { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.shaderStorageTexelBufferArrayNonUniformIndexing == false)    { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingUniformBufferUpdateAfterBind == false)      { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingSampledImageUpdateAfterBind == false)       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingStorageImageUpdateAfterBind == false)       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingStorageBufferUpdateAfterBind == false)      { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingUniformTexelBufferUpdateAfterBind == false) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingStorageTexelBufferUpdateAfterBind == false) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingUpdateUnusedWhilePending == false)          { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingPartiallyBound == false)                    { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.descriptorBindingVariableDescriptorCount == false)           { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.runtimeDescriptorArray == false)                             { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.scalarBlockLayout == false)                                  { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.uniformBufferStandardLayout  == false)                       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.timelineSemaphore  == false)                                 { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.bufferDeviceAddress == false)                                { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_12.bufferDeviceAddressCaptureReplay == false)                   { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorIndexing)                                 { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderInputAttachmentArrayDynamicIndexing)          { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderUniformTexelBufferArrayDynamicIndexing)       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderStorageTexelBufferArrayDynamicIndexing)       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderUniformBufferArrayNonUniformIndexing)         { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderSampledImageArrayNonUniformIndexing)          { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderStorageBufferArrayNonUniformIndexing)         { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderStorageImageArrayNonUniformIndexing)          { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderInputAttachmentArrayNonUniformIndexing)       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderUniformTexelBufferArrayNonUniformIndexing)    { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.shaderStorageTexelBufferArrayNonUniformIndexing)    { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingUniformBufferUpdateAfterBind)      { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingSampledImageUpdateAfterBind)       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingStorageImageUpdateAfterBind)       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingStorageBufferUpdateAfterBind)      { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingUniformTexelBufferUpdateAfterBind) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingStorageTexelBufferUpdateAfterBind) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingUpdateUnusedWhilePending)          { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingPartiallyBound)                    { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.descriptorBindingVariableDescriptorCount)           { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.runtimeDescriptorArray)                             { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.scalarBlockLayout)                                  { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.uniformBufferStandardLayout )                       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.timelineSemaphore )                                 { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.bufferDeviceAddress)                                { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_12.bufferDeviceAddressCaptureReplay)                   { VP_ASSERT(false); return false; }
 
         /* 1.3 feature checks */
-        if (m_vk_physical_device_supported_features_13.synchronization2 == false)                              { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_13.dynamicRendering == false)                              { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_supported_features_13.maintenance4 == false)                                  { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_13.synchronization2)                              { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_13.dynamicRendering)                              { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_supported_features_13.maintenance4)                                  { VP_ASSERT(false); return false; }
 
         /* Vertex Input Dynamic State feature checks */
-        if (m_vk_physical_device_vertex_input_dynamic_state_features.vertexInputDynamicState == false)         { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_vertex_input_dynamic_state_features.vertexInputDynamicState)         { VP_ASSERT(false); return false; }
 
         /* Extended Dynamic State 2 feature checks */
-        if (m_vk_physical_device_extended_dynamic_state2_features.extendedDynamicState2LogicOp == false)       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_extended_dynamic_state2_features.extendedDynamicState2LogicOp)       { VP_ASSERT(false); return false; }
 
         /* Extended Dynamic State 3 feature checks */
-        if (m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3DepthClampEnable == false)   { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3PolygonMode == false)        { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3LogicOpEnable == false)      { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3ColorBlendEnable == false)   { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3ColorBlendEquation == false) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3ColorWriteMask == false)     { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3DepthClampEnable)   { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3PolygonMode)        { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3LogicOpEnable)      { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3ColorBlendEnable)   { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3ColorBlendEquation) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_extended_dynamic_state3_features.extendedDynamicState3ColorWriteMask)     { VP_ASSERT(false); return false; }
 
         /* Descriptor Buffer feature checks */
-        if (m_vk_physical_device_descriptor_buffer_features.descriptorBuffer == false)                   { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_descriptor_buffer_features.descriptorBufferImageLayoutIgnored == false) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_descriptor_buffer_features.descriptorBufferPushDescriptors == false)    { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_descriptor_buffer_features.descriptorBuffer)                   { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_descriptor_buffer_features.descriptorBufferImageLayoutIgnored) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_descriptor_buffer_features.descriptorBufferPushDescriptors)    { VP_ASSERT(false); return false; }
 
         /* Mesh Shader feature checks  */
-        if (m_vk_physical_device_mesh_shader_features.taskShader == false) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_mesh_shader_features.meshShader == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_mesh_shader_features.taskShader) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_mesh_shader_features.meshShader) { VP_ASSERT(false); return false; }
 
         /* Shader Object feature checks */
-        if (m_vk_physical_device_shader_object_features.shaderObject == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_object_features.shaderObject) { VP_ASSERT(false); return false; }
 
         /* Host Image Copy feature checks */
-        if (m_vk_physical_device_host_image_copy_features.hostImageCopy == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_host_image_copy_features.hostImageCopy) { VP_ASSERT(false); return false; }
 
         /* Maintenance 5 feature checks */
-        if (m_vk_physical_device_maintenance_5_features.maintenance5 == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_maintenance_5_features.maintenance5) { VP_ASSERT(false); return false; }
 
         /* Unused attachments feature checks */
-        if (m_vk_physical_device_dynamic_rendering_unused_attachments_features.dynamicRenderingUnusedAttachments == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_dynamic_rendering_unused_attachments_features.dynamicRenderingUnusedAttachments) { VP_ASSERT(false); return false; }
         
         /* Nested command buffer feature checks */
-        if (m_vk_physical_device_nested_command_buffer_features.nestedCommandBuffer == false)                { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_nested_command_buffer_features.nestedCommandBufferRendering == false)       { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_nested_command_buffer_features.nestedCommandBufferSimultaneousUse == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_nested_command_buffer_features.nestedCommandBuffer)                { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_nested_command_buffer_features.nestedCommandBufferRendering)       { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_nested_command_buffer_features.nestedCommandBufferSimultaneousUse) { VP_ASSERT(false); return false; }
 
         /* Maintenance 6 feature checks */
-        if (m_vk_physical_device_maintenance_6_features.maintenance6 == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_maintenance_6_features.maintenance6) { VP_ASSERT(false); return false; }
 
         /* Dynamic Rendering Local Read features checks */
-        if (m_vk_physical_device_dynamic_rendering_local_read_features.dynamicRenderingLocalRead == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_dynamic_rendering_local_read_features.dynamicRenderingLocalRead) { VP_ASSERT(false); return false; }
 
         /* Index type u8 features checks */
-        if (m_vk_physical_device_index_type_u8_features.indexTypeUint8 == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_index_type_u8_features.indexTypeUint8) { VP_ASSERT(false); return false; }
 
         /* Shader clock checks */
-        if (m_vk_physical_device_shader_clock_features.shaderSubgroupClock == false) { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_shader_clock_features.shaderDeviceClock == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_clock_features.shaderSubgroupClock) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_clock_features.shaderDeviceClock) { VP_ASSERT(false); return false; }
 
         /* Shader expect assume checks */
-        if (m_vk_physical_device_shader_expect_assume_features.shaderExpectAssume == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_expect_assume_features.shaderExpectAssume) { VP_ASSERT(false); return false; }
 
         /* Shader float controls 2 checks */
-        if (m_vk_physical_device_shader_float_controls_2_features.shaderFloatControls2 == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_float_controls_2_features.shaderFloatControls2) { VP_ASSERT(false); return false; }
 
         /* Shader maximal reconvergence checks */
-        if (m_vk_physical_device_shader_maximal_reconvergence_features.shaderMaximalReconvergence == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_maximal_reconvergence_features.shaderMaximalReconvergence) { VP_ASSERT(false); return false; }
 
         /* Shader quad control checks */
-        if (m_vk_physical_device_shader_quad_control_features.shaderQuadControl == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_quad_control_features.shaderQuadControl) { VP_ASSERT(false); return false; }
 
         /* Shader subgroup rotate checks */
-        if (m_vk_physical_device_shader_subgroup_rotate_features.shaderSubgroupRotate == false)          { VP_ASSERT(false); return false; }
-        if (m_vk_physical_device_shader_subgroup_rotate_features.shaderSubgroupRotateClustered == false) { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_subgroup_rotate_features.shaderSubgroupRotate)          { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_subgroup_rotate_features.shaderSubgroupRotateClustered) { VP_ASSERT(false); return false; }
 
         /* Shader subgroup uniform control flow checks */
-        if (m_vk_physical_device_shader_subgroup_uniform_control_flow_features.shaderSubgroupUniformControlFlow == false)          { VP_ASSERT(false); return false; }
+        if (!m_vk_physical_device_shader_subgroup_uniform_control_flow_features.shaderSubgroupUniformControlFlow) { VP_ASSERT(false); return false; }
+        
+        /* Shader cooperative matrix checks */
+        if (!m_vk_physical_device_cooperative_matrix_features.cooperativeMatrix) { VP_ASSERT(false); return false; }
 
         m_vk_physical_device = vk_physical_device;
 
@@ -728,9 +732,10 @@ namespace awn::gfx {
                 VK_KHR_SHADER_QUAD_CONTROL_EXTENSION_NAME,
                 VK_KHR_SHADER_SUBGROUP_ROTATE_EXTENSION_NAME,
                 VK_KHR_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_EXTENSION_NAME,
+                VK_KHR_COOPERATIVE_MATRIX_EXTENSION_NAME,
             };
             const u32 device_extension_count = sizeof(device_extension_array) / sizeof(const char*);
-            
+
             const float priority = 1.0f;
             const VkDeviceQueueCreateInfo device_queue_info_array[cTargetMaxQueueCount] {
                 {
@@ -795,7 +800,7 @@ namespace awn::gfx {
         ::pfn_vkGetDeviceQueue(m_vk_device, m_video_decode_queue_family_index, 0, std::addressof(m_vk_video_decode_queue));
         ::pfn_vkGetDeviceQueue(m_vk_device, m_video_encode_queue_family_index, 0, std::addressof(m_vk_video_encode_queue));
         ::pfn_vkGetDeviceQueue(m_vk_device, m_optical_flow_queue_family_index, 0, std::addressof(m_vk_optical_flow_queue));
-		
+
 		/* Initialize texture descriptor layout */
         {
             const VkDescriptorBindingFlags  texture_set_binding_flag_array[] = {

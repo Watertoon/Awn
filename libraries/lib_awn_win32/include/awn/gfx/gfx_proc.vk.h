@@ -57,6 +57,7 @@ DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceToolProperties);
 /* Instance Kronos procs */
 DEFINE_EXTERN_VK_PROC(vkCreateWin32SurfaceKHR);
 DEFINE_EXTERN_VK_PROC(vkDestroySurfaceKHR);
+DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR);
 DEFINE_EXTERN_VK_PROC(vkGetPhysicalDevicePresentRectanglesKHR);
 DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceSurfaceCapabilities2KHR);
 DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceSurfaceCapabilitiesKHR);

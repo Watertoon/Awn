@@ -17,6 +17,44 @@
 
 namespace vp::res {
 
+    constexpr inline const char *GfxShaderStageToString(GfxShaderStage shader_stage) {
+        switch (shader_stage) {
+            case GfxShaderStage::Vertex:
+                return "Vertex";
+            case GfxShaderStage::TessellationControl:
+                return "TessellationControl";
+            case GfxShaderStage::TessellationEvaluation:
+                return "TessellationEvaluation";
+            case GfxShaderStage::Geometry:
+                return "Geometry";
+            case GfxShaderStage::Fragment:
+                return "Fragment";
+            case GfxShaderStage::Compute:
+                return "Compute";
+            case GfxShaderStage::Task:
+                return "Task";
+            case GfxShaderStage::Mesh:
+                return "Mesh";
+            default:
+                break;
+        };
+        return "";
+    }
+
+    constexpr inline const char *GfxShaderCodeTypeToString(GfxShaderCodeType shader_code_type) {
+        switch (shader_code_type) {
+            case GfxShaderCodeType::Binary:
+                return "Binary";
+            case GfxShaderCodeType::Intermediate:
+                return "Intermediate";
+            case GfxShaderCodeType::Source:
+                return "Source";
+            default:
+                break;
+        };
+        return "";
+    }
+
     constexpr inline void GfxMemoryPoolFlagsToString(vp::util::FixedString<0x80> *out_string, GfxMemoryPoolFlags memory_pool_flags) {
 
         /* Reset string */

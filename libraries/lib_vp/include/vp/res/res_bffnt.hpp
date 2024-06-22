@@ -178,10 +178,10 @@ namespace vp::res {
         u32                        code_map_section_offset;
 
         ResBffntTextureGlyph *GetTextureGlyph(void *file_base) {
-            return (texture_glyph_section_offset == 0) ? 0 : reinterpret_cast<ResBffntTextureGlyph*>(reinterpret_cast<uintptr_t>(file_base) + texture_glyph_section_offset - 0x8);
+            return (texture_glyph_section_offset == 0) ? nullptr : reinterpret_cast<ResBffntTextureGlyph*>(reinterpret_cast<uintptr_t>(file_base) + texture_glyph_section_offset - 0x8);
         }
         ResBffntCharacterWidths *GetCharacterWidths(void *file_base) {
-            return (character_width_section_offset == 0) ? 0 : reinterpret_cast<ResBffntCharacterWidths*>(reinterpret_cast<uintptr_t>(file_base) + character_width_section_offset - 0x8);
+            return (character_width_section_offset == 0) ? nullptr : reinterpret_cast<ResBffntCharacterWidths*>(reinterpret_cast<uintptr_t>(file_base) + character_width_section_offset - 0x8);
         }
 
         ResBffntCharacterWidthData GetCharacterWidthData(void *file_base, u32 glyph_index) {

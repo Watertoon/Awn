@@ -264,6 +264,7 @@ namespace awn::gfx {
             VkPhysicalDeviceHostImageCopyPropertiesEXT                   m_vk_physical_device_host_image_copy_properties;
             VkPhysicalDeviceMaintenance5PropertiesKHR                    m_vk_physical_device_maintenance_5_properties;
             VkPhysicalDeviceNestedCommandBufferPropertiesEXT             m_vk_physical_device_nested_command_buffer_properties;
+            VkPhysicalDeviceCooperativeMatrixPropertiesKHR               m_vk_physical_device_cooperative_matrix_properties;
 
             VkPhysicalDeviceFeatures2                                    m_vk_physical_device_supported_features;
             VkPhysicalDeviceVulkan11Features                             m_vk_physical_device_supported_features_11;
@@ -289,6 +290,7 @@ namespace awn::gfx {
             VkPhysicalDeviceShaderQuadControlFeaturesKHR                 m_vk_physical_device_shader_quad_control_features;
             VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR              m_vk_physical_device_shader_subgroup_rotate_features;
             VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR  m_vk_physical_device_shader_subgroup_uniform_control_flow_features;
+            VkPhysicalDeviceCooperativeMatrixFeaturesKHR                 m_vk_physical_device_cooperative_matrix_features;
 
             VkPhysicalDeviceMemoryProperties                             m_vk_physical_device_memory_properties;
 
@@ -356,98 +358,103 @@ namespace awn::gfx {
             m_vk_push_constant_range {
                 .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT | VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT,
                 .offset     = cTargetPushConstantOffset,
-                .size       = cTargetPushConstantSize
+                .size       = cTargetPushConstantSize,
             },
             m_vk_physical_device_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
-                .pNext = std::addressof(m_vk_physical_device_properties_11)
+                .pNext = std::addressof(m_vk_physical_device_properties_11),
             },
             m_vk_physical_device_properties_11 {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
-                .pNext = std::addressof(m_vk_physical_device_properties_12)
+                .pNext = std::addressof(m_vk_physical_device_properties_12),
             },
             m_vk_physical_device_properties_12 {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
-                .pNext = std::addressof(m_vk_physical_device_properties_13)
+                .pNext = std::addressof(m_vk_physical_device_properties_13),
             },
             m_vk_physical_device_properties_13 {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
-                .pNext = std::addressof(m_vk_physical_device_push_descriptor_properties)
+                .pNext = std::addressof(m_vk_physical_device_push_descriptor_properties),
             },
             m_vk_physical_device_push_descriptor_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state_3_properties)
+                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state_3_properties),
             },
             m_vk_physical_device_extended_dynamic_state_3_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_descriptor_buffer_properties)
+                .pNext = std::addressof(m_vk_physical_device_descriptor_buffer_properties),
             },
             m_vk_physical_device_descriptor_buffer_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_mesh_shader_properties)
+                .pNext = std::addressof(m_vk_physical_device_mesh_shader_properties),
             },
             m_vk_physical_device_mesh_shader_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_shader_object_properties)
+                .pNext = std::addressof(m_vk_physical_device_shader_object_properties),
             },
             m_vk_physical_device_shader_object_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_host_image_copy_properties)
+                .pNext = std::addressof(m_vk_physical_device_host_image_copy_properties),
             },
             m_vk_physical_device_host_image_copy_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_maintenance_5_properties)
+                .pNext = std::addressof(m_vk_physical_device_maintenance_5_properties),
             },
             m_vk_physical_device_maintenance_5_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_nested_command_buffer_properties)
+                .pNext = std::addressof(m_vk_physical_device_nested_command_buffer_properties),
             },
             m_vk_physical_device_nested_command_buffer_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_cooperative_matrix_properties),
+            },
+            m_vk_physical_device_cooperative_matrix_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_KHR,
+                .pNext = nullptr,
             },
             m_vk_physical_device_supported_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-                .pNext = std::addressof(m_vk_physical_device_supported_features_11)
+                .pNext = std::addressof(m_vk_physical_device_supported_features_11),
             },
             m_vk_physical_device_supported_features_11 {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-                .pNext = std::addressof(m_vk_physical_device_supported_features_12)
+                .pNext = std::addressof(m_vk_physical_device_supported_features_12),
             },
             m_vk_physical_device_supported_features_12 {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-                .pNext = std::addressof(m_vk_physical_device_supported_features_13)
+                .pNext = std::addressof(m_vk_physical_device_supported_features_13),
             },
             m_vk_physical_device_supported_features_13 {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-                .pNext = std::addressof(m_vk_physical_device_vertex_input_dynamic_state_features)
+                .pNext = std::addressof(m_vk_physical_device_vertex_input_dynamic_state_features),
             },
             m_vk_physical_device_vertex_input_dynamic_state_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state2_features)
+                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state2_features),
             },
             m_vk_physical_device_extended_dynamic_state2_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state3_features)
+                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state3_features),
             },
             m_vk_physical_device_extended_dynamic_state3_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_descriptor_buffer_features)
+                .pNext = std::addressof(m_vk_physical_device_descriptor_buffer_features),
             },
             m_vk_physical_device_descriptor_buffer_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_mesh_shader_features)
+                .pNext = std::addressof(m_vk_physical_device_mesh_shader_features),
             },
             m_vk_physical_device_mesh_shader_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_shader_object_features)
+                .pNext = std::addressof(m_vk_physical_device_shader_object_features),
             },
             m_vk_physical_device_shader_object_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_host_image_copy_features)
+                .pNext = std::addressof(m_vk_physical_device_host_image_copy_features),
             },
             m_vk_physical_device_host_image_copy_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_maintenance_5_features)
+                .pNext = std::addressof(m_vk_physical_device_maintenance_5_features),
             },
             m_vk_physical_device_maintenance_5_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR,
@@ -499,6 +506,10 @@ namespace awn::gfx {
             },
             m_vk_physical_device_shader_subgroup_uniform_control_flow_features {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
+                .pNext = std::addressof(m_vk_physical_device_cooperative_matrix_features),
+            },
+            m_vk_physical_device_cooperative_matrix_features {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
                 .pNext = nullptr,
             }
             {/*...*/}

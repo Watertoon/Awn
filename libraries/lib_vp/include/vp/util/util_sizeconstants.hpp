@@ -106,4 +106,6 @@ namespace vp::util {
     constexpr inline u64 c256TB  = 0x1'0000'0000'0000;
     constexpr inline u64 c384TB  = 0x1'8000'0000'0000;
     constexpr inline u64 c512TB  = 0x2'0000'0000'0000;
+
+    constexpr inline u64 cPageSize = c4KB;
 }

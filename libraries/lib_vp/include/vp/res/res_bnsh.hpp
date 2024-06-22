@@ -61,12 +61,15 @@ namespace vp::res {
     static_assert(sizeof(ResBnshShaderInterfaceInfo) == 0x60);
 
     enum class GfxShaderStage : u32 {
-        Vertex                = 0,
-        TesselationControl    = 1,
-        TessleationEvaluation = 2,
-        Geometry              = 3,
-        Fragment              = 4,
-        Compute               = 5,
+        Vertex                 = 0,
+        TessellationControl    = 1,
+        TessellationEvaluation = 2,
+        Geometry               = 3,
+        Fragment               = 4,
+        Compute                = 5,
+        /* Vp ext */
+        Task                   = 6,
+        Mesh                   = 7,
     };
 
     enum class GfxShaderCodeType : u8 {

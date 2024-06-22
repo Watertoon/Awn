@@ -229,12 +229,13 @@ namespace vp::util {
     static_assert(sizeof(FloatColumnMajor4x4) == 0x40);
     static_assert(alignof(FloatColumnMajor4x4) == 0x4);
 
-    using Float2Vector    = float __attribute__((vector_size(sizeof(float) * 2)));
-    using Float3Vector    = float __attribute__((vector_size(sizeof(float) * 4)));
-    using Float4Vector    = float __attribute__((vector_size(sizeof(float) * 4)));
-    using Matrix33fVector = float __attribute__((vector_size(sizeof(float) * 16)));
-    using Matrix34fVector = float __attribute__((vector_size(sizeof(float) * 16)));
-    using Matrix44fVector = float __attribute__((vector_size(sizeof(float) * 16)));
+    using Float2Vector    = v64f;
+    using Float3Vector    = v128f;
+    using Float4Vector    = v128f;
+    using Float8Vector    = v256f;
+    using Matrix33fVector = v256f[2];
+    using Matrix34fVector = v256f[2];
+    using Matrix44fVector = v256f[2];
 
     struct Vector2f {
         union {
@@ -331,8 +332,8 @@ namespace vp::util {
                 float m32;
             };
             Matrix34fVector vector;
-            Float3         array_row[4];
-            float          array_2d[4][3];
+            Vector4f        array_row[4];
+            float           array_2d[4][3];
         };
 
         static const MatrixRowMajor4x3f cIdentity;
@@ -356,8 +357,8 @@ namespace vp::util {
                 float m32;
             };
             Matrix44fVector vector;
-            Vector4f       array_row[4];
-            float          array_2d[4][4];
+            Vector4f        array_row[4];
+            float           array_2d[4][4];
         };
 
         static const MatrixRowMajor4x4f cIdentity;
@@ -381,8 +382,8 @@ namespace vp::util {
                 float m32;
             };
             Matrix34fVector vector;
-            Vector4f       array_col[3];
-            float          array_2d[3][4];
+            Vector4f        array_col[3];
+            float           array_2d[3][4];
         };
 
         static const MatrixColumnMajor4x3f cIdentity;
@@ -480,176 +481,182 @@ namespace vp::util {
     };
 
     constexpr Vector2f ConvertVector(const Float2 &in_vector) {
-        return { in_vector.x, in_vector.y, };
+        const float x = in_vector.x;
+        const float y = in_vector.y;
+        return { x, y, };
     }
     constexpr Vector3f ConvertVector(const Float3 &in_vector) {
-        return { in_vector.x, in_vector.y, in_vector.z, };
+        const float x = in_vector.x;
+        const float y = in_vector.y;
+        const float z = in_vector.z;
+        return { x, y, z, };
     }
     constexpr Vector4f ConvertVector(const Float4 &in_vector) {
-        return { in_vector.x, in_vector.y, in_vector.z, in_vector.w, };
+        const float x = in_vector.x;
+        const float y = in_vector.y;
+        const float z = in_vector.z;
+        const float w = in_vector.w;
+        return { x, y, z, w, };
     }
     constexpr Vector4f ConvertVector(const Vector3f &in_vector) {
-        return { in_vector.x, in_vector.y, in_vector.z, 0.0f, };
+        const float x = in_vector.x;
+        const float y = in_vector.y;
+        const float z = in_vector.z;
+        const float w = 0.0f;
+        return { x, y, z, w, };
     }
     constexpr Vector4f ConvertVectorUnit(const Vector3f &in_vector) {
-        return { in_vector.x, in_vector.y, in_vector.z, 1.0f, };
+        const float x = in_vector.x;
+        const float y = in_vector.y;
+        const float z = in_vector.z;
+        const float w = 1.0f;
+        return { x, y, z, w, };
     }
 
     constexpr void ConvertMatrix(MatrixRowMajor4x3f *out_matrix, const FloatRowMajor3x3 *in_matrix) {
 
-        const Float3 vector0 = in_matrix->array_row[0];
-        const Float3 vector1 = in_matrix->array_row[1];
-        const Float3 vector2 = in_matrix->array_row[2];
+        const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
+        const v128f a = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[0][0]), mask), };
+        const v128f b = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[1][0]), mask), };
+        const v128f c = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[2][0]), mask), };
 
-        out_matrix->array_row[0] = vector0;
-        out_matrix->array_row[1] = vector1;
-        out_matrix->array_row[2] = vector2;
-        out_matrix->array_row[3] = Float3::cZero;
+        out_matrix->array_row[0].vector.f = a.f;
+        out_matrix->array_row[1].vector.f = b.f;
+        out_matrix->array_row[2].vector.f = c.f;
+        out_matrix->array_row[3]          = Vector4f::cZero;
     }
 
     constexpr void ConvertMatrix(MatrixRowMajor4x3f *out_matrix, const FloatRowMajor4x3 *in_matrix) {
 
-        const Float3 vector0 = in_matrix->array_row[0];
-        const Float3 vector1 = in_matrix->array_row[1];
-        const Float3 vector2 = in_matrix->array_row[2];
-        const Float3 vector3 = in_matrix->array_row[3];
+        const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
+        const v128f a = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[0][0]), mask), };
+        const v128f b = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[1][0]), mask), };
+        const v128f c = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[2][0]), mask), };
+        const v128f d = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[3][0]), mask), };
 
-        out_matrix->array_row[0] = vector0;
-        out_matrix->array_row[1] = vector1;
-        out_matrix->array_row[2] = vector2;
-        out_matrix->array_row[3] = vector3;
+        out_matrix->array_row[0].vector.f = a.f;
+        out_matrix->array_row[1].vector.f = b.f;
+        out_matrix->array_row[2].vector.f = c.f;
+        out_matrix->array_row[3].vector.f = d.f;
     }
 
     constexpr void ConvertMatrix(MatrixRowMajor4x4f *out_matrix, const FloatRowMajor3x3 *in_matrix) {
 
-        const Vector4f vector0 = ConvertVector(ConvertVector(in_matrix->array_row[0]));
-        const Vector4f vector1 = ConvertVector(ConvertVector(in_matrix->array_row[1]));
-        const Vector4f vector2 = ConvertVector(ConvertVector(in_matrix->array_row[2]));
+        const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
+        const v128f a = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[0][0]), mask), };
+        const v128f b = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[1][0]), mask), };
+        const v128f c = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[2][0]), mask), };
 
-        out_matrix->array_row[0] = vector0;
-        out_matrix->array_row[1] = vector1;
-        out_matrix->array_row[2] = vector2;
-        out_matrix->array_row[3] = Vector4f::cUnitW;
+        out_matrix->array_row[0].vector.f = a.f;
+        out_matrix->array_row[1].vector.f = b.f;
+        out_matrix->array_row[2].vector.f = c.f;
+        out_matrix->array_row[3]          = Vector4f::cUnitW;
     }
 
     constexpr void ConvertMatrix(MatrixRowMajor4x4f *out_matrix, const FloatRowMajor4x3 *in_matrix) {
 
-        const Vector4f vector0 = ConvertVector(ConvertVector(in_matrix->array_row[0]));
-        const Vector4f vector1 = ConvertVector(ConvertVector(in_matrix->array_row[1]));
-        const Vector4f vector2 = ConvertVector(ConvertVector(in_matrix->array_row[2]));
-        const Vector4f vector3 = ConvertVectorUnit(ConvertVector(in_matrix->array_row[3]));
+        const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
+        const v128f a = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[0][0]), mask), };
+        const v128f b = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[1][0]), mask), };
+        const v128f c = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[2][0]), mask), };
+        const v128f d = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[3][0]), mask), };
 
-        out_matrix->array_row[0] = vector0;
-        out_matrix->array_row[1] = vector1;
-        out_matrix->array_row[2] = vector2;
-        out_matrix->array_row[3] = vector3;
+        out_matrix->array_row[0].vector.f = a.f;
+        out_matrix->array_row[1].vector.f = b.f;
+        out_matrix->array_row[2].vector.f = c.f;
+        out_matrix->array_row[3].vector.f = d.f;
     }
 
     constexpr void ConvertMatrix(MatrixRowMajor4x4f *out_matrix, const FloatRowMajor4x4 *in_matrix) {
-
-        const Vector4f vector0 = ConvertVector(in_matrix->array_row[0]);
-        const Vector4f vector1 = ConvertVector(in_matrix->array_row[1]);
-        const Vector4f vector2 = ConvertVector(in_matrix->array_row[2]);
-        const Vector4f vector3 = ConvertVector(in_matrix->array_row[3]);
-
-        out_matrix->array_row[0] = vector0;
-        out_matrix->array_row[1] = vector1;
-        out_matrix->array_row[2] = vector2;
-        out_matrix->array_row[3] = vector3;
+        out_matrix->vector[0].mmf = avx2::movups256(std::addressof(in_matrix->array_2d[0][0]));
+        out_matrix->vector[1].mmf = avx2::movups256(std::addressof(in_matrix->array_2d[2][0]));
     }
 
     constexpr void ConvertMatrix(MatrixRowMajor4x4f *out_matrix, const MatrixRowMajor4x3f *in_matrix) {
-
-        const Vector4f vector0 = ConvertVector(ConvertVector(in_matrix->array_row[0]));
-        const Vector4f vector1 = ConvertVector(ConvertVector(in_matrix->array_row[1]));
-        const Vector4f vector2 = ConvertVector(ConvertVector(in_matrix->array_row[2]));
-        const Vector4f vector3 = ConvertVectorUnit(ConvertVector(in_matrix->array_row[3]));
-
-        out_matrix->array_row[0] = vector0;
-        out_matrix->array_row[1] = vector1;
-        out_matrix->array_row[2] = vector2;
-        out_matrix->array_row[3] = vector3;
+        out_matrix->vector[0].mmf = avx2::movaps256(std::addressof(in_matrix->array_2d[0][0]));
+        out_matrix->vector[1].mmf = avx2::movaps256(std::addressof(in_matrix->array_2d[2][0]));
     }
 
     constexpr void ConvertMatrix(MatrixColumnMajor4x3f *out_matrix, const FloatColumnMajor3x3 *in_matrix) {
 
-        const Vector4f vector0 = ConvertVector(ConvertVector(in_matrix->array_col[0]));
-        const Vector4f vector1 = ConvertVector(ConvertVector(in_matrix->array_col[1]));
-        const Vector4f vector2 = ConvertVector(ConvertVector(in_matrix->array_col[2]));
+        const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
+        const v128f a = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[0][0]), mask), };
+        const v128f b = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[1][0]), mask), };
+        const v128f c = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[2][0]), mask), };
 
-        out_matrix->array_col[0] = vector0;
-        out_matrix->array_col[1] = vector1;
-        out_matrix->array_col[2] = vector2;
-        out_matrix->array_col[3] = Vector4f::cZero;
+        out_matrix->array_col[0].vector.f = a.f;
+        out_matrix->array_col[1].vector.f = b.f;
+        out_matrix->array_col[2].vector.f = c.f;
+        out_matrix->array_col[3]          = Vector4f::cZero;
     }
 
     constexpr void ConvertMatrix(MatrixColumnMajor4x3f *out_matrix, const FloatColumnMajor4x3 *in_matrix) {
 
-        const Vector4f vector0 = ConvertVector(in_matrix->array_col[0]);
-        const Vector4f vector1 = ConvertVector(in_matrix->array_col[1]);
-        const Vector4f vector2 = ConvertVector(in_matrix->array_col[2]);
-        out_matrix->array_col[0] = vector0;
-        out_matrix->array_col[1] = vector1;
-        out_matrix->array_col[2] = vector2;
-        out_matrix->array_col[3] = Vector4f::cZero;
+        const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
+        const v128f a = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[0][0]), mask), };
+        const v128f b = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[1][0]), mask), };
+        const v128f c = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[2][0]), mask), };
+        const v128f d = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[3][0]), mask), };
+
+        out_matrix->array_col[0].vector.f = a.f;
+        out_matrix->array_col[1].vector.f = b.f;
+        out_matrix->array_col[2].vector.f = c.f;
+        out_matrix->array_col[3].vector.f = d.f;
     }
 
     constexpr void ConvertMatrix(MatrixColumnMajor4x4f *out_matrix, const FloatColumnMajor3x3 *in_matrix) {
 
-        const Vector4f vector0 = ConvertVector(ConvertVector(in_matrix->array_col[0]));
-        const Vector4f vector1 = ConvertVector(ConvertVector(in_matrix->array_col[1]));
-        const Vector4f vector2 = ConvertVector(ConvertVector(in_matrix->array_col[2]));
+        const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
+        const v128f a = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[0][0]), mask), };
+        const v128f b = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[1][0]), mask), };
+        const v128f c = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[2][0]), mask), };
 
-        out_matrix->array_col[0] = vector0;
-        out_matrix->array_col[1] = vector1;
-        out_matrix->array_col[2] = vector2;
-        out_matrix->array_col[3] = Vector4f::cUnitW;
+        out_matrix->array_col[0].vector.f = a.f;
+        out_matrix->array_col[1].vector.f = b.f;
+        out_matrix->array_col[2].vector.f = c.f;
+        out_matrix->array_col[3]          = Vector4f::cZero;
     }
 
     constexpr void ConvertMatrix(MatrixColumnMajor4x4f *out_matrix, const FloatColumnMajor4x3 *in_matrix) {
 
-        const Vector4f vector0 = ConvertVector(in_matrix->array_col[0]);
-        const Vector4f vector1 = ConvertVector(in_matrix->array_col[1]);
-        const Vector4f vector2 = ConvertVector(in_matrix->array_col[2]);
+        const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
+        const v128f a = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[0][0]), mask), };
+        const v128f b = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[1][0]), mask), };
+        const v128f c = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[2][0]), mask), };
+        const v128f d = { .mmf = avx2::maskmovps128(std::addressof(in_matrix->array_2d[3][0]), mask), };
 
-        out_matrix->array_col[0] = vector0;
-        out_matrix->array_col[1] = vector1;
-        out_matrix->array_col[2] = vector2;
-        out_matrix->array_col[3] = Vector4f::cUnitW;
+        out_matrix->array_col[0].vector.f = a.f;
+        out_matrix->array_col[1].vector.f = b.f;
+        out_matrix->array_col[2].vector.f = c.f;
+        out_matrix->array_col[3].vector.f = d.f;
     }
 
     constexpr void ConvertMatrix(MatrixColumnMajor4x4f *out_matrix, const FloatColumnMajor4x4 *in_matrix) {
-
-        const Vector4f vector0 = ConvertVector(in_matrix->array_col[0]);
-        const Vector4f vector1 = ConvertVector(in_matrix->array_col[1]);
-        const Vector4f vector2 = ConvertVector(in_matrix->array_col[2]);
-        const Vector4f vector3 = ConvertVector(in_matrix->array_col[3]);
-
-        out_matrix->array_col[0] = vector0;
-        out_matrix->array_col[1] = vector1;
-        out_matrix->array_col[2] = vector2;
-        out_matrix->array_col[3] = vector3;
+        out_matrix->vector[0].mmf = avx2::movups256(std::addressof(in_matrix->array_2d[0][0]));
+        out_matrix->vector[1].mmf = avx2::movups256(std::addressof(in_matrix->array_2d[2][0]));
     }
 
     constexpr void ConvertMatrix(MatrixColumnMajor4x4f *out_matrix, const MatrixColumnMajor4x3f *in_matrix) {
-
-        const Vector4f vector0 = in_matrix->array_col[0];
-        const Vector4f vector1 = in_matrix->array_col[1];
-        const Vector4f vector2 = in_matrix->array_col[2];
-
-        out_matrix->array_col[0] = vector0;
-        out_matrix->array_col[1] = vector1;
-        out_matrix->array_col[2] = vector2;
-        out_matrix->array_col[3] = Vector4f::cUnitW;
+        out_matrix->vector[0].mmf = avx2::movaps256(std::addressof(in_matrix->array_2d[0][0]));
+        out_matrix->vector[1].mmf = avx2::movaps256(std::addressof(in_matrix->array_2d[2][0]));
     }
 
     constexpr Float2 ConvertFloat(const Vector2f &in_vector) {
-        return { in_vector.x, in_vector.y };
+        const float x = in_vector.x;
+        const float y = in_vector.y;
+        return { x, y, };
     }
     constexpr Float3 ConvertFloat(const Vector3f &in_vector) {
-        return { in_vector.x, in_vector.y, in_vector.z };
+        const float x = in_vector.x;
+        const float y = in_vector.y;
+        const float z = in_vector.z;
+        return { x, y, z, };
     }
     constexpr Float4 ConvertFloat(const Vector4f &in_vector) {
-        return { in_vector.x, in_vector.y, in_vector.z, in_vector.w };
+        const float x = in_vector.x;
+        const float y = in_vector.y;
+        const float z = in_vector.z;
+        const float w = in_vector.w;
+        return { x, y, z, w, };
     }
 }

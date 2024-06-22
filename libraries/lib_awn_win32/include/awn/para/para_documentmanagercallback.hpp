@@ -67,7 +67,7 @@ namespace awn::para {
             }
 
             virtual void DestructDocument([[maybe_unused]] Document *document) override {
-                
+
                 /* Destroy resource */
             }
 
@@ -77,7 +77,7 @@ namespace awn::para {
                 if (document->IsDummy() == true) { return false; }
 
                 /* Defer to callback if available */
-                if (m_is_release_document_callback.IsValid() == false) { return true; }
+                if (!m_is_release_document_callback.IsValid()) { return true; }
                 return m_is_release_document_callback.Invoke(document);
             }
     };

@@ -29,7 +29,6 @@
 
     /* Reverse engineered NintendoWare gfx file formats */
     #include <vp/res/res_gfxcommon.hpp>
-    #include <vp/res/res_gfxtostring.hpp>
 
     #ifdef VP_TARGET_GRAPHICS_API_vk
         #include <vp/res/res_gfxtovk.vk.hpp>
@@ -37,6 +36,7 @@
 
     #include <vp/res/res_bntx.hpp>
     #include <vp/res/res_bnsh.hpp>
+    #include <vp/res/res_gfxtostring.hpp>
 
     /* Reverse engineered NintendoWare g3d formats */
     #include <vp/res/res_bfresanimcurve.hpp>

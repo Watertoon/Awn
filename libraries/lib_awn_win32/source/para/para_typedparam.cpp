@@ -52,6 +52,7 @@ namespace awn::para {
 
         return;
     }
+
     void TypedParam::ReleaseParent() {
         m_parent_document_binder.Release();
         m_parent_handle = 0;
@@ -351,9 +352,8 @@ namespace awn::para {
                 typed_param->Finalize();
                 delete typed_param;
                 typed_param = CreateTypedParam(heap, vp::util::HashMurmur64(embed_info->embedded_class_name));
+                *embed_info->embedded_typed_param = typed_param;
             }
-
-            *embed_info->embedded_typed_param = typed_param;
 
             RESULT_RETURN_SUCCESS;
         };
@@ -404,9 +404,8 @@ namespace awn::para {
             TypedParam *typed_param = *embed_info->embedded_typed_param;
             if (typed_param != nullptr) {
                 delete typed_param;
+                *embed_info->embedded_typed_param = nullptr;
             }
-
-            *embed_info->embedded_typed_param = nullptr;
 
             RESULT_RETURN_SUCCESS;
         };

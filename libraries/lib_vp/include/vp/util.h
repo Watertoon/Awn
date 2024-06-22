@@ -81,6 +81,8 @@
     #include <vp/util/math/util_int128.avx2.hpp>
     #include <vp/util/math/util_int256.avx2.hpp>
     #include <vp/util/math/util_float128.avx2.hpp>
+    #include <vp/util/math/util_float256.avx2.hpp>
+    #include <vp/util/math/util_double256.avx2.hpp>
 #elif VP_TARGET_ARCHITECTURE_aarch64
     //#include <vp/util/math/util_int128.neon.hpp>
     //#include <vp/util/math/util_float128.neon.hpp>

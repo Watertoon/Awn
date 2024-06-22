@@ -86,6 +86,7 @@ DEFINE_VK_PROC(vkGetPhysicalDeviceToolProperties);
 /* Instance Kronos procs */
 DEFINE_VK_PROC(vkCreateWin32SurfaceKHR);
 DEFINE_VK_PROC(vkDestroySurfaceKHR);
+DEFINE_VK_PROC(vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR);
 DEFINE_VK_PROC(vkGetPhysicalDevicePresentRectanglesKHR);
 DEFINE_VK_PROC(vkGetPhysicalDeviceSurfaceCapabilities2KHR);
 DEFINE_VK_PROC(vkGetPhysicalDeviceSurfaceCapabilitiesKHR);
@@ -132,6 +133,7 @@ void LoadVkCProcsInstance(VkInstance instance) {
     /* Instance Kronos procs */
     LOAD_INSTANCE_VK_PROC(vkCreateWin32SurfaceKHR);
     LOAD_INSTANCE_VK_PROC(vkDestroySurfaceKHR);
+    LOAD_INSTANCE_VK_PROC(vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR);
     LOAD_INSTANCE_VK_PROC(vkGetPhysicalDevicePresentRectanglesKHR);
     LOAD_INSTANCE_VK_PROC(vkGetPhysicalDeviceSurfaceCapabilities2KHR);
     LOAD_INSTANCE_VK_PROC(vkGetPhysicalDeviceSurfaceCapabilitiesKHR);
@@ -337,6 +339,8 @@ DEFINE_VK_PROC(vkWaitSemaphores);
 /* Device Kronos procs */
 DEFINE_VK_PROC(vkAcquireNextImage2KHR);
 DEFINE_VK_PROC(vkAcquireNextImageKHR);
+DEFINE_VK_PROC(vkCmdPushConstants2KHR);
+DEFINE_VK_PROC(vkCmdPushDescriptorSet2KHR);
 DEFINE_VK_PROC(vkCreateSwapchainKHR);
 DEFINE_VK_PROC(vkDestroySwapchainKHR);
 DEFINE_VK_PROC(vkGetDeviceGroupPresentCapabilitiesKHR);
@@ -345,8 +349,6 @@ DEFINE_VK_PROC(vkGetImageSubresourceLayout2KHR);
 DEFINE_VK_PROC(vkGetSwapchainImagesKHR);
 DEFINE_VK_PROC(vkMapMemory2KHR);
 DEFINE_VK_PROC(vkQueuePresentKHR);
-DEFINE_VK_PROC(vkCmdPushDescriptorSet2KHR);
-DEFINE_VK_PROC(vkCmdPushConstants2KHR);
 
 /* Device extension procs */
 DEFINE_VK_PROC(vkCmdBindDescriptorBuffersEXT);

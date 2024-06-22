@@ -250,7 +250,7 @@ namespace vp::util::avx2 {
             out.si[3] = address[3];
             return out.si;
         } else {
-            return v128i(_mm_lddqu_si128(reinterpret_cast<__m128i const*>(address))).si;
+            return v128i{ .mm = _mm_lddqu_si128(reinterpret_cast<__m128i const*>(address)) }.si;
         }
     }
 
@@ -260,7 +260,7 @@ namespace vp::util::avx2 {
             out.si[index] = i;
             return out.si;
         } else {
-            return v128i(_mm_insert_epi32(a.mm, i, index)).si;
+            return v128i{ .mm = _mm_insert_epi32(a.mm, i, index) }.si;
         }
     }
 
@@ -310,7 +310,7 @@ namespace vp::util::avx2 {
 
             return v2ull{out1, out2};
         } else {
-            return v128i{__builtin_ia32_pclmulqdq128(v128i{a}.sll, v128i{b}.sll, selection_mask)}.ull;
+            return v128i{ .mm = __builtin_ia32_pclmulqdq128(v128i{ .ull = a }.sll, v128i{ .ull = b }.sll, selection_mask)}.ull;
         }
     }
     static_assert(pclmulqdq(v2ull{5 , 8}, v2ull{5 , 7}, PclmulSelectionMask(false, false))[0] == 17ll);

@@ -180,4 +180,15 @@ namespace vp::util {
         const float value = ((static_cast<float>(cAngleIndexHalfRound) / cFloatPi) * ((static_cast<float>(t) * cFloat2Pi) / static_cast<float>(max)));
         return SampleSinCos(value);
     }
+
+    constexpr ALWAYS_INLINE bool IsCacheLineSafe128(uintptr_t address) {
+        const uintptr_t page_size_left = vp::util::cPageSize - (address & (vp::util::cPageSize - 1));
+        const bool      result = 0x10 <= page_size_left;
+        return result;
+    }
+    constexpr ALWAYS_INLINE bool IsCacheLineSafe256(uintptr_t address) {
+        const uintptr_t page_size_left = vp::util::cPageSize - (address & (vp::util::cPageSize - 1));
+        const bool      result = 0x20 <= page_size_left;
+        return result;
+    }
 }
