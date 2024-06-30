@@ -30,6 +30,15 @@ namespace vp::util {
         return __builtin_popcountll(value);
     }
 
+    template <typename T>
+        requires (std::is_integral<T>::value && sizeof(u32) <= sizeof(T))
+    constexpr ALWAYS_INLINE u32 CountOneBits(T value) {
+        if constexpr (sizeof(u32) == sizeof(T)) {
+            return CountOneBits32(value);
+        }
+        return CountOneBits64(value);
+    }
+
     constexpr ALWAYS_INLINE u32 CountRightOneBits32(u32 value) {
         if (std::is_constant_evaluated() == true) {
             return std::countr_one(value);
@@ -41,6 +50,15 @@ namespace vp::util {
             return std::countr_one(value);
         }
         return __builtin_ctzll(~value);
+    }
+
+    template <typename T>
+        requires (std::is_integral<T>::value && sizeof(u32) <= sizeof(T))
+    constexpr ALWAYS_INLINE u32 CountRightOneBits(T value) {
+        if constexpr (sizeof(u32) == sizeof(T)) {
+            return CountRightOneBits32(value);
+        }
+        return CountRightOneBits64(value);
     }
 
     constexpr ALWAYS_INLINE u32 CountLeftOneBits32(u32 value) {
@@ -56,6 +74,15 @@ namespace vp::util {
         return __builtin_clzll(~value);
     }
 
+    template <typename T>
+        requires (std::is_integral<T>::value && sizeof(u32) <= sizeof(T))
+    constexpr ALWAYS_INLINE u32 CountLeftOneBits(T value) {
+        if constexpr (sizeof(u32) == sizeof(T)) {
+            return CountLeftOneBits32(value);
+        }
+        return CountLeftOneBits64(value);
+    }
+
     constexpr ALWAYS_INLINE u32 CountRightZeroBits32(u32 value) {
         if (std::is_constant_evaluated() == true) {
             return std::countr_zero(value);
@@ -69,6 +96,15 @@ namespace vp::util {
         return __builtin_ctzll(value);
     }
 
+    template <typename T>
+        requires (std::is_integral<T>::value && sizeof(u32) <= sizeof(T))
+    constexpr ALWAYS_INLINE u32 CountRightZeroBits(T value) {
+        if constexpr (sizeof(u32) == sizeof(T)) {
+            return CountRightZeroBits32(value);
+        }
+        return CountRightZeroBits64(value);
+    }
+
     constexpr ALWAYS_INLINE u32 CountLeftZeroBits32(u32 value) {
         if (std::is_constant_evaluated() == true) {
             return std::countl_zero(value);
@@ -80,5 +116,14 @@ namespace vp::util {
             return std::countl_zero(value);
         }
         return __builtin_ctzll(value);
+    }
+
+    template <typename T>
+        requires (std::is_integral<T>::value && sizeof(u32) <= sizeof(T))
+    constexpr ALWAYS_INLINE u32 CountLeftZeroBits(T value) {
+        if constexpr (sizeof(u32) == sizeof(T)) {
+            return CountLeftZeroBits32(value);
+        }
+        return CountLeftZeroBits64(value);
     }
 }

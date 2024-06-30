@@ -345,6 +345,30 @@ namespace vp::util {
             /* No overlap */
             return false;
         }
+
+        constexpr Vector2<T> ClampPoint(const Vector2<T> *position) const {
+
+            /* Clamp position to rect */
+            const T pos_x   = position->x;
+            const T pos_y   = position->y;
+            const T min_x   = vp::util::Max(left, pos_x);
+            const T min_y   = vp::util::Max(top, pos_y);
+            const T clamp_x = vp::util::Min(right, min_x);
+            const T clamp_y = vp::util::Min(bottom, min_y);
+
+            return { clamp_x, clamp_y, };
+        }
+
+        constexpr vp::util::Float2 NormalizePointFloat(const Vector2<T> *position) const {
+
+            /* Convert to normalized floating point */
+            Vector2<T>  point = this->ClampPoint(position);
+            Vector2<T>  size  = this->GetSize();
+            const float logical_x = static_cast<float>(point.x) / static_cast<float>(size.x);
+            const float logical_y = static_cast<float>(point.y) / static_cast<float>(size.y);
+
+            return { logical_x, logical_y, };
+        }
 	};
 
     using Rectanglef = Rectangle<float>;

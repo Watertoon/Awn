@@ -197,7 +197,7 @@ namespace awn::async {
             /* Queue to local */
             std::scoped_lock l(m_thread_control_array[i]->m_local_ring_mutex);
 
-            m_thread_control_array[i]->m_local_job_ring.Insert(node);
+            m_thread_control_array[i]->m_local_job_ring.PushBack(node);
 
             break;
         }

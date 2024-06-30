@@ -44,4 +44,6 @@ namespace awn::sys {
     u32                  GetMonitorAndMirrorCount();
     u32                  GetMonitorCount();
     bool                 GetMonitorIndexArray(u32 *out_index_array, u32 max_indice_count);
+
+    bool IsProcessInFocus();
 }

@@ -96,7 +96,7 @@ namespace awn::frm {
         res::ResourceFactoryManager::CreateInstance(awn_library_heap);
 
         /* Initialize input */
-        hid::InitializeRawInputThread(awn_library_heap);
+        //hid::InitializeRawInputThread(awn_library_heap);
 
         /* Adjust library heap size */
         awn_library_heap->AdjustHeap();
@@ -112,7 +112,7 @@ namespace awn::frm {
         {
             mem::ScopedCurrentThreadHeap heap_scope(lib_heap);
 
-            hid::FinalizeRawInputThread();
+            //hid::FinalizeRawInputThread();
 
             res::ResourceFactoryManager::DeleteInstance();
 

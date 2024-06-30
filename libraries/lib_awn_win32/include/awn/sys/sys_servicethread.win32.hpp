@@ -41,25 +41,27 @@ namespace awn::sys {
                 /* Set thread name */
                 ::strncpy(m_name, name, ukern::cMaxFiberNameLength);
             }
-            virtual ~ServiceThread() override {/*...*/}
+            virtual ~ServiceThread() override {
+                this->ExitThread();
+            }
 
-            virtual void StartThread() {
+            virtual void StartThread() override {
                 s32 result0 = ::ResumeThread(m_handle);
                 VP_ASSERT(result0 != -1);
             }
-            virtual void WaitForThreadExit() {
+            virtual void WaitForThreadExit() override {
                 s32 result0 = ::WaitForSingleObject(m_handle, INFINITE);
                 VP_ASSERT(result0 == WAIT_OBJECT_0);
             }
-            virtual void ResumeThread() {
+            virtual void ResumeThread() override {
                 s32 result0 = ::ResumeThread(m_handle);
                 VP_ASSERT(result0 != -1);
             }
-            virtual void SuspendThread() {
+            virtual void SuspendThread() override {
                 s32 result0 = ::SuspendThread(m_handle);
                 VP_ASSERT(result0 != -1);
             }
-            virtual void SleepThread(vp::TimeSpan timeout_ns) {
+            virtual void SleepThread(vp::TimeSpan timeout_ns) override {
 
                 const LARGE_INTEGER timeout_100ns = { .QuadPart = -timeout_ns.GetNanoSeconds() / 100};
                 const bool is_set = ::SetWaitableTimer(m_waitable_timer_for_sleep, std::addressof(timeout_100ns), 0, nullptr, nullptr, false);
@@ -69,15 +71,18 @@ namespace awn::sys {
                 VP_ASSERT(result0 == WAIT_OBJECT_0);
             }
 
-            virtual void SetPriority(s32 priority) {
+            virtual void SetPriority(s32 priority) override {
                 bool result0 = ::SetThreadPriority(m_handle, priority);
                 VP_ASSERT(result0 == true);
                 m_priority = priority;
             }
-            virtual void SetCoreMask(CoreMask core_mask) {
+            virtual void SetCoreMask(CoreMask core_mask) override {
                 bool result0 = ::SetThreadAffinityMask(m_handle, core_mask);
                 VP_ASSERT(result0 == true);
                 m_core_mask = core_mask;
             }
+
+            constexpr HANDLE GetWin32Handle() const { return m_handle; }
+            constexpr long unsigned int GetWin32ThreadId() const { return m_win32_thread_id; }
 	};
 }

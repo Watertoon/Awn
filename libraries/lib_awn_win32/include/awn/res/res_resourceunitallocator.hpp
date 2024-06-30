@@ -22,7 +22,7 @@ namespace awn::res {
 
                 /* Fill free ring buffer */
                 for (u32 i = 0; i < resource_unit_count; ++i) {
-                    m_resource_unit_free_ring.Insert(std::addressof(m_resource_unit_array[i]));
+                    m_resource_unit_free_ring.PushBack(std::addressof(m_resource_unit_array[i]));
                 }
 
                 return;
@@ -50,7 +50,7 @@ namespace awn::res {
                 std::scoped_lock l(m_ring_cs);
 
                 /* Free reource unit */
-                m_resource_unit_free_ring.Insert(resource_unit);
+                m_resource_unit_free_ring.PushBack(resource_unit);
 
                 return;
             }

@@ -84,7 +84,7 @@ namespace awn::ukern::impl {
             /* Insert into lowest ranked thread */
             fiber->fiber_state  = FiberState_ScheduledLocal;
             fiber->current_core = found_core;
-            ring_buffer->Insert(fiber);
+            ring_buffer->PushBack(fiber);
 
             /* Clear fiber for loop continue */
             fiber = nullptr;

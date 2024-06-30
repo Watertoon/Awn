@@ -71,6 +71,7 @@
 #include <vp/util/util_framearray.hpp>
 #include <vp/util/util_redblacktreeallocator.hpp>
 #include <vp/util/util_ifunction.hpp>
+#include <vp/util/util_connection.hpp>
 
 #ifdef VP_TARGET_PLATFORM_win32
     #include <vp/util/util_guid.win32.hpp>

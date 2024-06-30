@@ -128,4 +128,12 @@ namespace awn::sys {
 
         return true;
     }
+
+    bool IsProcessInFocus() {
+        HWND focus_window = ::GetForegroundWindow();
+        if (focus_window == nullptr) { return false; }
+        long unsigned int window_process_id = 0;
+        const u32 result = ::GetWindowThreadProcessId(focus_window, std::addressof(window_process_id));
+        return result != 0 && ::GetCurrentProcessId() == window_process_id;
+    }
 }

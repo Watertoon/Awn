@@ -15,5 +15,6 @@
  */
 #pragma once
 
-#include <awn/hid/hid_rawinput.h>
-#include <awn/hid/hid_thread.h>
+#include <awn/hid/hid_mouse.h>
+#include <awn/hid/hid_keylocation.h>
+#include <awn/hid/hid_keyboard.h>

@@ -22,10 +22,10 @@ namespace vp::util {
         public:
             class Iterator {
                 private:
-                    const FixedRingBuffer<T, Size> *m_ring;
-                    u32                             m_index;
+                    FixedRingBuffer<T, Size> *m_ring;
+                    u32                       m_index;
                 public:
-                    constexpr ALWAYS_INLINE Iterator(const FixedRingBuffer<T, Size> *ring, u32 index) : m_ring(ring), m_index(index) {/*...*/}
+                    constexpr ALWAYS_INLINE Iterator(FixedRingBuffer<T, Size> *ring, u32 index) : m_ring(ring), m_index(index) {/*...*/}
                     constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
 
                     constexpr ALWAYS_INLINE T &operator*() {
@@ -72,56 +72,106 @@ namespace vp::util {
 
             constexpr T &operator[](u32 index) {
                 const u32 base_offset = m_offset + index;
-                const u32 adj_index   = (Size < base_offset) ? base_offset - Size : base_offset;
-                return m_array[adj_index];
+                const u32 wrap = (Size <= base_offset) ? Size : 0;
+                return m_array[base_offset - wrap];
             }
-            constexpr T &operator[](u32 index) const {
+            constexpr const T &operator[](u32 index) const {
                 const u32 base_offset = m_offset + index;
-                const u32 adj_index   = (Size < base_offset) ? base_offset - Size : base_offset;
-                return m_array[adj_index];
+                const u32 wrap = (Size <= base_offset) ? Size : 0;
+                return m_array[base_offset - wrap];
             }
-
-            constexpr ALWAYS_INLINE void Insert(T pointer) {
+            
+            constexpr ALWAYS_INLINE void PushBack(T value) {
 
                 /* Check count */
                 VP_ASSERT(Size > m_count);
 
                 /* Increment count */
-                u32 count = m_count;
-                m_count = m_count + 1;
+                const u32 count = m_count;
+                m_count = count + 1;
 
                 /* Calculate offset */
-                u32 offset = m_offset + count;
+                const u32 base_offset = m_offset + count;
+                const u32 wrap = (Size <= base_offset) ? Size : 0;
 
-                /* Find size offset */
-                u32 size_offset = 0;
-                if (Size <= offset) {
-                    size_offset = Size;
-                }
+                /* Placeback value */
+                m_array[base_offset - wrap] = value;
+            }
 
-                /* Placeback pointer */
-                m_array[offset - size_offset] = pointer;
+            constexpr ALWAYS_INLINE void PushFront(T value) {
+
+                /* Check count */
+                VP_ASSERT(Size > m_count);
+
+                /* Increment count */
+                const u32 count = m_count;
+                m_count = count + 1;
+
+                /* Decrement offset */
+                const u32 offset = (m_offset != 0) ? m_offset - 1 : Size - 1;
+                m_offset = offset;
+
+                /* Place front value */
+                m_array[offset] = value;
+            }
+
+            constexpr ALWAYS_INLINE T PeekFront() const {
+
+                /* Check count */
+                const u32 count = m_count;
+                if (count == 0) { return 0; }
+
+                /* Get pointer */
+                const u32 offset = m_offset;
+                T ret = m_array[offset];
+
+                return ret;
             }
 
             constexpr ALWAYS_INLINE T RemoveFront() {
 
                 /* Check count */
-                if (m_count == 0) { return 0; }
+                const u32 count = m_count;
+                if (count == 0) { return 0; }
 
                 /* Set size offset for wraparound */
-                u32 size_offset = 0;
-                if (Size <= m_offset) {
-                    size_offset = Size;
-                }
-
-                /* Get pointer */
-                T ret = m_array[m_offset - size_offset];
+                const u32 offset = m_offset;
+                T ret = m_array[offset];
 
                 /* Adjust offset */
-                if (0 < m_count) {
-                    m_offset = (m_offset + 1 < Size) ? (m_offset + 1) : 0;
-                    m_count          = m_count - 1;
-                }
+                m_offset = (offset + 1 < Size) ? (offset + 1) : 0;
+                m_count = count - 1;
+
+                return ret;
+            }
+
+            constexpr ALWAYS_INLINE T PeekBack() const {
+
+                /* Check count */
+                const u32 count = m_count - 1;
+                if (count == 0) { return 0; }
+
+                /* Get pointer */
+                const u32 offset = m_offset + count;
+                const u32 wrap = (Size <= offset) ? Size : 0;
+                T ret = m_array[offset - wrap];
+
+                return ret;
+            }
+        
+            constexpr ALWAYS_INLINE T RemoveBack() {
+
+                /* Check count */
+                const u32 count = m_count - 1;
+                if (count == 0) { return 0; }
+
+                /* Get pointer */
+                const u32 offset = m_offset + count;
+                const u32 wrap = (Size <= offset) ? Size : 0;
+                T ret = m_array[offset - wrap];
+
+                /* Adjust count */
+                m_count = count - 1;
 
                 return ret;
             }

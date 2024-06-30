@@ -29,7 +29,9 @@ namespace awn::sys {
 
                 ukern::SetThreadName(m_thread_handle, name);
             }
-            virtual ~Thread() override {/*...*/}
+            virtual ~Thread() override {
+                this->ExitThread();
+            }
 
             virtual void StartThread() override {
                 RESULT_ABORT_UNLESS(ukern::StartThread(m_thread_handle));

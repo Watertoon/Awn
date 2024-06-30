@@ -43,7 +43,7 @@ namespace awn::res {
 
             sys::SetTlsData(archive_mgr->m_tls_slot, nullptr);
 
-            archive_mgr->m_free_archive_ring_buffer.Insert(local_archive_binder);
+            archive_mgr->m_free_archive_ring_buffer.PushBack(local_archive_binder);
 
             break;
         }
@@ -64,7 +64,7 @@ namespace awn::res {
 
         /* Push archives to free ring */
         for (u32 i = 0; i < max_thread_count; ++i) {
-            m_free_archive_ring_buffer.Insert(std::addressof(m_archive_binder_array[i]));
+            m_free_archive_ring_buffer.PushBack(std::addressof(m_archive_binder_array[i]));
         }
 
         return;
@@ -90,7 +90,7 @@ namespace awn::res {
         m_registered_thread_ring.Clear();
         auto tree = m_archive_tree_allocator.GetTree();
         for (ArchiveTreeNode &node : *tree) {
-            m_registered_thread_ring.Insert(node.m_tree_node.GetKey());
+            m_registered_thread_ring.PushBack(node.m_tree_node.GetKey());
         }
 
         /* Force unregister invalid threads */
@@ -110,7 +110,7 @@ namespace awn::res {
 
             sys::SetTlsData(m_tls_slot, nullptr);
 
-            m_free_archive_ring_buffer.Insert(local_archive_binder);
+            m_free_archive_ring_buffer.PushBack(local_archive_binder);
         }
         m_registered_thread_ring.Clear();
 
@@ -179,7 +179,7 @@ namespace awn::res {
 
         /* Free slot, archive binder, tree node */
         thread->SetTlsData(m_tls_slot, nullptr);
-        m_free_archive_ring_buffer.Insert(tree_node->m_local_archive_binder);
+        m_free_archive_ring_buffer.PushBack(tree_node->m_local_archive_binder);
         m_archive_tree_allocator.Free(tree_node);
 
         return;
@@ -197,7 +197,7 @@ namespace awn::res {
         /* Free slot, archive binder, tree node */
         m_archive_tree_allocator.Free(tree_node);
         thread->SetTlsData(m_tls_slot, nullptr);
-        m_free_archive_ring_buffer.Insert(tree_node->m_local_archive_binder);
+        m_free_archive_ring_buffer.PushBack(tree_node->m_local_archive_binder);
 
         return;
     }
