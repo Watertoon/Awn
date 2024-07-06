@@ -126,7 +126,7 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FSHP");
 
-        ResBfresKeyShape *TryGetKeyShape(const char *key_shape_name) {
+        constexpr ResBfresKeyShape *TryGetKeyShape(const char *key_shape_name) {
             if (key_shape_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = key_shape_dictionary->TryGetEntryIndexByKey(key_shape_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

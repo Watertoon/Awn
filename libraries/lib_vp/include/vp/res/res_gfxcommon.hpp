@@ -17,6 +17,13 @@
 
 namespace vp::res {
 
+    constexpr inline const size_t cMaxGfxMemoryPoolSize  = 0x120;
+    constexpr inline const size_t cMaxGfxBufferSize      = 0x48;
+    constexpr inline const size_t cMaxGfxTextureSize     = 0xd8;
+    constexpr inline const size_t cMaxGfxTextureViewSize = 0x48;
+    constexpr inline const size_t cMaxGfxSamplerSize     = 0x78;
+    constexpr inline const size_t cMaxGfxShaderSize      = 0xe8;
+
     struct ResBntx;
 
     struct GfxBindTextureView {

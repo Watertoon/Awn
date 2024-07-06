@@ -41,7 +41,7 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FBVS");
 
-        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

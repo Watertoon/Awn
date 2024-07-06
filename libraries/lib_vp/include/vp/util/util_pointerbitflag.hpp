@@ -57,5 +57,6 @@ namespace vp::util {
             constexpr ALWAYS_INLINE void SetFlagsAndClearPointer(u32 bit_mask) { m_pointer = bit_mask; }
             ALWAYS_INLINE void SetPointer(T *pointer)                          { m_pointer = reinterpret_cast<uintptr_t>(pointer) | (m_pointer & cValueMask); }
             ALWAYS_INLINE void SetPointerAndClearFlags(T *pointer)             { m_pointer = reinterpret_cast<uintptr_t>(pointer); }
+            ALWAYS_INLINE void SetPointerAndFlags(T *pointer, u32 bit_mask)    { m_pointer = reinterpret_cast<uintptr_t>(pointer) | bit_mask; }
 	};
 }

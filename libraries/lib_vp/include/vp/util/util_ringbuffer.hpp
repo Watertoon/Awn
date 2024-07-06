@@ -143,6 +143,19 @@ namespace vp::util {
                 m_array[offset] = value;
             }
 
+            constexpr ALWAYS_INLINE T PeekFront() const {
+
+                /* Check count */
+                const u32 count = m_count;
+                if (count == 0) { return 0; }
+
+                /* Get pointer */
+                const u32 offset = m_offset;
+                T ret = m_array[offset];
+
+                return ret;
+            }
+
             constexpr ALWAYS_INLINE T RemoveFront() {
 
                 /* Check count */
@@ -163,6 +176,20 @@ namespace vp::util {
                 return ret;
             }
 
+            constexpr ALWAYS_INLINE T PeekBack() const {
+
+                /* Check count */
+                const u32 count = m_count - 1;
+                if (count == 0) { return 0; }
+
+                /* Get pointer */
+                const u32 offset = m_offset + count;
+                const u32 wrap = (m_max_count <= offset) ? m_max_count : 0;
+                T ret = m_array[offset - wrap];
+
+                return ret;
+            }
+
             constexpr ALWAYS_INLINE T RemoveBack() {
 
                 /* Check count */
@@ -175,7 +202,7 @@ namespace vp::util {
                 T ret = m_array[offset - wrap];
 
                 /* Adjust count */
-                m_count = count - 1;
+                m_count = count;
 
                 return ret;
             }
@@ -265,7 +292,7 @@ namespace vp::util {
                 }
             }
 
-            constexpr void Insert(T value) {
+            constexpr void PushBack(T value) {
 
                 /* Integrity checks */
                 VP_ASSERT(value != 0);
@@ -277,7 +304,7 @@ namespace vp::util {
 
                     /* Attempt to reserve space */
                     const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(last), std::addressof(m_count), count + 1, count);
-                    if (result == false) { count = last; continue; }
+                    if (!result) { count = last; continue; }
 
                     /* Insert our element */
                     vp::util::MemoryBarrierRelease();

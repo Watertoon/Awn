@@ -321,7 +321,7 @@ namespace vp::res {
                 /* Try get file and file size */
                 return this->TryGetFileByIndex(out_file_size, entry_index);
             }
-            
+
             constexpr ALWAYS_INLINE u32 GetFileCount() const {
                 const bool is_reverse_endian = m_sarc->IsReverseEndian();
                 return (!is_reverse_endian) ? m_sfat->file_count : vp::util::SwapEndian(m_sfat->file_count); 

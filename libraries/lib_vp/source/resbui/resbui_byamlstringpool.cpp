@@ -88,7 +88,7 @@ namespace vp::resbui {
 		for (ByamlStringPoolString &string : m_string_list) {
 			
 			/* Calculate offsets */
-			const u32  size        = string.GetStringLength();
+			const u32  size        = string.GetLength();
 			char      *string_base = string_array_base + string_iter;
 
 			/* Serialize string */
@@ -127,7 +127,7 @@ namespace vp::resbui {
 		size_t string_array_size = 0;
 		u32 count = 0;
 		for (ByamlStringPoolString &string : m_string_list) {
-			string_array_size += string.GetStringLength() + 1;
+			string_array_size += string.GetLength() + 1;
 			++count;
 		}
 

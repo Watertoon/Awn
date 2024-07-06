@@ -171,7 +171,7 @@ namespace vp::util {
                 T ret = m_array[offset - wrap];
 
                 /* Adjust count */
-                m_count = count - 1;
+                m_count = count;
 
                 return ret;
             }

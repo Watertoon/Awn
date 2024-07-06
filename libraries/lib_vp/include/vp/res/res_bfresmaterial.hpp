@@ -173,10 +173,10 @@ namespace vp::res {
         u16                          section_index;
         u8                           sampler_count;
         u8                           texture_count;
-        u16                          reserve1;
+        u16                          is_force_calculate_material;
         u16                          user_data_count;
         u16                          unknown_size;
-        u16                          user_shading_model_option_ubo_size;
+        u16                          runtime_option_uniform_buffer_size;
         u32                          reserve2;
 
         static constexpr u32    cMagic = util::TCharCode32("FMAT");
@@ -192,7 +192,7 @@ namespace vp::res {
             }
         }
 
-        void ReleaseTextures() {
+        constexpr void ReleaseTextures() {
             for (u32 i = 0; i < sampler_count; ++i) {
                 runtime_texture_descriptor_slot_array[i] = cInvalidDescriptorSlot;
                 runtime_texture_view_array[i]            = nullptr;
@@ -214,53 +214,53 @@ namespace vp::res {
             return had_success;
         }
 
-        ALWAYS_INLINE u32 TryGetStaticShaderOptionIndex(const char *option_name) {
+        constexpr u32 TryGetStaticShaderOptionIndex(const char *option_name) {
             const u32 dic_index = material_shader_data->shader_reflection->static_shader_option_dictionary->TryGetEntryIndexByKey(option_name);
             return (material_shader_data->static_option_indice_array != nullptr) ? material_shader_data->static_option_indice_array[material_shader_data->total_static_option_count + dic_index] : dic_index;
         }
 
-        constexpr ALWAYS_INLINE bool IsStaticShaderOptionBool(u32 option_index) {
+        constexpr bool IsStaticShaderOptionBool(u32 option_index) {
             return (material_shader_data->bool_static_option_count > option_index);
         }
 
-        constexpr ALWAYS_INLINE bool IsStaticShaderOptionString(u32 option_index) {
+        constexpr bool IsStaticShaderOptionString(u32 option_index) {
             return (material_shader_data->bool_static_option_count < option_index);
         }
 
-        constexpr ALWAYS_INLINE s32 TryGetStaticShaderOptionBool(u32 option_index) {
+        constexpr s32 TryGetStaticShaderOptionBool(u32 option_index) {
             return (material_shader_data->bool_static_option_count <= option_index) ? -1 : ((material_shader_data->static_shader_option_packed_bool_value_array[(option_index / 32)] & 0x7fff'ffff) >> (option_index & 0x1f)) & 1;
         }
 
-        constexpr ALWAYS_INLINE const char *TryGetStaticShaderOptionString(u32 option_index) {
+        constexpr const char *TryGetStaticShaderOptionString(u32 option_index) {
             return (option_index < material_shader_data->bool_static_option_count || material_shader_data->total_static_option_count <= option_index) ? nullptr : material_shader_data->static_shader_option_string_value_array[(option_index - material_shader_data->bool_static_option_count)];
         }
 
-        ALWAYS_INLINE const char *TryGetShaderVertexAttributeName(const char *attribute_name) {
+        const char *TryGetShaderVertexAttributeName(const char *attribute_name) {
             for (u32 i = 0; i < material_shader_data->vertex_attribute_count; ++i) {
                 if (::strcmp(material_shader_data->vertex_attribute_name_array[i] + 2, attribute_name) == 0) { return material_shader_data->shader_reflection->vertex_attribute_dictionary->GetKeyByEntryIndex((material_shader_data->vertex_attribute_index_array != nullptr) ? material_shader_data->vertex_attribute_index_array[i] : i); }
             }
             return nullptr;
         }
 
-        ALWAYS_INLINE const char *TryGetShaderSamplerName(const char *sampler_name) {
+        const char *TryGetShaderSamplerName(const char *sampler_name) {
             for (u32 i = 0; i < material_shader_data->sampler_count; ++i) {
                 if (::strcmp(material_shader_data->sampler_name_array[i] + 2, sampler_name) == 0) { return material_shader_data->shader_reflection->sampler_dictionary->GetKeyByEntryIndex((material_shader_data->sampler_index_array != nullptr) ? material_shader_data->sampler_index_array[i] : i); }
             }
             return nullptr; 
         }
 
-        ALWAYS_INLINE const char *TryGetTextureName(const char *sampler_name) {
+        constexpr const char *TryGetTextureName(const char *sampler_name) {
             const u32 entry_index = sampler_dictionary->TryGetEntryIndexByKey(sampler_name);
             return (entry_index != 0xffff'ffff) ? texture_name_array[entry_index] : nullptr;
         }
 
-        ResGfxSamplerInfo *TryGetSamplerInfo(const char *sampler_name) {
+        constexpr ResGfxSamplerInfo *TryGetSamplerInfo(const char *sampler_name) {
             if (sampler_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = sampler_dictionary->TryGetEntryIndexByKey(sampler_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(sampler_info_array[entry_id]);
         }
-        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

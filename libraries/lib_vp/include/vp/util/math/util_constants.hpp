@@ -27,6 +27,7 @@ namespace vp::util {
     constexpr inline float cFloatDegree180          = 180.0;
     constexpr inline float cFloatQuarternionEpsilon = 1.0E-5;
     constexpr inline float cFloatUlp                = 1.1920929E-7;
+    constexpr inline float cFloatMax                = FLT_MAX;
 
     constexpr inline double cDoublePi                 = 3.1415927;
     constexpr inline double cDouble2Pi                = 6.2831855;
@@ -34,6 +35,7 @@ namespace vp::util {
     constexpr inline double cDouble3PiDivided2        = 4.712389;
     constexpr inline double cDouble1Divided2Pi        = 0.15915494;
     constexpr inline double cDoubleDegree180          = 180.0;
+    constexpr inline double cDoubleMax                = DBL_MAX;
 
     template<typename T, T Degrees> requires std::is_floating_point<T>::value
     constexpr inline T TRadians = (Degrees * cFloatPi / cFloatDegree180);

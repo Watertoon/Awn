@@ -24,13 +24,8 @@ namespace vp::resbui {
             constexpr StringPoolStringBase() : m_pool_builder_node() {/*...*/}
             constexpr virtual ~StringPoolStringBase() {/*...*/}
 
-            constexpr virtual const char *GetString() const {
-                return "";
-            }
-
-            constexpr virtual u32 GetStringLength() const {
-                return 0;
-            }
+            constexpr virtual const char *GetString() const { return ""; }
+            constexpr virtual u32 GetLength() const { return 0; }
     };
 
     class StringPoolString : public StringPoolStringBase {
@@ -45,8 +40,8 @@ namespace vp::resbui {
                 return m_string;
             }
 
-            constexpr virtual u32 GetStringLength() const {
-                if (std::is_constant_evaluated() == true) { return vp::util::TStringLength(m_string, 0xffff'ffff); }
+            constexpr virtual u32 GetLength() const override {
+                if (std::is_constant_evaluated()) { return vp::util::TStringLength(m_string, 0xffff'ffff); }
                 return (m_string != nullptr) ? ::strlen(m_string) : 0;
             }
             
@@ -65,7 +60,7 @@ namespace vp::resbui {
                 return m_string.GetString();
             }
 
-            constexpr virtual u16 GetLength() const {
+            constexpr virtual u16 GetLength() const override {
                 return m_string.GetLength();
             }
     };

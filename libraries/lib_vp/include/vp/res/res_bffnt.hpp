@@ -18,7 +18,19 @@
 namespace vp::res {
 
     struct ResBffnt : public ResUi2dHeader {
-        static constexpr inline u32 Magic = util::TCharCode32("FFNT");
+        static constexpr inline u32 cMagic = util::TCharCode32("FFNT");
+        static constexpr inline u32 cTargetMajorVersion = 4;
+        static constexpr inline u32 cTargetMinorVersion = 1;
+
+        static ResBffnt *ResCast(void *file) {
+            if (file == nullptr || !IsValid(file)) { return nullptr; }
+            ResBffnt *bffnt = reinterpret_cast<ResBffnt*>(file);
+            return bffnt;
+        }
+        static bool IsValid(void *file) {
+            ResBffnt *bffnt = reinterpret_cast<ResBffnt*>(file);
+            return bffnt->magic == cMagic && bffnt->endianess == ByteOrder_Native && bffnt->major_version == cTargetMajorVersion && bffnt->minor_version == cTargetMinorVersion && 1 < bffnt->section_count;
+        }
     };
     static_assert(sizeof(ResBffnt) == 0x14);
 
@@ -52,15 +64,15 @@ namespace vp::res {
         u8  max_character_width;
         u32 per_texture_size;
         u16 baseline_position;
-        u16 texture_format;
+        u16 image_format;
         u16 cells_per_row;
         u16 cells_per_column;
         u16 image_width;
         u16 image_height;
         u32 image_data_offset;
 
-        ALWAYS_INLINE ResBntx *GetImageData(void *file_head) {
-            return reinterpret_cast<ResBntx*>(reinterpret_cast<uintptr_t>(file_head) + image_data_offset);
+        ALWAYS_INLINE void *GetImageData(void *file_head) {
+            return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_head) + image_data_offset);
         }
 
         static constexpr inline u32 cMagic = util::TCharCode32("TGLP");

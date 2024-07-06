@@ -28,19 +28,19 @@ namespace vp::res {
         YAxisViewPoint   = 7,
     };
     enum class BfresBoneLocalTransformMode : u8 {
-        None                    = (1 << 0),
-        SegmentScaleCompensate  = (1 << 1),
-        ScaleUniform            = (1 << 2),
-        ScaleVolumeOne          = (1 << 3),
-        NoRotation              = (1 << 4),
-        NoTranslation           = (1 << 5),
-    };
-    enum class BfresBoneHierarchyTransformMode : u8 {
-        None                    = (1 << 0),
+        None                    = 0,
+        SegmentScaleCompensate  = (1 << 0),
         ScaleUniform            = (1 << 1),
         ScaleVolumeOne          = (1 << 2),
         NoRotation              = (1 << 3),
         NoTranslation           = (1 << 4),
+    };
+    enum class BfresBoneHierarchyTransformMode : u8 {
+        None                    = 0,
+        ScaleUniform            = (1 << 0),
+        ScaleVolumeOne          = (1 << 1),
+        NoRotation              = (1 << 2),
+        NoTranslation           = (1 << 3),
     };
 
     struct ResBfresBone {
@@ -63,16 +63,16 @@ namespace vp::res {
                 u32 unknown1                 : 3;
                 u32 billboard_mode           : 3;
                 u32 reserve3                 : 1;
-                u32 unknown2                 : 3;
+                u32 unknown2                 : 3; /* Posture? */
                 u32 local_transform_mode     : 5;
                 u32 hierarchy_transform_mode : 4;                
             };
         };
-        util::Float3               translate;
-        util::Float4               rotate;
         util::Float3               scale;
+        util::Float4               rotate;
+        util::Float3               translate;
 
-        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
@@ -99,13 +99,18 @@ namespace vp::res {
 
     struct ResBfresSkeleton {
         u32                        magic;
-        u32                        has_user_pointer : 2;
-        u32                        reserve0         : 4;
-        u32                        mirror_mode      : 2;
-        u32                        scale_mode       : 2;
-        u32                        reserve1         : 2;
-        u32                        rotation_mode    : 2;
-        u32                        reserve2         : 18;
+        union {
+            u32 flags;
+            struct {
+                u32 has_user_pointer : 2;
+                u32 reserve0         : 4;
+                u32 mirror_mode      : 2;
+                u32 scale_mode       : 2;
+                u32 reserve1         : 2;
+                u32 rotation_mode    : 2;
+                u32 reserve2         : 18;                
+            };
+        };
         ResNintendoWareDictionary *bone_dictionary;
         ResBfresBone              *bone_array;
         u16                       *bone_index_table;
@@ -118,8 +123,25 @@ namespace vp::res {
         u16                        reserve3;
 
         static constexpr u32 cMagic = util::TCharCode32("FSKL");
+        static constexpr u32 cInvalidBoneIndex = 0xffff'ffff;
 
-        ResBfresBone *TryGetBone(const char *bone_name) {
+        constexpr u32 FindBoneIndexAtEndOfBranch(u32 bone_index) {
+            const u32 count = static_cast<u32>(this->bone_count);
+            u32 parent_bone = (bone_index == 0) ? cInvalidBoneIndex : static_cast<u32>(this->bone_array[bone_index].bone_parent_index);
+            u32 end_bone = (count < bone_index + 1) ? bone_index + 1 : count;
+            for (; bone_index < count; ++bone_index) {
+                const u32 next_parent_iter = static_cast<u32>(this->bone_array[bone_index + 1].bone_parent_index);
+                if (parent_bone < next_parent_iter) { return next_parent_iter; }
+            }
+            return end_bone;
+        }
+
+        constexpr u32 TryGetBoneIndex(const char *bone_name) {
+            if (bone_dictionary == nullptr) { return cInvalidBoneIndex; }
+            const u32 entry_id = bone_dictionary->TryGetEntryIndexByKey(bone_name);
+            return entry_id;
+        }
+        constexpr ResBfresBone *TryGetBone(const char *bone_name) {
             if (bone_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = bone_dictionary->TryGetEntryIndexByKey(bone_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

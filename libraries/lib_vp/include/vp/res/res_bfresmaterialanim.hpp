@@ -99,7 +99,7 @@ namespace vp::res {
             }
         }
 
-        void ReleaseTextures() {
+        constexpr void ReleaseTextures() {
             for (u32 i = 0; i < texture_count; ++i) {
                 runtime_texture_descriptor_slot_array[i] = cInvalidDescriptorSlot;
                 runtime_texture_view_array[i]            = nullptr;
@@ -121,7 +121,7 @@ namespace vp::res {
             return had_success;
         }
 
-        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

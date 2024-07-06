@@ -922,7 +922,7 @@ namespace awn::gfx {
         ::pfn_vkCmdSetColorBlendEquationEXT(m_command_list.vk_command_buffer, 0, blend_state->blend_target_state_count, blend_equation_array);
         ::pfn_vkCmdSetColorWriteMaskEXT(m_command_list.vk_command_buffer, 0, blend_state->blend_target_state_count, channel_mask_array);
 
-        ::pfn_vkCmdSetBlendConstants(m_command_list.vk_command_buffer, std::addressof(blend_state->blend_constant_color.m_r));
+        ::pfn_vkCmdSetBlendConstants(m_command_list.vk_command_buffer, std::addressof(blend_state->blend_constant_color.r));
 
         return;
     }

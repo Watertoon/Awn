@@ -21,6 +21,7 @@
 #include <cstring>
 #include <cstdarg>
 #include <cmath>
+#include <cfloat>
 
 /* STD */
 #include <memory>

@@ -44,15 +44,18 @@ namespace vp::res {
 
         u32 FindRefBit();
 
-        u32 TryGetEntryIndexByKey(const char *key) const {
+        constexpr u32 TryGetEntryIndexByKey(const char *key) const {
 
-            /* Find key length */
-            u32 len = 0;
-            if (key != nullptr) {
-                len = ::strlen(key);
+            /* Linear search for constexpr */
+            if (std::is_constant_evaluated()) {
+                for (u16 i = 0; i < this->node_count; ++i) {
+                    if (vp::util::TStringCompare(key, this->GetKeyByEntryIndex(i), 0xffff'ffff)) { return i; }
+                }
+                return cInvalidEntryIndex;
             }
 
             /* Dictionary search */
+            const u32         len       = (key != nullptr) ? ::strlen(key) : 0;
             s16               next_idx  = root_node.left_node;
             const ResDicNode *node_iter = std::addressof(root_node) + next_idx;
             const ResDicNode *last_iter = std::addressof(root_node);

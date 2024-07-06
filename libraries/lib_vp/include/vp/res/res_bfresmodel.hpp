@@ -48,7 +48,7 @@ namespace vp::res {
                 material_array[i].BindTextures(bind_callback, res_bntx);
             }
         }
-        void ReleaseTextures() {
+        constexpr void ReleaseTextures() {
             const u32 mat_count = material_count;
             for (u32 i = 0; i < mat_count; ++i) {
                 material_array[i].ReleaseTextures();
@@ -63,19 +63,19 @@ namespace vp::res {
             return had_success;
         }
 
-        ResBfresShape *TryGetShape(const char *shape_name) {
+        constexpr ResBfresShape *TryGetShape(const char *shape_name) {
             if (shape_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = shape_dictionary->TryGetEntryIndexByKey(shape_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(shape_array[entry_id]);
         }
-        ResBfresMaterial *TryGetMaterial(const char *material_name) {
+        constexpr ResBfresMaterial *TryGetMaterial(const char *material_name) {
             if (material_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = material_dictionary->TryGetEntryIndexByKey(material_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(material_array[entry_id]);
         }
-        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

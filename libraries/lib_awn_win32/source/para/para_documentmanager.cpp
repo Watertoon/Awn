@@ -56,7 +56,7 @@ namespace awn::para {
 
         /* Push remove request */
         const u64 hash = vp::util::DualHashMurmur64(document->m_file_path.GetString(), document->m_typed_param->GetClassName());
-        m_remove_queue.Insert(hash);
+        m_remove_queue.PushBack(hash);
 
         return;
     }

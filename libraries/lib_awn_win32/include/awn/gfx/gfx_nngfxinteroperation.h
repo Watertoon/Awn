@@ -50,12 +50,12 @@ namespace awn::gfx {
     };
 
     /* Resource sizes */
-    constexpr inline const size_t cMaxGfxMemoryPoolSize  = 0x120;
-    constexpr inline const size_t cMaxGfxBufferSize      = 0x48;
-    constexpr inline const size_t cMaxGfxTextureSize     = 0xd8;
-    constexpr inline const size_t cMaxGfxTextureViewSize = 0x48;
-    constexpr inline const size_t cMaxGfxSamplerSize     = 0x78;
-    constexpr inline const size_t cMaxGfxShaderSize      = 0xe8;
+    constexpr inline const size_t cMaxGfxMemoryPoolSize  = vp::res::cMaxGfxMemoryPoolSize;
+    constexpr inline const size_t cMaxGfxBufferSize      = vp::res::cMaxGfxBufferSize;
+    constexpr inline const size_t cMaxGfxTextureSize     = vp::res::cMaxGfxTextureSize;
+    constexpr inline const size_t cMaxGfxTextureViewSize = vp::res::cMaxGfxTextureViewSize;
+    constexpr inline const size_t cMaxGfxSamplerSize     = vp::res::cMaxGfxSamplerSize;
+    constexpr inline const size_t cMaxGfxShaderSize      = vp::res::cMaxGfxShaderSize;
 
     /* Resource flags */
     using GpuAccessFlags      = vp::res::GfxGpuAccessFlags;

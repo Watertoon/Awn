@@ -72,22 +72,35 @@ namespace vp::res {
         Mesh                   = 7,
     };
 
+    static constexpr u32 cMaxBnshShaderStageCount = 0x8;
+
     enum class GfxShaderCodeType : u8 {
         Binary         = 0x0,
         Intermediate   = 0x1,
         Source         = 0x2,
     };
 
+    static constexpr u32 cMaxBnshShaderCodeTypeCount = 0x3;
+
     enum class GfxShaderInterfaceType : u32 {
         InputAttribute  = 0x0,
         OutputAttribute = 0x1,
-        Sampler         = 0x2,
-        ConstantBuffer  = 0x3,
+        TextureSampler  = 0x2,
+        UniformBuffer   = 0x3,
         StorageBuffer   = 0x4,
         Image           = 0x5,
         SeparateTexture = 0x6,
         SeparateSampler = 0x7,
     };
+
+    static constexpr u32 cMaxBnshInputAttributeCount  = 0x10;
+    static constexpr u32 cMaxBnshOutputAttributeCount = 0x10;
+    static constexpr u32 cMaxBnshTextureSamplerCount  = 0x20;
+    static constexpr u32 cMaxBnshUniformBufferCount   = 0xe;
+    static constexpr u32 cMaxBnshStorageBufferCount   = 0x10;
+    static constexpr u32 cMaxBnshImageCount           = 0x8;
+    static constexpr u32 cMaxBnshSeparateTextureCount = 0x80;
+    static constexpr u32 cMaxBnshSeparateSamplerCount = 0x20;
 
     struct ResBnshShaderInterfaceInfoTable {
         ResBnshShaderInterfaceInfo *interface_info_vertex;
@@ -201,7 +214,7 @@ namespace vp::res {
     static_assert(sizeof(ResBnshShaderContainer) == 0x60);
 
     struct ResBnsh : public ResNintendoWareFileHeader {
-        u32 reserve0[0x10];
+        char reserve0[0x40];
 
         static constexpr u64 cMagic              = util::TCharCode32("BNSH");
         static constexpr u16 cTargetVersionMajor = 2;

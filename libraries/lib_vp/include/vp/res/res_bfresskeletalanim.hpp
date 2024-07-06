@@ -37,6 +37,15 @@ namespace vp::res {
         util::Float3 scale;
     };
     static_assert(sizeof(ResBfresBoneAnimResultDefault) == sizeof(float) * 10);
+   
+    struct BfresBoneAnimResult {
+        u32          flags;
+        util::Float3 scale;
+        util::Float3 translate;
+        u32          reserve0;
+        util::Float4 rotate;
+    };
+    static_assert(sizeof(BfresBoneAnimResult) == 0x30);
 
     struct ResBfresBoneAnim {
         const char                    *bone_name;
@@ -44,23 +53,38 @@ namespace vp::res {
         ResBfresBoneAnimResultDefault *default_result;
         ResGfxUserData                *user_data_array;
         ResNintendoWareDictionary     *user_data_dictionary;
-        u32                            reserve0            : 3;
-        u32                            is_use_scale        : 1;
-        u32                            is_use_rotation     : 1;
-        u32                            is_use_translation  : 1;
-        u32                            curve_type_mask     : 10;
-        u32                            reserve1            : 5;
-        u32                            transform_mode      : 5;
-        u32                            reserve2            : 6;
+        union {
+            u32 flags;
+            struct {
+                u32 reserve0            : 3;
+                u32 is_use_scale        : 1;
+                u32 is_use_rotation     : 1;
+                u32 is_use_translation  : 1;
+                u32 curve_type_mask     : 10;
+                u32 reserve1            : 5;
+                u32 transform_mode      : 5;
+                u32 reserve2            : 6;
+            };
+        };
         u8                             reserve3;
         u8                             reserve4;
         u8                             anim_curve_count;
-        u8                             reserve5;
+        u8                             result_index;
         u32                            base_curve_index;
         u16                            user_data_count;
         u16                            reserve6;
 
-        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        /*void Evaluate(float time, BfresBoneAnimResult *result) {
+            const u32 curve_count = anim_curve_count;
+            for (u32 i = 0; i < curve_count; ++i) {
+                const u8 result_offset = anim_curve_array[i].base_result_offset;
+                const float value = anim_curve_array[i].EvaluateFloat(time);
+                reinterpret_cast<float*>(result)[result_offset] = value;
+            }
+            return;
+        }*/
+
+        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
@@ -94,7 +118,7 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FSKA");
 
-        ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

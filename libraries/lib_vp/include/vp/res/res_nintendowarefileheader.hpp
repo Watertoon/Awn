@@ -75,9 +75,20 @@ namespace vp::res {
         ALWAYS_INLINE void SetRelocated(bool is_relocated) { this->is_relocated = (this->is_relocated & 0xFFFE) | is_relocated; }
 
         ALWAYS_INLINE void Relocate() {
+            if (is_relocated) { return; }
             ResNintendoWareRelocationTable *relocation_table = this->GetRelocationTable();
             if (relocation_table != nullptr) {
                 relocation_table->Relocate();
+            }
+            is_relocated = true;
+        }
+
+        ALWAYS_INLINE void Unrelocate() {
+            if (!is_relocated) { return; }
+            is_relocated = false;
+            ResNintendoWareRelocationTable *relocation_table = this->GetRelocationTable();
+            if (relocation_table != nullptr) {
+                relocation_table->Unrelocate();
             }
         }
     };

@@ -27,84 +27,47 @@ namespace vp::util {
     }
 
 
-    class Color4f;
+    struct Color4f;
 
-    class Color4u8 {
-        public:
-            union {
-                struct {
-                    u8 m_r;
-                    u8 m_g;
-                    u8 m_b;
-                    u8 m_a;
-                };
-                u32 m_packed_color;
+    struct Color4u8 {
+        union {
+            struct {
+                u8 r;
+                u8 g;
+                u8 b;
+                u8 a;
             };
-        public:
-            constexpr ALWAYS_INLINE Color4u8() : m_r(), m_g(), m_b(), m_a(255) {/*...*/}
-            constexpr ALWAYS_INLINE Color4u8(u8 r, u8 g, u8 b) : m_r(r), m_g(g), m_b(b), m_a(255) {/*...*/}
-            constexpr ALWAYS_INLINE Color4u8(u8 r, u8 g, u8 b, u8 a) : m_r(r), m_g(g), m_b(b), m_a(a) {/*...*/}
-            constexpr ALWAYS_INLINE Color4u8(float r, float g, float b) : m_r(ConvertFloatToUnorm(r)), m_g(ConvertFloatToUnorm(g)), m_b(ConvertFloatToUnorm(b)), m_a(255) {/*...*/}
-            constexpr ALWAYS_INLINE Color4u8(float r, float g, float b, float a) : m_r(ConvertFloatToUnorm(r)), m_g(ConvertFloatToUnorm(g)), m_b(ConvertFloatToUnorm(b)), m_a(ConvertFloatToUnorm(a)) {/*...*/}
-            constexpr ALWAYS_INLINE Color4u8(const Color4u8 &copy) : m_r(copy.m_r), m_g(copy.m_g), m_b(copy.m_b), m_a(copy.m_a) {/*...*/}
-            constexpr ALWAYS_INLINE Color4u8(const Color4f &copy);
+            u32 packed_color;
+        };
 
-            constexpr ~Color4u8() {/*...*/}
-
-            constexpr ALWAYS_INLINE Color4u8 &operator=(const Color4u8 &rhs) {
-                m_r = rhs.m_r;
-                m_g = rhs.m_g;
-                m_b = rhs.m_b;
-                m_a = rhs.m_a;
-                return *this;
-            }
-            constexpr ALWAYS_INLINE Color4u8 &operator=(const Color4f &rhs);
+        constexpr ALWAYS_INLINE Color4u8 &operator=(const Color4f &rhs);
     };
 
-    class Color4f {
-        public:
-            float m_r;
-            float m_g;
-            float m_b;
-            float m_a;
-        public:
-            constexpr ALWAYS_INLINE Color4f()                                   : m_r(), m_g(), m_b(), m_a(1.0f) {/*...*/}
-            constexpr ALWAYS_INLINE Color4f(float r, float g, float b)          : m_r(r), m_g(g), m_b(b), m_a(1.0f) {/*...*/}
-            constexpr ALWAYS_INLINE Color4f(float r, float g, float b, float a) : m_r(r), m_g(g), m_b(b), m_a(a) {/*...*/}
-            constexpr ALWAYS_INLINE Color4f(u8 r, u8 g, u8 b)                   : m_r(ConvertUnormToFloat(r)), m_g(ConvertUnormToFloat(g)), m_b(ConvertUnormToFloat(b)), m_a(1.0f) {/*...*/}
-            constexpr ALWAYS_INLINE Color4f(u8 r, u8 g, u8 b, u8 a)             : m_r(ConvertUnormToFloat(r)), m_g(ConvertUnormToFloat(g)), m_b(ConvertUnormToFloat(b)), m_a(ConvertUnormToFloat(a)) {/*...*/}
-            constexpr ALWAYS_INLINE Color4f(const Color4f &copy)                : m_r(copy.m_r), m_g(copy.m_g), m_b(copy.m_b), m_a(copy.m_a) {/*...*/}
-            constexpr ALWAYS_INLINE Color4f(const Color4u8 &copy)               : m_r(ConvertUnormToFloat(copy.m_r)), m_g(ConvertUnormToFloat(copy.m_g)), m_b(ConvertUnormToFloat(copy.m_b)), m_a(ConvertUnormToFloat(copy.m_a)) {/*...*/}
+    struct Color4f {
+        float r;
+        float g;
+        float b;
+        float a;
 
-            constexpr ~Color4f() {/*...*/}
-
-            constexpr ALWAYS_INLINE Color4f &operator=(const Color4f &rhs) {
-                m_r = rhs.m_r;
-                m_g = rhs.m_g;
-                m_b = rhs.m_b;
-                m_a = rhs.m_a;
-                return *this;
-            }
-            constexpr ALWAYS_INLINE Color4f &operator=(const Color4u8 &rhs) {
-                m_r = ConvertUnormToFloat(rhs.m_r);
-                m_g = ConvertUnormToFloat(rhs.m_g);
-                m_b = ConvertUnormToFloat(rhs.m_b);
-                m_a = ConvertUnormToFloat(rhs.m_a);
-                return *this;
-            }
+        constexpr ALWAYS_INLINE Color4f &operator=(const Color4u8 &rhs) {
+            r = ConvertUnormToFloat(rhs.r);
+            g = ConvertUnormToFloat(rhs.g);
+            b = ConvertUnormToFloat(rhs.b);
+            a = ConvertUnormToFloat(rhs.a);
+            return *this;
+        }
     };
 
-    constexpr ALWAYS_INLINE Color4u8::Color4u8(const Color4f &copy) : m_r(ConvertFloatToUnorm(copy.m_r)), m_g(ConvertFloatToUnorm(copy.m_g)), m_b(ConvertFloatToUnorm(copy.m_b)), m_a(ConvertFloatToUnorm(copy.m_a)) {/*...*/}
     constexpr ALWAYS_INLINE Color4u8 &Color4u8::operator=(const Color4f &rhs) {
-        m_r = ConvertFloatToUnorm(rhs.m_r);
-        m_g = ConvertFloatToUnorm(rhs.m_g);
-        m_b = ConvertFloatToUnorm(rhs.m_b);
-        m_a = ConvertFloatToUnorm(rhs.m_a);
+        r = ConvertFloatToUnorm(rhs.r);
+        g = ConvertFloatToUnorm(rhs.g);
+        b = ConvertFloatToUnorm(rhs.b);
+        a = ConvertFloatToUnorm(rhs.a);
         return *this;
     }
 
-    constexpr inline Color4u8 cBlack4u8 = {0.0f, 0.0f, 0.0f, 1.0f};
-    constexpr inline Color4u8 cWhite4u8 = {1.0f, 1.0f, 1.0f, 1.0f};
+    constexpr inline Color4u8 cBlack4u8 = {0x00, 0x00, 0x00, 0xff};
+    constexpr inline Color4u8 cWhite4u8 = {0xff, 0xff, 0xff, 0xff};
 
     constexpr inline Color4f cBlack4f   = {0.0f, 0.0f, 0.0f, 1.0f};
     constexpr inline Color4f cWhite4f   = {1.0f, 1.0f, 1.0f, 1.0f};
