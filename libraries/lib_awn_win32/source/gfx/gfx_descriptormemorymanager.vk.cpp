@@ -19,56 +19,43 @@ namespace awn::gfx {
 
     AWN_SINGLETON_TRAITS_IMPL(DescriptorMemoryManager);
 
-    void DescriptorMemoryManager::Initialize([[maybe_unused]] mem::Heap *heap, mem::Heap *gpu_heap, size_t memory_size) {
+    void DescriptorMemoryManager::Initialize(mem::Heap *heap, mem::Heap *gpu_heap, size_t memory_size, u32 command_buffer_count) {
 
-        /* Allocate descriptor memory */
-        m_memory_size     = memory_size;
-        m_memory_array[0] = ::operator new(memory_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
-        m_memory_array[1] = ::operator new(memory_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
-        m_memory_array[2] = ::operator new(memory_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
+        /* Allocate descriptor buffer */
+        m_memory = ::operator new(memory_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
+        m_descriptor_vk_buffer = gfx::CreateVkBuffer(m_memory, VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, memory_size);
+        m_descriptor_vk_device_address = gfx::GetVkDeviceAddress(m_descriptor_vk_buffer);
 
-        /* Create descriptor buffers */
-        m_descriptor_vk_buffer_array[0] = gfx::CreateVkBuffer(m_memory_array[0], VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, memory_size);
-        m_descriptor_vk_buffer_array[1] = gfx::CreateVkBuffer(m_memory_array[1], VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, memory_size);
-        m_descriptor_vk_buffer_array[2] = gfx::CreateVkBuffer(m_memory_array[2], VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, memory_size);
-
-        /* Get buffer device addresses */
-        m_descriptor_vk_device_address_array[0] = gfx::GetVkDeviceAddress(m_descriptor_vk_buffer_array[0]);
-        m_descriptor_vk_device_address_array[1] = gfx::GetVkDeviceAddress(m_descriptor_vk_buffer_array[1]);
-        m_descriptor_vk_device_address_array[2] = gfx::GetVkDeviceAddress(m_descriptor_vk_buffer_array[2]);
-
-        /* Reset memory iters */
-        m_memory_iter   = 0;
-        m_current_index = 0;
+        /* Create separate heap */
+        const size_t management_size = sizeof(mem::SeparateHeap) + mem::SeparateHeap::CalculateManagementAreaSize(command_buffer_count);
+        void *management_memory = ::operator new(management_size, heap, alignof(mem::SeparateHeap));
+        m_descriptor_heap = mem::SeparateHeap::Create("awn::gfx::DescriptorMemoryHeap", management_memory, management_size, memory_size, true);
 
         return;
     }
 
     void DescriptorMemoryManager::Finalize() {
-        if (m_memory_array[0] != nullptr) {
-            gfx::DestroyVkBuffer(m_descriptor_vk_buffer_array[0]);
-            ::operator delete(m_memory_array[0]);
-            m_memory_array[0] = nullptr;
+        if (m_memory != nullptr) {
+            gfx::DestroyVkBuffer(m_descriptor_vk_buffer);
+            ::operator delete(m_memory);
+            m_memory = nullptr;
+            m_descriptor_vk_device_address = 0;
         }
-        if (m_memory_array[1] != nullptr) {
-            gfx::DestroyVkBuffer(m_descriptor_vk_buffer_array[1]);
-            ::operator delete(m_memory_array[1]);
-            m_memory_array[1] = nullptr;
-        }
-        if (m_memory_array[2] != nullptr) {
-            gfx::DestroyVkBuffer(m_descriptor_vk_buffer_array[2]);
-            ::operator delete(m_memory_array[2]);
-            m_memory_array[2] = nullptr;
+        if (m_descriptor_heap != nullptr) {
+            ::operator delete(m_descriptor_heap);
+            m_descriptor_heap = nullptr;
         }
     }
 
-    size_t DescriptorMemoryManager::AllocateDescriptorMemory(u32 memory_size) {
-        const u32 memory_offset = vp::util::InterlockedFetchAdd(std::addressof(m_memory_iter), memory_size);
-        VP_ASSERT(memory_offset < m_memory_size);
-        return memory_offset;
+    void *DescriptorMemoryManager::AllocateCommandMemory(size_t *out_offset, size_t size) {
+        void *base_address = m_descriptor_heap->TryAllocate(size, Context::cTargetDescriptorBufferAlignment);
+        const size_t offset = reinterpret_cast<uintptr_t>(base_address) - mem::SeparateHeap::cOffsetBase;
+        *out_offset = offset;
+        return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory) + offset);
     }
 
-    void *DescriptorMemoryManager::GetMemoryOffset(size_t offset) {
-        return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory_array[m_current_index]) + offset);
+    void DescriptorMemoryManager::FreeCommandMemory(void *address) {
+        void *base_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(m_memory) + mem::SeparateHeap::cOffsetBase);
+        m_descriptor_heap->Free(base_address);
     }
 }

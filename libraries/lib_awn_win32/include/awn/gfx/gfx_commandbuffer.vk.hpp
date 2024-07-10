@@ -85,6 +85,10 @@ namespace awn::gfx {
             CommandList               m_command_list;
             bool                      m_is_rendering;
             bool                      m_is_render_target_dirty;
+            void                     *m_command_memory_base;
+            size_t                    m_command_memory_base_offset;
+            u32                       m_command_memory_iter;
+            u32                       m_command_memory_size;
             u32                       m_color_target_count;
             RenderTargetColor        *m_color_target_array[Context::cTargetMaxBoundRenderTargetColorCount];
             RenderTargetDepthStencil *m_depth_stencil_target;
@@ -270,6 +274,17 @@ namespace awn::gfx {
                 return;
             }
 
+            constexpr void ResetDescriptorMemory() {
+                m_command_memory_iter = 0;
+            }
+
+            void FreeCommandMemory() {
+                if (m_command_memory_base == nullptr) { return; }
+                DescriptorMemoryManager::GetInstance()->FreeCommandMemory(m_command_memory_base);
+                m_command_memory_base = nullptr;
+                m_command_memory_base_offset = 0;
+            }
+
             void TransitionRenderTargetsImpl(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target, SyncScopeInfo *sync_scope, VkImageLayout image_layout);
 
             void CommitDescriptorMemory(VkPipelineBindPoint bind_point, VkPipelineLayout pipeline_layout, u32 base_set, void *desc_memory, u32 memory_size);
@@ -285,12 +300,23 @@ namespace awn::gfx {
 
             void BeginRenderingIfNotRendering();
             void EndRenderingIfRendering();
-        public:
-            constexpr CommandBufferBase() : m_command_list(), m_is_rendering(), m_is_render_target_dirty(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_texture_sampler_dirty(), m_image_dirty(), m_uniform_buffer_dirty(), m_storage_buffer_dirty(), m_combined_dirty(), m_separate_texture_sampler_dirty() {/*...*/}
-            constexpr ~CommandBufferBase() {/*...*/}
 
             void SetSystemDescriptorBuffers();
+        public:
+            constexpr CommandBufferBase() : m_command_list(), m_is_rendering(), m_is_render_target_dirty(), m_command_memory_base(), m_command_memory_base_offset(), m_command_memory_iter(), m_command_memory_size(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_texture_sampler_dirty(), m_image_dirty(), m_uniform_buffer_dirty(), m_storage_buffer_dirty(), m_combined_dirty(), m_separate_texture_sampler_dirty() {/*...*/}
+            constexpr ~CommandBufferBase() {/*...*/}
 
+            bool SetCommandMemorySize(size_t command_memory_size) {
+                this->FreeCommandMemory();
+                if (command_memory_size == 0) { return true; }
+                void *memory = DescriptorMemoryManager::GetInstance()->AllocateCommandMemory(std::addressof(m_command_memory_base_offset), command_memory_size);
+                if (memory == nullptr) { return false; }
+                m_command_memory_base        = memory;
+                m_command_memory_iter        = 0;
+                m_command_memory_size        = command_memory_size;
+                return true;
+            }
+        public:
             void TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
             void TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
 

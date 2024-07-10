@@ -45,7 +45,7 @@
 #include <awn/gfx/gfx_samplerbinder.h>
 
 #include <awn/gfx/gfx_pipelinestate.vk.h>
-#include <awn/gfx/gfx_descriptormemorymanager.vk.h>
+#include <awn/gfx/gfx_descriptormemorymanager2.vk.h>
 #include <awn/gfx/gfx_commandbuffer.vk.hpp>
 
 #include <awn/gfx/gfx_bufferallocator.hpp>

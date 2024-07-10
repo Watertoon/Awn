@@ -167,15 +167,18 @@ namespace awn::gfx {
     void CommandBufferBase::CommitDescriptorMemory(VkPipelineBindPoint bind_point, VkPipelineLayout pipeline_layout, u32 base_set, void *desc_memory, u32 memory_size) {
 
         /* Allocate descriptor memory */
-        DescriptorMemoryManager *desc_memory_manager = DescriptorMemoryManager::GetInstance();
-        VkDeviceSize             offset              = desc_memory_manager->AllocateDescriptorMemory(memory_size);
-        void                    *memory              = desc_memory_manager->GetMemoryOffset(offset);
+        const u32 memory_offset = m_command_memory_iter;
+        const u32 next_offset = memory_offset + memory_size;
+        VP_ASSERT(next_offset < m_command_memory_size);
+        m_command_memory_iter = next_offset;
+        void *memory = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_command_memory_base) + memory_offset);
 
         /* Copy descriptors to gpu */
         ::memcpy(memory, desc_memory, memory_size);
 
         /* Set descriptor set offset */
-        ::pfn_vkCmdSetDescriptorBufferOffsetsEXT(m_command_list.vk_command_buffer, bind_point, pipeline_layout, base_set, 1, std::addressof(Context::cTargetDescriptorBufferIndexPerStage), std::addressof(offset));
+        const size_t gpu_offset = m_command_memory_base_offset + memory_offset;
+        ::pfn_vkCmdSetDescriptorBufferOffsetsEXT(m_command_list.vk_command_buffer, bind_point, pipeline_layout, base_set, 1, std::addressof(Context::cTargetDescriptorBufferIndexPerStage), std::addressof(gpu_offset));
 
         return;
     }
@@ -1014,6 +1017,7 @@ namespace awn::gfx {
     }
 
     void CommandBuffer::Begin(QueueType queue_type, bool is_primary) {
+        this->ResetDescriptorMemory();
 
         /* Allocate a command buffer */
         m_command_list = CommandPoolManager::GetInstance()->CreateThreadLocalCommandList(queue_type, is_primary);

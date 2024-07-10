@@ -168,7 +168,7 @@ namespace awn::frm {
 
         /* Initialize descriptor memory manager */
         gfx::DescriptorMemoryManager *desc_memory_mgr = gfx::DescriptorMemoryManager::CreateInstance(awn_graphics_heap);
-        desc_memory_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, graphics_info->per_stage_descriptor_memory_size);
+        desc_memory_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, graphics_info->per_stage_descriptor_memory_size, graphics_info->command_buffer_count);
 
         /* Initialize texture sampler mgr */
         gfx::TextureViewSamplerManager *tex_samp_mgr = gfx::TextureViewSamplerManager::CreateInstance(awn_graphics_heap);

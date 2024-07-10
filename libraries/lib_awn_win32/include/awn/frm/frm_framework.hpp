@@ -37,6 +37,7 @@ namespace awn::frm {
         size_t per_stage_descriptor_memory_size;
         u32    texture_handle_count;
         u32    sampler_handle_count;
+        u32    command_buffer_count;
 
         constexpr void SetDefaults() {
             host_uncached_memory_size        = vp::util::c32MB;
@@ -46,6 +47,7 @@ namespace awn::frm {
             per_stage_descriptor_memory_size = vp::util::c4MB;
             texture_handle_count             = 0x100;
             sampler_handle_count             = 0x40;
+            command_buffer_count             = 0x400;
         }
     };
 

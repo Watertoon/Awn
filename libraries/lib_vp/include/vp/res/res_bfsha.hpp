@@ -155,7 +155,7 @@ namespace vp::res {
         u8                         reserve8;
         u8                         option_storage_buffer_index;
         u8                         base_location_vertex;
-        u8                         base_location_geoemtry;
+        u8                         base_location_geometry;
         u8                         base_location_fragment;
         u8                         base_location_compute;
         u8                         base_location_tessellation_control;
