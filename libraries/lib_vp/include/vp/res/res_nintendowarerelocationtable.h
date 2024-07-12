@@ -48,7 +48,8 @@ namespace vp::res {
         static constexpr u64 CalculateSize(s32 sections, s32 entries) { 
             return sections * sizeof(ResSection) + entries * sizeof(ResEntry) + sizeof(ResNintendoWareRelocationTable); 
         }
-         constexpr ALWAYS_INLINE u64 CalculateSize() {
+
+        constexpr ALWAYS_INLINE u64 CalculateSize() {
             u32 entry_count = 0;
             for (u32 i = 0; i < section_count; ++i) {
                 entry_count += section_array[i].entry_count;

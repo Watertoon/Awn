@@ -30,4 +30,6 @@ namespace vp::resbui {
     DECLARE_RESULT(InvalidShaderInterfaceType, 10);
     DECLARE_RESULT(DuplicateString,            11);
     DECLARE_RESULT(FailedToBuildDictionary,    12);
+    DECLARE_RESULT(OutOfBoundsOffset,          13);
+    DECLARE_RESULT(OutOfBoundsVariation,       14);
 }

@@ -19,6 +19,7 @@ namespace vp::resbui {
 
     class NintendoWareRelocationTableStream {
         private:
+            void                                                *m_file_head;
             vp::res::ResNintendoWareRelocationTable             *m_header;
             vp::res::ResNintendoWareRelocationTable::ResSection *m_section_array;
             vp::res::ResNintendoWareRelocationTable::ResEntry   *m_entry_array;
@@ -27,12 +28,14 @@ namespace vp::resbui {
             u32                                                  m_entry_count;
             u32                                                  m_entry_max;
         public:
-            constexpr  NintendoWareRelocationTableStream() : m_header(), m_section_array(nullptr), m_entry_array(nullptr), m_section_count(0), m_section_max(0), m_entry_count(0), m_entry_max(0) {/*...*/}
+            constexpr  NintendoWareRelocationTableStream() : m_file_head(), m_header(), m_section_array(), m_entry_array(), m_section_count(), m_section_max(), m_entry_count(), m_entry_max() {/*...*/}
             constexpr ~NintendoWareRelocationTableStream() {/*...*/}
 
-            void Initialize(void *output_buffer, u32 max_sections, u32 max_entries);
+            void SetStream(void *file_head, void *table_location, u32 max_sections, u32 max_entries);
+            void EndStream();
 
             Result StartSection(u32 region_offset, u32 region_size);
+            Result AddEntry(void *region_offset_ptr, u16 array_count, u8 relocation_count, u8 array_stride);
             Result AddEntry(u32 region_offset, u16 array_count, u8 relocation_count, u8 array_stride);
 
             static constexpr size_t CalculateRelocationTableSize(u32 max_sections, u32 max_entries) {

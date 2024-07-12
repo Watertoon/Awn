@@ -700,142 +700,122 @@ namespace awn::gfx {
             }
 
             static constexpr ALWAYS_INLINE u32 GetPerStageSetTextureSampler(ShaderStage shader_stage) {
-                if (shader_stage == ShaderStage::Vertex) {
-                    return cTargetPerStageLayoutSetTextureSamplerVertex;
-                }
-                if (shader_stage == ShaderStage::TessellationEvaluation) {
-                    return cTargetPerStageLayoutSetCombinedTessellationEvaluation;
-                }
-                if (shader_stage == ShaderStage::TessellationControl) {
-                    return cTargetPerStageLayoutSetCombinedTessellationControl;
-                }
-                if (shader_stage == ShaderStage::Geometry) {
-                    return cTargetPerStageLayoutSetTextureSamplerGeometry;
-                }
-                if (shader_stage == ShaderStage::Fragment) {
-                    return cTargetPerStageLayoutSetTextureSamplerFragment;
-                }
-                if (shader_stage == ShaderStage::Compute) {
-                    return cTargetPerStageLayoutSetTextureSamplerCompute;
-                }
-                if (shader_stage == ShaderStage::Task) {
-                    return cTargetPerStageLayoutSetTextureSamplerTask;
-                }
-                if (shader_stage == ShaderStage::Mesh) {
-                    return cTargetPerStageLayoutSetTextureSamplerMesh;
-                }
+                switch(shader_stage) {
+                    case ShaderStage::Vertex:
+                        return cTargetPerStageLayoutSetTextureSamplerVertex;
+                    case ShaderStage::TessellationControl:
+                        return cTargetPerStageLayoutSetCombinedTessellationControl;
+                    case ShaderStage::TessellationEvaluation:
+                        return cTargetPerStageLayoutSetCombinedTessellationEvaluation;
+                    case ShaderStage::Geometry:
+                        return cTargetPerStageLayoutSetTextureSamplerGeometry;
+                    case ShaderStage::Fragment:
+                        return cTargetPerStageLayoutSetTextureSamplerFragment;
+                    case ShaderStage::Compute:
+                        return cTargetPerStageLayoutSetTextureSamplerCompute;
+                    case ShaderStage::Task:
+                        return cTargetPerStageLayoutSetTextureSamplerTask;
+                    case ShaderStage::Mesh:
+                        return cTargetPerStageLayoutSetTextureSamplerMesh;
+                    default:
+                        break;
+                };
                 VP_ASSERT(false);
                 return cTargetPerStageLayoutSetTextureSamplerVertex;
             }
             static constexpr ALWAYS_INLINE u32 GetPerStageSetImage(ShaderStage shader_stage) {
-                if (shader_stage == ShaderStage::Vertex) {
-                    return cTargetPerStageLayoutSetImageVertex;
-                }
-                if (shader_stage == ShaderStage::TessellationEvaluation) {
-                    return cTargetPerStageLayoutSetCombinedTessellationEvaluation;
-                }
-                if (shader_stage == ShaderStage::TessellationControl) {
-                    return cTargetPerStageLayoutSetCombinedTessellationControl;
-                }
-                if (shader_stage == ShaderStage::Geometry) {
-                    return cTargetPerStageLayoutSetImageGeometry;
-                }
-                if (shader_stage == ShaderStage::Fragment) {
-                    return cTargetPerStageLayoutSetImageFragment;
-                }
-                if (shader_stage == ShaderStage::Compute) {
-                    return cTargetPerStageLayoutSetImageCompute;
-                }
-                if (shader_stage == ShaderStage::Task) {
-                    return cTargetPerStageLayoutSetImageTask;
-                }
-                if (shader_stage == ShaderStage::Mesh) {
-                    return cTargetPerStageLayoutSetImageMesh;
-                }
+                switch(shader_stage) {
+                    case ShaderStage::Vertex:
+                        return cTargetPerStageLayoutSetImageVertex;
+                    case ShaderStage::TessellationControl:
+                        return cTargetPerStageLayoutSetCombinedTessellationControl;
+                    case ShaderStage::TessellationEvaluation:
+                        return cTargetPerStageLayoutSetCombinedTessellationEvaluation;
+                    case ShaderStage::Geometry:
+                        return cTargetPerStageLayoutSetImageGeometry;
+                    case ShaderStage::Fragment:
+                        return cTargetPerStageLayoutSetImageFragment;
+                    case ShaderStage::Compute:
+                        return cTargetPerStageLayoutSetImageCompute;
+                    case ShaderStage::Task:
+                        return cTargetPerStageLayoutSetImageTask;
+                    case ShaderStage::Mesh:
+                        return cTargetPerStageLayoutSetImageMesh;
+                    default:
+                        break;
+                };
                 VP_ASSERT(false);
                 return cTargetPerStageLayoutSetImageVertex;
             }
             static constexpr ALWAYS_INLINE u32 GetPerStageSetUniformBuffer(ShaderStage shader_stage) {
-                if (shader_stage == ShaderStage::Vertex) {
-                    return cTargetPerStageLayoutSetUniformBufferVertex;
-                }
-                if (shader_stage == ShaderStage::TessellationEvaluation) {
-                    return cTargetPerStageLayoutSetCombinedTessellationEvaluation;
-                }
-                if (shader_stage == ShaderStage::TessellationControl) {
-                    return cTargetPerStageLayoutSetCombinedTessellationControl;
-                }
-                if (shader_stage == ShaderStage::Geometry) {
-                    return cTargetPerStageLayoutSetUniformBufferGeometry;
-                }
-                if (shader_stage == ShaderStage::Fragment) {
-                    return cTargetPerStageLayoutSetUniformBufferFragment;
-                }
-                if (shader_stage == ShaderStage::Compute) {
-                    return cTargetPerStageLayoutSetUniformBufferCompute;
-                }
-                if (shader_stage == ShaderStage::Task) {
-                    return cTargetPerStageLayoutSetUniformBufferTask;
-                }
-                if (shader_stage == ShaderStage::Mesh) {
-                    return cTargetPerStageLayoutSetUniformBufferMesh;
-                }
+                switch(shader_stage) {
+                    case ShaderStage::Vertex:
+                        return cTargetPerStageLayoutSetUniformBufferVertex;
+                    case ShaderStage::TessellationControl:
+                        return cTargetPerStageLayoutSetCombinedTessellationControl;
+                    case ShaderStage::TessellationEvaluation:
+                        return cTargetPerStageLayoutSetCombinedTessellationEvaluation;
+                    case ShaderStage::Geometry:
+                        return cTargetPerStageLayoutSetUniformBufferGeometry;
+                    case ShaderStage::Fragment:
+                        return cTargetPerStageLayoutSetUniformBufferFragment;
+                    case ShaderStage::Compute:
+                        return cTargetPerStageLayoutSetUniformBufferCompute;
+                    case ShaderStage::Task:
+                        return cTargetPerStageLayoutSetUniformBufferTask;
+                    case ShaderStage::Mesh:
+                        return cTargetPerStageLayoutSetUniformBufferMesh;
+                    default:
+                        break;
+                };
                 VP_ASSERT(false);
                 return cTargetPerStageLayoutSetUniformBufferVertex;
             }
             static constexpr ALWAYS_INLINE u32 GetPerStageSetStorageBuffer(ShaderStage shader_stage) {
-                if (shader_stage == ShaderStage::Vertex) {
-                    return cTargetPerStageLayoutSetStorageBufferVertex;
-                }
-                if (shader_stage == ShaderStage::TessellationEvaluation) {
-                    return cTargetPerStageLayoutSetCombinedTessellationEvaluation;
-                }
-                if (shader_stage == ShaderStage::TessellationControl) {
-                    return cTargetPerStageLayoutSetCombinedTessellationControl;
-                }
-                if (shader_stage == ShaderStage::Geometry) {
-                    return cTargetPerStageLayoutSetStorageBufferGeometry;
-                }
-                if (shader_stage == ShaderStage::Fragment) {
-                    return cTargetPerStageLayoutSetStorageBufferFragment;
-                }
-                if (shader_stage == ShaderStage::Compute) {
-                    return cTargetPerStageLayoutSetStorageBufferCompute;
-                }
-                if (shader_stage == ShaderStage::Task) {
-                    return cTargetPerStageLayoutSetStorageBufferTask;
-                }
-                if (shader_stage == ShaderStage::Mesh) {
-                    return cTargetPerStageLayoutSetStorageBufferMesh;
-                }
+                switch(shader_stage) {
+                    case ShaderStage::Vertex:
+                        return cTargetPerStageLayoutSetStorageBufferVertex;
+                    case ShaderStage::TessellationControl:
+                        return cTargetPerStageLayoutSetCombinedTessellationControl;
+                    case ShaderStage::TessellationEvaluation:
+                        return cTargetPerStageLayoutSetCombinedTessellationEvaluation;
+                    case ShaderStage::Geometry:
+                        return cTargetPerStageLayoutSetStorageBufferGeometry;
+                    case ShaderStage::Fragment:
+                        return cTargetPerStageLayoutSetStorageBufferFragment;
+                    case ShaderStage::Compute:
+                        return cTargetPerStageLayoutSetStorageBufferCompute;
+                    case ShaderStage::Task:
+                        return cTargetPerStageLayoutSetStorageBufferTask;
+                    case ShaderStage::Mesh:
+                        return cTargetPerStageLayoutSetStorageBufferMesh;
+                    default:
+                        break;
+                };
                 VP_ASSERT(false);
                 return cTargetPerStageLayoutSetStorageBufferVertex;
             }
             static constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateTexture(ShaderStage shader_stage) {
-                if (shader_stage == ShaderStage::Vertex) {
-                    return cTargetPerStageLayoutSetSeparateTextureSamplerVertex;
-                }
-                if (shader_stage == ShaderStage::TessellationEvaluation) {
-                    return cTargetPerStageLayoutSetSeparateTextureSamplerTessellationEvaluation;
-                }
-                if (shader_stage == ShaderStage::TessellationControl) {
-                    return cTargetPerStageLayoutSetSeparateTextureSamplerTessellationControl;
-                }
-                if (shader_stage == ShaderStage::Geometry) {
-                    return cTargetPerStageLayoutSetSeparateTextureSamplerGeometry;
-                }
-                if (shader_stage == ShaderStage::Fragment) {
-                    return cTargetPerStageLayoutSetSeparateTextureSamplerFragment;
-                }
-                if (shader_stage == ShaderStage::Compute) {
-                    return cTargetPerStageLayoutSetSeparateTextureSamplerCompute;
-                }
-                if (shader_stage == ShaderStage::Task) {
-                    return cTargetPerStageLayoutSetSeparateTextureSamplerTask;
-                }
-                if (shader_stage == ShaderStage::Mesh) {
-                    return cTargetPerStageLayoutSetSeparateTextureSamplerMesh;
-                }
+                switch(shader_stage) {
+                    case ShaderStage::Vertex:
+                        return cTargetPerStageLayoutSetSeparateTextureSamplerVertex;
+                    case ShaderStage::TessellationControl:
+                        return cTargetPerStageLayoutSetSeparateTextureSamplerTessellationControl;
+                    case ShaderStage::TessellationEvaluation:
+                        return cTargetPerStageLayoutSetSeparateTextureSamplerTessellationEvaluation;
+                    case ShaderStage::Geometry:
+                        return cTargetPerStageLayoutSetSeparateTextureSamplerGeometry;
+                    case ShaderStage::Fragment:
+                        return cTargetPerStageLayoutSetSeparateTextureSamplerFragment;
+                    case ShaderStage::Compute:
+                        return cTargetPerStageLayoutSetSeparateTextureSamplerCompute;
+                    case ShaderStage::Task:
+                        return cTargetPerStageLayoutSetSeparateTextureSamplerTask;
+                    case ShaderStage::Mesh:
+                        return cTargetPerStageLayoutSetSeparateTextureSamplerMesh;
+                    default:
+                        break;
+                };
                 VP_ASSERT(false);
                 return cTargetPerStageLayoutSetStorageBufferVertex;
             }
@@ -865,7 +845,6 @@ namespace awn::gfx {
             }
             static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateTexture(ShaderStage shader_stage) { VP_UNUSED(shader_stage); return 0; }
             static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateSampler(ShaderStage shader_stage) { VP_UNUSED(shader_stage); return 128; }
-
 
             constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutGraphics() const { return m_vk_pipeline_layout_graphics; }
             constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutCompute()  const { return m_vk_pipeline_layout_compute; }

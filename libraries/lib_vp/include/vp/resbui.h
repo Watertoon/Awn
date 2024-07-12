@@ -27,4 +27,8 @@
 
 #ifdef VP_64_BIT
     #include <vp/resbui/resbui_nintendowarerelocationtablestream.hpp>
+    #include <vp/resbui/resbui_dictionarystring.hpp>
+    #include <vp/resbui/resbui_nintendowaredictionarybuilder.hpp>
+    #include <vp/resbui/resbui_nintendowarestringpoolbuilder.hpp>
+    #include <vp/resbui/resbui_bnshbuilder.hpp>
 #endif

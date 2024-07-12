@@ -115,7 +115,7 @@ namespace vp::res {
 
         /* No sections is valid */
         if (section_count == 0) {
-            file_header->SetRelocated(true);
+            file_header->SetRelocated(false);
             return;
         }
 
@@ -152,20 +152,25 @@ namespace vp::res {
                         for(s32 offset_index = offset_mask - offset_count; offset_index < 0; offset_index = offset_index + 4) {
 
                             /* Calculate and set pointer in file (x4) */
-                            size_t relocation_pointer = (region_offset_iter != 0) ? reinterpret_cast<size_t>(region_offset_iter - file_base) : 0;
-                            *reinterpret_cast<size_t*>(region_offset_iter) = relocation_pointer;
-                            region_offset_iter = region_offset_iter + sizeof(size_t);
+                            size_t *offset = reinterpret_cast<size_t*>(region_offset_iter);
 
-                            relocation_pointer = (region_offset_iter != 0) ? reinterpret_cast<size_t>(region_offset_iter - file_base) : 0;
-                            *reinterpret_cast<size_t*>(region_offset_iter) = relocation_pointer;
+                            size_t relocation_pointer = (*offset != 0) ? reinterpret_cast<size_t>(*offset - file_base) : 0;
+                            *offset = relocation_pointer;
                             region_offset_iter = region_offset_iter + sizeof(size_t);
+                            offset = reinterpret_cast<size_t*>(region_offset_iter);
 
-                            relocation_pointer = (region_offset_iter != 0) ? reinterpret_cast<size_t>(region_offset_iter - file_base) : 0;
-                            *reinterpret_cast<size_t*>(region_offset_iter) = relocation_pointer;
+                            relocation_pointer = (*offset != 0) ? reinterpret_cast<size_t>(*offset - file_base) : 0;
+                            *offset = relocation_pointer;
                             region_offset_iter = region_offset_iter + sizeof(size_t);
+                            offset = reinterpret_cast<size_t*>(region_offset_iter);
 
-                            relocation_pointer = (region_offset_iter != 0) ? reinterpret_cast<size_t>(region_offset_iter - file_base) : 0;
-                            *reinterpret_cast<size_t*>(region_offset_iter) = relocation_pointer;
+                            relocation_pointer = (*offset != 0) ? reinterpret_cast<size_t>(*offset - file_base) : 0;
+                            *offset = relocation_pointer;
+                            region_offset_iter = region_offset_iter + sizeof(size_t);
+                            offset = reinterpret_cast<size_t*>(region_offset_iter);
+
+                            relocation_pointer = (*offset != 0) ? reinterpret_cast<size_t>(*offset - file_base) : 0;
+                            *offset = relocation_pointer;
                             region_offset_iter = region_offset_iter + sizeof(size_t);
                         }
                     }
@@ -173,14 +178,16 @@ namespace vp::res {
                         for(s32 offset_index = -offset_mask; offset_index < 0; ++offset_index) {
 
                             /* Calculate and set pointer in file */
-                            size_t relocation_pointer = (region_offset_iter != 0) ? reinterpret_cast<size_t>(region_offset_iter - file_base) : 0;
-                            *reinterpret_cast<size_t*>(region_offset_iter) = relocation_pointer;
+                            size_t *offset = reinterpret_cast<size_t*>(region_offset_iter);
+
+                            size_t relocation_pointer = (*offset != 0) ? reinterpret_cast<size_t>(*offset - file_base) : 0;
+                            *offset = relocation_pointer;
                             region_offset_iter = region_offset_iter + sizeof(size_t);
                         }
                     }
 
                     /* Calculate next array's region offset */
-                    region_offset = region_offset + (offset_count << 3) + (entry->array_stride << 3);
+                    region_offset = region_offset + offset_count * sizeof(size_t) + entry->array_stride * sizeof(size_t);
                 }
             }
         }

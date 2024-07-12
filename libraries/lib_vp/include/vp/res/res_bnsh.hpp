@@ -43,12 +43,12 @@ namespace vp::res {
     struct ResBnshShaderInterfaceInfo {
         ResNintendoWareDictionary    *input_attribute_dictionary;
         ResNintendoWareDictionary    *output_attribute_dictionary;
-        ResNintendoWareDictionary    *sampler_dictionary;
-        ResNintendoWareDictionary    *constant_buffer_dictionary;
+        ResNintendoWareDictionary    *texture_sampler_dictionary;
+        ResNintendoWareDictionary    *uniform_buffer_dictionary;
         ResNintendoWareDictionary    *storage_buffer_dictionary;
         u32                           base_index_output_attribute;
-        u32                           base_index_sampler;
-        u32                           base_index_constant_buffer;
+        u32                           base_index_texture_sampler;
+        u32                           base_index_uniform_buffer;
         u32                           base_index_storage_buffer;
         u32                          *interface_slot_array;
         s32                           work_group_count_x;
@@ -149,7 +149,7 @@ namespace vp::res {
                 u64                     reserve5[3];
             };
         };
-        u32                              object_size;
+        u32                              size_of_runtime_shader;
         u32                              reserve6;
         void                            *runtime_shader;
         ResBnshShaderVariation          *parent_variation;
@@ -157,6 +157,8 @@ namespace vp::res {
         u64                              reserve7[4];
     };
     static_assert(sizeof(ResBnshShaderProgram) == 0xa0);
+
+    static constexpr u32 cDefaultBnshRuntimeShaderSize = 0x100;
 
     struct ResBnshShaderContainer;
     
@@ -176,6 +178,8 @@ namespace vp::res {
         u64                   reserve2[5];
     };
     static_assert(sizeof(ResBnshShaderContainerData) == 0x50);
+
+    static constexpr u32 cDefaultBnshRuntimeMemoryPoolSize = 0x140;
 
     enum class BnshTargetApiType : u16 {
         Nvn         = 4,
@@ -204,7 +208,7 @@ namespace vp::res {
         constexpr bool IsCodeIntermediate() const {
             return target_code_type == static_cast<u16>(GfxShaderCodeType::Intermediate);
         }
-        constexpr bool IsApiNVN() const {
+        constexpr bool IsApiNvn() const {
             return target_api_type == static_cast<u16>(BnshTargetApiType::Nvn);
         }
         constexpr bool IsApiVpExtVulkan() const {
