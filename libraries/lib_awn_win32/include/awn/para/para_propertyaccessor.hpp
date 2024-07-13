@@ -40,34 +40,43 @@ namespace awn::para {
             static constexpr bool cIsCustomTypeForPropertyAccessor = true
 
     template <typename T>
-        requires ((vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null) || (T::cIsVectorType && T::cVectorCount <= 4) || (T::cIsCustomTypeForPropertyAccessor))
+        requires ((vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null) || (T::cIsVectorType && T::cVectorCount <= 4) || (!vp::util::TEnumTraitsAuto<T>::cIsDummy) || (T::cIsCustomTypeForPropertyAccessor))
     class PropertyAccessor : public IPropertyAccessor {
         private:
             T *m_value_address;
         public:
             ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null) {
-                return iter.TryGetValueByData(m_value_address, data);
+                return iter.TryGetValueByData<T>(m_value_address, data);
             }
             ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (T::cIsVectorType && T::cVectorCount <= 4) {
 
+                vp::res::ByamlIterator sub_iter;
+                const bool result0 = iter.TryGetIteratorByData(std::addressof(sub_iter), data);
+                if (!result0) { return false; }
                 if constexpr (0 < T::cVectorCount) {
-                    const bool result = iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 0, "X");
+                    const bool result = sub_iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 0, "X");
                     if (!result) { return false; }
                 }
                 if constexpr (1 < T::cVectorCount) {
-                    const bool result = iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 1, "Y");
+                    const bool result = sub_iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 1, "Y");
                     if (!result) { return false; }
                 }
                 if constexpr (2 < T::cVectorCount) {
-                    const bool result = iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 2, "Z");
+                    const bool result = sub_iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 2, "Z");
                     if (!result) { return false; }
                 }
                 if constexpr (3 < T::cVectorCount) {
-                    const bool result = iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 3, "W");
+                    const bool result = sub_iter.TryGetValueByKey<T::VectorType>(m_value_address->array + 3, "W");
                     if (!result) { return false; }
                 }
 
                 return true;
+            }
+            ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (!vp::util::TEnumTraitsAuto<T>::cIsDummy) {
+                const char *string = "";
+                const bool result = iter.TryGetStringByData(std::addressof(string), data);
+                if (!result) { return false; }
+                return vp::util::TEnumTraitsAuto<T>::Traits::GetEnumValueByString(reinterpret_cast<vp::util::TEnumTraitsAuto<T>::Traits::UnderlyingType*>(m_value_address), string);
             }
             ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (T::IsCustomTypeForPropertyAccessor) {
                 return m_value_address->LoadByamlData(iter, data);

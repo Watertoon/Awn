@@ -349,8 +349,10 @@ namespace awn::para {
             /* Recreate embed if different class */
             TypedParam *typed_param = *embed_info->embedded_typed_param;
             if (typed_param == nullptr || ::strcmp(typed_param->GetClassName(), embed_info->embedded_class_name) != 0) {
-                typed_param->Finalize();
-                delete typed_param;
+                if (typed_param != nullptr) {
+                    typed_param->Finalize();
+                    delete typed_param;
+                }
                 typed_param = CreateTypedParam(heap, vp::util::HashMurmur64(embed_info->embedded_class_name));
                 *embed_info->embedded_typed_param = typed_param;
             }

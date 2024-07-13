@@ -22,6 +22,11 @@ namespace awn::para {
         u8          is_non_default;
     };
 
+    struct TypedParamEnumMapInfo {
+        const char **enum_array;
+        u32          enum_count;
+    };
+
     class TypedParamEnumMapBase : public Composite {
         public:
             enum class ResolveType : u32 {
@@ -42,7 +47,7 @@ namespace awn::para {
         public:
             void InitializeTypedParam(mem::Heap *heap, Document *document, u32 index, u64 hash);
         public:
-            constexpr TypedParamEnumMapBase() : Composite(), m_typed_param_array(), m_parent(), m_enum_array(), m_enum_count(), m_resolve_type(2) {/*...*/}
+            constexpr TypedParamEnumMapBase(const TypedParamEnumMapInfo *map_info) : Composite(), m_typed_param_array(), m_parent(), m_enum_array(map_info->enum_array), m_enum_count(map_info->enum_count), m_resolve_type(2) {/*...*/}
             virtual constexpr ~TypedParamEnumMapBase() {/*...*/}
 
             constexpr ALWAYS_INLINE EntryArray::Iterator begin() {
@@ -71,7 +76,7 @@ namespace awn::para {
         public:
             VP_RTTI_DERIVED(TypedParamEnumMap, TypedParamEnumMapBase);
         public:
-            constexpr TypedParamEnumMap() : TypedParamEnumMapBase() {/*...*/}
+            constexpr TypedParamEnumMap(const TypedParamEnumMapInfo *map_info) : TypedParamEnumMapBase(map_info) {/*...*/}
             virtual constexpr ~TypedParamEnumMap() {/*...*/}
 
             virtual u64 GetBaseClassHash() const override { return T::GetClassHash(); }

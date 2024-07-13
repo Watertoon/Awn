@@ -17,6 +17,25 @@
 
 namespace awn::sys {
 
+    enum class RegionType : u32 {
+        UnitedStates,
+        Europe,
+        Japan,
+        Taiwan,
+    };
+
+    enum class LanguageType : u32 {
+        English,
+        Japanese,
+    };
+
+    enum class ProductType : u32 {
+        Debug,
+        Develop,
+        Product,
+        Pilot,
+    };
+
     struct SystemManager {
         bool        init_guard;
         u32         active_processor_count;

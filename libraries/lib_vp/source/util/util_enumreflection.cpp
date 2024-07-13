@@ -1,9 +1,9 @@
 #include <vp.hpp>
 
-namespace vp::res {
+namespace vp::util {
 
-    EnumDictionaryNode::EnumDictionaryNode(const EnumDictionary *enum_dictionary) : m_tree_node(vp::util::HashMurmur64(enum_dictionary->GetClassName())), m_dictionary(enum_dictionary)  {
-        vp::res::GetEnumDictionaryManager()->Insert(this);
+    EnumDictionaryNode::EnumDictionaryNode(const EnumDictionaryBase *enum_dictionary) : m_tree_node(vp::util::HashMurmur64(enum_dictionary->GetClassName())), m_dictionary(enum_dictionary)  {
+        vp::util::GetEnumDictionaryManager()->Insert(this);
     }
 
     constinit EnumDictionaryManager sEnumDictionaryManagerInstance;
