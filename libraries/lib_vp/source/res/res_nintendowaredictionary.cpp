@@ -32,11 +32,10 @@ namespace vp::res {
         }
 
         /* Build loop */
-        ResDicNode *node_iter = std::addressof(root_node);
+        ResDicNode *node_iter = std::addressof(root_node) + 1;
         for (u32 i = 1; i < node_count_root; ++i) {
 
             /* Advance node iter */
-            node_iter = node_iter + 1;
             const char *iter_key = node_iter->key;
             const u16 key_length = *reinterpret_cast<const u16*>(iter_key);
 
@@ -74,7 +73,7 @@ namespace vp::res {
                 const bool insert_ref  = (ref_length < insert_length) ? (insert_key[insert_length + ~ref_length + 2] >> (new_ref & 0x7)) & 0x1  : false;
                 if (iter_ref != insert_ref) { break; }
                 new_ref = new_ref + 1;
-                if ((static_cast<u32>(max_length) << 3) == new_ref || static_cast<s32>(new_ref) < 0) { node_iter->ref_bit = static_cast<u32>(cNPos); return false; }
+                if ((static_cast<u32>(max_length) << 3) == new_ref) { node_iter->ref_bit = static_cast<u32>(cNPos); return false; }
             }
 
             /* Set new ref bit */
@@ -86,21 +85,18 @@ namespace vp::res {
             /* Find insert location */
             ResDicNode *parent_iter = std::addressof(root_node_array[0]);
             ResDicNode *child_iter  = std::addressof(root_node_array[root_node.left_node]);
-            s16         last_index  = root_node.left_node;
-            last_ref_iter = root_node.ref_bit;
             ref_iter      = child_iter->ref_bit;
-            while (static_cast<s32>(last_ref_iter) < static_cast<s32>(ref_iter) && static_cast<s32>(new_ref) > static_cast<s32>(ref_iter)) {
+            while (static_cast<s32>(parent_iter->ref_bit) < static_cast<s32>(ref_iter) && static_cast<s32>(ref_iter) < static_cast<s32>(new_ref)) {
                 
                 /* Advance last ref */
-                last_ref_iter = ref_iter;
-                parent_iter   = child_iter;
-
+                parent_iter = child_iter;
+    
                 /* Determine next side */
                 const u32  child_length = ref_iter >> 3;
                 const bool side         = (child_length < key_length) ? (iter_key[key_length + ~child_length + 2] >> (ref_iter & 0x7)) & 0x1 : false;
-
+    
                 /* Advance iterators */
-                last_index = std::addressof(root_node_array[last_index].left_node)[side];
+                const u32 last_index = std::addressof(parent_iter->left_node)[side];
                 child_iter = std::addressof(root_node_array[last_index]);
                 ref_iter   = child_iter->ref_bit;
             }
@@ -108,12 +104,15 @@ namespace vp::res {
             /* Set parent's child to current node */
             const u32  parent_length = parent_iter->ref_bit >> 3;
             const bool side0 = (parent_length < key_length) ? (iter_key[key_length + ~parent_length + 2] >> (parent_iter->ref_bit & 0x7)) & 0x1 : false;
-            std::addressof(parent_iter->left_node)[side0] = (reinterpret_cast<uintptr_t>(node_iter) - reinterpret_cast<uintptr_t>(root_node_array)) / sizeof(ResDicNode);
+            std::addressof(parent_iter->left_node)[side0] = i;
 
             /* Move child from parent node to child of current node */
-            const u32 child_length = child_iter->ref_bit >> 3;
-            const bool side1 = (child_length < key_length) ? (iter_key[key_length + ~child_length + 2] >> (child_iter->ref_bit & 0x7)) & 0x1 : false;
+            const u32 child_length = *reinterpret_cast<const u16*>(child_iter->key);
+            const u32 node_length = node_iter->ref_bit >> 3;
+            const bool side1 = (child_length > node_length) ? (child_iter->key[child_length + ~node_length + 2] >> (node_iter->ref_bit & 0x7)) & 0x1 : false;
             std::addressof(node_iter->left_node)[side1] = (reinterpret_cast<uintptr_t>(child_iter) - reinterpret_cast<uintptr_t>(root_node_array)) / sizeof(ResDicNode);
+
+            node_iter = node_iter + 1;
         }
 
         return true;

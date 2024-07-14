@@ -54,8 +54,8 @@ namespace awn::para {
     };
 
     template <typename T>
-    ALWAYS_INLINE TypedParam *DocumentBinder::GetTypedParam() const {
-        static_assert(TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) == true);
+    ALWAYS_INLINE T *DocumentBinder::GetTypedParam() const {
+        static_assert(TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()));
         if (m_document == nullptr) { return nullptr; }
         TypedParam *typed_param   = m_document->m_typed_param;
         const bool  is_rtti_valid = T::CheckRuntimeTypeInfoStatic(typed_param);

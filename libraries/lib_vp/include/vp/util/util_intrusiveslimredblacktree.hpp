@@ -412,8 +412,9 @@ namespace vp::util {
         return (rhs <=> lhs);
     }
     template <typename T>
-    ALWAYS_INLINE void RedBlackTreeDefaultCollision([[maybe_unused]] T*, [[maybe_unused]] T*) {
-        VP_ASSERT(false)
+    constexpr ALWAYS_INLINE void RedBlackTreeDefaultCollision([[maybe_unused]] T *r0, [[maybe_unused]] T *r1) {
+        if (std::is_constant_evaluated()) { return; }
+        VP_ASSERT(false);
     }
 
     template<class RP, auto M, auto Compare = RedBlackTreeDefaultCompare<typename vp::util::MemberType<M>::key_type>, auto Collision = RedBlackTreeDefaultCollision<RP>>
@@ -433,7 +434,7 @@ namespace vp::util {
     }
 
     template <typename T>
-    ALWAYS_INLINE std::strong_ordering RedBlackTreeDefaultStringCompare(const T &rhs, const T &lhs) {
+    constexpr ALWAYS_INLINE std::strong_ordering RedBlackTreeDefaultStringCompare(const T &rhs, const T &lhs) {
         return ConvertComparisionToStrongOrdering(::strcmp(lhs, rhs));
     }
 

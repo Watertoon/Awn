@@ -18,23 +18,52 @@
 namespace awn::sys {
 
     enum class RegionType : u32 {
-        UnitedStates,
-        Europe,
-        Japan,
-        Taiwan,
+        UnitedStates = 0,
+        Europe       = 1,
+        Japan        = 2,
+        Taiwan       = 3,
+        Default      = 4,
     };
+    VP_ENUM_TRAITSV(
+        awn::sys, RegionType,
+        UnitedStates, 0x0,
+        Europe,       0x1,
+        Japan,        0x2,
+        Taiwan,       0x3,
+        Default,      0x4
+    );
 
     enum class LanguageType : u32 {
-        English,
-        Japanese,
+        English  = 0,
+        Japanese = 1,
+        Default  = 2,
     };
+    VP_ENUM_TRAITSV(
+        awn::sys, LanguageType,
+        English,  0x0,
+        Japanese, 0x1,
+        Default,  0x2
+    );
 
     enum class ProductType : u32 {
-        Debug,
-        Develop,
-        Product,
-        Pilot,
+        Debug   = 0,
+        Develop = 1,
+        Product = 2,
+        Pilot   = 3,
     };
+    VP_ENUM_TRAITSV(
+        awn::sys, ProductType,
+        Debug          , 0x0,
+        Develop        , 0x1,
+        Product        , 0x2,
+        Pilot          , 0x3
+    );
+}
+VP_ENUM_TRAITS_AUTO(awn::sys::RegionType);
+VP_ENUM_TRAITS_AUTO(awn::sys::LanguageType);
+VP_ENUM_TRAITS_AUTO(awn::sys::ProductType);
+
+namespace awn::sys {
 
     struct SystemManager {
         bool        init_guard;

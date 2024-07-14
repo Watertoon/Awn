@@ -17,6 +17,10 @@
 
 namespace awn::sys {
 
+    VP_ENUM_TRAITS_IMPL(awn::sys, RegionType);
+    VP_ENUM_TRAITS_IMPL(awn::sys, LanguageType);
+    VP_ENUM_TRAITS_IMPL(awn::sys, ProductType);
+
     namespace {
         constinit vp::util::TypedStorage<SystemManager> sSystemManagerStorage   = {};
         bool                                            sSystemManagerInitGuard = false;

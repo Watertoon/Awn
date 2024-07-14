@@ -40,11 +40,11 @@ namespace awn::para {
             static constexpr bool cIsCustomTypeForPropertyAccessor = true
 
     template <typename T>
-        requires ((vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null) || (T::cIsVectorType && T::cVectorCount <= 4) || (!vp::util::TEnumTraitsAuto<T>::cIsDummy) || (T::cIsCustomTypeForPropertyAccessor))
     class PropertyAccessor : public IPropertyAccessor {
         private:
             T *m_value_address;
         public:
+            ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) { VP_UNUSED(iter, data); return false; }
             ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null) {
                 return iter.TryGetValueByData<T>(m_value_address, data);
             }

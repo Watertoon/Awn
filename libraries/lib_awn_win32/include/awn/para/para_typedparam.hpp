@@ -15,6 +15,11 @@
  */
 #pragma once
 
+#define AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(class_name_for_mgr, class_name, base_type_name, layout_type_name, ...) VP_FOUR_ARG_VMACRO(class_name_for_mgr, class_name, base_type_name, layout_type_name, AWN_PARA_DECLARE_TYPEDPARAM_AUTO_NAME, __VA_ARGS__)
+
+#define AWN_PARA_DECLARE_TYPED_PARAM_IMPL(class_name) \
+    static ::awn::para::TypedParamFactory sTypedParamFactory_##class_name ( class_name ::cClassHash, ::awn::para::CreateTypedParamImpl< class_name >)
+
 namespace awn::para {
 
     class Composite;
@@ -170,6 +175,10 @@ namespace awn::para {
             virtual Result FindComposite(FindCompositeContext *out_find_info, const char *search_string) override;
 
             virtual constexpr const char *GetClassName() { return cClassName; }
+            static constexpr u64 GetClassHashStatic() {
+                const u64 hash = vp::util::HashMurmur64(cClassName);
+                return hash; 
+            }
             constexpr u64 GetClassHash() {
                 const u64 hash = vp::util::HashMurmur64(this->GetClassName());
                 return hash; 
@@ -188,9 +197,94 @@ namespace awn::para {
     TypedParam *CreateTypedParamImpl(mem::Heap *heap) {
         return new (heap, alignof(T)) T();
     }
+} 
 
-    #define AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(class_name_for_mgr, class_name, base_type_name, layout_type_name, ...) VP_FOUR_ARG_VMACRO(class_name_for_mgr, class_name, base_type_name, layout_type_name, AWN_PARA_DECLARE_TYPEDPARAM_AUTO_NAME, __VA_ARGS__)
-
-    #define AWN_PARA_DECLARE_TYPED_PARAM_IMPL(class_name) \
-        static TypedParamFactory sTypedParamFactory_##class_name ( class_name ::cClassHash, CreateTypedParamImpl< class_name >)
-}
+#define AWN_TYPED_PARAM_AUTO_START(class_name_for_mgr, class_name, base_type_name, layout_type_name) \
+    class class_name : public base_type_name { \
+        public: \
+            using BaseType   = base_type_name ; \
+            using LayoutType = layout_type_name ; \
+        public: \
+             static_assert( layout_type_name ::cIsLayoutForTypedParam == true); \
+        public: \
+            static constexpr inline const char *cClassName         = TOSTRING( class_name_for_mgr ); \
+            static constexpr inline u64         cClassHash         = vp::util::HashMurmur64(cClassName); \
+            static constexpr inline const char *cLayoutNameArray[] = {
+#define AWN_TYPED_PARAM_AUTO_MID0(class_name, base_type_name) \
+            }; \
+            static constexpr inline u32         cLayoutCount       = sizeof(cLayoutNameArray) / sizeof(const char*); \
+            static constexpr inline u32         cFieldCount        = BaseType::cFieldCount + cLayoutCount; \
+        public: \
+            VP_RTTI_DERIVED( class_name , base_type_name ); \
+        private: \
+            LayoutType m_layout; \
+            u8         m_is_non_default_array[cLayoutCount]; \
+        public: \
+             static constexpr inline auto cIsNonDefaultArrayMember = & class_name ::m_is_non_default_array;
+#define AWN_PARA_FIELD_MEMBER_IMPL(field_name, field_index) \
+    static constexpr inline auto cFieldMember##field_index = &LayoutType:: field_name ; \
+    using FieldType##field_index = vp::util::MemberType< cFieldMember##field_index > ; \
+    static_assert(::awn::para::TIsField< FieldType##field_index >() == true) ;
+#define AWN_PARA_DEFAULT_IMPL(field_index) \
+    static constexpr inline auto cDefault##field_index = LayoutType::TGetPropertyDefault< cFieldMember##field_index >(); 
+#define AWN_TYPED_PARAM_AUTO_MID1(class_name) \
+        public: \
+            template <typename T> constexpr const T *GetPointerImpl(const auto &value_offset, u32 index) const { \
+                if ((m_is_non_default_array[index] & 1) == true) { \
+                    return std::addressof(this->m_layout.*value_offset); \
+                } \
+                const class_name *out = this; \
+                const ::awn::para::TypedParam *parent_iter; \
+                while (parent_iter = out->GetParent(), parent_iter != nullptr) { \
+                    if (!CheckRuntimeTypeInfoStatic(parent_iter) || (out = reinterpret_cast<const class_name *>(parent_iter), (out->m_is_non_default_array[index] & 1))) { \
+                        break; \
+                    } \
+                } \
+                return std::addressof(out->m_layout.*value_offset); \
+            }
+#define AWN_PARA_GET_FIELD_IMPL(field_name, field_index) \
+            constexpr const FieldType##field_index *Get##field_name () const { \
+                return this->GetPointerImpl< FieldType##field_index >(cFieldMember##field_index , field_index ); \
+            }
+#define AWN_TYPED_PARAM_AUTO_MID2(class_name) \
+        public: \
+            constexpr class_name () : BaseType(), m_layout(), m_is_non_default_array{} {/*...*/} \
+            virtual ~class_name () override {/*...*/} \
+            virtual constexpr const char *GetClassName() override { return cClassName; } \
+        public: \
+            virtual Result LoopProperties(PropertyLoopFunction *loop_function) override { \
+                this->BaseType::LoopProperties(loop_function);
+#define AWN_PARA_LOOP_PROPERTY_IMPL(field_index)  \
+                if constexpr (::awn::para::TIsProperty< FieldType##field_index >()) { \
+                    ::awn::para::TPropertyAccessor< FieldType##field_index > accessor = ::awn::para::TGetPropertyAccessor< FieldType##field_index >(std::addressof(m_layout.*cFieldMember##field_index )); \
+                    const Result result = this->LoopPropertyImpl(loop_function, std::addressof(accessor), cLayoutNameArray[ field_index ], GetRuntimeTypeInfoStatic(), std::addressof(m_is_non_default_array[ field_index ]), field_index , std::addressof( cDefault##field_index )); \
+                    RESULT_THROW_ON_FAILED(result); \
+                } 
+#define AWN_TYPED_PARAM_AUTO_MID3() \
+                RESULT_RETURN_SUCCESS; \
+            } \
+            virtual Result LoopEmbeds(EmbeddedLoopFunction *loop_function) override { \
+                this->BaseType::LoopEmbeds(loop_function);
+#define AWN_PARA_LOOP_EMBED_IMPL(field_index) \
+                if constexpr (::awn::para::TIsEmbed< FieldType##field_index >()) { \
+                    const Result result = this->LoopEmbeddedImpl(loop_function, cLayoutNameArray[ field_index ], GetRuntimeTypeInfoStatic(), std::addressof(m_is_non_default_array[ field_index ]), field_index , ::awn::para::TGetEmbedClassName< FieldType##field_index >(), ::awn::para::TGetCompositeRtti <FieldType##field_index >(), std::addressof( m_layout.*cFieldMember##field_index )); \
+                    RESULT_THROW_ON_FAILED(result); \
+                }
+#define AWN_TYPED_PARAM_AUTO_MID4() \
+                RESULT_RETURN_SUCCESS; \
+            } \
+            virtual Result LoopComposites(CompositeLoopFunction *loop_function) override { \
+                this->BaseType::LoopComposites(loop_function);
+#define AWN_PARA_LOOP_COMPOSITE_IMPL(field_index) \
+                if constexpr (::awn::para::TIsComposite< FieldType##field_index >()) { \
+                    const Result result = this->LoopCompositeImpl(loop_function, cLayoutNameArray[ field_index ], GetRuntimeTypeInfoStatic(), std::addressof(m_is_non_default_array[ field_index ]), {0}, std::addressof(m_layout.*cFieldMember##field_index )); \
+                    RESULT_THROW_ON_FAILED(result); \
+                }
+#define AWN_TYPED_PARAM_AUTO_END() \
+                RESULT_RETURN_SUCCESS; \
+            } \
+            virtual bool IsParamNonDefault(const vp::util::RuntimeTypeInfo *rtti, u32 index) override { \
+                if (this->CheckRuntimeTypeInfoStatic(rtti) == true && index < cLayoutCount) { return m_is_non_default_array[index]; } \
+                return this->BaseType::IsParamNonDefault(rtti, index); \
+            } \
+    };

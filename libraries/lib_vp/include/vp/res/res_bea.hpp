@@ -60,7 +60,7 @@ namespace vp::res {
             return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + file_entry->file_offset);
         }
 
-        constexpr ALWAYS_INLINE const char *GetFilePathByIndex(u32 entry_index) const {
+        ALWAYS_INLINE const char *GetFilePathByIndex(u32 entry_index) const {
             return file_dictionary->GetKeyByEntryIndex(entry_index);
         }
 

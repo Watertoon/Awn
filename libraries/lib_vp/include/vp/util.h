@@ -59,6 +59,7 @@
 #include <vp/util/util_hashmap.hpp>
 #include <vp/util/util_keyindexmap.hpp>
 #include <vp/util/util_intrusiveslimredblacktree.hpp>
+#include <vp/util/util_parentredblacktree.hpp>
 #include <vp/util/util_redblacktreewithlist.hpp>
 #include <vp/util/util_intrusivetreenode.hpp>
 #include <vp/util/util_pointerarrayallocator.hpp>

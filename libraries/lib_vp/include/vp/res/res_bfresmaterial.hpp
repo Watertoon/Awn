@@ -214,7 +214,7 @@ namespace vp::res {
             return had_success;
         }
 
-        constexpr u32 TryGetStaticShaderOptionIndex(const char *option_name) {
+        u32 TryGetStaticShaderOptionIndex(const char *option_name) {
             const u32 dic_index = material_shader_data->shader_reflection->static_shader_option_dictionary->TryGetEntryIndexByKey(option_name);
             return (material_shader_data->static_option_indice_array != nullptr) ? material_shader_data->static_option_indice_array[material_shader_data->total_static_option_count + dic_index] : dic_index;
         }
@@ -249,18 +249,18 @@ namespace vp::res {
             return nullptr; 
         }
 
-        constexpr const char *TryGetTextureName(const char *sampler_name) {
+        const char *TryGetTextureName(const char *sampler_name) {
             const u32 entry_index = sampler_dictionary->TryGetEntryIndexByKey(sampler_name);
             return (entry_index != 0xffff'ffff) ? texture_name_array[entry_index] : nullptr;
         }
 
-        constexpr ResGfxSamplerInfo *TryGetSamplerInfo(const char *sampler_name) {
+        ResGfxSamplerInfo *TryGetSamplerInfo(const char *sampler_name) {
             if (sampler_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = sampler_dictionary->TryGetEntryIndexByKey(sampler_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
             return std::addressof(sampler_info_array[entry_id]);
         }
-        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

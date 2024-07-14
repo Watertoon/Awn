@@ -22,11 +22,6 @@ namespace awn::para {
         u8          is_non_default;
     };
 
-    struct TypedParamEnumMapInfo {
-        const char **enum_array;
-        u32          enum_count;
-    };
-
     class TypedParamEnumMapBase : public Composite {
         public:
             enum class ResolveType : u32 {
@@ -36,10 +31,10 @@ namespace awn::para {
             };
         public:
             using EntryArray = vp::util::HeapArray<TypedParamEnumEntry>;
-        private:
+        protected:
             EntryArray              m_typed_param_array;
             TypedParamEnumMapBase  *m_parent;
-            const char            **m_enum_array;
+            const char *const      *m_enum_array;
             u32                     m_enum_count;
             u32                     m_resolve_type;
         public:
@@ -47,7 +42,7 @@ namespace awn::para {
         public:
             void InitializeTypedParam(mem::Heap *heap, Document *document, u32 index, u64 hash);
         public:
-            constexpr TypedParamEnumMapBase(const TypedParamEnumMapInfo *map_info) : Composite(), m_typed_param_array(), m_parent(), m_enum_array(map_info->enum_array), m_enum_count(map_info->enum_count), m_resolve_type(2) {/*...*/}
+            constexpr TypedParamEnumMapBase(const char *const*enum_array, u32 enum_count) : Composite(), m_typed_param_array(), m_parent(), m_enum_array(enum_array), m_enum_count(enum_count), m_resolve_type(2) {/*...*/}
             virtual constexpr ~TypedParamEnumMapBase() {/*...*/}
 
             constexpr ALWAYS_INLINE EntryArray::Iterator begin() {
@@ -70,19 +65,41 @@ namespace awn::para {
             virtual TypedParam *CreateTypedParam(mem::Heap *heap, Document *document, u64 class_hash) const = 0;
     };
 
-    template <typename T>
-		requires (TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) == true)
+    template <typename E, typename T>
+		requires (!vp::util::TEnumTraitsAuto<E>::cIsDummy && TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) == true)
     class TypedParamEnumMap : public TypedParamEnumMapBase {
+        public:
+            using EnumTraits = vp::util::TEnumTraitsAuto<E>::Traits;
         public:
             VP_RTTI_DERIVED(TypedParamEnumMap, TypedParamEnumMapBase);
         public:
-            constexpr TypedParamEnumMap(const TypedParamEnumMapInfo *map_info) : TypedParamEnumMapBase(map_info) {/*...*/}
+            constexpr TypedParamEnumMap() : TypedParamEnumMapBase(EnumTraits::cIndexToStringArray, EnumTraits::cEnumCount) {/*...*/}
             virtual constexpr ~TypedParamEnumMap() {/*...*/}
 
-            virtual u64 GetBaseClassHash() const override { return T::GetClassHash(); }
+            T *GetTypedParamBase(E enum_value) {
+                const u32 index = EnumTraits::GetEnumIndexByValue(enum_value);
+                TypedParamEnumEntry *entry = std::addressof(m_typed_param_array[index]);
+                TypedParamEnumMapBase *parent;
+                while (!entry->is_non_default) {
+                    parent = m_parent;
+                    if (parent == nullptr) { break; }
+                    entry = std::addressof(parent->m_typed_param_array[index]);
+                }
+                return reinterpret_cast<T*>(entry->typed_param);
+            }
+
+            template <typename O>
+                requires (T::CheckRuntimeTypeInfoStatic(O::GetRuntimeTypeInfoStatic()))
+            O *GetTypedParam(E enum_value) {
+                TypedParam *base = this->GetTypedParamBase(enum_value);
+                if (!O::CheckRuntimeTypeInfoStatic(base->GetRuntimeTypeInfo())) { return nullptr; }
+                return reinterpret_cast<O*>(base);
+            }
+
+            virtual u64 GetBaseClassHash() const override { return T::GetClassHashStatic(); }
             virtual TypedParam *CreateTypedParam(mem::Heap *heap, [[maybe_unused]] Document *document, u64 class_hash) const override {
                 TypedParam *typed_param = para::CreateTypedParam(heap, class_hash);
-                VP_ASSERT(T::CheckRuntimeTypeInfoStatic(typed_param->GetRuntimeTypeInfo()) == true);
+                VP_ASSERT(T::CheckRuntimeTypeInfoStatic(typed_param->GetRuntimeTypeInfo()));
                 return typed_param;
             }
     };

@@ -45,7 +45,7 @@ namespace vp::res {
 
         static constexpr u32 cMagicNX   = util::TCharCode32("NX  ");
 
-        constexpr ResBntxTextureInfo *TryGetTextureInfo(const char *texture_name) {
+        ResBntxTextureInfo *TryGetTextureInfo(const char *texture_name) {
             if (texture_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = texture_dictionary->TryGetEntryIndexByKey(texture_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
@@ -74,7 +74,7 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("BRTI");
 
-        constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
+        ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
@@ -88,7 +88,7 @@ namespace vp::res {
 
         static constexpr u64 cMagic = static_cast<u64>(util::TCharCode32("BNTX"));
 
-        constexpr ResBntxTextureInfo *FindTexture(const char *name) {
+        ResBntxTextureInfo *FindTexture(const char *name) {
             u32 entry_index = texture_container.texture_dictionary->TryGetEntryIndexByKey(name);
             if (entry_index == static_cast<u32>(-1)) { return nullptr; }
             return texture_container.texture_info_array[entry_index];

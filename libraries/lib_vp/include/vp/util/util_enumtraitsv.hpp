@@ -13,7 +13,7 @@ cNWString0.GetString(), \
 cNWString0.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_4(namespace, enum_name, _1, _2, _3, _4) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -30,8 +30,8 @@ cNWString0.GetString() + 2, \
 cNWString1.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_6(namespace, enum_name, _1, _2, _3, _4, _5, _6) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -51,9 +51,9 @@ cNWString1.GetString() + 2, \
 cNWString2.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_8(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -76,10 +76,10 @@ cNWString2.GetString() + 2, \
 cNWString3.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_10(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -105,11 +105,11 @@ cNWString3.GetString() + 2, \
 cNWString4.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_12(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -138,12 +138,12 @@ cNWString4.GetString() + 2, \
 cNWString5.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_14(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -175,13 +175,13 @@ cNWString5.GetString() + 2, \
 cNWString6.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_16(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -216,14 +216,14 @@ cNWString6.GetString() + 2, \
 cNWString7.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_18(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -261,15 +261,15 @@ cNWString7.GetString() + 2, \
 cNWString8.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_20(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -310,16 +310,16 @@ cNWString8.GetString() + 2, \
 cNWString9.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_22(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -363,17 +363,17 @@ cNWString9.GetString() + 2, \
 cNWString10.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_24(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -420,18 +420,18 @@ cNWString10.GetString() + 2, \
 cNWString11.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_26(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -481,19 +481,19 @@ cNWString11.GetString() + 2, \
 cNWString12.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_28(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -546,20 +546,20 @@ cNWString12.GetString() + 2, \
 cNWString13.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_30(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -615,21 +615,21 @@ cNWString13.GetString() + 2, \
 cNWString14.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_32(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -688,22 +688,22 @@ cNWString14.GetString() + 2, \
 cNWString15.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_34(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -765,23 +765,23 @@ cNWString15.GetString() + 2, \
 cNWString16.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_36(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -846,24 +846,24 @@ cNWString16.GetString() + 2, \
 cNWString17.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_38(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -931,25 +931,25 @@ cNWString17.GetString() + 2, \
 cNWString18.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_40(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1020,26 +1020,26 @@ cNWString18.GetString() + 2, \
 cNWString19.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_42(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1113,27 +1113,27 @@ cNWString19.GetString() + 2, \
 cNWString20.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_44(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1210,28 +1210,28 @@ cNWString20.GetString() + 2, \
 cNWString21.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_46(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1311,29 +1311,29 @@ cNWString21.GetString() + 2, \
 cNWString22.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_48(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1416,30 +1416,30 @@ cNWString22.GetString() + 2, \
 cNWString23.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_50(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1525,31 +1525,31 @@ cNWString23.GetString() + 2, \
 cNWString24.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_52(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1638,32 +1638,32 @@ cNWString24.GetString() + 2, \
 cNWString25.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_54(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1755,33 +1755,33 @@ cNWString25.GetString() + 2, \
 cNWString26.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_56(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -1876,34 +1876,34 @@ cNWString26.GetString() + 2, \
 cNWString27.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_58(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -2001,35 +2001,35 @@ cNWString27.GetString() + 2, \
 cNWString28.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_60(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -2130,36 +2130,36 @@ cNWString28.GetString() + 2, \
 cNWString29.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_62(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -2263,37 +2263,37 @@ cNWString29.GetString() + 2, \
 cNWString30.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_64(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -2400,38 +2400,38 @@ cNWString30.GetString() + 2, \
 cNWString31.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_66(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -2541,39 +2541,39 @@ cNWString31.GetString() + 2, \
 cNWString32.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_68(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -2686,40 +2686,40 @@ cNWString32.GetString() + 2, \
 cNWString33.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_70(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -2835,41 +2835,41 @@ cNWString33.GetString() + 2, \
 cNWString34.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_72(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -2988,42 +2988,42 @@ cNWString34.GetString() + 2, \
 cNWString35.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_74(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -3145,43 +3145,43 @@ cNWString35.GetString() + 2, \
 cNWString36.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_76(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -3306,44 +3306,44 @@ cNWString36.GetString() + 2, \
 cNWString37.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_78(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -3471,45 +3471,45 @@ cNWString37.GetString() + 2, \
 cNWString38.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_80(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -3640,46 +3640,46 @@ cNWString38.GetString() + 2, \
 cNWString39.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_82(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -3813,47 +3813,47 @@ cNWString39.GetString() + 2, \
 cNWString40.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_84(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -3990,48 +3990,48 @@ cNWString40.GetString() + 2, \
 cNWString41.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_86(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -4171,49 +4171,49 @@ cNWString41.GetString() + 2, \
 cNWString42.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_88(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -4356,50 +4356,50 @@ cNWString42.GetString() + 2, \
 cNWString43.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_90(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -4545,51 +4545,51 @@ cNWString43.GetString() + 2, \
 cNWString44.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_92(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -4738,52 +4738,52 @@ cNWString44.GetString() + 2, \
 cNWString45.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_94(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -4935,53 +4935,53 @@ cNWString45.GetString() + 2, \
 cNWString46.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_96(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -5136,54 +5136,54 @@ cNWString46.GetString() + 2, \
 cNWString47.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_98(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -5341,55 +5341,55 @@ cNWString47.GetString() + 2, \
 cNWString48.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_100(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -5550,56 +5550,56 @@ cNWString48.GetString() + 2, \
 cNWString49.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_102(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -5763,57 +5763,57 @@ cNWString49.GetString() + 2, \
 cNWString50.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_104(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -5980,58 +5980,58 @@ cNWString50.GetString() + 2, \
 cNWString51.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_106(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -6201,59 +6201,59 @@ cNWString51.GetString() + 2, \
 cNWString52.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_108(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -6426,60 +6426,60 @@ cNWString52.GetString() + 2, \
 cNWString53.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_110(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -6655,61 +6655,61 @@ cNWString53.GetString() + 2, \
 cNWString54.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_112(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -6888,62 +6888,62 @@ cNWString54.GetString() + 2, \
 cNWString55.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_114(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -7125,63 +7125,63 @@ cNWString55.GetString() + 2, \
 cNWString56.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_116(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -7366,64 +7366,64 @@ cNWString56.GetString() + 2, \
 cNWString57.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_118(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -7611,65 +7611,65 @@ cNWString57.GetString() + 2, \
 cNWString58.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_120(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -7860,66 +7860,66 @@ cNWString58.GetString() + 2, \
 cNWString59.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_122(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -8113,67 +8113,67 @@ cNWString59.GetString() + 2, \
 cNWString60.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_124(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -8370,68 +8370,68 @@ cNWString60.GetString() + 2, \
 cNWString61.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_126(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -8631,69 +8631,69 @@ cNWString61.GetString() + 2, \
 cNWString62.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_128(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -8896,70 +8896,70 @@ cNWString62.GetString() + 2, \
 cNWString63.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_130(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -9165,71 +9165,71 @@ cNWString63.GetString() + 2, \
 cNWString64.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_132(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -9438,72 +9438,72 @@ cNWString64.GetString() + 2, \
 cNWString65.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_134(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -9715,73 +9715,73 @@ cNWString65.GetString() + 2, \
 cNWString66.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_136(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -9996,74 +9996,74 @@ cNWString66.GetString() + 2, \
 cNWString67.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_138(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -10281,75 +10281,75 @@ cNWString67.GetString() + 2, \
 cNWString68.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_140(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -10570,76 +10570,76 @@ cNWString68.GetString() + 2, \
 cNWString69.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_142(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -10863,77 +10863,77 @@ cNWString69.GetString() + 2, \
 cNWString70.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_144(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -11160,78 +11160,78 @@ cNWString70.GetString() + 2, \
 cNWString71.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_146(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -11461,79 +11461,79 @@ cNWString71.GetString() + 2, \
 cNWString72.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_148(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -11766,80 +11766,80 @@ cNWString72.GetString() + 2, \
 cNWString73.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_150(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -12075,81 +12075,81 @@ cNWString73.GetString() + 2, \
 cNWString74.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_152(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -12388,82 +12388,82 @@ cNWString74.GetString() + 2, \
 cNWString75.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_154(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -12705,83 +12705,83 @@ cNWString75.GetString() + 2, \
 cNWString76.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_156(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -13026,84 +13026,84 @@ cNWString76.GetString() + 2, \
 cNWString77.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_158(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -13351,85 +13351,85 @@ cNWString77.GetString() + 2, \
 cNWString78.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_160(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -13680,86 +13680,86 @@ cNWString78.GetString() + 2, \
 cNWString79.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_162(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -14013,87 +14013,87 @@ cNWString79.GetString() + 2, \
 cNWString80.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_164(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -14350,88 +14350,88 @@ cNWString80.GetString() + 2, \
 cNWString81.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_166(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -14691,89 +14691,89 @@ cNWString81.GetString() + 2, \
 cNWString82.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_168(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -15036,90 +15036,90 @@ cNWString82.GetString() + 2, \
 cNWString83.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_170(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -15385,91 +15385,91 @@ cNWString83.GetString() + 2, \
 cNWString84.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_172(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -15738,92 +15738,92 @@ cNWString84.GetString() + 2, \
 cNWString85.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_174(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -16095,93 +16095,93 @@ cNWString85.GetString() + 2, \
 cNWString86.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_176(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -16456,94 +16456,94 @@ cNWString86.GetString() + 2, \
 cNWString87.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_178(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -16821,95 +16821,95 @@ cNWString87.GetString() + 2, \
 cNWString88.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_180(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -17190,96 +17190,96 @@ cNWString88.GetString() + 2, \
 cNWString89.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_182(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -17563,97 +17563,97 @@ cNWString89.GetString() + 2, \
 cNWString90.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_184(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -17940,98 +17940,98 @@ cNWString90.GetString() + 2, \
 cNWString91.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_186(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -18321,99 +18321,99 @@ cNWString91.GetString() + 2, \
 cNWString92.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_188(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -18706,100 +18706,100 @@ cNWString92.GetString() + 2, \
 cNWString93.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_190(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -19095,101 +19095,101 @@ cNWString93.GetString() + 2, \
 cNWString94.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_192(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -19488,102 +19488,102 @@ cNWString94.GetString() + 2, \
 cNWString95.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_194(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -19885,103 +19885,103 @@ cNWString95.GetString() + 2, \
 cNWString96.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_196(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -20286,104 +20286,104 @@ cNWString96.GetString() + 2, \
 cNWString97.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_198(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -20691,105 +20691,105 @@ cNWString97.GetString() + 2, \
 cNWString98.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_200(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -21100,106 +21100,106 @@ cNWString98.GetString() + 2, \
 cNWString99.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_202(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -21513,107 +21513,107 @@ cNWString99.GetString() + 2, \
 cNWString100.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_204(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -21930,108 +21930,108 @@ cNWString100.GetString() + 2, \
 cNWString101.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_206(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -22351,109 +22351,109 @@ cNWString101.GetString() + 2, \
 cNWString102.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_208(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -22776,110 +22776,110 @@ cNWString102.GetString() + 2, \
 cNWString103.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_210(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -23205,111 +23205,111 @@ cNWString103.GetString() + 2, \
 cNWString104.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_212(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -23638,112 +23638,112 @@ cNWString104.GetString() + 2, \
 cNWString105.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_214(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -24075,113 +24075,113 @@ cNWString105.GetString() + 2, \
 cNWString106.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_216(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -24516,114 +24516,114 @@ cNWString106.GetString() + 2, \
 cNWString107.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_218(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -24961,115 +24961,115 @@ cNWString107.GetString() + 2, \
 cNWString108.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_220(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -25410,116 +25410,116 @@ cNWString108.GetString() + 2, \
 cNWString109.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_222(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -25863,117 +25863,117 @@ cNWString109.GetString() + 2, \
 cNWString110.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_224(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -26320,118 +26320,118 @@ cNWString110.GetString() + 2, \
 cNWString111.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_226(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -26781,119 +26781,119 @@ cNWString111.GetString() + 2, \
 cNWString112.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_228(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -27246,120 +27246,120 @@ cNWString112.GetString() + 2, \
 cNWString113.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_230(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -27715,121 +27715,121 @@ cNWString113.GetString() + 2, \
 cNWString114.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_232(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -28188,122 +28188,122 @@ cNWString114.GetString() + 2, \
 cNWString115.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_234(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -28665,123 +28665,123 @@ cNWString115.GetString() + 2, \
 cNWString116.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_236(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -29146,124 +29146,124 @@ cNWString116.GetString() + 2, \
 cNWString117.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_238(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -29631,125 +29631,125 @@ cNWString117.GetString() + 2, \
 cNWString118.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_240(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238, _239, _240) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -30120,126 +30120,126 @@ cNWString118.GetString() + 2, \
 cNWString119.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
-_240, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
+static_cast<UnderlyingType>(EnumType:: _239 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_242(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238, _239, _240, _241, _242) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -30613,127 +30613,127 @@ cNWString119.GetString() + 2, \
 cNWString120.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
-_240, \
-_242, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
+static_cast<UnderlyingType>(EnumType:: _239 ), \
+static_cast<UnderlyingType>(EnumType:: _241 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_244(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238, _239, _240, _241, _242, _243, _244) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -31110,128 +31110,128 @@ cNWString120.GetString() + 2, \
 cNWString121.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
-_240, \
-_242, \
-_244, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
+static_cast<UnderlyingType>(EnumType:: _239 ), \
+static_cast<UnderlyingType>(EnumType:: _241 ), \
+static_cast<UnderlyingType>(EnumType:: _243 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_246(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238, _239, _240, _241, _242, _243, _244, _245, _246) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -31611,129 +31611,129 @@ cNWString121.GetString() + 2, \
 cNWString122.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
-_240, \
-_242, \
-_244, \
-_246, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
+static_cast<UnderlyingType>(EnumType:: _239 ), \
+static_cast<UnderlyingType>(EnumType:: _241 ), \
+static_cast<UnderlyingType>(EnumType:: _243 ), \
+static_cast<UnderlyingType>(EnumType:: _245 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_248(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238, _239, _240, _241, _242, _243, _244, _245, _246, _247, _248) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -32116,130 +32116,130 @@ cNWString122.GetString() + 2, \
 cNWString123.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
-_240, \
-_242, \
-_244, \
-_246, \
-_248, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
+static_cast<UnderlyingType>(EnumType:: _239 ), \
+static_cast<UnderlyingType>(EnumType:: _241 ), \
+static_cast<UnderlyingType>(EnumType:: _243 ), \
+static_cast<UnderlyingType>(EnumType:: _245 ), \
+static_cast<UnderlyingType>(EnumType:: _247 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_250(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238, _239, _240, _241, _242, _243, _244, _245, _246, _247, _248, _249, _250) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -32625,131 +32625,131 @@ cNWString123.GetString() + 2, \
 cNWString124.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
-_240, \
-_242, \
-_244, \
-_246, \
-_248, \
-_250, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
+static_cast<UnderlyingType>(EnumType:: _239 ), \
+static_cast<UnderlyingType>(EnumType:: _241 ), \
+static_cast<UnderlyingType>(EnumType:: _243 ), \
+static_cast<UnderlyingType>(EnumType:: _245 ), \
+static_cast<UnderlyingType>(EnumType:: _247 ), \
+static_cast<UnderlyingType>(EnumType:: _249 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_252(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238, _239, _240, _241, _242, _243, _244, _245, _246, _247, _248, _249, _250, _251, _252) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -33138,132 +33138,132 @@ cNWString124.GetString() + 2, \
 cNWString125.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
-_240, \
-_242, \
-_244, \
-_246, \
-_248, \
-_250, \
-_252, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
+static_cast<UnderlyingType>(EnumType:: _239 ), \
+static_cast<UnderlyingType>(EnumType:: _241 ), \
+static_cast<UnderlyingType>(EnumType:: _243 ), \
+static_cast<UnderlyingType>(EnumType:: _245 ), \
+static_cast<UnderlyingType>(EnumType:: _247 ), \
+static_cast<UnderlyingType>(EnumType:: _249 ), \
+static_cast<UnderlyingType>(EnumType:: _251 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)
 #define VP_ENUM_TRAITS_254(namespace, enum_name, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84, _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98, _99, _100, _101, _102, _103, _104, _105, _106, _107, _108, _109, _110, _111, _112, _113, _114, _115, _116, _117, _118, _119, _120, _121, _122, _123, _124, _125, _126, _127, _128, _129, _130, _131, _132, _133, _134, _135, _136, _137, _138, _139, _140, _141, _142, _143, _144, _145, _146, _147, _148, _149, _150, _151, _152, _153, _154, _155, _156, _157, _158, _159, _160, _161, _162, _163, _164, _165, _166, _167, _168, _169, _170, _171, _172, _173, _174, _175, _176, _177, _178, _179, _180, _181, _182, _183, _184, _185, _186, _187, _188, _189, _190, _191, _192, _193, _194, _195, _196, _197, _198, _199, _200, _201, _202, _203, _204, _205, _206, _207, _208, _209, _210, _211, _212, _213, _214, _215, _216, _217, _218, _219, _220, _221, _222, _223, _224, _225, _226, _227, _228, _229, _230, _231, _232, _233, _234, _235, _236, _237, _238, _239, _240, _241, _242, _243, _244, _245, _246, _247, _248, _249, _250, _251, _252, _253, _254) \
     VP_ENUM_TRAITS_START(namespace, enum_name) \
@@ -33655,131 +33655,131 @@ cNWString125.GetString() + 2, \
 cNWString126.GetString() + 2, \
         }; \
         static constexpr const UnderlyingType cIndexToEnumArray[] = { \
-_2, \
-_4, \
-_6, \
-_8, \
-_10, \
-_12, \
-_14, \
-_16, \
-_18, \
-_20, \
-_22, \
-_24, \
-_26, \
-_28, \
-_30, \
-_32, \
-_34, \
-_36, \
-_38, \
-_40, \
-_42, \
-_44, \
-_46, \
-_48, \
-_50, \
-_52, \
-_54, \
-_56, \
-_58, \
-_60, \
-_62, \
-_64, \
-_66, \
-_68, \
-_70, \
-_72, \
-_74, \
-_76, \
-_78, \
-_80, \
-_82, \
-_84, \
-_86, \
-_88, \
-_90, \
-_92, \
-_94, \
-_96, \
-_98, \
-_100, \
-_102, \
-_104, \
-_106, \
-_108, \
-_110, \
-_112, \
-_114, \
-_116, \
-_118, \
-_120, \
-_122, \
-_124, \
-_126, \
-_128, \
-_130, \
-_132, \
-_134, \
-_136, \
-_138, \
-_140, \
-_142, \
-_144, \
-_146, \
-_148, \
-_150, \
-_152, \
-_154, \
-_156, \
-_158, \
-_160, \
-_162, \
-_164, \
-_166, \
-_168, \
-_170, \
-_172, \
-_174, \
-_176, \
-_178, \
-_180, \
-_182, \
-_184, \
-_186, \
-_188, \
-_190, \
-_192, \
-_194, \
-_196, \
-_198, \
-_200, \
-_202, \
-_204, \
-_206, \
-_208, \
-_210, \
-_212, \
-_214, \
-_216, \
-_218, \
-_220, \
-_222, \
-_224, \
-_226, \
-_228, \
-_230, \
-_232, \
-_234, \
-_236, \
-_238, \
-_240, \
-_242, \
-_244, \
-_246, \
-_248, \
-_250, \
-_252, \
-_254, \
+static_cast<UnderlyingType>(EnumType:: _1 ), \
+static_cast<UnderlyingType>(EnumType:: _3 ), \
+static_cast<UnderlyingType>(EnumType:: _5 ), \
+static_cast<UnderlyingType>(EnumType:: _7 ), \
+static_cast<UnderlyingType>(EnumType:: _9 ), \
+static_cast<UnderlyingType>(EnumType:: _11 ), \
+static_cast<UnderlyingType>(EnumType:: _13 ), \
+static_cast<UnderlyingType>(EnumType:: _15 ), \
+static_cast<UnderlyingType>(EnumType:: _17 ), \
+static_cast<UnderlyingType>(EnumType:: _19 ), \
+static_cast<UnderlyingType>(EnumType:: _21 ), \
+static_cast<UnderlyingType>(EnumType:: _23 ), \
+static_cast<UnderlyingType>(EnumType:: _25 ), \
+static_cast<UnderlyingType>(EnumType:: _27 ), \
+static_cast<UnderlyingType>(EnumType:: _29 ), \
+static_cast<UnderlyingType>(EnumType:: _31 ), \
+static_cast<UnderlyingType>(EnumType:: _33 ), \
+static_cast<UnderlyingType>(EnumType:: _35 ), \
+static_cast<UnderlyingType>(EnumType:: _37 ), \
+static_cast<UnderlyingType>(EnumType:: _39 ), \
+static_cast<UnderlyingType>(EnumType:: _41 ), \
+static_cast<UnderlyingType>(EnumType:: _43 ), \
+static_cast<UnderlyingType>(EnumType:: _45 ), \
+static_cast<UnderlyingType>(EnumType:: _47 ), \
+static_cast<UnderlyingType>(EnumType:: _49 ), \
+static_cast<UnderlyingType>(EnumType:: _51 ), \
+static_cast<UnderlyingType>(EnumType:: _53 ), \
+static_cast<UnderlyingType>(EnumType:: _55 ), \
+static_cast<UnderlyingType>(EnumType:: _57 ), \
+static_cast<UnderlyingType>(EnumType:: _59 ), \
+static_cast<UnderlyingType>(EnumType:: _61 ), \
+static_cast<UnderlyingType>(EnumType:: _63 ), \
+static_cast<UnderlyingType>(EnumType:: _65 ), \
+static_cast<UnderlyingType>(EnumType:: _67 ), \
+static_cast<UnderlyingType>(EnumType:: _69 ), \
+static_cast<UnderlyingType>(EnumType:: _71 ), \
+static_cast<UnderlyingType>(EnumType:: _73 ), \
+static_cast<UnderlyingType>(EnumType:: _75 ), \
+static_cast<UnderlyingType>(EnumType:: _77 ), \
+static_cast<UnderlyingType>(EnumType:: _79 ), \
+static_cast<UnderlyingType>(EnumType:: _81 ), \
+static_cast<UnderlyingType>(EnumType:: _83 ), \
+static_cast<UnderlyingType>(EnumType:: _85 ), \
+static_cast<UnderlyingType>(EnumType:: _87 ), \
+static_cast<UnderlyingType>(EnumType:: _89 ), \
+static_cast<UnderlyingType>(EnumType:: _91 ), \
+static_cast<UnderlyingType>(EnumType:: _93 ), \
+static_cast<UnderlyingType>(EnumType:: _95 ), \
+static_cast<UnderlyingType>(EnumType:: _97 ), \
+static_cast<UnderlyingType>(EnumType:: _99 ), \
+static_cast<UnderlyingType>(EnumType:: _101 ), \
+static_cast<UnderlyingType>(EnumType:: _103 ), \
+static_cast<UnderlyingType>(EnumType:: _105 ), \
+static_cast<UnderlyingType>(EnumType:: _107 ), \
+static_cast<UnderlyingType>(EnumType:: _109 ), \
+static_cast<UnderlyingType>(EnumType:: _111 ), \
+static_cast<UnderlyingType>(EnumType:: _113 ), \
+static_cast<UnderlyingType>(EnumType:: _115 ), \
+static_cast<UnderlyingType>(EnumType:: _117 ), \
+static_cast<UnderlyingType>(EnumType:: _119 ), \
+static_cast<UnderlyingType>(EnumType:: _121 ), \
+static_cast<UnderlyingType>(EnumType:: _123 ), \
+static_cast<UnderlyingType>(EnumType:: _125 ), \
+static_cast<UnderlyingType>(EnumType:: _127 ), \
+static_cast<UnderlyingType>(EnumType:: _129 ), \
+static_cast<UnderlyingType>(EnumType:: _131 ), \
+static_cast<UnderlyingType>(EnumType:: _133 ), \
+static_cast<UnderlyingType>(EnumType:: _135 ), \
+static_cast<UnderlyingType>(EnumType:: _137 ), \
+static_cast<UnderlyingType>(EnumType:: _139 ), \
+static_cast<UnderlyingType>(EnumType:: _141 ), \
+static_cast<UnderlyingType>(EnumType:: _143 ), \
+static_cast<UnderlyingType>(EnumType:: _145 ), \
+static_cast<UnderlyingType>(EnumType:: _147 ), \
+static_cast<UnderlyingType>(EnumType:: _149 ), \
+static_cast<UnderlyingType>(EnumType:: _151 ), \
+static_cast<UnderlyingType>(EnumType:: _153 ), \
+static_cast<UnderlyingType>(EnumType:: _155 ), \
+static_cast<UnderlyingType>(EnumType:: _157 ), \
+static_cast<UnderlyingType>(EnumType:: _159 ), \
+static_cast<UnderlyingType>(EnumType:: _161 ), \
+static_cast<UnderlyingType>(EnumType:: _163 ), \
+static_cast<UnderlyingType>(EnumType:: _165 ), \
+static_cast<UnderlyingType>(EnumType:: _167 ), \
+static_cast<UnderlyingType>(EnumType:: _169 ), \
+static_cast<UnderlyingType>(EnumType:: _171 ), \
+static_cast<UnderlyingType>(EnumType:: _173 ), \
+static_cast<UnderlyingType>(EnumType:: _175 ), \
+static_cast<UnderlyingType>(EnumType:: _177 ), \
+static_cast<UnderlyingType>(EnumType:: _179 ), \
+static_cast<UnderlyingType>(EnumType:: _181 ), \
+static_cast<UnderlyingType>(EnumType:: _183 ), \
+static_cast<UnderlyingType>(EnumType:: _185 ), \
+static_cast<UnderlyingType>(EnumType:: _187 ), \
+static_cast<UnderlyingType>(EnumType:: _189 ), \
+static_cast<UnderlyingType>(EnumType:: _191 ), \
+static_cast<UnderlyingType>(EnumType:: _193 ), \
+static_cast<UnderlyingType>(EnumType:: _195 ), \
+static_cast<UnderlyingType>(EnumType:: _197 ), \
+static_cast<UnderlyingType>(EnumType:: _199 ), \
+static_cast<UnderlyingType>(EnumType:: _201 ), \
+static_cast<UnderlyingType>(EnumType:: _203 ), \
+static_cast<UnderlyingType>(EnumType:: _205 ), \
+static_cast<UnderlyingType>(EnumType:: _207 ), \
+static_cast<UnderlyingType>(EnumType:: _209 ), \
+static_cast<UnderlyingType>(EnumType:: _211 ), \
+static_cast<UnderlyingType>(EnumType:: _213 ), \
+static_cast<UnderlyingType>(EnumType:: _215 ), \
+static_cast<UnderlyingType>(EnumType:: _217 ), \
+static_cast<UnderlyingType>(EnumType:: _219 ), \
+static_cast<UnderlyingType>(EnumType:: _221 ), \
+static_cast<UnderlyingType>(EnumType:: _223 ), \
+static_cast<UnderlyingType>(EnumType:: _225 ), \
+static_cast<UnderlyingType>(EnumType:: _227 ), \
+static_cast<UnderlyingType>(EnumType:: _229 ), \
+static_cast<UnderlyingType>(EnumType:: _231 ), \
+static_cast<UnderlyingType>(EnumType:: _233 ), \
+static_cast<UnderlyingType>(EnumType:: _235 ), \
+static_cast<UnderlyingType>(EnumType:: _237 ), \
+static_cast<UnderlyingType>(EnumType:: _239 ), \
+static_cast<UnderlyingType>(EnumType:: _241 ), \
+static_cast<UnderlyingType>(EnumType:: _243 ), \
+static_cast<UnderlyingType>(EnumType:: _245 ), \
+static_cast<UnderlyingType>(EnumType:: _247 ), \
+static_cast<UnderlyingType>(EnumType:: _249 ), \
+static_cast<UnderlyingType>(EnumType:: _251 ), \
+static_cast<UnderlyingType>(EnumType:: _253 ), \
     VP_ENUM_TRAITS_END(namespace, enum_name)

@@ -18,7 +18,7 @@
 namespace awn::para {
 
     template <typename T>
-        requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null || T::cIsPropertyForTypedParam)
+        requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null || T::cIsCustomTypeForPropertyAccessor || !vp::util::TEnumTraitsAuto<T>::cIsDummy)
     consteval bool TIsProperty() { return true; }
 
     template <typename T>
@@ -49,7 +49,7 @@ namespace awn::para {
     template <typename T>
         requires (TIsEmbed<T>())
     constexpr const char *TGetEmbedClassName() {
-        return T::cClassName();
+        return std::remove_pointer<T>::type::cClassName;
     }
 
     template <typename T>
@@ -60,7 +60,7 @@ namespace awn::para {
     template <typename T>
         requires (TIsEmbed<T>() || TIsComposite<T>())
     constexpr const vp::util::RuntimeTypeInfo *TGetCompositeRtti() {
-        return T::GetRuntimeTypeInfoStatic();
+        return std::remove_pointer<T>::type::GetRuntimeTypeInfoStatic();
     }
 
     #define AWN_PARA_LAYOUT_TYPE_TRAITS(layout_type_name) \
@@ -68,13 +68,13 @@ namespace awn::para {
         template <auto T> \
         static constexpr auto TGetPropertyDefault() { return 0; } \
         template <auto T> \
-            requires (TIsProperty<vp::util::MemberType<T>>() && std::is_standard_layout<vp::util::MemberType<T>>::value) \
+            requires (awn::para::TIsProperty<vp::util::MemberType<T>>() && std::is_standard_layout<vp::util::MemberType<T>>::value) \
         static constexpr auto TGetPropertyDefault() { \
             layout_type_name layout = {}; \
             return layout.*T; \
         }
 
-    template <typename T>
+   /* template <typename T>
     struct PropertyAccessorHelper {
         using Type = IPropertyAccessor;
     };
@@ -161,11 +161,11 @@ namespace awn::para {
 
     template <>
     struct PropertyAccessorHelper<vp::util::Int4> {
-        using Type = PropertyAccessor<vp::util::Int4>;
-    };
+        using Type = ;
+    };*/
 
     template <typename T>
-    using TPropertyAccessor = PropertyAccessorHelper<T>::Type;
+    using TPropertyAccessor = PropertyAccessor<T>;
 
     template <typename T>
     constexpr TPropertyAccessor<T> TGetPropertyAccessor(T *value_address) {
@@ -188,6 +188,7 @@ namespace awn::para {
     }
 
     /* Ensure common cases */
+    static_assert(TIsProperty<sys::RegionType>()  == true);
     static_assert(TIsProperty<const char*>()  == true);
     static_assert(TIsEmbed<const char*>()     == false);
     static_assert(TIsComposite<const char*>() == false);

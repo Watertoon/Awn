@@ -82,10 +82,7 @@ namespace awn::para {
             constexpr TypedParamMap() : TypedParamMapBase() {/*...*/}
             virtual constexpr ~TypedParamMap() override {/*...*/}
 
-            virtual u64 GetBaseClassHash() const override {
-                const u64 hash = vp::util::HashMurmur64(T::cClassName);
-                return hash;
-            }
+            virtual u64 GetBaseClassHash() const override { return T::GetClassHashStatic(); }
             virtual TypedParam *CreateTypedParam(mem::Heap *heap, [[maybe_unused]] Document *document, u64 class_hash) const override {
                 TypedParam *typed_param = para::CreateTypedParam(heap, class_hash);
                 VP_ASSERT(T::CheckRuntimeTypeInfoStatic(typed_param->GetRuntimeTypeInfo()) == true);
