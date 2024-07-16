@@ -84,6 +84,8 @@ namespace vp::imem {
 
             virtual bool IsAddressAllocation([[maybe_unused]] void *address) { return false; }
 
+            virtual bool IsEmpty() const { return false; }
+
             virtual size_t ResizeHeapBack([[maybe_unused]] size_t new_size) { return 0; }
 
             virtual size_t GetTotalSize() const { 

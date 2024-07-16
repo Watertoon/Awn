@@ -17,27 +17,27 @@
 
 namespace awn::ukern {
 
-    Result CreateThread(UKernHandle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, u32 priority, u32 core_id) {
+    Result CreateThread(ukern::Handle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, u32 priority, u32 core_id) {
         return impl::GetScheduler()->CreateThreadImpl(out_handle, thread_func, arg, stack_size, priority, core_id);
     }
 
-    void ExitThread(UKernHandle handle) {
+    void ExitThread(ukern::Handle handle) {
         impl::GetScheduler()->ExitThreadImpl(handle);
     }
 
-    Result StartThread(UKernHandle handle) {
+    Result StartThread(ukern::Handle handle) {
         return impl::GetScheduler()->SetActivityImpl(handle, ActivityLevel_Schedulable);
     }
 
-    Result ResumeThread (UKernHandle handle) {
+    Result ResumeThread (ukern::Handle handle) {
         return impl::GetScheduler()->SetActivityImpl(handle, ActivityLevel_Schedulable);
     }
 
-    Result SuspendThread(UKernHandle handle) {
+    Result SuspendThread(ukern::Handle handle) {
         return impl::GetScheduler()->SetActivityImpl(handle, ActivityLevel_Suspended);
     }
 
-    void SetThreadName(UKernHandle handle, const char *name) {
+    void SetThreadName(ukern::Handle handle, const char *name) {
 
         /* Get fiber from handle */
         FiberLocalStorage *fiber = impl::GetScheduler()->GetFiberByHandle(handle);
@@ -51,7 +51,7 @@ namespace awn::ukern {
         }
     }
 
-    void SetThreadNamePointer(UKernHandle handle, const char *name) {
+    void SetThreadNamePointer(ukern::Handle handle, const char *name) {
 
         /* Get fiber from handle */
         FiberLocalStorage *fiber = impl::GetScheduler()->GetFiberByHandle(handle);
@@ -65,11 +65,11 @@ namespace awn::ukern {
         }
     }
 
-    Result SetThreadPriority(UKernHandle handle, u32 priority) {
+    Result SetThreadPriority(ukern::Handle handle, u32 priority) {
         return impl::GetScheduler()->SetPriorityImpl(handle, priority);
     }
 
-    Result SetThreadCoreMask(UKernHandle handle, UKernCoreMask core_mask) {
+    Result SetThreadCoreMask(ukern::Handle handle, CoreMask core_mask) {
         return impl::GetScheduler()->SetCoreMaskImpl(handle, core_mask);
     }
 

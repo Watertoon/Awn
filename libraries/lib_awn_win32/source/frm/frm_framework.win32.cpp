@@ -52,10 +52,12 @@ namespace awn::frm {
         vp::util::InitializeTimeStamp();
 
         /* Initialize System Manager */
+        const sys::CoreMask core_mask = ~((~0ull) << (framework_lib_info->process_core_count & (BITSIZEOF(ukern::CoreMask) - 1)));
         sys::InitializeSystemManager();
+        RESULT_ABORT_UNLESS(sys::SetProcessCoreMask(core_mask));
 
         /* Initialize ukern */
-        ukern::InitializeUKern(framework_lib_info->process_core_count);
+        ukern::InitializeUKern(core_mask);
 
         /* Allocate root heap memory */
         void *root_heap_start = ::VirtualAlloc(nullptr, framework_lib_info->root_heap_initial_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);

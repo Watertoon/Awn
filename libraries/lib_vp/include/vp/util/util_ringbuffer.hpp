@@ -89,9 +89,9 @@ namespace vp::util {
             }
 
             void Finalize() {
-
                 if (m_array != nullptr) {
                     delete [] m_array;
+                    m_array = nullptr;
                 }
                 m_offset    = 0;
                 m_count     = 0;
@@ -112,7 +112,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE void PushBack(T value) {
 
                 /* Check count */
-                VP_ASSERT(m_max_count > m_count);
+                VP_ASSERT(!this->IsFull());
 
                 /* Increment count */
                 const u32 count = m_count;
@@ -129,7 +129,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE void PushFront(T value) {
 
                 /* Check count */
-                VP_ASSERT(m_max_count > m_count);
+                VP_ASSERT(!this->IsFull());
 
                 /* Increment count */
                 const u32 count = m_count;
@@ -141,6 +141,15 @@ namespace vp::util {
 
                 /* Place front value */
                 m_array[offset] = value;
+            }
+
+            constexpr ALWAYS_INLINE bool DropFront() {
+                const u32 count = m_count;
+                if (count == 0) { return false; }
+                const u32 offset = m_offset;
+                m_offset = (offset + 1 < m_max_count) ? (offset + 1) : 0;
+                m_count = count - 1;
+                return true;
             }
 
             constexpr ALWAYS_INLINE T PeekFront() const {
@@ -176,14 +185,21 @@ namespace vp::util {
                 return ret;
             }
 
+            constexpr ALWAYS_INLINE bool DropBack() {
+                const u32 count = m_count;
+                if (count == 0) { return false; }
+                m_count = count - 1;
+                return true;
+            }
+
             constexpr ALWAYS_INLINE T PeekBack() const {
 
                 /* Check count */
-                const u32 count = m_count - 1;
+                const u32 count = m_count;
                 if (count == 0) { return 0; }
 
                 /* Get pointer */
-                const u32 offset = m_offset + count;
+                const u32 offset = m_offset + count - 1;
                 const u32 wrap = (m_max_count <= offset) ? m_max_count : 0;
                 T ret = m_array[offset - wrap];
 
@@ -193,11 +209,11 @@ namespace vp::util {
             constexpr ALWAYS_INLINE T RemoveBack() {
 
                 /* Check count */
-                const u32 count = m_count - 1;
+                const u32 count = m_count;
                 if (count == 0) { return 0; }
 
                 /* Get pointer */
-                const u32 offset = m_offset + count;
+                const u32 offset = m_offset + count - 1;
                 const u32 wrap = (m_max_count <= offset) ? m_max_count : 0;
                 T ret = m_array[offset - wrap];
 
@@ -251,6 +267,8 @@ namespace vp::util {
                 m_count  = 0;
             }
 
+            constexpr ALWAYS_INLINE bool IsEmpty() const { return m_count == 0; }
+            constexpr ALWAYS_INLINE bool IsFull() const { return (m_max_count <= m_count); }
             constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; }
 	};
 
@@ -284,15 +302,16 @@ namespace vp::util {
             }
 
             void Finalize() {
+                if (m_array != nullptr) {
+                    delete [] m_array;
+                    m_array = nullptr;
+                }
                 m_max_count = 0;
                 m_count     = 0;
                 m_offset    = 0;
-                if (m_array != nullptr) {
-                    delete [] m_array;
-                }
             }
 
-            constexpr void PushBack(T value) {
+            void PushBack(T value) {
 
                 /* Integrity checks */
                 VP_ASSERT(value != 0);
@@ -308,21 +327,22 @@ namespace vp::util {
 
                     /* Insert our element */
                     vp::util::MemoryBarrierRelease();
-                    m_array[(m_max_count - 1) & count] = value;
+                    m_array[count & (m_max_count - 1)] = value;
 
                     return;
                 }
                 VP_ASSERT(false);
             }
 
-            constexpr T RemoveFront() {
+            T RemoveFront() {
 
                 /* Attempt to read the next item in the queue */
+                const u32 max_mask = (m_max_count - 1);
                 u32 offset = m_offset;
                 while (0 < m_count - offset) {
 
                     /* Check if next element is available */
-                    T ret = m_array[(m_max_count - 1) & offset];
+                    T ret = m_array[offset & max_mask];
                     if (ret == 0) {
                         vp::util::MemoryBarrierRelease();
 
@@ -335,11 +355,11 @@ namespace vp::util {
 
                     /* Reserve the element as ours */
                     const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(offset), std::addressof(m_offset), offset + 1, offset);
-                    if (result == false) { continue; }
+                    if (!result) { continue; }
 
                     /* Take the element */
                     vp::util::MemoryBarrierRelease();
-                    m_array[(m_max_count - 1) & offset] = 0;
+                    m_array[offset & max_mask] = 0;
 
                     return ret;
                 }

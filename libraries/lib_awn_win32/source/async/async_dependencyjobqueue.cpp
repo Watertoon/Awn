@@ -279,7 +279,7 @@ namespace awn::async {
         m_job_queue_node_array.Initialize(heap, queue_info->max_job_count);
         m_dependent_link_array.Initialize(heap, queue_info->max_link_count);
         m_used_job_queue_node_array.Initialize(heap, queue_info->max_job_count);
-        m_thread_control_array.Initialize(heap, sys::GetCoreCount());
+        m_thread_control_array.Initialize(heap, sys::GetProcessCoreCount());
         m_job_priority_queue.Initialize(heap, queue_info->max_job_count);
 
         m_final_node.SetDefaults();

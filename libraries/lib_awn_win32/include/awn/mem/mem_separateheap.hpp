@@ -70,5 +70,7 @@ namespace awn::mem {
     
             virtual size_t GetTotalFreeSize() override final;
             virtual size_t GetMaximumAllocatableSize([[maybe_unused]] s32 alignment) override final;
+
+            virtual bool IsEmpty() const override { return m_used_block_list.IsEmpty(); }
     };
 }

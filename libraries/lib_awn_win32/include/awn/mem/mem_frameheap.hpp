@@ -123,6 +123,8 @@ namespace awn::mem {
 
             virtual size_t GetTotalFreeSize() override { return reinterpret_cast<uintptr_t>(m_end_address) - reinterpret_cast<uintptr_t>(m_start_offset); }
             virtual size_t GetMaximumAllocatableSize(s32 alignment) override { return reinterpret_cast<uintptr_t>(m_end_address) - vp::util::AlignUp(reinterpret_cast<uintptr_t>(m_start_offset), alignment); }
+
+            virtual bool IsEmpty() const override { return m_start_offset == m_start_address; }
     };
 
     class GpuFrameHeap : public FrameHeap {

@@ -113,7 +113,7 @@ namespace awn::async {
     void DependencyJobThreadManager::Initialize(mem::Heap *heap) {
 
         /* Initialize thread array */
-        m_thread_array.Initialize(heap, sys::GetCoreCount());
+        m_thread_array.Initialize(heap, sys::GetProcessCoreCount());
 
         /* Clear state */
         m_all_core_mask    = 0;
@@ -123,7 +123,7 @@ namespace awn::async {
         for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
 
             m_thread_array[i].thread_name.Format("DepWorker%d", i);
-            m_thread_array[i].thread = new DependencyJobThread(m_thread_array[i].thread_name.GetString(), heap, 0x20000, sys::cPriorityNormal);
+            m_thread_array[i].thread = new DependencyJobThread(this, m_thread_array[i].thread_name.GetString(), heap, 0x20000, sys::cPriorityNormal);
 
             m_thread_array[i].thread->SetCoreMask((1 << i));
             m_thread_array[i].thread->StartThread();

@@ -22,8 +22,9 @@ namespace awn::sys {
     class DelegateThread : public Thread {
         private:
             ThreadIDelegate *m_delegate;
+        public:
+            VP_RTTI_DERIVED(DelegateThread, Thread);
         private:
-
             virtual void ThreadMain(size_t message) override {
                 m_delegate->Invoke(message);
             }
@@ -44,8 +45,9 @@ namespace awn::sys {
     class DelegateServiceThread : public ServiceThread {
         private:
             ThreadIDelegate *m_delegate;
+        public:
+            VP_RTTI_DERIVED(DelegateServiceThread, ServiceThread);
         private:
-
             virtual void ThreadMain(size_t message) override {
                 m_delegate->Invoke(message);
             }

@@ -35,24 +35,25 @@ namespace awn::sys {
         /* Construct system manager */
         vp::util::ConstructAt(sSystemManagerStorage);
 
-        SystemManager *instance = vp::util::GetPointer(sSystemManagerStorage);
+        SystemManager *sys_mgr = vp::util::GetPointer(sSystemManagerStorage);
+
+        /* Get real process handle */
+        const bool result1 = ::DuplicateHandle(::GetCurrentProcess(), ::GetCurrentProcess(), ::GetCurrentProcess(), std::addressof(sys_mgr->process_handle), 0, false, DUPLICATE_SAME_ACCESS);
+        VP_ASSERT(result1);
 
         /* Get system info */
-        ::GetSystemInfo(std::addressof(instance->system_info));
-        VP_ASSERT(instance->system_info.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
-        VP_ASSERT(instance->system_info.dwPageSize == 0x1000);
-
-        /* Get active processor count from group 0 */
-        instance->active_processor_count = ::GetActiveProcessorCount(0);
-        VP_ASSERT(instance->active_processor_count != 0);
+        ::GetSystemInfo(std::addressof(sys_mgr->system_info));
+        VP_ASSERT(sys_mgr->system_info.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
+        VP_ASSERT(sys_mgr->system_info.dwPageSize == 0x1000);
 
         /* Get current process affinity mask */
-        const bool result = ::GetProcessAffinityMask(::GetCurrentProcess(), std::addressof(instance->process_core_mask), std::addressof(instance->system_core_mask));
-        VP_ASSERT(result != false);
-        VP_ASSERT(instance->process_core_mask != 0 && instance->system_core_mask != 0);
+        const bool result = ::GetProcessAffinityMask(sys_mgr->process_handle, std::addressof(sys_mgr->process_core_mask), std::addressof(sys_mgr->system_core_mask));
+        VP_ASSERT(result);
+        VP_ASSERT(sys_mgr->process_core_mask != 0 && sys_mgr->system_core_mask != 0);
 
-        instance->process_core_count = vp::util::CountOneBits64(instance->process_core_mask);
-        
+        sys_mgr->system_core_count = vp::util::CountOneBits64(sys_mgr->system_core_mask);
+        sys_mgr->process_core_count = vp::util::CountOneBits64(sys_mgr->process_core_mask);
+
         return;
     }
 
@@ -60,12 +61,33 @@ namespace awn::sys {
 
     SystemManager *GetSystemManager() { return vp::util::GetPointer(sSystemManagerStorage); }
 
-    u32 GetServiceCoreCount() {
+    u32 GetProcessCoreCount() {
         return GetSystemManager()->process_core_count;
     }
 
-    u32 GetCoreCount() {
-        return ukern::GetCoreCount();
+    u32 GetSystemCoreCount() {
+        return GetSystemManager()->system_core_count;
+    }
+
+    CoreMask GetProcessCoreMask() {
+        return GetSystemManager()->process_core_mask;
+    }
+
+    CoreMask GetSystemCoreMask() {
+        return GetSystemManager()->system_core_mask;
+    }
+
+    Result SetProcessCoreMask(CoreMask core_mask) {
+        if (core_mask == GetProcessCoreMask()) { RESULT_RETURN_SUCCESS; }
+        RESULT_RETURN_IF((core_mask & ~GetSystemCoreMask()) != 0, ResultInvalidCoreMask);
+        SystemManager *sys_mgr = vp::util::GetPointer(sSystemManagerStorage);
+        const bool result0 = ::SetProcessAffinityMask(sys_mgr->process_handle, core_mask);
+        const bool result1 = ::GetProcessAffinityMask(sys_mgr->process_handle, std::addressof(sys_mgr->process_core_mask), std::addressof(sys_mgr->system_core_mask));
+        VP_ASSERT(result1);
+        sys_mgr->system_core_count = vp::util::CountOneBits64(sys_mgr->system_core_mask);
+        sys_mgr->process_core_count = vp::util::CountOneBits64(sys_mgr->process_core_mask);
+        if (!result0) { return res::ConvertWin32ErrorToResult(); }
+        RESULT_RETURN_SUCCESS;
     }
 
     u32 GetCurrentCoreNumber() {

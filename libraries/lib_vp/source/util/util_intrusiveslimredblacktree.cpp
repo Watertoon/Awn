@@ -17,7 +17,6 @@
 
 namespace vp::util {
 
-
     IntrusiveRedBlackTreeNodeBase *IntrusiveRedBlackTreeNodeBase::GetNext() {
 
         IntrusiveRedBlackTreeNodeBase *iter = m_right;

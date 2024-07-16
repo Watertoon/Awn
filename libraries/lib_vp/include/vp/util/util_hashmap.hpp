@@ -96,6 +96,9 @@ namespace vp::util {
 
             constexpr ALWAYS_INLINE Parent *TryGetParentByHash(HashType hash) {
 
+                /* Ensure initialized */
+                if (m_max < 1) { return nullptr; }
+
                 /* Find actual index linearly from base */
                 const u32 base_index = this->GetBaseIndex(hash);
                 u32 i = base_index;
@@ -171,7 +174,7 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE Parent *TryGetParentByHash(HashType hash) {
-
+        
                 /* Find actual index linearly from base */
                 const u32 base_index = this->GetBaseIndex(hash);
                 u32 i = base_index;

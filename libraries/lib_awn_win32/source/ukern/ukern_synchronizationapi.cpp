@@ -17,7 +17,7 @@
 
 namespace awn::ukern {
 
-    Result ArbitrateLock(UKernHandle handle, uintptr_t address, u32 tag) {
+    Result ArbitrateLock(ukern::Handle handle, uintptr_t address, u32 tag) {
         /* Call scheduler impl */
         impl::UserScheduler *scheduler = impl::GetScheduler();
         return scheduler->ArbitrateLockImpl(handle, reinterpret_cast<u32*>(address), tag);

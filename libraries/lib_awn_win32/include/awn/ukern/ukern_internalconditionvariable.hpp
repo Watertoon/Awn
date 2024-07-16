@@ -27,7 +27,7 @@ namespace awn::ukern {
             void Wait(InternalCriticalSection *cs) {
 
                 const FiberLocalStorage *fiber_local = ukern::GetCurrentThread();
-                const UKernHandle tag = fiber_local->ukern_fiber_handle;
+                const ukern::Handle tag = fiber_local->ukern_fiber_handle;
 
                 VP_ASSERT(tag == (cs->m_handle & (~FiberLocalStorage::HasChildWaitersBit)));
 
@@ -39,7 +39,7 @@ namespace awn::ukern {
             void TimedWait(InternalCriticalSection *cs, s64 timeout_ns) {
                 
                 const FiberLocalStorage *fiber_local = ukern::GetCurrentThread();
-                const UKernHandle tag = fiber_local->ukern_fiber_handle;
+                const ukern::Handle tag = fiber_local->ukern_fiber_handle;
                 
                 VP_ASSERT(tag == (cs->m_handle & (~FiberLocalStorage::HasChildWaitersBit)));
                 

@@ -19,6 +19,13 @@ namespace awn::mem {
 
     using GpuMemoryPropertyFlags = vp::res::GfxMemoryPoolFlags;
 
+    enum class MemoryType : u32 {
+        Cpu         = 0,
+        CpuUncached = 1,
+        CpuCached   = 2,
+        GpuUncached = 3,
+    };
+
     constexpr inline size_t cMaxGpuRootHeapCount = 2;
 
     struct GpuHeapManagerInfo {

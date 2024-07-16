@@ -29,6 +29,7 @@ namespace awn::ukern::impl {
             friend class KeyArbiter;
             friend class WaitAddressArbiter;
         private:
+            using CoreConnection        = vp::util::FixedConnection<u64, cMaxCoreCount>;
             using ThreadQueue           = vp::util::FixedPriorityQueue<FiberLocalStorage, &FiberLocalStorage::priority, cMaxThreadCount>;
             using LocalThreadRingBuffer = vp::util::FixedRingBuffer<FiberLocalStorage*, cMaxThreadCount>;
             using WaitList              = vp::util::IntrusiveListTraits<FiberLocalStorage, &FiberLocalStorage::wait_list_node>::List;
@@ -39,143 +40,47 @@ namespace awn::ukern::impl {
             LocalThreadRingBuffer     m_scheduler_local_ring_table[cMaxCoreCount];
             ThreadQueue               m_thread_queue;
             WaitList                  m_wait_list;
-            UKernCoreMask             m_core_mask;
+            CoreConnection            m_core_connection;
             u32                       m_allocated_user_threads;
+            u32                       m_default_core;
             u32                       m_core_count;
             u32                       m_active_cores;
             u32                       m_runnable_fibers;
             HandleTable               m_handle_table;
         private:
-            static long unsigned int InternalSchedulerFiberMain(void *arg) {
-
-                /* Assume argument is the scheduler thread core number */
-                const size_t core_number = reinterpret_cast<size_t>(arg);
-
-                UserScheduler *scheduler = impl::GetScheduler();
-
-                /* Convert thread to Fiber */
-                scheduler->m_scheduler_fiber_table[core_number] = ::ConvertThreadToFiber(nullptr);
-                VP_ASSERT(scheduler->m_scheduler_fiber_table[core_number] != 0);
-
-                /* Acquire scheduler lock for first run */
-                ::AcquireSRWLockExclusive(std::addressof(scheduler->m_scheduler_lock));
-
-                /* Call into the scheduler */
-                scheduler->SchedulerFiberMain(core_number);
-
-                return 0;
-            }
-
-            static void InternalSchedulerMainThreadFiberMain(void *arg) {
-
-                /* Note the scheduler lock is implicitly acquired */
-                UserScheduler *scheduler = impl::GetScheduler();
-
-                /* Add main fiber to scheduler */
-                {
-                    FiberLocalStorage *main_fiber = reinterpret_cast<FiberLocalStorage*>(arg);
-                    if (main_fiber->fiber_state != FiberState_Waiting) {
-                        scheduler->AddToSchedulerUnsafe(main_fiber);
-                    }
-                }
-
-                /* Call into the scheduler */
-                scheduler->SchedulerFiberMain(0);
-
-                /* Decrement allocated count */
-                ::InterlockedExchangeSubtract(std::addressof(scheduler->m_allocated_user_threads), 1);
-
-                return;
-            }
-
+            static long unsigned int InternalSchedulerFiberMain(void *arg);
+            static void InternalSchedulerMainThreadFiberMain(void *arg);
+            static void UserFiberMain(void *arg);
             void SchedulerFiberMain(size_t core_number);
-
-            static void UserFiberMain(void *arg) {
-                FiberLocalStorage *fiber_local = reinterpret_cast<FiberLocalStorage*>(arg);
-                UserScheduler *scheduler = impl::GetScheduler();
-
-                /* Release scheduler lock for first run */
-                ::ReleaseSRWLockExclusive(std::addressof(scheduler->m_scheduler_lock));
-
-                /* Dispatch user fiber */
-                (fiber_local->user_function)(fiber_local->user_arg);
-
-                /* Exit */
-                scheduler->ExitFiberImpl();
-            }
 
             void ExitFiberImpl();
         private:
-            void RemoveFromSchedulerUnsafe(FiberLocalStorage *fiber_local) {
-
-                /* Remove thread */
-                if (fiber_local->fiber_state == FiberState_ScheduledLocal) {
-                    m_scheduler_local_ring_table[fiber_local->current_core].Remove(fiber_local);
-                } else if (fiber_local->fiber_state == FiberState_Scheduled) {
-                    m_thread_queue.Remove(m_thread_queue.FindIterTo(fiber_local));
-                }
-
-                --m_runnable_fibers;
-
-                return;
-            }
-
-            void AddToSchedulerUnsafe(FiberLocalStorage *fiber_local) {
-
-                /* Nothing to do for waiters */
-                if (fiber_local->fiber_state == FiberState_Waiting) { return; }
-
-                /* Handle suspension */
-                if (fiber_local->activity_level == ActivityLevel_Suspended) {
-                    
-                    fiber_local->fiber_state = FiberState_Suspended;
-
-                    return;
-                }
-
-                /* Reschedule if necessary */
-                if (fiber_local->fiber_state == FiberState_ScheduledLocal) {
-                    m_scheduler_local_ring_table[fiber_local->current_core].Remove(fiber_local);
-                } else if (fiber_local->fiber_state == FiberState_Scheduled) {
-                    m_thread_queue.Remove(m_thread_queue.FindIterTo(fiber_local));
-                } else {
-                    ++m_runnable_fibers;
-                }
-
-                /* Insert into runnable list based on priority */
-                m_thread_queue.Insert(fiber_local);
-
-                fiber_local->fiber_state = FiberState_Scheduled;
-
-                /* Wake a sleeping core */
-                ::WakeByAddressSingle(std::addressof(m_runnable_fibers));
-
-                return;
-            }
+            void RemoveFromSchedulerUnsafe(FiberLocalStorage *fiber_local);
+            void AddToSchedulerUnsafe(FiberLocalStorage *fiber_local);
 
             void Dispatch(FiberLocalStorage *fiber_local, u32 core_number);
         public:
-            constexpr ALWAYS_INLINE UserScheduler()  : m_scheduler_lock(0) , m_scheduler_thread_table{nullptr}, m_scheduler_fiber_table{nullptr}, m_scheduler_local_ring_table{}, m_thread_queue(), m_wait_list(), m_core_mask(), m_allocated_user_threads(), m_core_count(), m_active_cores(), m_runnable_fibers(), m_handle_table() {/*...*/}
+            constexpr ALWAYS_INLINE UserScheduler()  : m_scheduler_lock(0) , m_scheduler_thread_table{nullptr}, m_scheduler_fiber_table{nullptr}, m_scheduler_local_ring_table{}, m_thread_queue(), m_wait_list(), m_core_connection(), m_allocated_user_threads(), m_default_core(), m_core_count(), m_active_cores(), m_runnable_fibers(), m_handle_table() {/*...*/}
             constexpr ~UserScheduler() {/*...*/}
 
-            void Initialize(u32 core_count);
+            void Initialize(CoreMask core_mask);
 
             u32 GetCoreCount() const { return m_core_count; }
         private:
             bool TransferFiberForSignalKey(FiberLocalStorage *waiting_fiber);
         public:
-            Result CreateThreadImpl(UKernHandle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, s32 priority, u32 core_id);
+            Result CreateThreadImpl(ukern::Handle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, s32 priority, u32 core_id);
 
-            Result StartThread(UKernHandle handle);
-            void   ExitThreadImpl(UKernHandle handle);
+            Result StartThread(ukern::Handle handle);
+            void   ExitThreadImpl(ukern::Handle handle);
 
-            Result SetPriorityImpl(UKernHandle handle, s32 priority);
-            Result SetCoreMaskImpl(UKernHandle handle, u64 new_mask);
-            Result SetActivityImpl(UKernHandle handle, u16 activity_level);
+            Result SetPriorityImpl(ukern::Handle handle, s32 priority);
+            Result SetCoreMaskImpl(ukern::Handle handle, u64 new_mask);
+            Result SetActivityImpl(ukern::Handle handle, u16 activity_level);
 
             void   SleepThreadImpl(u64 absolute_timeout);
 
-            Result ArbitrateLockImpl(UKernHandle handle, u32 *address, u32 tag);
+            Result ArbitrateLockImpl(ukern::Handle handle, u32 *address, u32 tag);
             Result ArbitrateUnlockImpl(u32 *address);
 
             Result WaitKeyImpl(u32 *address, u32 *cv_key, u32 tag, s64 absolute_timeout);
@@ -204,7 +109,7 @@ namespace awn::ukern::impl {
                 return m_scheduler_fiber_table[fiber_local->current_core];
             }
 
-            FiberLocalStorage *GetFiberByHandle(UKernHandle handle);
+            FiberLocalStorage *GetFiberByHandle(ukern::Handle handle);
         public:
             void SuspendAllOtherCoresImpl() {
 

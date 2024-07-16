@@ -21,16 +21,16 @@ namespace awn::ukern {
         private:
             friend class InternalConditionVariable;
         private:
-            UKernHandle m_handle;
+            ukern::Handle m_handle;
         public:
-            constexpr ALWAYS_INLINE InternalCriticalSection() : m_handle(0) {/*...*/}
+            constexpr ALWAYS_INLINE InternalCriticalSection() : m_handle() {/*...*/}
             constexpr ~InternalCriticalSection() {/*...*/}
 
             void Enter() {
 
                 /* Get current thread handle */
                 const ThreadType *current_thread = ukern::GetCurrentThread();
-                const UKernHandle tag            = current_thread->ukern_fiber_handle;
+                const ukern::Handle tag = current_thread->ukern_fiber_handle;
 
                 /* Acquire loop */
                 for (;;) {
@@ -58,7 +58,7 @@ namespace awn::ukern {
 
                 /* Get current thread handle */
                 const ThreadType *current_thread = ukern::GetCurrentThread();
-                const UKernHandle tag            = current_thread->ukern_fiber_handle;
+                const ukern::Handle tag = current_thread->ukern_fiber_handle;
 
                 /* Try to acquire the tag for the current thread */
                 u32 handle = 0;
@@ -71,7 +71,7 @@ namespace awn::ukern {
 
                 /* Get current thread handle */
                 const ThreadType *current_thread = ukern::GetCurrentThread();
-                const UKernHandle tag            = current_thread->ukern_fiber_handle;
+                const ukern::Handle tag = current_thread->ukern_fiber_handle;
 
                 /* Release and Unlock waiters if arbitration bit is set */
                 u32 handle = 0;
@@ -95,5 +95,5 @@ namespace awn::ukern {
                 return (m_handle & (~FiberLocalStorage::HasChildWaitersBit)) == ukern::GetCurrentThread()->ukern_fiber_handle;
             }
     };
-    static_assert(sizeof(InternalCriticalSection) == sizeof(UKernHandle));
+    static_assert(sizeof(InternalCriticalSection) == sizeof(ukern::Handle));
 }

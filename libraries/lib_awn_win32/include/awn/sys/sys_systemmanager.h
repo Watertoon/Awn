@@ -65,15 +65,17 @@ VP_ENUM_TRAITS_AUTO(awn::sys::ProductType);
 
 namespace awn::sys {
 
+    static constexpr size_t cMaxCoreCount = ukern::cMaxCoreCount;
+    using CoreMask = ukern::CoreMask;
+
     struct SystemManager {
         bool        init_guard;
-        u32         active_processor_count;
         u32         process_core_count;
-        u64         process_core_mask;
-        u64         system_core_mask;
+        u32         system_core_count;
+        CoreMask    process_core_mask;
+        CoreMask    system_core_mask;
+        HANDLE      process_handle;
         SYSTEM_INFO system_info;
-
-        static constexpr size_t cMaximumSupportedProcessorCount = 64;
     };
 
     void InitializeSystemManager();
@@ -82,8 +84,12 @@ namespace awn::sys {
 
     SystemManager *GetSystemManager();
 
-    u32 GetServiceCoreCount();
-    u32 GetCoreCount();
+    u32 GetProcessCoreCount();
+    u32 GetSystemCoreCount();
+
+    CoreMask GetProcessCoreMask();
+    Result SetProcessCoreMask(CoreMask core_mask);
+
     u32 GetCurrentCoreNumber();
     
     SYSTEM_INFO *GetSystemInfo();

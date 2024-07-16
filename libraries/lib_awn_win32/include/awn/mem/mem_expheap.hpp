@@ -62,17 +62,17 @@ namespace awn::mem {
             virtual void Finalize() override;
 
             virtual MemoryRange AdjustHeap() override;
-
             virtual size_t AdjustAllocation(void *address, size_t new_size) override;
 
             virtual void *TryAllocate(size_t size, s32 alignment) override;
-
             virtual void Free(void *address) override;
 
             virtual size_t GetTotalFreeSize() override;
 
             virtual size_t GetMaximumAllocatableSize(s32 alignment) override;
             size_t GetMaximumAllocatableSizeUnsafe(s32 alignment);
+
+            virtual bool IsEmpty() const override { return m_allocated_block_list.IsEmpty(); }
 
             virtual bool IsAddressAllocation(void *address) override;
 

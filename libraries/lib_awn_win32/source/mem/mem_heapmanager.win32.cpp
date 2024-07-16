@@ -18,7 +18,7 @@
 namespace awn::mem {
 
     namespace {
-        constinit vp::util::TypedStorage<HeapManager>   sHeapManagerStorage       = {};
+        constinit vp::util::TypedStorage<HeapManager>  sHeapManagerStorage       = {};
         constinit sys::ServiceCriticalSection          sHeapManagerCS            = {};
         constinit bool                                 sIsHeapManagerInitialized = false;
         constexpr const char *                         cRootHeapNameArray[]      = {
@@ -26,7 +26,7 @@ namespace awn::mem {
             "RootHeap1",
             "RootHeap2",
         };
-        static_assert(sizeof(cRootHeapNameArray) / sizeof(char*) == HeapManager::cMaxRootHeaps);
+        static_assert(sizeof(cRootHeapNameArray) / sizeof(char*) == cMaxRootHeapCount);
     }
 
     bool InitializeHeapManager(HeapManagerInfo *heap_manager_info) {
@@ -47,18 +47,6 @@ namespace awn::mem {
             heap_mgr->root_heap_array[i] = ExpHeap::TryCreate(cRootHeapNameArray[i], heap_manager_info->root_heap_info_array[i].arena, heap_manager_info->root_heap_info_array[i].arena_size, false);
         }
 
-        /* Query our allocation granularity */
-        //size_t allocation_granularity = 0x1000;
-    
-        /* Create our program arena */
-        //heap_mgr->memory = ::VirtualAlloc(nullptr, vp::util::AlignUp(size, allocation_granularity), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-        //VP_ASSERT(heap_mgr->memory != nullptr);
-    
-        //heap_mgr->memory_size = vp::util::AlignUp(size, allocation_granularity);
-    
-        /* Create our root heap spanning the arena */
-        //sRootHeap = ExpHeap::TryCreate(heap_mgr->memory, heap_mgr->memory_size, "HeapManager::sRootHeap", false);
-
         /* Set state */
         heap_mgr->out_of_memory_resize_alignment    = heap_manager_info->out_of_memory_resize_alignment;
         heap_mgr->out_of_memory_delegate.m_function = heap_manager_info->out_of_memory_callback;
@@ -71,7 +59,7 @@ namespace awn::mem {
 
         /* Destroy root heap */
         HeapManager *heap_mgr = vp::util::GetPointer(sHeapManagerStorage);
-        for (u32 i = 0; i < HeapManager::cMaxRootHeaps; ++i) {
+        for (u32 i = 0; i < cMaxRootHeapCount; ++i) {
             if (heap_mgr->root_heap_array[i] != nullptr) {
                 heap_mgr->root_heap_array[i]->Finalize();
                 heap_mgr->root_heap_array[i] = nullptr;
@@ -141,7 +129,7 @@ namespace awn::mem {
 
         /* If thread heaps fail fallback to the root heaps */
         HeapManager *heap_mgr = vp::util::GetPointer(sHeapManagerStorage);
-        for (u32 i = 0; i < HeapManager::cMaxRootHeaps; ++i) {
+        for (u32 i = 0; i < cMaxRootHeapCount; ++i) {
             if (heap_mgr->root_heap_array[i] == nullptr) { continue; }
 
             /* Lookup all children in root heap */
@@ -215,7 +203,7 @@ namespace awn::mem {
 
         /* Search every root heap by name */
         HeapManager *heap_mgr = vp::util::GetPointer(sHeapManagerStorage);
-        for (u32 i = 0; i < HeapManager::cMaxRootHeaps; ++i) {
+        for (u32 i = 0; i < cMaxRootHeapCount; ++i) {
             if (heap_mgr->root_heap_array[i] == nullptr) { return nullptr; }
 
             /* Lookup all children in root heap */
@@ -275,6 +263,21 @@ namespace awn::mem {
         return GetRootHeap(index)->GetTotalSize() + sizeof(mem::ExpHeap);
     }
 
+    u32  AddRootHeap(mem::Heap *heap) {
+        HeapManager *manager = vp::util::GetPointer(sHeapManagerStorage);
+        for (u32 i = 0; i < cMaxRootHeapCount; ++i) {
+            if (manager->root_heap_array[i] != nullptr) { continue; }
+            manager->root_heap_array[i] = heap;
+            return i; 
+        }
+        VP_ASSERT(false);
+    }
+    void RemoveRootHeap(u32 index) {
+        if (cMaxRootHeapCount <= index) { return; }
+        HeapManager *manager = vp::util::GetPointer(sHeapManagerStorage);
+        manager->root_heap_array[index] = nullptr;
+    }
+
     sys::ServiceCriticalSection *GetHeapManagerLock() { return std::addressof(sHeapManagerCS); }
 
     Heap *GetCurrentThreadHeap() {
@@ -300,7 +303,7 @@ namespace awn::mem {
 
         /* Search every heap by name */
         HeapManager *heap_mgr = vp::util::GetPointer(sHeapManagerStorage);
-        for (u32 i = 0; i < HeapManager::cMaxRootHeaps; ++i) {
+        for (u32 i = 0; i < cMaxRootHeapCount; ++i) {
             if (heap_mgr->root_heap_array[i] == nullptr) { return false; }
 
             /* Lookup all children in root heap */

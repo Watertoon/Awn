@@ -23,6 +23,8 @@ namespace awn::sys {
             HANDLE            m_waitable_timer_for_sleep;
             long unsigned int m_win32_thread_id;
             char              m_name[ukern::cMaxFiberNameLength];
+        public:
+            VP_RTTI_DERIVED(ServiceThread, ThreadBase);
 		public:
 			ServiceThread(const char *name, mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, s32 priority) : ThreadBase(thread_heap, run_mode, exit_code, max_messages, stack_size, priority), m_handle(INVALID_HANDLE_VALUE), m_waitable_timer_for_sleep(INVALID_HANDLE_VALUE), m_name('\0') {
 

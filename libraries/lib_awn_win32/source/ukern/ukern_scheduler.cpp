@@ -19,6 +19,62 @@ namespace awn::ukern::impl {
 
     constinit vp::util::FixedObjectAllocator<FiberLocalStorage, cMaxThreadCount> sUserFiberLocalAllocator = {};
 
+    long unsigned int UserScheduler::InternalSchedulerFiberMain(void *arg) {
+
+        /* Assume argument is the scheduler thread core number */
+        const size_t core_number = reinterpret_cast<size_t>(arg);
+
+        UserScheduler *scheduler = impl::GetScheduler();
+
+        /* Convert thread to Fiber */
+        scheduler->m_scheduler_fiber_table[core_number] = ::ConvertThreadToFiber(nullptr);
+        VP_ASSERT(scheduler->m_scheduler_fiber_table[core_number] != 0);
+
+        /* Acquire scheduler lock for first run */
+        ::AcquireSRWLockExclusive(std::addressof(scheduler->m_scheduler_lock));
+
+        /* Call into the scheduler */
+        scheduler->SchedulerFiberMain(core_number);
+
+        return 0;
+    }
+
+    void UserScheduler::InternalSchedulerMainThreadFiberMain(void *arg) {
+
+        /* Note the scheduler lock is implicitly acquired */
+        UserScheduler *scheduler = impl::GetScheduler();
+
+        /* Add main fiber to scheduler */
+        {
+            FiberLocalStorage *main_fiber = reinterpret_cast<FiberLocalStorage*>(arg);
+            if (main_fiber->fiber_state != FiberState_Waiting) {
+                scheduler->AddToSchedulerUnsafe(main_fiber);
+            }
+        }
+
+        /* Call into the scheduler */
+        scheduler->SchedulerFiberMain(0);
+
+        /* Decrement allocated count */
+        ::InterlockedExchangeSubtract(std::addressof(scheduler->m_allocated_user_threads), 1);
+
+        return;
+    }
+    
+    void UserScheduler::UserFiberMain(void *arg) {
+        FiberLocalStorage *fiber_local = reinterpret_cast<FiberLocalStorage*>(arg);
+        UserScheduler *scheduler = impl::GetScheduler();
+
+        /* Release scheduler lock for first run */
+        ::ReleaseSRWLockExclusive(std::addressof(scheduler->m_scheduler_lock));
+
+        /* Dispatch user fiber */
+        (fiber_local->user_function)(fiber_local->user_arg);
+
+        /* Exit */
+        scheduler->ExitFiberImpl();
+    }
+
     NO_RETURN void UserScheduler::SchedulerFiberMain(size_t core_num) {
 
         /* Alias core number */
@@ -52,12 +108,12 @@ namespace awn::ukern::impl {
             fiber = m_thread_queue.RemoveFront();
 
             /* Setup core mask */
-            UKernCoreMask core_mask             = fiber->core_mask;
-            const u32     runnable_thread_count = vp::util::CountOneBits64(fiber->core_mask);
+            CoreMask  core_mask             = fiber->core_mask;
+            const u32 runnable_thread_count = vp::util::CountOneBits64(fiber->core_mask);
 
             /* Check for whether the current core is preferred */
-            if (runnable_thread_count == 1 && ((core_mask & (1 << vp::util::CountRightZeroBits64(core_mask))) != 0)) { break; }
-            if (fiber->current_core == core_number && (core_mask & (1 << core_number)) != 0) { break; }
+            if (runnable_thread_count == 1 && ((core_mask & (1ull << vp::util::CountRightZeroBits64(core_mask))) != 0)) { break; }
+            if (fiber->current_core == core_number && (core_mask & (1ull << core_number)) != 0) { break; }
 
             /* Rank threads */
             LocalThreadRingBuffer *ring_buffer    = nullptr;
@@ -77,7 +133,7 @@ namespace awn::ukern::impl {
                 }
 
                 /* Clear bit */
-                core_mask = core_mask & ((~1) << other_core);
+                core_mask = core_mask & ((~1ull) << other_core);
             }
             VP_ASSERT(ring_buffer != nullptr);
 
@@ -111,7 +167,7 @@ namespace awn::ukern::impl {
             /* Find next wakeup time */
             u64 timeout_tick = 0x7fff'ffff'ffff'ffff;
             for (FiberLocalStorage &waiting_fiber : m_wait_list) {
-                if ((waiting_fiber.core_mask & (1 << core_number)) != 0  && waiting_fiber.timeout < timeout_tick)  { timeout_tick = waiting_fiber.timeout; }
+                if ((waiting_fiber.core_mask & (1ull << core_number)) != 0  && waiting_fiber.timeout < timeout_tick)  { timeout_tick = waiting_fiber.timeout; }
             }
 
             /* Release scheduler lock */
@@ -176,17 +232,70 @@ namespace awn::ukern::impl {
 
         return;
     }
+    
+    void UserScheduler::RemoveFromSchedulerUnsafe(FiberLocalStorage *fiber_local) {
 
-	void UserScheduler::Initialize(u32 core_count) {
+        /* Remove thread */
+        if (fiber_local->fiber_state == FiberState_ScheduledLocal) {
+            m_scheduler_local_ring_table[fiber_local->current_core].Remove(fiber_local);
+        } else if (fiber_local->fiber_state == FiberState_Scheduled) {
+            m_thread_queue.Remove(m_thread_queue.FindIterTo(fiber_local));
+        }
+
+        --m_runnable_fibers;
+
+        return;
+    }
+
+    void UserScheduler::AddToSchedulerUnsafe(FiberLocalStorage *fiber_local) {
+
+        /* Nothing to do for waiters */
+        if (fiber_local->fiber_state == FiberState_Waiting) { return; }
+
+        /* Handle suspension */
+        if (fiber_local->activity_level == ActivityLevel_Suspended) {
+            
+            fiber_local->fiber_state = FiberState_Suspended;
+
+            return;
+        }
+
+        /* Reschedule if necessary */
+        if (fiber_local->fiber_state == FiberState_ScheduledLocal) {
+            m_scheduler_local_ring_table[fiber_local->current_core].Remove(fiber_local);
+        } else if (fiber_local->fiber_state == FiberState_Scheduled) {
+            m_thread_queue.Remove(m_thread_queue.FindIterTo(fiber_local));
+        } else {
+            ++m_runnable_fibers;
+        }
+
+        /* Insert into runnable list based on priority */
+        m_thread_queue.Insert(fiber_local);
+
+        fiber_local->fiber_state = FiberState_Scheduled;
+
+        /* Wake a sleeping core */
+        ::WakeByAddressSingle(std::addressof(m_runnable_fibers));
+
+        return;
+    }
+
+	void UserScheduler::Initialize(CoreMask core_mask) {
+
+        VP_ASSERT(core_mask != 0);
 
 		/* Get and set initial core count */
-		m_active_cores = core_count;
-		m_core_count   = core_count;
-        m_core_mask    = ~((~1) << core_count);
+		m_active_cores = vp::util::CountOneBits64(core_mask);
+		m_core_count   = vp::util::CountOneBits64(core_mask);
+        m_core_connection.SetBitMask(0, core_mask);
 
-		/* Set main thread core mask to core 0 */
-		const u64 main_thread_mask = 1;
+		/* Convert this thread to primary core */
+        CoreConnection::Iterator core_mask_iter = m_core_connection.begin();
+        const u32 primary_core = *core_mask_iter;
+        ++core_mask_iter;
+		const u64 main_thread_mask = (1ull << (primary_core & (BITSIZEOF(CoreMask) - 1)));
 		::SetThreadAffinityMask(::GetCurrentThread(), main_thread_mask);
+        m_default_core = primary_core;
 
         /* Initialize handle table */
         m_handle_table.Initialize();
@@ -195,22 +304,22 @@ namespace awn::ukern::impl {
 		HANDLE main_thread_handle = nullptr;
 		const bool result0 = ::DuplicateHandle(::GetCurrentProcess(), ::GetCurrentThread(), ::GetCurrentProcess(), std::addressof(main_thread_handle), 0, false, DUPLICATE_SAME_ACCESS);
         VP_ASSERT(result0 == true);
-		m_scheduler_thread_table[0] = main_thread_handle;
+		m_scheduler_thread_table[primary_core] = main_thread_handle;
 
 		/* Setup main thread fiber local */
 		FiberLocalStorage *main_fiber_local = sUserFiberLocalAllocator.Allocate();
 
 		main_fiber_local->priority           = cPriorityNormal;
-		main_fiber_local->current_core       = 0;
-		main_fiber_local->core_mask          = 1;
+		main_fiber_local->current_core       = primary_core;
+		main_fiber_local->core_mask          = main_thread_mask;
 		main_fiber_local->fiber_state        = FiberState_Running;
 		main_fiber_local->activity_level     = ActivityLevel_Schedulable;
         main_fiber_local->win32_fiber_handle = ::ConvertThreadToFiber(main_fiber_local);
         VP_ASSERT(main_fiber_local->win32_fiber_handle != nullptr);
 
         /* Create main thread scheduler fiber */
-		m_scheduler_fiber_table[0] = ::CreateFiber(0x2000, InternalSchedulerMainThreadFiberMain, main_fiber_local);
-        VP_ASSERT(m_scheduler_fiber_table[0] != nullptr);
+		m_scheduler_fiber_table[primary_core] = ::CreateFiber(0x2000, InternalSchedulerMainThreadFiberMain, main_fiber_local);
+        VP_ASSERT(m_scheduler_fiber_table[primary_core] != nullptr);
 
         /* Reserve main thread */
 		const bool result1 = m_handle_table.ReserveHandle(std::addressof(main_fiber_local->ukern_fiber_handle), main_fiber_local);
@@ -219,30 +328,35 @@ namespace awn::ukern::impl {
 		this->SetInitialFiberNameUnsafe(main_fiber_local);
 
 		/* Allocate scheduler worker fibers */
-		for (u32 i = 1; i < core_count; ++i) {
-			m_scheduler_thread_table[i] = ::CreateThread(nullptr, 0x1000, InternalSchedulerFiberMain, reinterpret_cast<void*>(i), CREATE_SUSPENDED, nullptr);
-			VP_ASSERT(m_scheduler_thread_table[i] != INVALID_HANDLE_VALUE);
+        CoreConnection::Iterator end_iter = m_core_connection.end();
+		while (core_mask_iter != end_iter) {
+            ON_SCOPE_EXIT {
+                ++core_mask_iter;
+            };
+            const u32 core_index = *core_mask_iter;
+			m_scheduler_thread_table[core_index] = ::CreateThread(nullptr, 0x1000, InternalSchedulerFiberMain, reinterpret_cast<void*>(core_index), CREATE_SUSPENDED, nullptr);
+			VP_ASSERT(m_scheduler_thread_table[core_index] != INVALID_HANDLE_VALUE);
 
-            u64 secondary_mask = (1 << i);
-			::SetThreadAffinityMask(m_scheduler_thread_table[i], secondary_mask);
-			::ResumeThread(m_scheduler_thread_table[i]);
+            const u64 thread_mask = (1ull << (core_index & (BITSIZEOF(CoreMask) - 1)));
+			::SetThreadAffinityMask(m_scheduler_thread_table[core_index], thread_mask);
+			::ResumeThread(m_scheduler_thread_table[core_index]);
 		}
 
 		return;
 	}
 
-    FiberLocalStorage *UserScheduler::GetFiberByHandle(UKernHandle handle) {
+    FiberLocalStorage *UserScheduler::GetFiberByHandle(ukern::Handle handle) {
         return reinterpret_cast<FiberLocalStorage*>(m_handle_table.GetObjectByHandle(handle));
     }
 
     /* Service api */
-    Result UserScheduler::CreateThreadImpl(UKernHandle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, s32 priority, u32 core_id) {
+    Result UserScheduler::CreateThreadImpl(ukern::Handle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, s32 priority, u32 core_id) {
 
         /* Integrity checks */
         RESULT_RETURN_UNLESS(thread_func != nullptr,              ResultInvalidThreadFunctionPointer);
         RESULT_RETURN_UNLESS(stack_size  != 0,                    ResultInvalidStackSize);
         RESULT_RETURN_UNLESS(-2 <= priority && priority <= 2,     ResultInvalidPriority);
-        RESULT_RETURN_UNLESS(core_id == cDefaultCoreId || ((1 << core_id) & m_core_mask) != 0, ResultInvalidCoreId);
+        RESULT_RETURN_UNLESS(core_id == cDefaultCoreId || m_core_connection.GetBit(core_id) == true, ResultInvalidCoreId);
 
         /* Lock the scheduler */
         ScopedSchedulerLock lock(this);
@@ -259,7 +373,7 @@ namespace awn::ukern::impl {
         /* Set fiber args */
         fiber_local->priority       = priority + cWindowsToUKernPriorityOffset;
         fiber_local->stack_size     = stack_size;
-        fiber_local->core_mask      = (core_id == cDefaultCoreId) ? cDefaultCoreIdMask : (1 << core_id);
+        fiber_local->core_mask      = (core_id == cDefaultCoreId) ? (1ull << m_default_core) : (1ull << core_id);
         fiber_local->user_arg       = reinterpret_cast<void*>(arg);
         fiber_local->user_function  = thread_func;
         fiber_local->fiber_state    = FiberState_Suspended;
@@ -291,7 +405,7 @@ namespace awn::ukern::impl {
         ::SwitchToFiber(this->GetSchedulerFiber(fiber_local));
     }
 
-    void UserScheduler::ExitThreadImpl(UKernHandle handle) {
+    void UserScheduler::ExitThreadImpl(ukern::Handle handle) {
 
         /* Get fiber by handle */
         FiberLocalStorage *exit_fiber = this->GetFiberByHandle(handle);
@@ -305,7 +419,7 @@ namespace awn::ukern::impl {
         return;
     }
 
-    Result UserScheduler::SetPriorityImpl(UKernHandle handle, s32 priority) {
+    Result UserScheduler::SetPriorityImpl(ukern::Handle handle, s32 priority) {
 
         /* Verify input */
         RESULT_RETURN_IF(-2 <= priority && priority <= 2, ResultInvalidPriority);
@@ -329,10 +443,11 @@ namespace awn::ukern::impl {
         RESULT_RETURN_SUCCESS;
     }
 
-    Result UserScheduler::SetCoreMaskImpl(UKernHandle handle, UKernCoreMask core_mask) {
+    Result UserScheduler::SetCoreMaskImpl(ukern::Handle handle, CoreMask core_mask) {
 
         /* Integrity check */
-        RESULT_RETURN_IF((core_mask & (~m_core_mask)) != 0, ResultInvalidCoreMask);
+        const CoreMask mask = m_core_connection.GetBitMask(0);
+        RESULT_RETURN_IF((core_mask & (~mask)) != 0, ResultInvalidCoreMask);
 
         /* Get fiber by handle  */
         FiberLocalStorage *fiber_local = this->GetFiberByHandle(handle);
@@ -353,7 +468,7 @@ namespace awn::ukern::impl {
         RESULT_RETURN_SUCCESS;
     }
 
-    Result UserScheduler::SetActivityImpl(UKernHandle handle, u16 activity_level) {
+    Result UserScheduler::SetActivityImpl(ukern::Handle handle, u16 activity_level) {
 
         /* Get fiber by handle  */
         FiberLocalStorage *fiber_local = this->GetFiberByHandle(handle);
@@ -399,7 +514,7 @@ namespace awn::ukern::impl {
         return;
     }
 
-    Result UserScheduler::ArbitrateLockImpl(UKernHandle handle, u32 *lock_address, u32 tag) {
+    Result UserScheduler::ArbitrateLockImpl(ukern::Handle handle, u32 *lock_address, u32 tag) {
 
         /* Integrity checks */
         RESULT_RETURN_UNLESS(lock_address != nullptr, ResultInvalidAddress);

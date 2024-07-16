@@ -28,7 +28,7 @@ namespace awn::ukern {
         SignalType_SignalAndModifyByWaiterCountIfEqual
     };
 
-    Result ArbitrateLock(UKernHandle handle, uintptr_t address, u32 tag);
+    Result ArbitrateLock(ukern::Handle handle, uintptr_t address, u32 tag);
     Result ArbitrateUnlock(uintptr_t address);
 
     Result WaitKey(uintptr_t address, uintptr_t cv_key, u32 tag, s64 timeout_ns);

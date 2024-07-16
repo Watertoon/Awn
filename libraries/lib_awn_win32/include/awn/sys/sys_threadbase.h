@@ -25,7 +25,7 @@ namespace awn::sys {
     using TlsDestructor = void (*)(void*);
     using TlsSlot       = u32;
 
-    using CoreMask = ukern::UKernCoreMask;
+    using CoreMask = ukern::CoreMask;
 
     class ThreadManager;
 
@@ -46,6 +46,8 @@ namespace awn::sys {
             u32                          m_run_mode;
             void                        *m_tls_slot_array[cMaxThreadTlsSlotCount];
             vp::util::IntrusiveListNode  m_thread_manager_list_node;
+        public:
+            VP_RTTI_BASE(ThreadBase);
         protected:
             static void InternalThreadMain(void *arg);
             static long unsigned int InternalServiceThreadMain(void *arg);

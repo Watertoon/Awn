@@ -17,7 +17,9 @@
 
 namespace vp::util {
 
+    constexpr inline float cFloatNan                = NAN;
     constexpr inline float cFloatInfinity           = INFINITY;
+    constexpr inline float cFloatNegativeInfinity   = -INFINITY;
     constexpr inline float cFloatEpsilon            = 9.094947e-14;
     constexpr inline float cFloatPi                 = 3.1415927;
     constexpr inline float cFloat2Pi                = 6.2831855;
@@ -36,6 +38,62 @@ namespace vp::util {
     constexpr inline double cDouble1Divided2Pi        = 0.15915494;
     constexpr inline double cDoubleDegree180          = 180.0;
     constexpr inline double cDoubleMax                = DBL_MAX;
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr bool IsInf(T value) { return std::isinf(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr bool IsNan(T value) { return std::isnan(value); }
+    
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T Abs(T value) { return std::abs(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T Fmod(T value0, T value1) { return std::fmod(value0, value1); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T Fma(T value0, T value1, T addend) { return std::fma(value0, value1, addend); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T Sin(T value) { return std::sin(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T Cos(T value) { return std::cos(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T Tan(T value) { return std::tan(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T ArcSin(T value) { return std::asin(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T ArcCos(T value) { return std::acos(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T ArcTan(T value) { return std::atan(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T ArcTan2(T value0, T value1) { return std::atan(value0, value1); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T Sqrt(T value) { return std::sqrt(value); }
+
+    template <typename T>
+        requires (std::is_floating_point<T>::value)
+    constexpr T Pow(T value, s32 exponent) { return std::pow(value, exponent); }
 
     template<typename T, T Degrees> requires std::is_floating_point<T>::value
     constexpr inline T TRadians = (Degrees * cFloatPi / cFloatDegree180);

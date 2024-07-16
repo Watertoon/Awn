@@ -25,7 +25,7 @@ namespace awn::ukern {
         }
     }
 
-    void InitializeUKern(u32 core_count) {
-        impl::SchedulerInstance.Initialize(core_count);
+    void InitializeUKern(CoreMask core_mask) {
+        impl::SchedulerInstance.Initialize(core_mask);
     }
 }

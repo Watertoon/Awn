@@ -34,7 +34,7 @@ namespace vp::res {
 
 		constexpr u32 GetU32() {
 
-            /* Calculate value */
+            /* Calculate value (Xorshift128) */
 			const u32 hash0 = state0 ^ (state0 << 0xb);
 			const u32 hash1 = state3;
 			const u32 value = hash0 ^ (hash0 >> 8) ^ hash1 ^ (hash1 >> 0x13);

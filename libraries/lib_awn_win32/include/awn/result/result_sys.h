@@ -18,4 +18,5 @@
 namespace awn::sys {
 
     DECLARE_RESULT_MODULE(11);
+    DECLARE_RESULT(InvalidCoreMask, 21);
 }

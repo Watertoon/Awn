@@ -121,13 +121,22 @@ namespace vp::util {
             constexpr EnumDictionary(const char *class_name, const T *value_array) : EnumDictionaryBase(class_name), m_value_array(value_array), m_res_dic() {/*...*/}
             virtual constexpr ~EnumDictionary() override {/*...*/}
 
-            constexpr u32 GetEnumIndexByName(const char *enum_value_name) const {
+            constexpr bool GetEnumIndexByName(u32 *out_index, const char *enum_value_name) const {
                 const u32 index = m_res_dic.TryGetEntryIndexByKey(enum_value_name);
-                return index;
+                if (index == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex) { return false; }
+                *out_index = index;
+                return true;
+            }
+            constexpr bool GetEnumIndexByValue(u32 *out_index, T enum_value) const {
+                for (u32 i = 0; i < m_res_dic.node_count; ++i) {
+                    if (enum_value == m_value_array[i]) { *out_index = i; return true; }
+                }
+                return false;
             }
             constexpr bool GetEnumValueByName(T *out_value, const char *enum_value_name) const {
-                const u32 index = this->GetEnumIndexByName(enum_value_name);
-                if (index == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex) { return false; }
+                u32 index;
+                const bool result = this->GetEnumIndexByName(std::addressof(index), enum_value_name);
+                if (!result) { return false; }
                 *out_value = static_cast<T>(m_value_array[index]);
                 return true;
             }

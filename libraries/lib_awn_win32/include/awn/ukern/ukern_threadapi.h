@@ -23,20 +23,20 @@ namespace awn::ukern {
         UserScheduler *GetScheduler();
     }
 
-    Result CreateThread(UKernHandle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, u32 priority, u32 core_id);
-    void   ExitThread(UKernHandle handle);
+    Result CreateThread(ukern::Handle *out_handle, ThreadFunction thread_func, uintptr_t arg, size_t stack_size, u32 priority, u32 core_id);
+    void   ExitThread(ukern::Handle handle);
 
-    Result StartThread(UKernHandle handle);
-    Result ResumeThread (UKernHandle handle);
-    Result SuspendThread(UKernHandle handle);
+    Result StartThread(ukern::Handle handle);
+    Result ResumeThread (ukern::Handle handle);
+    Result SuspendThread(ukern::Handle handle);
 
-    void   SetThreadName(UKernHandle handle, const char *name);
-    void   SetThreadNamePointer(UKernHandle handle, const char *name);
-    Result SetThreadPriority(UKernHandle handle, u32 priority);
-    Result SetThreadCoreMask(UKernHandle handle, UKernCoreMask core_mask);
+    void   SetThreadName(ukern::Handle handle, const char *name);
+    void   SetThreadNamePointer(ukern::Handle handle, const char *name);
+    Result SetThreadPriority(ukern::Handle handle, u32 priority);
+    Result SetThreadCoreMask(ukern::Handle handle, CoreMask core_mask);
 
-    Result GetThreadPriority(u32 *out_priority, UKernHandle handle);
-    Result GetThreadCoreMask(UKernCoreMask *out_core_mask, UKernHandle handle);
+    Result GetThreadPriority(u32 *out_priority, ukern::Handle handle);
+    Result GetThreadCoreMask(CoreMask *out_core_mask, ukern::Handle handle);
 
     void Sleep(TimeSpan timeout_span);
     void YieldThread();

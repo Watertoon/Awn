@@ -84,7 +84,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE void PushBack(T value) {
 
                 /* Check count */
-                VP_ASSERT(Size > m_count);
+                VP_ASSERT(!this->IsFull());
 
                 /* Increment count */
                 const u32 count = m_count;
@@ -101,7 +101,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE void PushFront(T value) {
 
                 /* Check count */
-                VP_ASSERT(Size > m_count);
+                VP_ASSERT(!this->IsFull());
 
                 /* Increment count */
                 const u32 count = m_count;
@@ -128,6 +128,15 @@ namespace vp::util {
                 return ret;
             }
 
+            constexpr ALWAYS_INLINE bool DropFront() {
+                const u32 count = m_count;
+                if (count == 0) { return false; }
+                const u32 offset = m_offset;
+                m_offset = (offset + 1 < Size) ? (offset + 1) : 0;
+                m_count = count - 1;
+                return true;
+            }
+
             constexpr ALWAYS_INLINE T RemoveFront() {
 
                 /* Check count */
@@ -148,25 +157,32 @@ namespace vp::util {
             constexpr ALWAYS_INLINE T PeekBack() const {
 
                 /* Check count */
-                const u32 count = m_count - 1;
+                const u32 count = m_count;
                 if (count == 0) { return 0; }
 
                 /* Get pointer */
-                const u32 offset = m_offset + count;
+                const u32 offset = m_offset + count - 1;
                 const u32 wrap = (Size <= offset) ? Size : 0;
                 T ret = m_array[offset - wrap];
 
                 return ret;
             }
-        
+
+            constexpr ALWAYS_INLINE bool DropBack() {
+                const u32 count = m_count;
+                if (count == 0) { return false; }
+                m_count = count - 1;
+                return true;
+            }
+
             constexpr ALWAYS_INLINE T RemoveBack() {
 
                 /* Check count */
-                const u32 count = m_count - 1;
+                const u32 count = m_count;
                 if (count == 0) { return 0; }
 
                 /* Get pointer */
-                const u32 offset = m_offset + count;
+                const u32 offset = m_offset + count - 1;
                 const u32 wrap = (Size <= offset) ? Size : 0;
                 T ret = m_array[offset - wrap];
 
@@ -217,12 +233,16 @@ namespace vp::util {
                 m_count  = 0;
             }
 
-            constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; } 
+            constexpr ALWAYS_INLINE bool IsEmpty() const { return m_count == 0; }
+            constexpr ALWAYS_INLINE bool IsFull() const { return (Size <= m_count); }
+            constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; }
 	};
 
 	template<typename T, u32 Size>
         requires (vp::util::CountOneBits32(Size) == 1)
 	class AtomicFixedRingBuffer {
+        public:
+            static constexpr uintptr_t cRemoveValue = 0xffff'ffff'ffff'ffff;
 		private:
 			u32 m_offset;
 			u32 m_count;
@@ -231,7 +251,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE AtomicFixedRingBuffer() : m_offset(0), m_count(0), m_array{} {/*...*/}
             constexpr ~AtomicFixedRingBuffer() {/*...*/}
 
-            constexpr ALWAYS_INLINE void Insert(T value) {
+            void PushBack(T value) {
 
                 /* Integrity checks */
                 VP_ASSERT(value != 0);
@@ -244,24 +264,56 @@ namespace vp::util {
                 VP_ASSERT(offset < Size);
 
                 /* Placeback value */
-                m_array[(Size - 1) & count] = value;
+                m_array[count & (Size - 1)] = value;
             }
 
-            constexpr ALWAYS_INLINE T RemoveFront() {
+            void PushFront(T value) {
 
-                /* Check count */
-                const u32 offset = m_offset;
-                if ((m_count - offset) != 0) { return 0; }
+                /* Integrity checks */
+                VP_ASSERT(value != 0);
 
-                /* Try to acquire value */
-                T ret = m_array[(Size - 1) & offset];
-                if (ret == 0) { return 0; }
+                /* Increment count */
+                const u32 count = vp::util::InterlockedIncrement(std::addressof(m_count));
 
-                /* Increment queue */
-                m_array[(Size - 1) & offset] = 0;
-                m_offset = offset + 1;
+                /* Calculate offset */
+                const u32 offset = count - m_offset;
+                VP_ASSERT(offset < Size);
 
-                return ret;
+                /* Placeback value */
+                m_array[count & (Size - 1)] = value;
+            }
+
+            T RemoveFront() {
+
+                /* Attempt to read the next item in the queue */
+                const u32 max_mask = (Size - 1);
+                u32 offset = m_offset;
+                while (0 < m_count - offset) {
+
+                    /* Check if next element is available */
+                    T ret = m_array[offset & max_mask];
+                    if (ret == 0) {
+                        vp::util::MemoryBarrierRelease();
+
+                        /* Retry if a new element was added */
+                        const u32 next_offset = m_offset;
+                        if (next_offset == offset) { return 0; }
+                        offset = next_offset;
+                        continue;
+                    }
+
+                    /* Reserve the element as ours */
+                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(offset), std::addressof(m_offset), offset + 1, offset);
+                    if (!result) { continue; }
+
+                    /* Take the element */
+                    vp::util::MemoryBarrierRelease();
+                    m_array[offset & max_mask] = 0;
+
+                    return ret;
+                }
+
+                return 0;
             }
 
             constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; } 

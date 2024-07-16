@@ -110,5 +110,8 @@ namespace vp::util {
             constexpr void SetBit(u32 bit_index)       { m_mask_array[bit_index / BITSIZEOF(T)] |= (static_cast<T>(1) << (bit_index & (BITSIZEOF(T) - 1))); }
             constexpr void ClearBit(u32 bit_index)     { m_mask_array[bit_index / BITSIZEOF(T)] &= ~(static_cast<T>(1) << (bit_index & (BITSIZEOF(T) - 1))); }
             constexpr void XorBit(u32 bit_index)       { m_mask_array[bit_index / BITSIZEOF(T)] ^= (static_cast<T>(1) << (bit_index & (BITSIZEOF(T) - 1))); }
+
+            constexpr T GetBitMask(u32 mask_index) { return m_mask_array[mask_index]; }
+            constexpr void SetBitMask(u32 mask_index, T mask) { m_mask_array[mask_index] = mask; }
     };
 }

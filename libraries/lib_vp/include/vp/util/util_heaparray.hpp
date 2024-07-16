@@ -137,8 +137,8 @@ namespace vp::util {
                 requires (std::is_same<ParentType<Member>, T>::value)
             constexpr void SortOn() {
                 struct CompareMember {
-                    constexpr bool operator()(ParentType<Member> *lhs, ParentType<Member> *rhs) {
-                        return lhs->*Member < rhs->*Member;
+                    constexpr bool operator()(const ParentType<Member> &lhs, const ParentType<Member> &rhs) {
+                        return lhs.*Member < rhs.*Member;
                     }
                 };
                 std::sort(m_object_array, m_object_array + m_array_count, CompareMember());
@@ -150,11 +150,11 @@ namespace vp::util {
             constexpr bool BinarySearchOn(u32 *out_index, const MemberType<MemberPtr> &find_element) {
 
                 /* Binary search for find element */
-                u32 entry_index = m_array_count / 2;
-                u32 high_iter   = m_array_count;
-                u32 low_iter    = 0;
-                u32 i           = 0;
-                T   current_obj = std::addressof(m_object_array[entry_index]);
+                u32  entry_index = m_array_count / 2;
+                u32  high_iter   = m_array_count;
+                u32  low_iter    = 0;
+                u32  i           = 0;
+                T   *current_obj = std::addressof(m_object_array[entry_index]);
                 while (find_element != current_obj->*MemberPtr) {
 
                     u32 result = entry_index;

@@ -17,12 +17,12 @@
 
 namespace awn::ukern {
 
-    typedef u32    UKernHandle;
-    typedef size_t UKernCoreMask;
+    using Handle = u32;
+    using CoreMask = u64;
 
     using ThreadFunction = void (*)(void *);
 
-    constexpr inline UKernHandle cInvalidHandle                = 0xffff'ffff;
+    constexpr inline ukern::Handle cInvalidHandle              = 0xffff'ffff;
     constexpr inline size_t      cMaxFiberNameLength           = 32;
     constexpr inline s64         cWindowsToUKernPriorityOffset = 2;
     constexpr inline size_t      cMainThreadHandle             = 1;
@@ -53,12 +53,12 @@ namespace awn::ukern {
     struct FiberLocalStorage {
         s32                          priority;
         u32                          current_core;
-        UKernCoreMask                core_mask;
+        CoreMask                     core_mask;
         size_t                       stack_size;
         void*                        user_arg;
         ThreadFunction               user_function;
         bool                         is_suspended;
-        UKernHandle                  ukern_fiber_handle;
+        ukern::Handle                ukern_fiber_handle;
         void                        *win32_fiber_handle;
         vp::util::IntrusiveListNode  wait_list_node;
 

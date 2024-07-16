@@ -26,13 +26,17 @@ namespace awn::async {
             DependencyJobThreadControl  m_thread_control;
             sys::Event                  m_finish_event;
             DependencyJobQueue         *m_queue;
+            DependencyJobThreadManager *m_thread_manager;
         public:
-             DependencyJobThread(const char *name, mem::Heap *heap, u32 stack_size, u32 priority) : Thread(name, heap, sys::ThreadRunMode::WaitForMessage, 0, 8, stack_size, priority), m_thread_control(), m_finish_event(), m_queue() {/*...*/}
+            VP_RTTI_DERIVED(DependencyJobThread, sys::Thread);
+        public:
+             DependencyJobThread(DependencyJobThreadManager *thread_manager, const char *name, mem::Heap *heap, u32 stack_size, u32 priority) : Thread(name, heap, sys::ThreadRunMode::WaitForMessage, 0, 8, stack_size, priority), m_thread_control(), m_finish_event(), m_queue(), m_thread_manager(thread_manager) {/*...*/}
             ~DependencyJobThread() {/*...*/}
 
             virtual void ThreadMain(size_t message) override;
 
             constexpr void SetJobQueue(DependencyJobQueue *queue) { m_queue = queue; }
+            constexpr DependencyJobThreadManager *GetThreadManager() { return m_thread_manager; }
     };
 
     class DependencyJobThreadManager {

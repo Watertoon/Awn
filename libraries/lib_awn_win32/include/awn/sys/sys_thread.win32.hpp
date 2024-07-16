@@ -20,7 +20,9 @@ namespace awn::sys {
 
     class Thread : public ThreadBase {
         private:
-            ukern::UKernHandle m_thread_handle;
+            ukern::Handle m_thread_handle;
+        public:
+            VP_RTTI_DERIVED(Thread, ThreadBase);
         public:
             Thread(const char *name, mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, s32 priority) : ThreadBase(thread_heap, run_mode, exit_code, max_messages, stack_size, priority), m_thread_handle(0) {
 
