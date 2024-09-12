@@ -1,44 +1,60 @@
 # Awn
 Awn is a personal C++ library designed to power low-latency multi-threaded real-time applications.
 
+# Awn Features
+* An asynchronous file resource manager for real-time file streaming
+* A parameter system to autogenerate and manage parameter classes for binary data using the byaml file format
+* A platform agnositic threading api implementing synchronization primitives
+* A CPU and GPU heap tree memory manager for real-time allocations and memory monitoring
+* A graphics api based around supporting file formats reversed from games containing NintendoWare libraries
+* Basic mouse and keyboard support
+
 # Vp
-Vp is an included personal C++ library designed to carry common utilities and file format definitions in a more portable form than Awn.
+Vp is a personal C++ library designed to portably carry common utilities and file format definitions.
 
 # Vp Features
-* Linear Algebra math library
-* Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats
-* Yaz0 decompressor for Nintendo szs files and Zstd wrapper
-* Common hash algorithms, crc32b, murmur3, and murmur64
+* Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
+  * Bea (Bezel Engine Archive)
+  * Bffnt (Binary Cafe Font)
+  * Bfres (Binary Cafe Resource)
+  * Bfsha (Binary Cafe Shader Archive)
+  * Bnsh (Binary Nintendo Shader)
+  * Bntx (Binary Nintendo Texture Archive)
+  * Byaml (Binary Yet Another Markup Language)
+  * Bwav (Binary Wave)
+  * Common nn::util and NintendoWare gfx structures and enums
+  * rsizetable (Resource Size Table)
+  * sarc (sead Archive?)
+* Zstd streaming decompression and Yaz0 decompressor for Nintendo szs files
+* Hash algorithms, crc32b, murmur3, and murmur64
+* Avx2 SIMD linear algebra algorithms for fast 3d transformations and projections
 * Common utilities
   * Scope Guard
   * Structured Error Handling
 * Common Data Structures
-  * Red Black Tree (Map)
-  * Ring Buffer (circular queue)
-  * Handle Table (index allocator)
-  * Intrusive List (Bi-directional Linked List)
-  * Priority Queue
-  * Hash Map
-  * Dependency graph (connection mask)
-  * Pointer Array
-  * Frame Array
-  * Heap Array
-  * Fixed String
+  * Red Black Trees
+  * Ring Buffers
+  * Handle Tables
+  * Intrusive Lists
+  * Priority Queues
+  * Hash Maps
+  * Bit arrays
+  * Pointer Arrays
+  * Frame Arrays
+  * Heap Arrays
+  * Fixed Strings
 
-# Awn Features
-* An asynchronous file resource manager for real-time file streaming
-* A parameter system to autogenerate and manage parameter classes for binary data
-* A thread manager designed to emulate cooperative threading
-* A CPU and GPU memory manager designed for real-time allocations
-* Graphics wrapper api
-* Basic mouse and keyboard support
-* Base framework for a mainloop with a single window
+# Wrapping up development (Finalzing)
+* A multi-threaded main loop based on dependency graphs
+* Acpcm to Pcm16 decoding and Pcm16 to Pcm24 and Pcm Float conversion
 
-# In Development
-* An AI behavior tree system
-* A revamped multi-threaded framework based on dependency graphs
+# In Development (prototyping)
+* An audio renderer for mixing, applying effects, and outputing pcm16, adpcm, and opus encoded audio
 * An Actor and Scene system
-* A UI and Font system utilizing the reverse engineered bflyt format
+* An AI behavior tree system for scripting actor and scene behavior
+* A model scene system for managing the rendering of 3d models
+* A UI and Font system implementing the reverse engineered bflyt format
+* Wiimote, Npad (Nintendo Switch), PS4, and XInput controller support
 
 # System Requirements
 * The user's Vulkan implementation must conform to all the limits and features enforced by awn::gfx::Context which include but are not limited to:
@@ -46,7 +62,7 @@ Vp is an included personal C++ library designed to carry common utilities and fi
   * Descriptor Buffers
   * Shader Objects
   * Resizable-Bar
-* Requires an x86_64 CPU with AVX2, PCLMUL, RDTSC, and POPCNT
+* Requires an x86_64 CPU with AVX2 and PCLMUL
 
 # Footnote
 Built for Windows 10 with GCC 14.1 and gnu make from MSYS2. 
@@ -54,8 +70,10 @@ Build instructions:
 1. Install MSYS2 
 2. From MSYS2 install the standard GCC package
 3. Run the newly installed Make program from the command line in the root project directory
-4. Use the relevant libraries in other programs.
+4. Link the relevant libraries in other programs
 
-I'm informed by reverse engineering, text books, free online resources, and api documentation. I believe to be conformant with respect to my references.
+I'm informed by reverse engineering, text books, free online resources, word on the street, and api documentation. I believe to be conformant with respect to my references.
+
+This repo is currently not all of the project but irregular partial snapshots.
 
 If there are problems of any kind please file an issue or contact me and I'll do my best to resolve the issue.
