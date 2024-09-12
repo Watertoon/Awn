@@ -102,8 +102,9 @@ namespace vp::res {
                 return *this;
             }
 
+            constexpr ALWAYS_INLINE bool IsDictionary()     const { return IsDictionaryType(static_cast<ByamlDataType>(m_container_data.data_type)); }
             constexpr ALWAYS_INLINE bool IsValid()          const { return m_byaml != nullptr; }
-            constexpr ALWAYS_INLINE bool IsContainerValid() const { return (IsContainerType(static_cast<ByamlDataType>(m_container_data.data_type)) == true) & (m_container_data.u32_value != 0); }
+            constexpr ALWAYS_INLINE bool IsContainerValid() const { return (IsContainerType(static_cast<ByamlDataType>(m_container_data.data_type))) && (m_container_data.u32_value != 0); }
 
             constexpr ALWAYS_INLINE ByamlData GetDataByIterator() const { return m_container_data; }
 

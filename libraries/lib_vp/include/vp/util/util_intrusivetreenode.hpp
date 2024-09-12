@@ -33,7 +33,7 @@ namespace vp::util {
                 }
             }
         public:
-            constexpr IntrusiveTreeNode() : m_parent(nullptr), m_child(nullptr), m_sibling_next(nullptr), m_sibling_prev(nullptr) {/*...*/}
+            constexpr IntrusiveTreeNode() : m_parent(), m_child(), m_sibling_next(), m_sibling_prev() {/*...*/}
             constexpr ~IntrusiveTreeNode() {/*...*/}
 
             constexpr void Clear() {

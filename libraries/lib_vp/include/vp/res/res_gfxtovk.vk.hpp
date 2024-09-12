@@ -17,6 +17,18 @@
 
 namespace vp::res {
 
+    constexpr inline VkImageTiling GfxTileModeToVkImageTiling(GfxTileMode tile_mode) {
+        switch (tile_mode) {
+            case GfxTileMode::Optimal:
+                return VK_IMAGE_TILING_OPTIMAL;
+            case GfxTileMode::Linear:
+                return VK_IMAGE_TILING_LINEAR;
+            default:
+                break;
+        }
+        return VK_IMAGE_TILING_OPTIMAL;
+    }
+
     constexpr inline VkSamplerAddressMode GfxWrapModeToVkSamplerAddressMode(GfxWrapMode wrap_mode) {
         switch (wrap_mode) {
             case GfxWrapMode::Repeat:
@@ -558,61 +570,61 @@ namespace vp::res {
                 return VK_FORMAT_BC7_UNORM_BLOCK;
             case GfxImageFormat::BC7U_SRGB:
                 return VK_FORMAT_BC7_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_4X4_Unorm:
+            case GfxImageFormat::ASTC_4x4_Unorm:
                 return VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_4X4_SRGB:
+            case GfxImageFormat::ASTC_4x4_SRGB:
                 return VK_FORMAT_ASTC_4x4_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_5X4_Unorm:
+            case GfxImageFormat::ASTC_5x4_Unorm:
                 return VK_FORMAT_ASTC_5x4_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_5X4_SRGB:
+            case GfxImageFormat::ASTC_5x4_SRGB:
                 return VK_FORMAT_ASTC_5x4_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_5X5_Unorm:
+            case GfxImageFormat::ASTC_5x5_Unorm:
                 return VK_FORMAT_ASTC_5x5_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_5X5_SRGB:
+            case GfxImageFormat::ASTC_5x5_SRGB:
                 return VK_FORMAT_ASTC_5x5_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_6X5_Unorm:
+            case GfxImageFormat::ASTC_6x5_Unorm:
                 return VK_FORMAT_ASTC_6x5_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_6X5_SRGB:
+            case GfxImageFormat::ASTC_6x5_SRGB:
                 return VK_FORMAT_ASTC_6x5_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_6X6_Unorm:
+            case GfxImageFormat::ASTC_6x6_Unorm:
                 return VK_FORMAT_ASTC_6x6_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_6X6_SRGB:
+            case GfxImageFormat::ASTC_6x6_SRGB:
                 return VK_FORMAT_ASTC_6x6_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_8X5_Unorm:
+            case GfxImageFormat::ASTC_8x5_Unorm:
                 return VK_FORMAT_ASTC_8x5_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_8X5_SRGB:
+            case GfxImageFormat::ASTC_8x5_SRGB:
                 return VK_FORMAT_ASTC_8x5_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_8X6_Unorm:
+            case GfxImageFormat::ASTC_8x6_Unorm:
                 return VK_FORMAT_ASTC_8x6_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_8X6_SRGB:
+            case GfxImageFormat::ASTC_8x6_SRGB:
                 return VK_FORMAT_ASTC_8x6_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_8X8_Unorm:
+            case GfxImageFormat::ASTC_8x8_Unorm:
                 return VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_8X8_SRGB:
+            case GfxImageFormat::ASTC_8x8_SRGB:
                 return VK_FORMAT_ASTC_8x8_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_10X5_Unorm:
+            case GfxImageFormat::ASTC_10x5_Unorm:
                 return VK_FORMAT_ASTC_10x5_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_10X5_SRGB:
+            case GfxImageFormat::ASTC_10x5_SRGB:
                 return VK_FORMAT_ASTC_10x5_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_10X6_Unorm:
+            case GfxImageFormat::ASTC_10x6_Unorm:
                 return VK_FORMAT_ASTC_10x6_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_10X6_SRGB:
+            case GfxImageFormat::ASTC_10x6_SRGB:
                 return VK_FORMAT_ASTC_10x6_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_10X8_Unorm:
+            case GfxImageFormat::ASTC_10x8_Unorm:
                 return VK_FORMAT_ASTC_10x8_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_10X8_SRGB:
+            case GfxImageFormat::ASTC_10x8_SRGB:
                 return VK_FORMAT_ASTC_10x8_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_10X10_Unorm:
+            case GfxImageFormat::ASTC_10x10_Unorm:
                 return VK_FORMAT_ASTC_10x10_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_10X10_SRGB:
+            case GfxImageFormat::ASTC_10x10_SRGB:
                 return VK_FORMAT_ASTC_10x10_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_12X10_Unorm:
+            case GfxImageFormat::ASTC_12x10_Unorm:
                 return VK_FORMAT_ASTC_12x10_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_12X10_SRGB:
+            case GfxImageFormat::ASTC_12x10_SRGB:
                 return VK_FORMAT_ASTC_12x10_SRGB_BLOCK;
-            case GfxImageFormat::ASTC_12X12_Unorm:
+            case GfxImageFormat::ASTC_12x12_Unorm:
                 return VK_FORMAT_ASTC_12x12_UNORM_BLOCK;
-            case GfxImageFormat::ASTC_12X12_SRGB:
+            case GfxImageFormat::ASTC_12x12_SRGB:
                 return VK_FORMAT_ASTC_12x12_SRGB_BLOCK;
             case GfxImageFormat::B5G5R5A1_Unorm:
                 return VK_FORMAT_B5G5R5A1_UNORM_PACK16;

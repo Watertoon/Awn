@@ -29,7 +29,7 @@ namespace vp::util {
         using VectorType                    = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 2;
+        static constexpr u32 cVectorCount  = 2;
 
         static const Float2 cUnitX;
         static const Float2 cUnitY;
@@ -52,7 +52,7 @@ namespace vp::util {
         using VectorType                    = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 3;
+        static constexpr u32 cVectorCount  = 3;
 
         static const Float3 cUnitX;
         static const Float3 cUnitY;
@@ -77,7 +77,7 @@ namespace vp::util {
         using VectorType                    = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 4;
+        static constexpr u32 cVectorCount  = 4;
 
         static const Float4 cUnitX;
         static const Float4 cUnitY;
@@ -88,6 +88,8 @@ namespace vp::util {
     };
     static_assert(sizeof(Float4) == 0x10);
     static_assert(alignof(Float4) == 0x4);
+
+    using Quaternionf = Float4;
 
     struct FloatRowMajor3x3 {
         union {
@@ -105,6 +107,8 @@ namespace vp::util {
             Float3 array_row[3];
             float  array_2d[3][3];
         };
+
+        static const FloatRowMajor3x3 cIdentity;
     };
     static_assert(sizeof(FloatRowMajor3x3) == 0x24);
     static_assert(alignof(FloatRowMajor3x3) == 0x4);
@@ -128,6 +132,8 @@ namespace vp::util {
             Float3 array_row[4];
             float  array_2d[4][3];
         };
+
+        static const FloatRowMajor4x3 cIdentity;
     };
     static_assert(sizeof(FloatRowMajor4x3) == 0x30);
     static_assert(alignof(FloatRowMajor4x3) == 0x4);
@@ -155,6 +161,8 @@ namespace vp::util {
             Float4 array_row[4];
             float  array_2d[4][4];
         };
+
+        static const FloatRowMajor4x4 cIdentity;
     };
     static_assert(sizeof(FloatRowMajor4x4) == 0x40);
     static_assert(alignof(FloatRowMajor4x4) == 0x4);
@@ -175,6 +183,8 @@ namespace vp::util {
             Float3 array_col[3];
             float  array_2d[3][3];
         };
+
+        static const FloatColumnMajor3x3 cIdentity;
     };
     static_assert(sizeof(FloatColumnMajor3x3) == 0x24);
     static_assert(alignof(FloatColumnMajor3x3) == 0x4);
@@ -198,6 +208,8 @@ namespace vp::util {
             Float4 array_col[3];
             float  array_2d[3][4];
         };
+
+        static const FloatColumnMajor4x3 cIdentity;
     };
     static_assert(sizeof(FloatColumnMajor4x3) == 0x30);
     static_assert(alignof(FloatColumnMajor4x3) == 0x4);
@@ -225,6 +237,8 @@ namespace vp::util {
             Float4 array_col[4];
             float  array_2d[4][4];
         };
+
+        static const FloatColumnMajor4x4 cIdentity;
     };
     static_assert(sizeof(FloatColumnMajor4x4) == 0x40);
     static_assert(alignof(FloatColumnMajor4x4) == 0x4);
@@ -250,7 +264,7 @@ namespace vp::util {
         using VectorType                    = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 2;
+        static constexpr u32 cVectorCount  = 2;
 
         static const Vector2f cUnitX;
         static const Vector2f cUnitY;
@@ -275,7 +289,7 @@ namespace vp::util {
         using VectorType                    = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 3;
+        static constexpr u32 cVectorCount  = 3;
 
 
         static const Vector3f cUnitX;
@@ -302,7 +316,7 @@ namespace vp::util {
         using VectorType                    = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 4;
+        static constexpr u32 cVectorCount  = 4;
 
 
         static const Vector4f cUnitX;
@@ -346,15 +360,19 @@ namespace vp::util {
                 float m00;
                 float m01;
                 float m02;
+                float m03;
                 float m10;
                 float m11;
                 float m12;
+                float m13;
                 float m20;
                 float m21;
                 float m22;
+                float m23;
                 float m30;
                 float m31;
                 float m32;
+                float m33;
             };
             Matrix44fVector vector;
             Vector4f        array_row[4];
@@ -455,29 +473,60 @@ namespace vp::util {
     constexpr const Vector4f Vector4f::cZero  = {};
     constexpr const Vector4f Vector4f::cOne   = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+    constexpr const FloatRowMajor3x3 FloatRowMajor3x3::cIdentity = {
+        .m00 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
+    };
+    constexpr const FloatRowMajor4x3 FloatRowMajor4x3::cIdentity = {
+        .m00 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
+    };
+    constexpr const FloatRowMajor4x4 FloatRowMajor4x4::cIdentity = {
+        .m00 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
+        .m33 = 1.0f,
+    };
+    constexpr const FloatColumnMajor3x3 FloatColumnMajor3x3::cIdentity = {
+        .m00 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
+    };
+    constexpr const FloatColumnMajor4x3 FloatColumnMajor4x3::cIdentity = {
+        .m00 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
+    };
+    constexpr const FloatColumnMajor4x4 FloatColumnMajor4x4::cIdentity = {
+        .m00 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
+        .m33 = 1.0f,
+    };
+
     constexpr const MatrixRowMajor4x3f MatrixRowMajor4x3f::cIdentity = {
         .m00 = 1.0f,
-        .m10 = 1.0f,
-        .m20 = 1.0f,
-        .m30 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
     };
     constexpr const MatrixRowMajor4x4f MatrixRowMajor4x4f::cIdentity = {
         .m00 = 1.0f,
-        .m10 = 1.0f,
-        .m20 = 1.0f,
-        .m30 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
+        .m33 = 1.0f,
     };
     constexpr const MatrixColumnMajor4x3f MatrixColumnMajor4x3f::cIdentity = {
         .m00 = 1.0f,
-        .m10 = 1.0f,
-        .m20 = 1.0f,
-        .m30 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
     };
     constexpr const MatrixColumnMajor4x4f MatrixColumnMajor4x4f::cIdentity = {
         .m00 = 1.0f,
-        .m10 = 1.0f,
-        .m20 = 1.0f,
-        .m30 = 1.0f,
+        .m11 = 1.0f,
+        .m22 = 1.0f,
+        .m33 = 1.0f,
     };
 
     constexpr Vector2f ConvertVector(const Float2 &in_vector) {
@@ -513,6 +562,7 @@ namespace vp::util {
         return { x, y, z, w, };
     }
 
+#ifdef VP_TARGET_PLATFORM_win32
     constexpr void ConvertMatrix(MatrixRowMajor4x3f *out_matrix, const FloatRowMajor3x3 *in_matrix) {
 
         const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
@@ -640,6 +690,7 @@ namespace vp::util {
         out_matrix->vector[0].mmf = avx2::movaps256(std::addressof(in_matrix->array_2d[0][0]));
         out_matrix->vector[1].mmf = avx2::movaps256(std::addressof(in_matrix->array_2d[2][0]));
     }
+#endif
 
     constexpr Float2 ConvertFloat(const Vector2f &in_vector) {
         const float x = in_vector.x;

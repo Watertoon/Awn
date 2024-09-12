@@ -1,0 +1,81 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
+#pragma once
+
+namespace awn::async {
+
+    struct AsyncQueueInfo {
+        u32 priority_level_count;
+        u32 queue_thread_count;
+    };
+
+    class AsyncTaskForAllocator;
+    class AsyncTaskWatcher;
+
+    class AsyncQueue {
+        public:
+            friend class AsyncTask;
+            friend class AsyncTaskForAllocator;
+            friend class AsyncTaskWatcher;
+            friend class AsyncQueueThread;
+        public:
+            static constexpr u32 cInvalidPriorityLevel = 0xffff'ffff;
+        public:
+            struct PriorityLevel {
+                u32                is_paused;
+                AsyncTask         *async_task_head;
+                sys::Event  priority_cleared_event;
+            };
+        public:
+            using AsyncTaskList      = vp::util::IntrusiveListTraits<AsyncTask, &AsyncTask::m_queue_list_node>::List;
+            using PriorityLevelArray = vp::util::HeapArray<PriorityLevel>;
+            using TaskThreadArray    = vp::util::PointerArray<AsyncQueueThread>;
+        private:
+            AsyncTaskList      m_task_list;
+            u32                m_task_count;
+            PriorityLevelArray m_priority_level_array;
+            TaskThreadArray    m_task_thread_array;
+            sys::Event         m_all_task_complete_event;
+            sys::Mutex         m_queue_mutex;
+        protected:
+            AsyncTask *AcquireNextTask(AsyncQueueThread *queue_thread);
+
+            bool IsAnyThreadHaveTaskPriority(u32 priority);
+
+            bool UpdateAllTaskCompletion();
+            void UpdatePriorityLevelCompletion();
+            void UpdateCompletion();
+        public:
+            constexpr  AsyncQueue() : m_task_list(), m_task_count(), m_priority_level_array(), m_task_thread_array(), m_all_task_complete_event(), m_queue_mutex() {/*...*/}
+            constexpr ~AsyncQueue() {/*...*/}
+
+            void Initialize(mem::Heap *heap, const AsyncQueueInfo *queue_info);
+
+            void Finalize();
+
+            void CancelTask(AsyncTask *task);
+
+            void CancelPriorityLevel(u32 priority);
+            void CancelThreadPriorityLevel(u32 priority);
+
+            void Wait();
+            void WaitForPriorityLevel(u32 priority);
+
+            void ForceCalcSyncOnThread(AsyncQueueThread *thread, u32 up_to_priority);
+
+            constexpr sys::Mutex *GetQueueMutex() { return std::addressof(m_queue_mutex); }
+    };
+}

@@ -32,10 +32,18 @@
 
 /* Platform includes */
 #ifdef VP_TARGET_PLATFORM_win32
+    #define NTDDI_VERSION NTDDI_WIN10_19H1
+    #define WINVER 0x0A00
+    
+    #ifdef _WIN32_WINNT
+        #undef _WIN32_WINNT
+    #endif
+    #define _WIN32_WINNT _WIN32_WINNT_WIN10
     #define WIN32_LEAN_AND_MEAN
     #include <windows.h>
     #include <shellapi.h>
     #include <shlwapi.h>
+    #include <shellscalingapi.h>
 
     /* Undef macros that ruin the api */
     #ifdef near
@@ -65,21 +73,23 @@
     #ifdef InterlockedCompareExchangeRelease
         #undef InterlockedCompareExchangeRelease
     #endif
-
-    /* zstd */
-    #define ZSTD_STATIC_LINKING_ONLY
-    #include <zstd.h>
-#elif VP_TARGET_PLATFORM_nx
-    //#include <vp/nn.hpp>
+    #ifdef CreateWindow
+        #undef CreateWindow
+    #endif
+    #ifdef GetClassName
+        #undef GetClassName
+    #endif
 #endif
 
+/* zstd */
+#define ZSTD_STATIC_LINKING_ONLY
+#include <zstd.h>
 
-/* Vulkan */
+/* Graphics api includes */
 #ifdef VP_TARGET_GRAPHICS_API_vk
     #define VK_USE_PLATFORM_WIN32_KHR
     #define VK_ENABLE_BETA_EXTENSIONS
     #include <vulkan/vulkan.h>
 #endif
 
-/* DD */
 #include "util_defines.h"

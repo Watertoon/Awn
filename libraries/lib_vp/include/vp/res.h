@@ -73,3 +73,23 @@
 
 /* Reverse engineered Nintendo szs */
 #include <vp/res/res_szs.hpp>
+
+/* Reverse engineered Nintendo EPD aal atom formats */
+#include <vp/res/res_bwav.h>
+
+/* Reverse engineered Nintendo EPD ai formats */
+#include <vp/res/res_exb.h>
+#include <vp/res/res_exbfunctionmanager.hpp>
+#include <vp/res/res_exbcommandprocessor.h>
+#include <vp/res/res_ainb.470.h>
+
+/* Reverse engineered game sdk nso headers */
+#ifdef VP_TARGET_GRAPHICS_API_nvn
+    #include <vp/res/res_nvninteroperation.nvn.h>
+    #include <vp/res/res_gfxtonvn.nvn.hpp>
+#endif
+#ifdef VP_TARGET_PLATFORM_nx
+    #include <vp/res/res_nnosinteroperation.nx.h>
+    #include <vp/res/res_nnfsinteroperation.nx.h>
+    #include <vp/res/res_nnhidinteroperation.nx.h>
+#endif

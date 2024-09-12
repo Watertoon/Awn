@@ -23,12 +23,11 @@ namespace vp::trace {
     }
 
     ALWAYS_INLINE void Break() {
-        if (IsDebuggerPresent() == true) {
+        if (IsDebuggerPresent()) {
             ::DebugBreak();
         }
     }
-#endif
-#ifdef VP_TARGET_PLATFORM_nx
+#elif VP_TARGET_PLATFORM_nx
     ALWAYS_INLINE bool IsDebuggerPresent() {
         size_t value = 0;
         //const Result result = nn::svc::aarch64::GetInfo(std::addressof(value), nn::svc::InfoType::IsDebuggerAttached, 0, 0);
@@ -36,16 +35,18 @@ namespace vp::trace {
     }
 
     ALWAYS_INLINE void Break() {
-        if (IsDebuggerPresent() == true) {
+        if (IsDebuggerPresent()) {
             //const Result result = nn::svc::aarch64::Break(0, 0, 0);
         }
     }
 #endif
 
+    NO_RETURN void AbortNotImplemented(const char *func, const char *file, u32 line);
+    NO_RETURN void AbortAssert(const char *func, const char *file, u32 line, const char *expr);
+
     namespace impl {
 
         NO_RETURN void AbortImpl(const char *expected_result, const char *function_name, const char *full_file_path, u32 line_number, const Result result, const char *format, ...);
-
         NO_RETURN void Abort(const Result result);
     }
 }

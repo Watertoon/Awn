@@ -40,7 +40,7 @@ namespace vp::util {
         size_t len = 0;
         bool is_same = true;
         bool terminated = false;
-        while ((is_same == true) & (terminated == false) & (len < max_size)) {
+        while ((is_same) & (!terminated) & (len < max_size)) {
             is_same = (lhs[len] == rhs[len]);
             terminated = (lhs[len] == '\0') & ('\0' == rhs[len]);
             ++len;

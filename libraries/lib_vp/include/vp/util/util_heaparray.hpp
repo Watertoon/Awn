@@ -128,7 +128,7 @@ namespace vp::util {
             }
 
             constexpr bool IsValid() const { return m_object_array != nullptr; }
-
+        public:
             constexpr void Sort() {
                 std::sort(m_object_array, m_object_array + m_array_count);
             }
@@ -136,12 +136,12 @@ namespace vp::util {
             template <auto Member>
                 requires (std::is_same<ParentType<Member>, T>::value)
             constexpr void SortOn() {
-                struct CompareMember {
+                struct CompareLessMember {
                     constexpr bool operator()(const ParentType<Member> &lhs, const ParentType<Member> &rhs) {
                         return lhs.*Member < rhs.*Member;
                     }
                 };
-                std::sort(m_object_array, m_object_array + m_array_count, CompareMember());
+                std::sort(m_object_array, m_object_array + m_array_count, CompareLessMember());
             }
 
             /* This function requires the heap array to be sorted */

@@ -1,3 +1,3 @@
 # For development
 
-export BINTYPE_CXX_FLAGS := -O3 -flto -gdwarf-5 
+export BINTYPE_CXX_FLAGS := -O3 -flto

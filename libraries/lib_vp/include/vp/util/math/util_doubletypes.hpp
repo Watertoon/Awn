@@ -29,7 +29,7 @@ namespace vp::util {
         using VectorType                    = double;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 2;
+        static constexpr u32 cVectorCount  = 2;
 
         static const Double2 cUnitX;
         static const Double2 cUnitY;
@@ -52,7 +52,7 @@ namespace vp::util {
         using VectorType                    = double;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 3;
+        static constexpr u32 cVectorCount  = 3;
 
         static const Double3 cUnitX;
         static const Double3 cUnitY;
@@ -77,7 +77,7 @@ namespace vp::util {
         using VectorType                    = double;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 4;
+        static constexpr u32 cVectorCount  = 4;
 
         static const Double4 cUnitX;
         static const Double4 cUnitY;
@@ -249,7 +249,7 @@ namespace vp::util {
         using VectorType                    = double;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 2;
+        static constexpr u32 cVectorCount  = 2;
 
         static const Vector2d cUnitX;
         static const Vector2d cUnitY;
@@ -273,7 +273,7 @@ namespace vp::util {
         using VectorType                    = double;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 3;
+        static constexpr u32 cVectorCount  = 3;
 
 
         static const Vector3d cUnitX;
@@ -299,7 +299,7 @@ namespace vp::util {
         using VectorType                    = double;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 4;
+        static constexpr u32 cVectorCount  = 4;
 
 
         static const Vector4d cUnitX;
@@ -517,6 +517,7 @@ namespace vp::util {
         return { x, y, z, w, };
     }
 
+#ifdef VP_TARGET_PLATFORM_win32
     constexpr void ConvertMatrix(MatrixRowMajor4x3d *out_matrix, const DoubleRowMajor3x3 *in_matrix) {
 
         const v256i mask = avx2::GetLoadMaskDouble256(true, true, true, false);
@@ -652,6 +653,7 @@ namespace vp::util {
         out_matrix->array_col[2].vector.d = avx2::movapd256(std::addressof(in_matrix->array_2d[2][0]));
         out_matrix->array_col[3].vector.d = avx2::movapd256(std::addressof(in_matrix->array_2d[3][0]));
     }
+#endif
 
     constexpr Double2 ConvertDouble(const Vector2d &in_vector) {
         const double x = in_vector.x;

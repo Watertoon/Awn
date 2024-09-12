@@ -17,36 +17,47 @@
 
 namespace vp::util {
 
-    namespace x86 {
+    NO_INLINE s64 rdtsc() {
+        s64 low = 0;
+        s64 high = 0;
+        asm volatile ("rdtsc\n" : "=a" (low), "=d" (high) : : );
+        vp::util::MemoryBarrierLoad();
+        const s64 ret = (high << 32) | low;
+        return ret;
+    }
 
-        NO_INLINE s64 rdtscp(u32 *frequency) {
-            s64 low = 0;
-            s64 high = 0;
-            s32 freq = 0;
-            asm volatile ("rdtscp\n" : "=a" (low), "=d" (high), "=c" (freq) : : );
-            *frequency = freq;
-            return (high << 32) + low;
-        }
+    struct CpuFeatures {
+        u32 eax;
+        u32 ebx;
+        u32 ecx;
+        u32 edx;
+    };
 
-        NO_INLINE s64 rdtsc() {
-            return __builtin_ia32_rdtsc();
-        }
+    void GetCpuFeatures(CpuFeatures *features, u32 main_info_type, u32 sub_info_type) {
+        __asm__ volatile(
+            "cpuid"
+            : "=a"(features->eax), "=b"(features->ebx),"=c"(features->ecx),"=d"(features->edx)
+            : "a"(main_info_type), "c"(sub_info_type)
+        );
+        return;
     }
 
     s64 sSystemFrequency   = 0;
     s64 sMaxTickToTimeSpan = TimeSpan::cMaxTime;
 
     void InitializeTimeStamp() {
-        const bool result = ::QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(std::addressof(sSystemFrequency)));
-        VP_ASSERT(result == true);
+        LARGE_INTEGER freq = {};
+        const bool result = ::QueryPerformanceFrequency(std::addressof(freq));
+        VP_ASSERT(result);
+        sSystemFrequency = static_cast<s64>(freq.QuadPart);
         sMaxTickToTimeSpan = ((TimeSpan::cMaxTime - (TimeSpan::cMaxTime % sSystemFrequency)) / 1'000'000'000) * sSystemFrequency;
     }
 
     s64 GetSystemTick() {
-        s64 time = 0;
-        const bool result = ::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(std::addressof(time)));
-        VP_ASSERT(result == true);
-        return time;
+        LARGE_INTEGER count = {};
+        const bool result = ::QueryPerformanceCounter(std::addressof(count));
+        VP_ASSERT(result);
+        return count.QuadPart;
     }
 
     s64 GetSystemTickFrequency() {

@@ -29,8 +29,10 @@ namespace vp::util {
         union {
             v8f     f;
             v4d     d;
+#ifdef VP_TARGET_ARCHITECTURE_x86
             __m256  mmf;
             __m256d mmd;
+#endif
         };
     };
 
@@ -42,7 +44,9 @@ namespace vp::util {
             v4f     f;
             v2d     d;
             __m128  mmf;
+#ifdef VP_TARGET_ARCHITECTURE_x86
             __m128d mmd;
+#endif
         };
     };
 

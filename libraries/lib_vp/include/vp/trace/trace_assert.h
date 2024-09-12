@@ -19,35 +19,43 @@ namespace vp::trace {
 
     #if defined(VP_DEBUG)
 
+        #define VP_NOT_IMPLEMENTED() \
+            vp::trace::AbortNotImplemented(__PRETTY_FUNCTION__, __FILE__, __LINE__)
+
         #define VP_ASSERT(expression) \
         { \
             const auto _temp_result = (expression); \
             if (__builtin_expect((!_temp_result), 0)) { \
-                vp::trace::impl::AbortImpl("Assert failed!!!", __PRETTY_FUNCTION__, __FILE__, __LINE__, vp::trace::ResultAssertFailed, "Failed: %s\n", TOSTRING(expression)); \
+                vp::trace::AbortAssert(__PRETTY_FUNCTION__, __FILE__, __LINE__, TOSTRING(expression)); \
             } \
         }
 
-        #define VP_ASSERT_PRINT(expression, ...) \
+        #define VP_DETAILED_ASSERT(expression, format, ...) \
         { \
             const auto _temp_result = (expression); \
             if (__builtin_expect((!_temp_result), 0)) { \
-                vp::trace::impl::AbortImpl("Assert failed!!!", __PRETTY_FUNCTION__, __FILE__, __LINE__, vp::trace::ResultAssertFailed, "Failed: %s\n", TOSTRING(expression)); \
+                vp::trace::impl::AbortImpl("Assert failed!!!", __PRETTY_FUNCTION__, __FILE__, __LINE__, vp::trace::ResultAssertFailed, format, __VA_ARGS__); \
             } \
         }
 
     #else
 
+        #define VP_NOT_IMPLEMENTED() \
+            vp::trace::AbortNotImplemented("", "", 0); \
+
         #define VP_ASSERT(expression) \
         { \
             const auto _temp_result = (expression); \
             if (__builtin_expect((!_temp_result), 0)) { \
+                vp::trace::AbortAssert("", __FILE__, __LINE__, TOSTRING(expression)); \
             } \
         }
 
-        #define VP_ASSERT_PRINT(expression, ...) \
+        #define VP_DETAILED_ASSERT(expression, format, ...) \
         { \
             const auto _temp_result = (expression); \
             if (__builtin_expect((!_temp_result), 0)) { \
+                vp::trace::impl::AbortImpl("Assert failed!!!", "", __FILE__, __LINE__, vp::trace::ResultAssertFailed, format, __VA_ARGS__); \
             } \
         }
 

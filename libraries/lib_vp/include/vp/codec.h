@@ -20,6 +20,4 @@
 #endif
 #include <vp/codec/codec_nisasyst.hpp>
 
-#ifdef VP_TARGET_PLATFORM_win32
-    #include <vp/codec/codec_zstd.h>
-#endif
+#include <vp/codec/codec_zstd.h>

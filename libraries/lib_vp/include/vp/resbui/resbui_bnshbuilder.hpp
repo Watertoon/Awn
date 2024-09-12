@@ -24,7 +24,6 @@ namespace vp::resbui {
         DictionaryString name;
     };
 
-
     class BnshShaderProgramNode;
     class BnshBuilder;
 
@@ -37,23 +36,28 @@ namespace vp::resbui {
             static constexpr u32 cInterfaceTableCountExt = vp::res::cMaxBnshSeparateTextureCount + vp::res::cMaxBnshSeparateSamplerCount;
             static constexpr u32 cTotalInterfaceNodeCount = cInterfaceTableCount + cInterfaceTableCountExt;
         private:
-            const void              *m_code;
-            const void              *m_control;
-            u32                      m_code_size;
-            u32                      m_control_size;
-            u32                      m_code_offset;
-            u32                      m_control_offset;
-            u32                      m_workgroup_x;
-            u32                      m_workgroup_y;
-            u32                      m_workgroup_z;
-            BnshShaderInterfaceNode  m_input_attribute_array[vp::res::cMaxBnshInputAttributeCount];
-            BnshShaderInterfaceNode  m_output_attribute_array[vp::res::cMaxBnshOutputAttributeCount];
-            BnshShaderInterfaceNode  m_texture_sampler_array[vp::res::cMaxBnshTextureSamplerCount];
-            BnshShaderInterfaceNode  m_uniform_buffer_array[vp::res::cMaxBnshUniformBufferCount];
-            BnshShaderInterfaceNode  m_storage_buffer_array[vp::res::cMaxBnshStorageBufferCount];
-            BnshShaderInterfaceNode  m_image_array[vp::res::cMaxBnshImageCount];
-            BnshShaderInterfaceNode  m_separate_texture_array[vp::res::cMaxBnshSeparateTextureCount];
-            BnshShaderInterfaceNode  m_separate_sampler_array[vp::res::cMaxBnshSeparateSamplerCount];
+            const void *m_code;
+            const void *m_control;
+            u32         m_code_size;
+            u32         m_control_size;
+            u32         m_code_offset;
+            u32         m_control_offset;
+            u32         m_workgroup_x;
+            u32         m_workgroup_y;
+            u32         m_workgroup_z;
+            union {
+                BnshShaderInterfaceNode  m_interface_array[cTotalInterfaceNodeCount];
+                struct {
+                    BnshShaderInterfaceNode  m_input_attribute_array[vp::res::cMaxBnshInputAttributeCount];
+                    BnshShaderInterfaceNode  m_output_attribute_array[vp::res::cMaxBnshOutputAttributeCount];
+                    BnshShaderInterfaceNode  m_texture_sampler_array[vp::res::cMaxBnshTextureSamplerCount];
+                    BnshShaderInterfaceNode  m_uniform_buffer_array[vp::res::cMaxBnshUniformBufferCount];
+                    BnshShaderInterfaceNode  m_storage_buffer_array[vp::res::cMaxBnshStorageBufferCount];
+                    BnshShaderInterfaceNode  m_image_array[vp::res::cMaxBnshImageCount];
+                    BnshShaderInterfaceNode  m_separate_texture_array[vp::res::cMaxBnshSeparateTextureCount];
+                    BnshShaderInterfaceNode  m_separate_sampler_array[vp::res::cMaxBnshSeparateSamplerCount];                    
+                };
+            };
         public:
             constexpr BnshShaderNode() : m_code(), m_control(), m_code_size(), m_control_size(), m_code_offset(), m_control_offset(), m_workgroup_x(), m_workgroup_y(), m_workgroup_z(), m_input_attribute_array(), m_output_attribute_array(), m_texture_sampler_array(), m_uniform_buffer_array(), m_storage_buffer_array(), m_image_array(), m_separate_texture_array(), m_separate_sampler_array() {/*...*/}
             constexpr ~BnshShaderNode() {/*...*/}

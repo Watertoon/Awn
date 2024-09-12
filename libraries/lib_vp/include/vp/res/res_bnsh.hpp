@@ -27,7 +27,14 @@ namespace vp::res {
         u32   scratch_memory_size_recommended;
         u32   scratch_memory_size_per_warp;
         void *shader_ext_data;
-        u64   reserve0;
+        union {
+        u64 reserve0;
+            /* Vp extensions */
+            struct {
+                u32 runtime_ref_count;
+                u32 runtime_guard;
+            }; 
+        };
     };
     static_assert(sizeof(ResBnshShaderCodeInfo) == 0x40);
 
@@ -72,6 +79,19 @@ namespace vp::res {
         Mesh                   = 7,
     };
 
+    enum class GfxShaderStageBits : u32 {
+        Vertex                 = (1 << 0),
+        TessellationControl    = (1 << 1),
+        TessellationEvaluation = (1 << 2),
+        Geometry               = (1 << 3),
+        Fragment               = (1 << 4),
+        Compute                = (1 << 5),
+        /* Vp ext */
+        Task                   = (1 << 6),
+        Mesh                   = (1 << 7),
+    };
+    VP_ENUM_FLAG_TRAITS(GfxShaderStageBits);
+
     static constexpr u32 cMaxBnshShaderStageCount = 0x8;
 
     enum class GfxShaderCodeType : u8 {
@@ -104,8 +124,8 @@ namespace vp::res {
 
     struct ResBnshShaderInterfaceInfoTable {
         ResBnshShaderInterfaceInfo *interface_info_vertex;
-        ResBnshShaderInterfaceInfo *interface_info_tessellation_evaluation;
         ResBnshShaderInterfaceInfo *interface_info_tessellation_control;
+        ResBnshShaderInterfaceInfo *interface_info_tessellation_evaluation;
         ResBnshShaderInterfaceInfo *interface_info_geometry;
         ResBnshShaderInterfaceInfo *interface_info_fragment;
         ResBnshShaderInterfaceInfo *interface_info_compute;
@@ -182,7 +202,7 @@ namespace vp::res {
     static constexpr u32 cDefaultBnshRuntimeMemoryPoolSize = 0x140;
 
     enum class BnshTargetApiType : u16 {
-        Nvn         = 4,
+        Nvn = 4,
         /* Vp extensions */
         VpExtVulkan = 0x100,
     };

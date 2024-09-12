@@ -264,10 +264,10 @@ namespace vp::resbui {
                     program_iter += vp::util::AlignUp(total_slot_count * sizeof(u32), alignof(size_t));
                     u32 slot_i = 0;
                     for (u32 k = 0; k < BnshShaderNode::cTotalInterfaceNodeCount; ++k) {
-                        const char *name_string = shader_node->m_input_attribute_array[k].name.GetString();
+                        const char *name_string = shader_node->m_interface_array[k].name.GetString();
                         if (name_string == nullptr || *name_string == '\0') { continue; }
 
-                        interface_slot_array[slot_i] = shader_node->m_input_attribute_array[k].location;
+                        interface_slot_array[slot_i] = shader_node->m_interface_array[k].location;
                         ++slot_i;
                     }
                 }

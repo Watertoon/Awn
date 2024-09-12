@@ -110,6 +110,22 @@ namespace vp::util {
                 return nullptr;
             }
 
+            constexpr ALWAYS_INLINE const Parent *TryGetParentByHash(HashType hash) const {
+
+                /* Ensure initialized */
+                if (m_max < 1) { return nullptr; }
+
+                /* Find actual index linearly from base */
+                const u32 base_index = this->GetBaseIndex(hash);
+                u32 i = base_index;
+                do {
+                    if (hash == m_array[i].*HashMemberPtr) { return std::addressof(m_array[i]); }
+                    i = ((i + 1) < m_max) ? i + 1 : 0;
+                } while (i != base_index);
+
+                return nullptr;
+            }
+
             constexpr ALWAYS_INLINE void Clear() {
 
                 /* Destroy all */
@@ -174,6 +190,19 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE Parent *TryGetParentByHash(HashType hash) {
+        
+                /* Find actual index linearly from base */
+                const u32 base_index = this->GetBaseIndex(hash);
+                u32 i = base_index;
+                do {
+                    if (hash == m_array[i].*HashMemberPtr) { return std::addressof(m_array[i]); }
+                    i = ((i + 1) < Size) ? i + 1 : 0;
+                } while (i != base_index);
+
+                return nullptr;
+            }
+
+            constexpr ALWAYS_INLINE const Parent *TryGetParentByHash(HashType hash) const {
         
                 /* Find actual index linearly from base */
                 const u32 base_index = this->GetBaseIndex(hash);

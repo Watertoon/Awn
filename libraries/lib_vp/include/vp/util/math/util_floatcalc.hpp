@@ -18,29 +18,128 @@
 namespace vp::util {
 
     constexpr Vector2f operator+(const Vector2f &left, const Vector2f &right) {
-        const Vector2f out = { .vector = left.vector.f + right.vector.f };
+        const Vector2f out = { .vector = left.vector.f + right.vector.f, };
         return out;
     }
     constexpr Vector2f operator-(const Vector2f &left, const Vector2f &right) {
-        const Vector2f out = { .vector = left.vector.f - right.vector.f };
+        const Vector2f out = { .vector = left.vector.f - right.vector.f, };
+        return out;
+    }
+    constexpr Vector2f operator-(const Vector2f &vec) {
+        const Vector2f out = { .vector = -vec.vector.f, };
+        return out;
+    }
+    constexpr Vector2f operator*(const Vector2f &vec, float scalar) {
+        const Vector2f out = { .vector = vec.vector.f * scalar, };
+        return out;
+    }
+    constexpr Vector2f operator/(const Vector2f &vec, float scalar) {
+        const Vector2f out = { .vector = vec.vector.f / scalar, };
         return out;
     }
 
     constexpr Vector3f operator+(const Vector3f &left, const Vector3f &right) {
-        const Vector3f out = { .vector = left.vector.f + right.vector.f };
+        const Vector3f out = { .vector = left.vector.f + right.vector.f, };
         return out;
     }
     constexpr Vector3f operator-(const Vector3f &left, const Vector3f &right) {
-        const Vector3f out = { .vector = left.vector.f - right.vector.f };
+        const Vector3f out = { .vector = left.vector.f - right.vector.f, };
+        return out;
+    }
+    constexpr Vector3f operator-(const Vector3f &vec) {
+        const Vector3f out = { .vector = -vec.vector.f, };
+        return out;
+    }
+    constexpr Vector3f operator*(const Vector3f &vec, float scalar) {
+        const Vector3f out = { .vector = vec.vector.f * scalar, };
+        return out;
+    }
+    constexpr Vector3f operator/(const Vector3f &vec, float scalar) {
+        const Vector3f out = { .vector = vec.vector.f / scalar, };
         return out;
     }
 
     constexpr Vector4f operator+(const Vector4f &left, const Vector4f &right) {
-        const Vector4f out = { .vector = left.vector.f + right.vector.f };
+        const Vector4f out = { .vector = left.vector.f + right.vector.f, };
         return out;
     }
     constexpr Vector4f operator-(const Vector4f &left, const Vector4f &right) {
-        const Vector4f out = { .vector = left.vector.f - right.vector.f };
+        const Vector4f out = { .vector = left.vector.f - right.vector.f, };
+        return out;
+    }
+    constexpr Vector4f operator-(const Vector4f &vec) {
+        const Vector4f out = { .vector = -vec.vector.f, };
+        return out;
+    }
+    constexpr Vector4f operator*(const Vector4f &vec, float scalar) {
+        const Vector4f out = { .vector = vec.vector.f * scalar, };
+        return out;
+    }
+    constexpr Vector4f operator/(const Vector4f &vec, float scalar) {
+        const Vector4f out = { .vector = vec.vector.f / scalar, };
+        return out;
+    }
+
+    constexpr Float2 operator+(const Float2 &left, const Float2 &right) {
+        const Float2 out = { left.x + right.x, left.y + right.y, };
+        return out;
+    }
+    constexpr Float2 operator-(const Float2 &left, const Float2 &right) {
+        const Float2 out = { left.x - right.x, left.y - right.y, };
+        return out;
+    }
+    constexpr Float2 operator-(const Float2 &vec) {
+        const Float2 out = { -vec.x, -vec.y, };
+        return out;
+    }
+    constexpr Float2 operator*(const Float2 &vec, float scalar) {
+        const Float2 out = { vec.x * scalar, vec.y * scalar, };
+        return out;
+    }
+    constexpr Float2 operator/(const Float2 &vec, float scalar) {
+        const Float2 out = { vec.x / scalar, vec.y / scalar, };
+        return out;
+    }
+
+    constexpr Float3 operator+(const Float3 &left, const Float3 &right) {
+        const Float3 out = { left.x + right.x, left.y + right.y, left.z + right.z, };
+        return out;
+    }
+    constexpr Float3 operator-(const Float3 &left, const Float3 &right) {
+        const Float3 out = { left.x - right.x, left.y - right.y, left.z - right.z, };
+        return out;
+    }
+    constexpr Float3 operator-(const Float3 &vec) {
+        const Float3 out = { -vec.x, -vec.y, -vec.z, };
+        return out;
+    }
+    constexpr Float3 operator*(const Float3 &vec, float scalar) {
+        const Float3 out = { vec.x * scalar, vec.y * scalar, vec.z * scalar, };
+        return out;
+    }
+    constexpr Float3 operator/(const Float3 &vec, float scalar) {
+        const Float3 out = { vec.x / scalar, vec.y / scalar, vec.z / scalar, };
+        return out;
+    }
+
+    constexpr Float4 operator+(const Float4 &left, const Float4 &right) {
+        const Float4 out = { left.x + right.x, left.y + right.y, left.z + right.z, left.w + right.w, };
+        return out;
+    }
+    constexpr Float4 operator-(const Float4 &left, const Float4 &right) {
+        const Float4 out = { left.x - right.x, left.y - right.y, left.z - right.z, left.w - right.w, };
+        return out;
+    }
+    constexpr Float4 operator-(const Float4 &vec) {
+        const Float4 out = { -vec.x, -vec.y, -vec.z, -vec.w, };
+        return out;
+    }
+    constexpr Float4 operator*(const Float4 &vec, float scalar) {
+        const Float4 out = { vec.x * scalar, vec.y * scalar, vec.z * scalar, vec.w * scalar, };
+        return out;
+    }
+    constexpr Float4 operator/(const Float4 &vec, float scalar) {
+        const Float4 out = { vec.x / scalar, vec.y / scalar, vec.z / scalar, vec.w / scalar, };
         return out;
     }
 

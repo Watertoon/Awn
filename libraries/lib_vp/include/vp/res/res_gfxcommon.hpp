@@ -160,8 +160,8 @@ namespace vp::res {
     };
 
     constexpr ALWAYS_INLINE u32 CalculateGfxAttributeSize(GfxChannelFormat channel_format, u32 count) {
-        
-        u32 format         = static_cast<u32>(channel_format);
+
+        u32 format = static_cast<u32>(channel_format);
         u32 attribute_size = 0;
         if (format < 0x3) {
             attribute_size = 1;
@@ -220,6 +220,40 @@ namespace vp::res {
 
         /* Calculate */
         return texel_size * width * height * depth;
+    }
+
+    constexpr ALWAYS_INLINE u32 CalculateLinearTextureStride(u32 width, vp::res::GfxChannelFormat channel_format) {
+        const u32 format = static_cast<u32>(channel_format);
+
+        /* Adjust width for linear format */
+        const u32 package_format = format - 0x1a;
+        if (package_format < 0x21) {
+            const u32 variable_format = format - 0x27;
+            const u32 block_width = (variable_format < 0x14) ? cVariableBlockWidthTable[variable_format] : 4;
+
+            width = (block_width != 0) ? (width + block_width - 1) / block_width : 0;
+        }
+
+        /* Find texel size */
+        u32 texel_size = 0;
+        if (package_format < 0x22) {
+            texel_size = cPackagedTextureTexelSizeTable[package_format];
+        } else if (format < 0x3) {
+            texel_size = 1;
+        } else if (format < 0xb) {
+            texel_size = 2;
+        } else if (format < 0x15) {
+            texel_size = 4;
+        } else if (format < 0x18) {
+            texel_size = 8;
+        } else {
+            texel_size = 12;
+            if (format != 0x18) {
+                texel_size = 16;
+            }
+        }
+        
+        return width * texel_size;
     }
 
     enum class GfxTypeFormat : u8 {
@@ -308,34 +342,34 @@ namespace vp::res {
         BC6H_UF16             = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::BC6H,         GfxTypeFormat::UFloat),
         BC7U_Unorm            = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::BC7U,         GfxTypeFormat::Unorm),
         BC7U_SRGB             = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::BC7U,         GfxTypeFormat::SRGB),
-        ASTC_4X4_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_4x4,     GfxTypeFormat::Unorm),
-        ASTC_4X4_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_4x4,     GfxTypeFormat::SRGB),
-        ASTC_5X4_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_5x4,     GfxTypeFormat::Unorm),
-        ASTC_5X4_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_5x4,     GfxTypeFormat::SRGB),
-        ASTC_5X5_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_5x5,     GfxTypeFormat::Unorm),
-        ASTC_5X5_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_5x5,     GfxTypeFormat::SRGB),
-        ASTC_6X5_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_6x5,     GfxTypeFormat::Unorm),
-        ASTC_6X5_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_6x5,     GfxTypeFormat::SRGB),
-        ASTC_6X6_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_6x6,     GfxTypeFormat::Unorm),
-        ASTC_6X6_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_6x6,     GfxTypeFormat::SRGB),
-        ASTC_8X5_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x5,     GfxTypeFormat::Unorm),
-        ASTC_8X5_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x5,     GfxTypeFormat::SRGB),
-        ASTC_8X6_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x6,     GfxTypeFormat::Unorm),
-        ASTC_8X6_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x6,     GfxTypeFormat::SRGB),
-        ASTC_8X8_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x8,     GfxTypeFormat::Unorm),
-        ASTC_8X8_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x8,     GfxTypeFormat::SRGB),
-        ASTC_10X5_Unorm       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x5,    GfxTypeFormat::Unorm),
-        ASTC_10X5_SRGB        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x5,    GfxTypeFormat::SRGB),
-        ASTC_10X6_Unorm       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x6,    GfxTypeFormat::Unorm),
-        ASTC_10X6_SRGB        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x6,    GfxTypeFormat::SRGB),
-        ASTC_10X8_Unorm       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x8,    GfxTypeFormat::Unorm),
-        ASTC_10X8_SRGB        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x8,    GfxTypeFormat::SRGB),
-        ASTC_10X10_Unorm      = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x10,   GfxTypeFormat::Unorm),
-        ASTC_10X10_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x10,   GfxTypeFormat::SRGB),
-        ASTC_12X10_Unorm      = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x10,   GfxTypeFormat::Unorm),
-        ASTC_12X10_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x10,   GfxTypeFormat::SRGB),
-        ASTC_12X12_Unorm      = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x12,   GfxTypeFormat::Unorm),
-        ASTC_12X12_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x12,   GfxTypeFormat::SRGB),
+        ASTC_4x4_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_4x4,     GfxTypeFormat::Unorm),
+        ASTC_4x4_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_4x4,     GfxTypeFormat::SRGB),
+        ASTC_5x4_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_5x4,     GfxTypeFormat::Unorm),
+        ASTC_5x4_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_5x4,     GfxTypeFormat::SRGB),
+        ASTC_5x5_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_5x5,     GfxTypeFormat::Unorm),
+        ASTC_5x5_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_5x5,     GfxTypeFormat::SRGB),
+        ASTC_6x5_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_6x5,     GfxTypeFormat::Unorm),
+        ASTC_6x5_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_6x5,     GfxTypeFormat::SRGB),
+        ASTC_6x6_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_6x6,     GfxTypeFormat::Unorm),
+        ASTC_6x6_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_6x6,     GfxTypeFormat::SRGB),
+        ASTC_8x5_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x5,     GfxTypeFormat::Unorm),
+        ASTC_8x5_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x5,     GfxTypeFormat::SRGB),
+        ASTC_8x6_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x6,     GfxTypeFormat::Unorm),
+        ASTC_8x6_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x6,     GfxTypeFormat::SRGB),
+        ASTC_8x8_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x8,     GfxTypeFormat::Unorm),
+        ASTC_8x8_SRGB         = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_8x8,     GfxTypeFormat::SRGB),
+        ASTC_10x5_Unorm       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x5,    GfxTypeFormat::Unorm),
+        ASTC_10x5_SRGB        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x5,    GfxTypeFormat::SRGB),
+        ASTC_10x6_Unorm       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x6,    GfxTypeFormat::Unorm),
+        ASTC_10x6_SRGB        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x6,    GfxTypeFormat::SRGB),
+        ASTC_10x8_Unorm       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x8,    GfxTypeFormat::Unorm),
+        ASTC_10x8_SRGB        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x8,    GfxTypeFormat::SRGB),
+        ASTC_10x10_Unorm      = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x10,   GfxTypeFormat::Unorm),
+        ASTC_10x10_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_10x10,   GfxTypeFormat::SRGB),
+        ASTC_12x10_Unorm      = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x10,   GfxTypeFormat::Unorm),
+        ASTC_12x10_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x10,   GfxTypeFormat::SRGB),
+        ASTC_12x12_Unorm      = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x12,   GfxTypeFormat::Unorm),
+        ASTC_12x12_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x12,   GfxTypeFormat::SRGB),
         B5G5R5A1_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::B5G5R5A1,     GfxTypeFormat::Unorm),
     };
 
@@ -398,10 +432,22 @@ namespace vp::res {
         R32G32B32A32_Float   = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::R32G32B32A32,  GfxTypeFormat::Float),
     };
 
+    constexpr GfxChannelFormat GetGfxChannelFormat(GfxImageFormat image_format) {
+        return static_cast<GfxChannelFormat>(static_cast<u32>(image_format) >> 0x8);
+    }
+    constexpr GfxTypeFormat GetGfxTypeFormat(GfxImageFormat image_format) {
+        return static_cast<GfxTypeFormat>(static_cast<u32>(image_format) & 0xff);
+    }
+
     enum class GfxImageStorageDimension : u8 { 
         Type1d = 1,
         Type2d = 2,
         Type3d = 3,
+    };
+
+    enum class GfxTileMode : u16 {
+        Optimal = 0,
+        Linear = 1,
     };
 
     struct ResGfxTextureInfo {
@@ -415,33 +461,19 @@ namespace vp::res {
                 u8  reserve0            : 4;
             };
         };
-        u8  storage_dimension;
-        u16 tile_mode;
-        u16 swizzle;
-        u16 mip_levels;
-        u16 sample_count;
+        u8  image_storage_dimension = static_cast<u8>(GfxImageStorageDimension::Type2d);
+        u16 tile_mode = static_cast<u16>(GfxTileMode::Optimal);
+        u16 swizzle = 0;
+        u16 mip_level_count = 1;
+        u16 sample_count = 1;
         u16 reserve1;
-        u32 image_format;
-        u32 gpu_access_flags;
-        u32 width;
-        u32 height;
-        u32 depth;
-        u32 array_layer_count;
+        u32 image_format = 0;
+        u32 gpu_access_flags = 0;
+        u32 width = 1;
+        u32 height = 1;
+        u32 depth = 1;
+        u32 array_layer_count = 1;
         u32 packaged_texture_layout;
-
-        constexpr void SetDefaults() {
-            storage_dimension = static_cast<u8>(GfxImageStorageDimension::Type2d);
-            tile_mode         = 0;
-            swizzle           = 0;
-            mip_levels        = 1;
-            width             = 1;
-            height            = 1;
-            depth             = 1;
-            sample_count      = 1;
-            image_format      = 0;
-            gpu_access_flags  = 0;
-            array_layer_count = 1;
-        }
     };
     static_assert(sizeof(ResGfxTextureInfo) == 0x28);
 
@@ -485,7 +517,7 @@ namespace vp::res {
         u8   swizzle_w;
         u32  reserve1;
         u16  base_mip_level;
-        u16  mip_levels;
+        u16  mip_level_count;
         u32  reserve2[3];
         u32  base_array_layer;
         u32  array_layer_count;
@@ -501,7 +533,7 @@ namespace vp::res {
         ClampToBorder     = 3,
         MirrorClampToEdge = 4,
     };
-    
+
     enum class GfxCompareOperation : u8 {
         Never            = 0,
         LessThan         = 1,
@@ -553,13 +585,13 @@ namespace vp::res {
         union {
             u16 packed_options;
             struct {
-                u16   mip_map_filter    : 2;
-                u16   mag_filter        : 2;
-                u16   min_filter        : 2;
-                u16   enable_anisotropy : 1;
-                u16   enable_compare_op : 1;
-                u16   reduction_filter  : 2;
-                u16   reserve0          : 6;
+                u16   mip_map_filter          : 2;
+                u16   mag_filter              : 2;
+                u16   min_filter              : 2;
+                u16   is_enable_anisotropy    : 1;
+                u16   is_compare_r_to_texture : 1;
+                u16   reduction_filter        : 2;
+                u16   reserve0                : 6;
             };
         };
         float lod_clamp_min;
@@ -579,8 +611,8 @@ namespace vp::res {
             mip_map_filter    =  static_cast<u8>(GfxMipMapFilter::Linear);
             mag_filter        =  static_cast<u8>(GfxMagFilter::Linear);
             min_filter        =  static_cast<u8>(GfxMinFilter::Linear);
-            enable_anisotropy =  false;
-            enable_compare_op =  false;
+            is_enable_anisotropy =  false;
+            is_compare_r_to_texture = false;
             reduction_filter  =  static_cast<u8>(GfxReductionFilter::Average);
             reserve0          =  0;
             lod_clamp_min     = -1000.0;
@@ -621,7 +653,7 @@ namespace vp::res {
         Greater          = 4,
         NotEqual         = 5,
         GreaterThanEqual = 6,
-        Always           = 7
+        Always           = 7,
     };
 
     enum class GfxStencilOperation {
@@ -632,29 +664,29 @@ namespace vp::res {
         Decrement     = 4,
         Invert        = 5,
         IncrementWrap = 6,
-        DecrementWrap = 7
+        DecrementWrap = 7,
     };
 
     enum class GfxBlendFactor : u8 {
         Zero                     = 0,
         One                      = 1,
         SourceColor              = 2,
-        SourceColorMinusOne      = 3,
+        OneMinusSourceColor      = 3,
         DestinationColor         = 4,
-        DestinationColorMinusOne = 5,
+        OneMinusDestinationColor = 5,
         SourceAlpha              = 6,
-        SourceAlphaMinusOne      = 7,
+        OneMinusSourceAlpha      = 7,
         DestinationAlpha         = 8,
-        DestinationAlphaMinusOne = 9,
+        OneMinusDestinationAlpha = 9,
         ConstantColor            = 10,
-        ConstantColorMinusOne    = 11,
+        OneMinusConstantColor    = 11,
         ConstantAlpha            = 12,
-        ConstantAlphaMinusOne    = 13,
+        OneMinusConstantAlpha    = 13,
         SourceAlphaSaturate      = 14,
         SourceOneColor           = 15,
-        SourceOneColorMinusOne   = 16,
+        OneMinusSourceOneColor   = 16,
         SourceOneAlpha           = 17,
-        SourceOneAlphaMinusOne   = 18
+        OneMinusSourceOneAlpha   = 18,
     };
 
     enum class GfxBlendEquation : u8 {
@@ -662,7 +694,7 @@ namespace vp::res {
         Sub        = 1,
         ReverseSub = 2,
         Min        = 3,
-        Max        = 4
+        Max        = 4,
     };
 
     enum class GfxLogicOperation : u8 {
@@ -689,16 +721,17 @@ namespace vp::res {
         Front = 1,
         Back  = 2,
     };
+    VP_ENUM_FLAG_TRAITS(GfxCullMode);
 
     enum class GfxFillMode : u8 {
         Point = 0,
         Line  = 1,
         Fill  = 2,
     };
-    
+
     enum class GfxFrontFace : u8 {
-        CounterClockWise = 0,
-        ClockWise        = 1,
+        CounterClockwise = 0,
+        Clockwise        = 1,
     };
 
     struct ResGfxEmbedFile {

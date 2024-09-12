@@ -45,24 +45,24 @@ namespace vp::util {
             return Vector2<T>{ w, h };
         }
 
-        constexpr void SetPosition(const Vector2<T> *position) {
+        constexpr void SetPosition(const Vector2<T> position) {
             const Vector2<T> size = this->GetSize();
-            const T next_l = position->x - (size.x / static_cast<T>(2));
-            const T next_t = position->y - (size.y / static_cast<T>(2));
-            const T next_r = position->x + (size.x / static_cast<T>(2));
-            const T next_b = position->y + (size.y / static_cast<T>(2));
+            const T next_l = position.x - (size.x / static_cast<T>(2));
+            const T next_t = position.y - (size.y / static_cast<T>(2));
+            const T next_r = position.x + (size.x / static_cast<T>(2));
+            const T next_b = position.y + (size.y / static_cast<T>(2));
             left   = next_l;
             top    = next_t;
             right  = next_r;
             bottom = next_b;
         }
 
-        constexpr void SetSize(const Vector2<T> *size) {
+        constexpr void SetSize(const Vector2<T> size) {
             const Vector2<T> position = this->GetPosition();
-            const T next_l = position->x - (size.x / static_cast<T>(2));
-            const T next_t = position->y - (size.y / static_cast<T>(2));
-            const T next_r = position->x + (size.x / static_cast<T>(2));
-            const T next_b = position->y + (size.y / static_cast<T>(2));
+            const T next_l = position.x - (size.x / static_cast<T>(2));
+            const T next_t = position.y - (size.y / static_cast<T>(2));
+            const T next_r = position.x + (size.x / static_cast<T>(2));
+            const T next_b = position.y + (size.y / static_cast<T>(2));
             left   = next_l;
             top    = next_t;
             right  = next_r;
@@ -87,14 +87,14 @@ namespace vp::util {
             return result;
         }
 
-        constexpr bool IsOverlapping(const Vector2<T> *position) const {
+        constexpr bool IsOverlapping(const Vector2<T> position) const {
             const T left_l   = left;
             const T top_l    = top;
             const T right_l  = right;
             const T bottom_l = bottom;
 
-            const T x = position->x;
-            const T y = position->y;
+            const T x = position.x;
+            const T y = position.y;
 
             /* Check X and Y is in bounds */
             const bool is_hit_x = (x < right_l) & (left_l < x);
@@ -346,11 +346,11 @@ namespace vp::util {
             return false;
         }
 
-        constexpr Vector2<T> ClampPoint(const Vector2<T> *position) const {
+        constexpr Vector2<T> ClampPoint(const Vector2<T> position) const {
 
             /* Clamp position to rect */
-            const T pos_x   = position->x;
-            const T pos_y   = position->y;
+            const T pos_x   = position.x;
+            const T pos_y   = position.y;
             const T min_x   = vp::util::Max(left, pos_x);
             const T min_y   = vp::util::Max(top, pos_y);
             const T clamp_x = vp::util::Min(right, min_x);
@@ -359,7 +359,7 @@ namespace vp::util {
             return { clamp_x, clamp_y, };
         }
 
-        constexpr vp::util::Float2 NormalizePointFloat(const Vector2<T> *position) const {
+        constexpr vp::util::Float2 NormalizePointFloat(const Vector2<T> position) const {
 
             /* Convert to normalized floating point */
             Vector2<T>  point = this->ClampPoint(position);

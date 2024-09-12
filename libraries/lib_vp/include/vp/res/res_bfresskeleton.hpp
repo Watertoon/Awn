@@ -107,8 +107,8 @@ namespace vp::res {
                 u32 mirror_mode      : 2;
                 u32 scale_mode       : 2;
                 u32 reserve1         : 2;
-                u32 rotation_mode    : 2;
-                u32 reserve2         : 18;                
+                u32 rotation_mode    : 3;
+                u32 reserve2         : 17;                
             };
         };
         ResNintendoWareDictionary *bone_dictionary;

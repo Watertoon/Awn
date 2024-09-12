@@ -29,7 +29,7 @@ namespace vp::util {
         using VectorType                    = s32;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 2;
+        static constexpr u32 cVectorCount  = 2;
 
         static const Int2 cUnitX;
         static const Int2 cUnitY;
@@ -52,7 +52,7 @@ namespace vp::util {
         using VectorType                    = s32;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 3;
+        static constexpr u32 cVectorCount  = 3;
 
         static const Int3 cUnitX;
         static const Int3 cUnitY;
@@ -77,7 +77,7 @@ namespace vp::util {
         using VectorType                    = s32;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = false;
-        static constexpr bool cVectorCount  = 4;
+        static constexpr u32 cVectorCount  = 4;
 
         static const Int4 cUnitX;
         static const Int4 cUnitY;
@@ -249,7 +249,7 @@ namespace vp::util {
         using VectorType                    = s32;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 2;
+        static constexpr u32 cVectorCount  = 2;
 
         static const Vector2i cUnitX;
         static const Vector2i cUnitY;
@@ -274,7 +274,7 @@ namespace vp::util {
         using VectorType                    = s32;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 3;
+        static constexpr u32 cVectorCount  = 3;
 
         static const Vector3i cUnitX;
         static const Vector3i cUnitY;
@@ -300,7 +300,7 @@ namespace vp::util {
         using VectorType                    = s32;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
-        static constexpr bool cVectorCount  = 4;
+        static constexpr u32 cVectorCount  = 4;
 
         static const Vector4i cUnitX;
         static const Vector4i cUnitY;

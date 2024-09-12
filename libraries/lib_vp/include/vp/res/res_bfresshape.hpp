@@ -73,7 +73,7 @@ namespace vp::res {
         u32                   primitive_topology;
         u32                   index_format;
         u32                   index_count;
-        u32                   base_index;
+        u32                   base_vertex;
         u16                   sub_mesh_count;
         u16                   reserve0;
     };
@@ -98,31 +98,31 @@ namespace vp::res {
     static_assert(sizeof(ResBfresBoundingSphere) == 0x10);
 
     struct ResBfresShape {
-        u32                           magic;
-        u32                           reserve0                    : 1;
-        u32                           is_bounding_consistent      : 1;
-        u32                           has_vertex_buffer           : 1;
-        u32                           is_skip_setup_index_buffers : 1;
-        u32                           reserve1                    : 28;
-        const char                   *shape_name;
-        ResBfresVertex               *vertex;
-        ResBfresMesh                 *mesh_array;
-        u16                          *skin_bone_index_array;
-        ResBfresKeyShape             *key_shape_array;
-        ResNintendoWareDictionary    *key_shape_dictionary;
-        ResBfresBounding             *bounding_box_array;
-        ResBfresBoundingSphere       *bounding_sphere_array;
-        void                         *runtime_user_pointer;
-        u16                           section_index;
-        u16                           material_index;
-        u16                           bone_index;
-        u16                           vertex_index;
-        u16                           skin_bone_index_count;
-        u8                            max_bone_influences_per_vertex;
-        u8                            mesh_count;
-        u8                            key_shape_count;
-        u8                            target_attribute_count;
-        u16                           reserve2;
+        u32                        magic;
+        u32                        reserve0                    : 1;
+        u32                        is_bounding_consistent      : 1;
+        u32                        has_vertex_buffer           : 1;
+        u32                        is_skip_setup_index_buffers : 1;
+        u32                        reserve1                    : 28;
+        const char                *shape_name;
+        ResBfresVertex            *vertex;
+        ResBfresMesh              *mesh_array;
+        u16                       *skin_bone_index_array;
+        ResBfresKeyShape          *key_shape_array;
+        ResNintendoWareDictionary *key_shape_dictionary;
+        ResBfresBounding          *bounding_box_array;
+        ResBfresBoundingSphere    *bounding_sphere_array;
+        void                      *runtime_user_pointer;
+        u16                        section_index;
+        u16                        material_index;
+        u16                        bone_index;
+        u16                        vertex_index;
+        u16                        skin_bone_index_count;
+        u8                         max_bone_influences_per_vertex;
+        u8                         mesh_count;
+        u8                         key_shape_count;
+        u8                         target_attribute_count;
+        u16                        reserve2;
 
         static constexpr u32 cMagic = util::TCharCode32("FSHP");
 

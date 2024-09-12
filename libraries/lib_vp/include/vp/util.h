@@ -34,6 +34,7 @@
     #include <vp/util/util_memorybarrier.aarch64.hpp>
 #endif
 
+#include <vp/util/math/util_clamp.hpp>
 #include <vp/util/util_tmintype.h>
 #include <vp/util/util_alignment.hpp>
 #include <vp/util/util_endian.hpp>
@@ -47,9 +48,12 @@
 #include <vp/util/util_fixedobjectallocator.hpp>
 #include <vp/util/util_fixedhandletable.hpp>
 #include <vp/util/util_fixedringbuffer.hpp>
+#include <vp/util/util_atomicfixedringbuffer.hpp>
 #include <vp/util/util_fixedpriorityqueue.hpp>
 #include <vp/util/util_heapobjectallocator.hpp>
+#include <vp/util/util_atomicobjectallocator.hpp>
 #include <vp/util/util_pointerarray.hpp>
+#include <vp/util/util_fixedpointerarray.hpp>
 #include <vp/util/util_heaparray.hpp>
 #include <vp/util/util_timestamp.h>
 #include <vp/util/util_timespan.hpp>
@@ -58,21 +62,29 @@
 #include <vp/util/util_pointerbitflag.hpp>
 #include <vp/util/util_hashmap.hpp>
 #include <vp/util/util_keyindexmap.hpp>
-#include <vp/util/util_intrusiveslimredblacktree.hpp>
+#include <vp/util/util_fixedkeyindexmap.hpp>
+#include <vp/util/util_intrusiveredblacktree.hpp>
 #include <vp/util/util_parentredblacktree.hpp>
-#include <vp/util/util_redblacktreewithlist.hpp>
+#include <vp/util/util_intrusiveredblacktreewithlist.hpp>
 #include <vp/util/util_intrusivetreenode.hpp>
 #include <vp/util/util_pointerarrayallocator.hpp>
 #include <vp/util/util_ringbuffer.hpp>
+#include <vp/util/util_atomicringbuffer.hpp>
 #include <vp/util/util_color4.hpp>
 #include <vp/util/util_job.hpp>
 #include <vp/util/util_priorityqueue.hpp>
 #include <vp/util/util_indexallocator.hpp>
+#include <vp/util/util_fixedindexallocator.hpp>
 #include <vp/util/util_atomicindexallocator.hpp>
 #include <vp/util/util_framearray.hpp>
-#include <vp/util/util_redblacktreeallocator.hpp>
+#include <vp/util/util_intrusiveredblacktreeallocator.hpp>
 #include <vp/util/util_ifunction.hpp>
 #include <vp/util/util_connection.hpp>
+#include <vp/util/util_fixedconnection.hpp>
+#include <vp/util/util_bitsizedarray.hpp>
+#include <vp/util/util_fixedbitsizedarray.hpp>
+#include <vp/util/util_atomicbitsizedarray.hpp>
+#include <vp/util/util_atomicfixedbitsizedarray.hpp>
 
 #ifdef VP_TARGET_PLATFORM_win32
     #include <vp/util/util_guid.win32.hpp>
@@ -89,7 +101,6 @@
     //#include <vp/util/math/util_int128.neon.hpp>
     //#include <vp/util/math/util_float128.neon.hpp>
 #endif
-//#include <vp/util/math/util_vector2.hpp>
 #include <vp/util/math/util_floattypes.hpp>
 #include <vp/util/math/util_doubletypes.hpp>
 #include <vp/util/math/util_inttypes.hpp>
@@ -97,16 +108,10 @@
 #include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/util_floatcalc.hpp>
 #include <vp/util/math/util_doublecalc.hpp>
-//#include <vp/util/math/util_vector3.hpp>
-//#include <vp/util/math/util_vector3calc.h>
-//#include <vp/util/math/util_vector4.hpp>
-//#include <vp/util/math/util_matrix33.hpp>
-//#include <vp/util/math/util_matrix34.hpp>
-//#include <vp/util/math/util_matrix34calc.h>
-//#include <vp/util/math/util_matrix44.hpp>
-#include <vp/util/math/util_clamp.hpp>
+#include <vp/util/math/util_intcalc.hpp>
 
 #include <vp/util/util_tstring.hpp>
+#include <vp/util/util_charencodingutil.hpp>
 #include <vp/util/util_charactercode.hpp>
 #include <vp/util/util_bufferstring.hpp>
 #include <vp/util/util_pathutil.hpp>
@@ -121,9 +126,9 @@
 
 #include <vp/res/res_nintendowaredictionary.hpp>
 
-#include <vp/util/util_enumtraits.h>
+#include <vp/util/util_enumflagtraits.h>
 #include <vp/util/util_enumreflection.hpp>
-#include <vp/util/util_enumtraitsv.hpp>
+#include <vp/util/util_enumtraitsv.h>
 
 #include <vp/util/util_rectangle.hpp>
 #include <vp/util/util_logicalframebuffer.hpp>

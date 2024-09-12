@@ -24,6 +24,7 @@ namespace vp::util {
         return out;
 	}
 
+#ifdef VP_TARGET_PLATFORM_win32
     constexpr void MatrixMultiply(MatrixRowMajor4x4d *out_matrix, const MatrixRowMajor4x4d &lhs_matrix, const MatrixRowMajor4x4d &rhs_matrix) {
         const v256f r_row0 = { .mmd = rhs_matrix.array_row[0].vector.d };
         const v256f r_row1 = { .mmd = rhs_matrix.array_row[1].vector.d };
@@ -111,4 +112,5 @@ namespace vp::util {
         out_matrix->array_row[2].vector.d = perm2.d;
         out_matrix->array_row[3].vector.d = perm3.d;
     }
+#endif
 }

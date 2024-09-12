@@ -21,4 +21,8 @@ namespace vp::util {
         __builtin_ia32_mfence();
         return;
     }
+    ALWAYS_INLINE void MemoryBarrierLoad() {
+        __builtin_ia32_lfence();
+        return;
+    }
 }

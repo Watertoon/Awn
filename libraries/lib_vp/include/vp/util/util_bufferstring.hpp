@@ -18,11 +18,10 @@
 namespace vp::util {
 
 #ifdef VP_TARGET_ARCHITECTURE_x86
-
     constexpr u32 StringLength(const char *string) {
 
         /* Constexpr impl */
-        if (std::is_constant_evaluated() == true) {
+        if (std::is_constant_evaluated()) {
             u32 count = 0;
             while (string[0] != '\0') { string += 1; ++count; }
             return count;
@@ -57,6 +56,47 @@ namespace vp::util {
             string = string + 0x20;
         }
     }
+
+    constexpr bool StringCompare(const char *lhs, const char *rhs) {
+        
+        /* Constexpr impl */
+        if (std::is_constant_evaluated()) {
+            while (*lhs != '\0' || *rhs != '\0') { 
+                if (*lhs != *rhs) { return false; }
+                lhs += 1;
+                rhs += 1;
+            }
+            return true;
+        }
+
+        /* Handle aligned string */
+        u32 i    = 0;
+        u32 mask = 0;
+        const u32 iter = 0x20;
+        const char *l_iter = lhs;
+        const char *r_iter = rhs;
+        for (;;) {
+
+            /* Load 32 characters, compare if equal to zero, and convert result to a mask */
+            const v32c lhs_char = avx2::vlddqa(l_iter);
+            const v32c rhs_char = avx2::vlddqa(r_iter);
+            const v32c result = avx2::vcmpeqb(lhs_char, rhs_char);
+            mask = avx2::vpmovmskb(result);
+
+            /* Check if the mask has a bit set, meaning a character is non-zero */
+            if (mask != 0) {
+                const u32 offset = vp::util::CountRightZeroBits32(mask) + i;
+                return lhs[offset] == rhs[offset];
+            }
+
+            /* Advance while mask is not empty */
+            i = i + iter;
+            l_iter = std::addressof(lhs[i]);
+            r_iter = std::addressof(rhs[i]);
+        }
+
+        return true;
+    }
 #else
     constexpr u32 StringLength(const char *string) {
 
@@ -65,6 +105,15 @@ namespace vp::util {
         while (string[i] != '\0') { ++i; }
 
         return i;
+    }
+
+    constexpr bool StringCompare(const char *lhs, const char *rhs) {
+        while (*lhs != '\0' || *rhs != '\0') { 
+            if (*lhs != *rhs) { return false; }
+            lhs += 1;
+            rhs += 1;
+        }
+        return true;
     }
 #endif
 
@@ -77,28 +126,28 @@ namespace vp::util {
             char m_string_array[Size];
             u32  m_length;
         public:
-            explicit constexpr ALWAYS_INLINE FixedString() : m_string_array{'\0'}, m_length(0) {/*...*/}
-            explicit constexpr ALWAYS_INLINE FixedString(const char *string) : m_string_array{'\0'}, m_length(0) { 
+            explicit constexpr ALWAYS_INLINE FixedString() : m_length() { this->AssureTermination(); }
+            explicit constexpr ALWAYS_INLINE FixedString(const char *string) : m_length() { 
                 if (string == nullptr) { return; }
 
-                if (std::is_constant_evaluated() == true) {
+                if (std::is_constant_evaluated()) {
                     m_length = TStringCopy(m_string_array, string, TStringLength(string, Size - 1));
                 } else {
                     const size_t len = ::strlen(string);
                     ::memcpy(m_string_array, string, len);
-                    m_string_array[len + 1] = '\0';
+                    m_string_array[len] = '\0';
                     m_length = len; 
                 }
 
                 this->AssureTermination();
             }
-            explicit constexpr FixedString(const FixedString<Size> &rhs) : m_string_array{'\0'} { 
-                if (std::is_constant_evaluated() == true) {
+            explicit constexpr FixedString(const FixedString<Size> &rhs) : m_length() { 
+                if (std::is_constant_evaluated()) {
                     m_length = TStringCopy(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
                 } else {
                     const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
                     ::memcpy(m_string_array, rhs.m_string_array, len);
-                    m_string_array[len + 1] = '\0';
+                    m_string_array[len] = '\0';
                     m_length = len;
                 }
                 this->AssureTermination();
@@ -192,7 +241,7 @@ namespace vp::util {
                 } else {
                     const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
                     ::memcpy(m_string_array, rhs.m_string_array, len);
-                    m_string_array[len + 1] = '\0';
+                    m_string_array[len] = '\0';
                     m_length = len;
                 }
                 this->AssureTermination();
@@ -211,8 +260,9 @@ namespace vp::util {
                     m_length = TStringCopy(m_string_array, rhs, TStringLength(rhs, Size - 1));
                 } else {
                     const size_t len = ::strlen(rhs);
+                    VP_ASSERT(len < Size);
                     ::memcpy(m_string_array, rhs, len);
-                    m_string_array[len + 1] = '\0';
+                    m_string_array[len] = '\0';
                     m_length = len;
                     this->AssureTermination();
                 }

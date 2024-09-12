@@ -6,9 +6,9 @@ GRAPHICS_API ?= vk
 BINARY_TYPE  ?= debug
 
 # User component lists
-GENERIC_SUB_LIST := vp
+GENERIC_SUB_LIST := vp awn
 
-win32_SUB_LIST   := awn
+win32_SUB_LIST   :=
 
 define MAKE_GENERIC
 $(MAKE) sub_make ARCHITECTURE=$(ARCHITECTURE) PLATFORM=$(PLATFORM) GRAPHICS_API=$(GRAPHICS_API) BINARY_TYPE=$(BINARY_TYPE) -C lib_$(1)

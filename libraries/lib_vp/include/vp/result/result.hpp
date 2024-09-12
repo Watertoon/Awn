@@ -67,24 +67,48 @@ namespace vp {
         } \
     }
     #define RESULT_THROW_ON_FAILED(result)  \
-        if ((result) != vp::ResultSuccess) { return result; }
+        if ((result) != ::vp::ResultSuccess) { return result; }
     #define RESULT_SUCCEEDED(result)  \
-        ((result) == vp::ResultSuccess)
+        ((result) == ::vp::ResultSuccess)
     #define RESULT_FAILED(result)  \
-        ((result) != vp::ResultSuccess)
+        ((result) != ::vp::ResultSuccess)
     #define RESULT_MATCHES(result0, result1)  \
         ((result0) == (result1))
 
+#ifdef VP_TARGET_BINARY_TYPE_release
     #define RESULT_ABORT_UNLESS(result_expression)  \
     { \
-        const vp::Result __result = (result_expression); \
-        if (VP_UNLIKELY(__result != vp::ResultSuccess)) { \
+        const ::vp::Result __result = (result_expression); \
+        if (VP_UNLIKELY(__result != ::vp::ResultSuccess)) { \
+            vp::trace::impl::AbortImpl("", "", "", 0, __result, 0); \
+        } \
+    }
+    #define RESULT_ABORT_UNLESS_EXPECTED(result_expression, expected_result)  \
+    { \
+        const ::vp::Result __result = (result_expression); \
+        if (VP_UNLIKELY(__result != expected_result)) { \
+            vp::trace::impl::AbortImpl("", "", "", 0, __result, 0); \
+        } \
+    }
+
+    #define RESULT_RANGE_ABORT_UNLESS_EXPECTED(result_expression, expected_result_range) \
+        { \
+            const vp::Result __result = (result_expression); \
+            if (__result < Result##expected_result_range##Start || Result##expected_result_range##End < __result) { \
+                vp::trace::impl::AbortImpl("", "", "", 0, __result, 0); \
+            } \
+        }
+#else
+    #define RESULT_ABORT_UNLESS(result_expression)  \
+    { \
+        const ::vp::Result __result = (result_expression); \
+        if (VP_UNLIKELY(__result != ::vp::ResultSuccess)) { \
             vp::trace::impl::AbortImpl(TOSTRING(expected_result), __PRETTY_FUNCTION__, __FILE__, __LINE__, __result, "Failed: %s\n  Module: %d\n  Description %d\n", TOSTRING(expression), vp::result::GetModule(__result), vp::result::GetDescription(__result)); \
         } \
     }
     #define RESULT_ABORT_UNLESS_EXPECTED(result_expression, expected_result)  \
     { \
-        const vp::Result __result = (result_expression); \
+        const ::vp::Result __result = (result_expression); \
         if (VP_UNLIKELY(__result != expected_result)) { \
             vp::trace::impl::AbortImpl(TOSTRING(expected_result), __PRETTY_FUNCTION__, __FILE__, __LINE__, __result, "Failed: %s\n  Module: %d\n  Description %d\n", TOSTRING(expression), vp::result::GetModule(__result), vp::result::GetDescription(__result)); \
         } \
@@ -97,6 +121,7 @@ namespace vp {
                 vp::trace::impl::AbortImpl(TOSTRING(expected_result), __PRETTY_FUNCTION__, __FILE__, __LINE__, __result, "Failed: %s\n  Module: %d\n  Description %d\n", TOSTRING(expression), vp::result::GetModule(__result), vp::result::GetDescription(__result)); \
             } \
         }
+#endif
 
     #define DECLARE_RESULT_MODULE(module_num) \
         constexpr inline u32 ResultModule = module_num;

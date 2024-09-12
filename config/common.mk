@@ -181,7 +181,7 @@ endif
 ifeq ($(PLATFORM), cafe)
 %.rpx:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(RPX_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo 3ds build rules
@@ -195,7 +195,7 @@ ifeq ($(PLATFORM), ctr)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(ELF_FLAGS) -o $@ $^ $(ALL_LIBS)
 
 endif
 
@@ -206,7 +206,7 @@ ifeq ($(PLATFORM), ntr)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(ELF_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo Wii and GameCube build rules
@@ -217,7 +217,7 @@ ifeq ($(PLATFORM), dol)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(ELF_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo GameBoy Advance build rules
@@ -234,7 +234,7 @@ MAKER_CODE ?= 00
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(NRO_FLAGS) -o $@ $^ $(ALL_LIBS)
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(ELF_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Nintendo 64 build rules
@@ -250,7 +250,7 @@ ifeq ($(PLATFORM), nus)
 
 %.elf:
 	@echo Compiling $@
-	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(Z64_FLAGS) -o $@ $^ $(ALL_LIBS)
+	$(COMPILER_PREFIX)$(CXX) $(ALL_COMPILER_FLAGS) $(ELF_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif
 
 # Common build rules

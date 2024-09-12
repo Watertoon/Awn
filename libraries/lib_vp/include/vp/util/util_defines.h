@@ -15,6 +15,13 @@
  */
 #pragma once
 
+#ifdef ALWAYS_INLINE
+#undef ALWAYS_INLINE
+#endif
+#ifdef BITSIZEOF
+#undef BITSIZEOF
+#endif
+
 #define ALWAYS_INLINE __attribute__((always_inline)) inline
 #define ALWAYS_INLINE_LAMBDA __attribute__((always_inline))
 #define NO_INLINE __attribute__((noinline))
