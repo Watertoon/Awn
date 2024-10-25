@@ -26,10 +26,8 @@ namespace awn::gfx::impl {
     class DescriptorMemoryManager {
         public:
             struct Staging {
-                char descriptor_memory_combined[8][Context::cTargetMaxPerStageMemorySizeCombined];
-            };
-            struct StagingExt : public Staging {
-                char descriptor_memory_separate_texture_sampler[8][Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler];
+                char descriptor_memory_ts_i_st_ss[8][Context::cTargetMaxPerStageMemorySizeTextureSamplerImageSeparate];
+                char descriptor_memory_ubo_ssbo[8][Context::cTargetMaxPerStageMemorySizeUniformBufferStorageBuffer];
             };
         private:
             mem::SeparateHeap *m_descriptor_heap;

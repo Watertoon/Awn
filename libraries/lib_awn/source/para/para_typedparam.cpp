@@ -126,7 +126,7 @@ namespace awn::para {
             const Result result = parent->FindComposite(std::addressof(sub_context), field_name);
             if (result == ResultFoundComposite) {
                 *out_find_info = sub_context;
-                return result;
+                RESULT_RETURN(result);
             }
 
             parent = parent->GetParent();
@@ -449,7 +449,7 @@ namespace awn::para {
                 out_find_info->found_name     = comp_info->name;                
                 out_find_info->is_non_default = ((*comp_info->is_non_default & 1) == 1);
 
-                return ResultFoundComposite;
+                RESULT_RETURN(ResultFoundComposite);
             }
 
             RESULT_RETURN_SUCCESS;
@@ -459,6 +459,6 @@ namespace awn::para {
 
         if (result == ResultFoundComposite) { RESULT_RETURN_SUCCESS; }
 
-        return ResultNoComposite;
+        RESULT_RETURN(ResultNoComposite);
     }
 }

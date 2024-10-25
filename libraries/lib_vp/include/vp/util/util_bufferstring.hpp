@@ -71,22 +71,28 @@ namespace vp::util {
 
         /* Handle aligned string */
         u32 i    = 0;
-        u32 mask = 0;
         const u32 iter = 0x20;
         const char *l_iter = lhs;
         const char *r_iter = rhs;
+        const v32c zero = {};
         for (;;) {
 
             /* Load 32 characters, compare if equal to zero, and convert result to a mask */
             const v32c lhs_char = avx2::vlddqa(l_iter);
             const v32c rhs_char = avx2::vlddqa(r_iter);
-            const v32c result = avx2::vcmpeqb(lhs_char, rhs_char);
-            mask = avx2::vpmovmskb(result);
+            const v32c result0 = avx2::vcmpeqb(lhs_char, zero);
+            const v32c result1 = avx2::vcmpeqb(rhs_char, zero);
+            const v32c result2 = avx2::vcmpeqb(lhs_char, rhs_char);
+            const u32 mask0 = avx2::vpmovmskb(result0);
+            const u32 mask1 = avx2::vpmovmskb(result1);
+            const u32 mask2 = avx2::vpmovmskb(result2);
 
             /* Check if the mask has a bit set, meaning a character is non-zero */
-            if (mask != 0) {
-                const u32 offset = vp::util::CountRightZeroBits32(mask) + i;
-                return lhs[offset] == rhs[offset];
+            if (mask0 != 0 || mask1 != 0 || mask2 != 0) {
+                const u32 offset0 = vp::util::CountRightZeroBits32(mask0) + i;
+                const u32 offset1 = vp::util::CountRightZeroBits32(mask1) + i;
+                const u32 offset2 = vp::util::CountRightOneBits32(mask2) + i;
+                return offset0 == offset1 && offset0 <= offset2;
             }
 
             /* Advance while mask is not empty */
@@ -123,10 +129,12 @@ namespace vp::util {
         public:
             static constexpr u32 cInvalidIndex = 0xffff'ffff;
         public:
-            char m_string_array[Size];
             u32  m_length;
+            char m_string_array[Size];
         public:
-            explicit constexpr ALWAYS_INLINE FixedString() : m_length() { this->AssureTermination(); }
+            explicit constexpr ALWAYS_INLINE FixedString() : m_length(0) {
+                this->AssureTermination();
+            }
             explicit constexpr ALWAYS_INLINE FixedString(const char *string) : m_length() { 
                 if (string == nullptr) { return; }
 
@@ -135,7 +143,6 @@ namespace vp::util {
                 } else {
                     const size_t len = ::strlen(string);
                     ::memcpy(m_string_array, string, len);
-                    m_string_array[len] = '\0';
                     m_length = len; 
                 }
 
@@ -147,7 +154,6 @@ namespace vp::util {
                 } else {
                     const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
                     ::memcpy(m_string_array, rhs.m_string_array, len);
-                    m_string_array[len] = '\0';
                     m_length = len;
                 }
                 this->AssureTermination();
@@ -156,7 +162,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE ~FixedString() {/*...*/}
 
             constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) {
-                if (std::is_constant_evaluated() == true) {
+                if (std::is_constant_evaluated()) {
                     return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
                 }
 
@@ -164,7 +170,7 @@ namespace vp::util {
                 return ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
             constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) const {
-                if (std::is_constant_evaluated() == true) {
+                if (std::is_constant_evaluated()) {
                     return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
                 }
 
@@ -172,7 +178,7 @@ namespace vp::util {
                 return ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
             constexpr ALWAYS_INLINE bool operator==(const char *rhs) {
-                if (std::is_constant_evaluated() == true) {
+                if (std::is_constant_evaluated()) {
                     return TStringCompare(m_string_array, rhs, TStringLength(rhs, Size - 1));
                 }
 
@@ -181,7 +187,7 @@ namespace vp::util {
                 return ::memcmp(m_string_array, rhs, length) == 0;
             }
             constexpr ALWAYS_INLINE bool operator==(const char *rhs) const {
-                if (std::is_constant_evaluated() == true) {
+                if (std::is_constant_evaluated()) {
                     return TStringCompare(m_string_array, rhs, TStringLength(rhs, Size - 1));
                 }
 
@@ -190,14 +196,14 @@ namespace vp::util {
                 return ::memcmp(m_string_array, rhs, length) == 0;
             }
             constexpr ALWAYS_INLINE bool operator!=(const FixedString& rhs) {
-                if (std::is_constant_evaluated() == true) {
+                if (std::is_constant_evaluated()) {
                     return (TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1)) != 0);
                 }
 
                 return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
             constexpr ALWAYS_INLINE bool operator!=(const FixedString& rhs) const {
-                if (std::is_constant_evaluated() == true) {
+                if (std::is_constant_evaluated()) {
                     return (TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1)) != 0);
                 }
 
@@ -380,7 +386,7 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE void AssureTermination() {
-                m_string_array[Size - 1] = '\0';
+                m_string_array[m_length] = '\0';
             }
             constexpr ALWAYS_INLINE bool IsNullString() {
                 return m_string_array[0] == '\0';

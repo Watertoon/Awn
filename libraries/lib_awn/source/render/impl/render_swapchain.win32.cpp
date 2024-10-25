@@ -32,8 +32,6 @@ namespace awn::render::impl {
         gfx::impl::Context::GetInstance()->SubmitCommandList(m_command_list, nullptr, 0, std::addressof(submit_sync), 1);
 
         /* Present */
-        const u32 result1 = ::WaitForSingleObjectEx(m_wait_handle, INFINITE, false);
-        VP_ASSERT(result1 == WAIT_OBJECT_0);
         const u32 options = 0;
         DXGI_PRESENT_PARAMETERS present_params = {};
         const HRESULT result0 = m_dxgi_swapchain->Present1(m_present_interval, options, std::addressof(present_params));
@@ -103,7 +101,7 @@ namespace awn::render::impl {
 			.BufferCount = m_update_settings.image_count,
 			.Scaling = DXGI_SCALING_STRETCH,
 			.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-			.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED,
+			.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
 			.Flags = swapchain_options,
 		};
 		IDXGISwapChain1 *swapchain_1 = nullptr;
@@ -328,7 +326,11 @@ namespace awn::render::impl {
         /* Wait for present */
         std::scoped_lock l(m_present_cs);
 
-        /* Wait for vk queue */
+        /* Wait next vblank */
+        const u32 result1 = ::WaitForSingleObjectEx(m_wait_handle, INFINITE, false);
+        VP_ASSERT(result1 == WAIT_OBJECT_0);
+
+        /* Wait for vk queue that hopefully completed before the vblank period */
         gfx::Sync *submit_sync = std::addressof(m_submit_sync);
         submit_sync->Wait();
         submit_sync->IncrementExpectedValue();

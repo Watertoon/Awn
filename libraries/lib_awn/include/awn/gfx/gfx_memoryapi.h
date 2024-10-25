@@ -22,11 +22,11 @@ namespace awn::gfx {
         size_t alignment;
     };
 
-    static constexpr inline u32 cTargetMaxTextureDescriptorCount = 0xa000;
-    static constexpr inline u32 cTargetMaxSamplerDescriptorCount = 4000;
+    static constexpr inline u32 cTargetMaxTextureDescriptorCount = 0x1'0000;
+    static constexpr inline u32 cTargetMaxSamplerDescriptorCount = 0x1000;
     static constexpr inline u32 cMaxBindlessDescriptorCount = vp::util::Max(cTargetMaxSamplerDescriptorCount, cTargetMaxTextureDescriptorCount);
 
-    using DescriptorSlotIndexType = vp::util::MinUIntType<cMaxBindlessDescriptorCount>;
+    using DescriptorSlotIndexType = vp::util::MinUIntType<cMaxBindlessDescriptorCount - 1>;
 
     constexpr inline u16 cInvalidDescriptorSlotFreeCount = 0xffff;
 

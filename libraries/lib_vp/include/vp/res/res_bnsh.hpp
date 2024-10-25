@@ -67,51 +67,9 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBnshShaderInterfaceInfo) == 0x60);
 
-    enum class GfxShaderStage : u32 {
-        Vertex                 = 0,
-        TessellationControl    = 1,
-        TessellationEvaluation = 2,
-        Geometry               = 3,
-        Fragment               = 4,
-        Compute                = 5,
-        /* Vp ext */
-        Task                   = 6,
-        Mesh                   = 7,
-    };
-
-    enum class GfxShaderStageBits : u32 {
-        Vertex                 = (1 << 0),
-        TessellationControl    = (1 << 1),
-        TessellationEvaluation = (1 << 2),
-        Geometry               = (1 << 3),
-        Fragment               = (1 << 4),
-        Compute                = (1 << 5),
-        /* Vp ext */
-        Task                   = (1 << 6),
-        Mesh                   = (1 << 7),
-    };
-    VP_ENUM_FLAG_TRAITS(GfxShaderStageBits);
-
     static constexpr u32 cMaxBnshShaderStageCount = 0x8;
 
-    enum class GfxShaderCodeType : u8 {
-        Binary         = 0x0,
-        Intermediate   = 0x1,
-        Source         = 0x2,
-    };
-
     static constexpr u32 cMaxBnshShaderCodeTypeCount = 0x3;
-
-    enum class GfxShaderInterfaceType : u32 {
-        InputAttribute  = 0x0,
-        OutputAttribute = 0x1,
-        TextureSampler  = 0x2,
-        UniformBuffer   = 0x3,
-        StorageBuffer   = 0x4,
-        Image           = 0x5,
-        SeparateTexture = 0x6,
-        SeparateSampler = 0x7,
-    };
 
     static constexpr u32 cMaxBnshInputAttributeCount  = 0x10;
     static constexpr u32 cMaxBnshOutputAttributeCount = 0x10;
@@ -206,6 +164,11 @@ namespace vp::res {
         /* Vp extensions */
         VpExtVulkan = 0x100,
     };
+    VP_ENUM_TRAITSV(
+        vp::res::BnshTargetApiType, BnshTargetApiType,
+        Nvn,
+        VpExtVulkan
+    );
 
     struct ResBnshShaderContainer : public ResNintendoWareSubHeader {
         u16                         target_api_type;
@@ -259,3 +222,4 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBnsh) == 0x60);
 }
+VP_ENUM_TRAITS_AUTO(vp::res::BnshTargetApiType);

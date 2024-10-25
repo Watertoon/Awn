@@ -20,28 +20,50 @@ namespace awn::gfx {
     static constexpr inline u32 cTargetMaxSimultaneousShaderStageCount = 5;
 
     struct PrimitiveShaderInfo {
-        u32   vertex_code_size;
-        u32   tessellation_control_code_size;
-        u32   tessellation_evaluation_code_size;
-        u32   geometry_code_size;
-        u32   fragment_code_size;
-        void *vertex_code;
-        void *tessellation_control_code;
-        void *tessellation_evaluation_code;
-        void *geometry_code;
-        void *fragment_code;
+        union {
+            u32 code_size_array[5];
+            struct {
+                u32   code_size_vertex;
+                u32   code_size_tessellation_control;
+                u32   code_size_tessellation_evaluation;
+                u32   code_size_geometry;
+                u32   code_size_fragment;
+                
+            };
+        };
+        union {
+            void *code_array[5];
+            struct {
+                void *code_vertex;
+                void *code_tessellation_control;
+                void *code_tessellation_evaluation;
+                void *code_geometry;
+                void *code_fragment;
+            };
+        };
     };
     struct MeshShaderInfo {
-        u32   task_code_size;
-        u32   mesh_code_size;
-        u32   fragment_code_size;
-        void *task_code;
-        void *mesh_code;
-        void *fragment_code;
+        union {
+            u32 code_size_array[3];
+            struct {
+                u32   code_size_task;
+                u32   code_size_mesh;
+                u32   code_size_fragment;
+                
+            };
+        };
+        union {
+            void *code_array[3];
+            struct {
+                void *code_task;
+                void *code_mesh;
+                void *code_fragment;
+            };
+        };
     };
     struct ComputeShaderInfo {
-        u32   compute_code_size;
-        void *compute_code;
+        u32   code_size_compute;
+        void *code_compute;
     };
 
     class Shader {
@@ -51,17 +73,18 @@ namespace awn::gfx {
             friend class CommandBuffer;
         private:
             u32                            m_shader_count;
-            u32                            m_shader_stage_mask;
             VkShaderStageFlagBits          m_vk_shader_stage_flag_array[cTargetMaxSimultaneousShaderStageCount];
             VkShaderEXT                    m_vk_shader_array[cTargetMaxSimultaneousShaderStageCount];
             vp::res::ResBnshShaderProgram *m_res_program;
+        private:
+            void InitializeImpl(void **code_array, u32 *code_size_array, const ShaderStage *stage_array, u32 stage_count, ShaderCodeType code_type, VkShaderCreateFlagsEXT create_flags);
         public:
-            constexpr ALWAYS_INLINE Shader() : m_shader_count(0), m_shader_stage_mask(), m_vk_shader_stage_flag_array{}, m_vk_shader_array{}, m_res_program() {/*...*/}
+            constexpr ALWAYS_INLINE Shader() : m_shader_count(0), m_vk_shader_stage_flag_array{}, m_vk_shader_array{}, m_res_program() {/*...*/}
             constexpr ~Shader() {/*...*/}
 
-            void Initialize(MeshShaderInfo *shader_info, const bool is_binary = false);
-            void Initialize(PrimitiveShaderInfo *shader_info, const bool is_binary = true);
-            void Initialize(ComputeShaderInfo *shader_info, const bool is_binary = true);
+            void Initialize(MeshShaderInfo *shader_info, ShaderCodeType code_type);
+            void Initialize(PrimitiveShaderInfo *shader_info, ShaderCodeType code_type);
+            void Initialize(ComputeShaderInfo *shader_info, ShaderCodeType code_type);
 
             bool Initialize(vp::res::ResBnshShaderProgram *res_program);
             void Finalize();

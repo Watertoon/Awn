@@ -30,8 +30,8 @@ namespace awn::gfx {
         for (u32 i = 0; i < primitive_shape_info->segment_count; ++i) {
 
             /* Calculate location of vertex on circle */
-            const float              circle_location = half_round * (vp::util::ToDegrees(i * 360.0f) / segment_count_f);
-            const vp::util::Vector2f sin_cos = vp::util::SampleSinCos(circle_location);
+            const float            circle_location = half_round * (vp::util::ToDegrees(i * 360.0f) / segment_count_f);
+            const vp::util::Float2 sin_cos = vp::util::SampleSinCos(circle_location);
 
             if ((primitive_shape_info->shape_format & ShapeFormat::Position) == ShapeFormat::Position) {
                 vertex_buffer_iter[0] = sin_cos.y;

@@ -19,7 +19,6 @@
 #define VP_ENUM_TRAITSV(lookup_name, enum_type, ...) VP_CLASS_VMACRO(lookup_name, enum_type, VP_ENUM_TRAITS, __VA_ARGS__)
 
 #define VP_ENUM_TRAITS_IMPL(enum_type) \
-    constexpr const ::vp::util::TFixedValueDictionary< enum_type##Traits::UnderlyingType, sizeof( enum_type##Traits::cNWStringArray) / sizeof(const char*)> c##enum_type##EnumDictionary( enum_type##Traits::cClassName, enum_type##Traits::cNWStringArray, enum_type##Traits::cIndexToEnumArray); \
     const ::vp::util::EnumDictionaryNode s##enum_type##DicNode(std::addressof( c##enum_type##EnumDictionary ));
 
 namespace vp::util::impl {        
@@ -249,7 +248,7 @@ namespace vp::util {
 
 #define VP_ENUM_TRAITS_END(enum_type) \
         }; \
-        static constexpr u32 cEnumCount = sizeof(cIndexToEnumArray) / sizeof(u32); \
+        static constexpr u32 cEnumCount = sizeof(cIndexToEnumArray) / sizeof(UnderlyingType); \
         static constexpr u32 GetIndexByEnumValue(EnumType enum_value) { u32 i = 0; for (; i < cEnumCount; ++i) { if (static_cast<EnumType>(cIndexToEnumArray[i]) == enum_value) { break; }} VP_ASSERT(i < cEnumCount); return i; } \
         static constexpr const char *GetStringByIndex(u32 index) { VP_ASSERT(index < cEnumCount); return cIndexToStringArray[index]; } \
         static constexpr const char *GetStringByEnumValue(EnumType enum_value) { return cIndexToStringArray[GetIndexByEnumValue(enum_value)]; } \
@@ -258,7 +257,7 @@ namespace vp::util {
         static constexpr EnumType GetEnumValueByIndex(u32 index) { VP_ASSERT(index < cEnumCount); return static_cast<EnumType>(cIndexToEnumArray[index]); } \
         static_assert(sizeof(cNWStringArray) / sizeof(const char*) == sizeof(cIndexToEnumArray) / sizeof(UnderlyingType)); \
     }; \
-    extern const ::vp::util::TFixedValueDictionary< enum_type##Traits::UnderlyingType, sizeof( enum_type##Traits::cNWStringArray) / sizeof(const char*)> c##enum_type##EnumDictionary; \
+    static constexpr const ::vp::util::TFixedValueDictionary< enum_type##Traits::UnderlyingType, sizeof( enum_type##Traits::cNWStringArray) / sizeof(const char*)> c##enum_type##EnumDictionary( enum_type##Traits::cClassName, enum_type##Traits::cNWStringArray, enum_type##Traits::cIndexToEnumArray ); \
     constexpr bool enum_type##Traits::GetEnumValueByString(EnumType *out_value, const char *enum_string) { \
         if (std::is_constant_evaluated() == true) { \
             for (u32 i = 0; i < cEnumCount; ++i) { if (::vp::util::TStringCompare(enum_string, cIndexToStringArray[i], 0xffff'ffff) == true) { *out_value = static_cast<EnumType>(cIndexToEnumArray[i]); return true; } } \

@@ -216,7 +216,7 @@ namespace vp::util {
         return SinCosSampleTable[(index * 4)] + (SinCosSampleTable[(index * 4) + 2] * variance);
     }
 
-    constexpr ALWAYS_INLINE Vector2f SampleSinCos(float value_from_angle_index) {
+    constexpr ALWAYS_INLINE Float2 SampleSinCos(float value_from_angle_index) {
         const unsigned long long angle_index = static_cast<unsigned long long>(value_from_angle_index);
         const unsigned int       index       = (angle_index >> 24) & 0xff;
         const float variance = static_cast<float>(angle_index & 0xff'ffff) * 5.9604644775390625e-8;
@@ -236,7 +236,7 @@ namespace vp::util {
     }
 
     /* Interpolate a Sin and Cos value from one period  */
-    constexpr ALWAYS_INLINE Vector2f GetSinCosPeriodStep(int t, int max) {
+    constexpr ALWAYS_INLINE Float2 GetSinCosPeriodStep(int t, int max) {
         const float value = ((static_cast<float>(cAngleIndexHalfRound) / cFloatPi) * ((static_cast<float>(t) * cFloat2Pi) / static_cast<float>(max)));
         return SampleSinCos(value);
     }

@@ -29,8 +29,7 @@ namespace vp::res {
         const char *attribute_name;
         u32         attribute_format;
         u16         buffer_offset;
-        u8          buffer_mask_offset : 6;
-        u8          buffer_flag_offset : 2;
+        u8          buffer_index;
         u8          is_dynamic_vbo;
     };
     static_assert(sizeof(ResBfresVertexAttribute) == 0x10);
@@ -42,7 +41,7 @@ namespace vp::res {
         ResNintendoWareDictionary   *vertex_attribute_dictionary;
         void                        *runtime_memory_pool_pointer;
         void                        *runtime_vertex_buffer_array;
-        void                       **user_vertex_buffer_array;
+        void                       **runtime_user_vertex_buffer_array;
         ResGfxBufferInfo            *vertex_buffer_info_array;
         ResBfresVertexBufferStride  *vertex_buffer_stride_info_array;
         void                        *user_pointer;
@@ -55,6 +54,15 @@ namespace vp::res {
         u16                          vertex_buffer_alignment;
 
         static constexpr u32 cMagic = util::TCharCode32("FVTX");
+
+        using DynamicVboConnection = vp::util::FixedConnection<u64, 0x100>;
+
+        constexpr void CalculateDynamicVertexBufferIndices(DynamicVboConnection *out_mask) {
+            for (u32 i = 0; i < this->vertex_attribute_count; ++i) {
+                if (!(this->vertex_attribute_array[i].is_dynamic_vbo & 1)) { continue; }
+                out_mask->SetBit(this->vertex_attribute_array[i].buffer_index);
+            }
+        }
     };
     static_assert(sizeof(ResBfresVertex) == 0x58);
 
@@ -115,16 +123,24 @@ namespace vp::res {
         void                      *runtime_user_pointer;
         u16                        section_index;
         u16                        material_index;
-        u16                        bone_index;
+        u16                        base_bone_index;
         u16                        vertex_index;
         u16                        skin_bone_index_count;
-        u8                         max_bone_influences_per_vertex;
+        u8                         vertex_skin_weight_count;
         u8                         mesh_count;
         u8                         key_shape_count;
         u8                         target_attribute_count;
         u16                        reserve2;
 
         static constexpr u32 cMagic = util::TCharCode32("FSHP");
+
+        constexpr u32 GetTotalSubMeshCount() const {
+            u32 total_sub_mesh_count = 0;
+            for (u32 i = 0; i < this->mesh_count; ++i) {
+                total_sub_mesh_count += this->mesh_array[i].sub_mesh_count;
+            }
+            return total_sub_mesh_count;
+        }
 
         constexpr ResBfresKeyShape *TryGetKeyShape(const char *key_shape_name) {
             if (key_shape_dictionary == nullptr) { return nullptr; }

@@ -19,6 +19,9 @@ namespace vp::trace {
 
     #if defined(VP_DEBUG)
 
+        #define VP_UNEXPECTED_DEFAULT() \
+            vp::trace::AbortUnexpectedDefault(__PRETTY_FUNCTION__, __FILE__, __LINE__)
+
         #define VP_NOT_IMPLEMENTED() \
             vp::trace::AbortNotImplemented(__PRETTY_FUNCTION__, __FILE__, __LINE__)
 
@@ -40,6 +43,9 @@ namespace vp::trace {
 
     #else
 
+        #define VP_UNEXPECTED_DEFAULT() \
+            vp::trace::AbortUnexpectedDefault("", "", 0)
+
         #define VP_NOT_IMPLEMENTED() \
             vp::trace::AbortNotImplemented("", "", 0); \
 
@@ -47,7 +53,7 @@ namespace vp::trace {
         { \
             const auto _temp_result = (expression); \
             if (__builtin_expect((!_temp_result), 0)) { \
-                vp::trace::AbortAssert("", __FILE__, __LINE__, TOSTRING(expression)); \
+                vp::trace::AbortAssert("", "", 0, ""); \
             } \
         }
 
@@ -55,7 +61,7 @@ namespace vp::trace {
         { \
             const auto _temp_result = (expression); \
             if (__builtin_expect((!_temp_result), 0)) { \
-                vp::trace::impl::AbortImpl("Assert failed!!!", "", __FILE__, __LINE__, vp::trace::ResultAssertFailed, format, __VA_ARGS__); \
+                vp::trace::impl::AbortImpl("", "", "", 0, vp::trace::ResultAssertFailed, ""); \
             } \
         }
 

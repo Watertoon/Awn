@@ -41,7 +41,7 @@ namespace awn::sys {
         if (!result) {
             time_left = TimeSpan::GetTimeLeftOnTarget(timeout_tick); 
             if (time_left.GetNanoSeconds() == 0) { 
-                return ResultTimeout; 
+                RESULT_RETURN(ResultTimeout); 
             }
         }
         RESULT_RETURN_SUCCESS;

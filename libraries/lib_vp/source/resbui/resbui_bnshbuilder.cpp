@@ -17,6 +17,21 @@
 
 namespace vp::resbui {
 
+    namespace {
+
+        constexpr inline vp::res::GfxShaderInterfaceType cInterfaceTypeArray[] = {
+            vp::res::GfxShaderInterfaceType::InputAttribute,
+            vp::res::GfxShaderInterfaceType::OutputAttribute,
+            vp::res::GfxShaderInterfaceType::TextureSampler,
+            vp::res::GfxShaderInterfaceType::UniformBuffer,
+            vp::res::GfxShaderInterfaceType::StorageBuffer,
+            vp::res::GfxShaderInterfaceType::Image,
+            vp::res::GfxShaderInterfaceType::SeparateTexture,
+            vp::res::GfxShaderInterfaceType::SeparateSampler,
+        };
+        constexpr inline u32 cInterfaceTypeCount = sizeof(cInterfaceTypeArray) / sizeof(vp::res::GfxShaderInterfaceType);
+    }
+
     void BnshBuilder::Serialize(void *out_bnsh, size_t output_size, const BnshBuilderMemoryInfo *memory_info) {
 
         /* Clear memory */
@@ -122,8 +137,8 @@ namespace vp::resbui {
                     if (shader_node == nullptr) { continue; }
 
                     if (!is_slot_variation) {
-                        for (u32 k = 0; k < BnshShaderNode::cTotalInterfaceNodeCount; ++k) {
-                            const char *name_string = shader_node->m_input_attribute_array[k].name.GetString();
+                        for (BnshShaderInterfaceNode *&node : shader_node->m_interface_array) {
+                            const char *name_string = node->name.GetString();
                             if (name_string == nullptr || *name_string == '\0') { continue; }
 
                             is_slot_variation = true;
@@ -174,16 +189,16 @@ namespace vp::resbui {
 
                     bool is_slot_program = false;
                     bool is_slot_ext_program = false;
-                    for (u32 k = 0; k < BnshShaderNode::cInterfaceTableCount; ++k) {
-                        const char *name_string = shader_node->m_input_attribute_array[k].name.GetString();
-                        if (name_string == nullptr || *name_string == '\0') { continue; }
+                    for (BnshShaderInterfaceNode *&node : shader_node->m_interface_array) {
+                        if (!node->IsValid()) { continue; }
+                        if (node->interface_type == vp::res::GfxShaderInterfaceType::SeparateTexture || node->interface_type == vp::res::GfxShaderInterfaceType::SeparateSampler) { continue; }
 
                         is_slot_program = true;
                         break;
                     }
-                    for (u32 k = 0; k < BnshShaderNode::cInterfaceTableCountExt; ++k) {
-                        const char *name_string = shader_node->m_separate_texture_array[k].name.GetString();
-                        if (name_string == nullptr || *name_string == '\0') { continue; }
+                    for (BnshShaderInterfaceNode *&node : shader_node->m_interface_array) {
+                        if (!node->IsValid()) { continue; }
+                        if (node->interface_type != vp::res::GfxShaderInterfaceType::SeparateTexture && node->interface_type != vp::res::GfxShaderInterfaceType::SeparateSampler) { continue; }
 
                         is_slot_ext_program = true;
                         break;
@@ -214,15 +229,17 @@ namespace vp::resbui {
 
                     /* Write interface dictionaries */
                     u32 total_slot_count = 0;
-                    const auto interface_build_lambda = [&](BnshShaderInterfaceNode *attribute_array, u32 attribute_count) -> vp::res::ResNintendoWareDictionary* {
+                    const auto interface_build_lambda = [&](vp::res::GfxShaderInterfaceType type) -> vp::res::ResNintendoWareDictionary* {
                         NintendoWareDictionaryBuilder dict_builder;
                         const u32 slot_count = 0;
-                        for (u32 k = 0; k < attribute_count; ++k) {
-                            const char *name_string = attribute_array[k].name.GetString();
-                            if (name_string == nullptr || *name_string == '\0') { continue; }
-
-                            dict_builder.AddNode(std::addressof(attribute_array[k].name));
+                        for (BnshShaderInterfaceNode *&interface_node : shader_node->m_interface_array) {
+                            /* Ensure current interface type */
+                            if (type != interface_node->interface_type) { continue; }
+                            if (!interface_node->IsValid()) { continue; }
+                            
+                            /* Add to dictionary */
                             ++total_slot_count;
+                            dict_builder.AddNode(std::addressof(interface_node->name));
                         }
                         if (slot_count == 0) { return nullptr; }
                         NintendoWareDictionaryBuilderMemoryInfo dict_memory_info = {};
@@ -233,42 +250,46 @@ namespace vp::resbui {
                         dict_builder.Finalize();
                         return reinterpret_cast<vp::res::ResNintendoWareDictionary*>(dict_memory);
                     };
-                    interface_info->input_attribute_dictionary  = interface_build_lambda(shader_node->m_input_attribute_array, vp::res::cMaxBnshInputAttributeCount);
+                    interface_info->input_attribute_dictionary  = interface_build_lambda(vp::res::GfxShaderInterfaceType::InputAttribute);
 
                     interface_info->base_index_output_attribute = (interface_info->input_attribute_dictionary != nullptr) ? interface_info->input_attribute_dictionary->node_count : 0;
-                    interface_info->output_attribute_dictionary = interface_build_lambda(shader_node->m_output_attribute_array, vp::res::cMaxBnshOutputAttributeCount);
+                    interface_info->output_attribute_dictionary = interface_build_lambda(vp::res::GfxShaderInterfaceType::OutputAttribute);
 
                     interface_info->base_index_texture_sampler  = (interface_info->output_attribute_dictionary != nullptr) ? interface_info->base_index_output_attribute + interface_info->output_attribute_dictionary->node_count : interface_info->base_index_output_attribute;
-                    interface_info->texture_sampler_dictionary  = interface_build_lambda(shader_node->m_texture_sampler_array, vp::res::cMaxBnshTextureSamplerCount);
+                    interface_info->texture_sampler_dictionary  = interface_build_lambda(vp::res::GfxShaderInterfaceType::TextureSampler);
 
                     interface_info->base_index_uniform_buffer   = (interface_info->texture_sampler_dictionary != nullptr) ? interface_info->base_index_texture_sampler + interface_info->texture_sampler_dictionary->node_count : interface_info->base_index_texture_sampler;
-                    interface_info->uniform_buffer_dictionary   = interface_build_lambda(shader_node->m_uniform_buffer_array, vp::res::cMaxBnshUniformBufferCount);
+                    interface_info->uniform_buffer_dictionary   = interface_build_lambda(vp::res::GfxShaderInterfaceType::UniformBuffer);
 
                     interface_info->base_index_storage_buffer   = (interface_info->uniform_buffer_dictionary != nullptr) ? interface_info->base_index_uniform_buffer + interface_info->uniform_buffer_dictionary->node_count : interface_info->base_index_uniform_buffer;
-                    interface_info->storage_buffer_dictionary   = interface_build_lambda(shader_node->m_storage_buffer_array, vp::res::cMaxBnshStorageBufferCount);
+                    interface_info->storage_buffer_dictionary   = interface_build_lambda(vp::res::GfxShaderInterfaceType::StorageBuffer);
 
                     interface_info->base_index_image            = (interface_info->storage_buffer_dictionary != nullptr) ? interface_info->base_index_storage_buffer + interface_info->storage_buffer_dictionary->node_count : interface_info->base_index_storage_buffer;
-                    interface_info->image_dictionary            = interface_build_lambda(shader_node->m_image_array, vp::res::cMaxBnshImageCount);
+                    interface_info->image_dictionary            = interface_build_lambda(vp::res::GfxShaderInterfaceType::Image);
 
                     vp::res::ResBnshExtendedInterfaceInfo *interface_info_ext = interface_info->extended_interface_info;
                     if (interface_info_ext != nullptr) {
                         interface_info_ext->base_index_separate_texture = (interface_info->image_dictionary != nullptr) ? interface_info->base_index_image + interface_info->image_dictionary->node_count : interface_info->base_index_image;
-                        interface_info_ext->separate_texture_dictionary = interface_build_lambda(shader_node->m_separate_texture_array, vp::res::cMaxBnshSeparateTextureCount);
+                        interface_info_ext->separate_texture_dictionary = interface_build_lambda(vp::res::GfxShaderInterfaceType::SeparateTexture);
 
-                        interface_info_ext->base_index_separate_texture = (interface_info_ext->separate_texture_dictionary != nullptr) ? interface_info_ext->base_index_separate_texture + interface_info_ext->separate_texture_dictionary->node_count : interface_info_ext->base_index_separate_texture;
-                        interface_info_ext->separate_sampler_dictionary = interface_build_lambda(shader_node->m_separate_sampler_array, vp::res::cMaxBnshSeparateSamplerCount);
+                        interface_info_ext->base_index_separate_sampler = (interface_info_ext->separate_texture_dictionary != nullptr) ? interface_info_ext->base_index_separate_texture + interface_info_ext->separate_texture_dictionary->node_count : interface_info_ext->base_index_separate_texture;
+                        interface_info_ext->separate_sampler_dictionary = interface_build_lambda(vp::res::GfxShaderInterfaceType::SeparateSampler);
                     }
 
                     /* Write interface slots */
                     u32 *interface_slot_array = reinterpret_cast<u32*>(program_iter);
                     program_iter += vp::util::AlignUp(total_slot_count * sizeof(u32), alignof(size_t));
                     u32 slot_i = 0;
-                    for (u32 k = 0; k < BnshShaderNode::cTotalInterfaceNodeCount; ++k) {
-                        const char *name_string = shader_node->m_interface_array[k].name.GetString();
-                        if (name_string == nullptr || *name_string == '\0') { continue; }
+                    for (u32 i = 0; i < cInterfaceTypeCount ; ++i) {
+                        vp::res::GfxShaderInterfaceType type = cInterfaceTypeArray[i];
+                        for (BnshShaderInterfaceNode *&interface_node : shader_node->m_interface_array) {
+                            /* Ensure current interface type */
+                            if (type != interface_node->interface_type) { continue; }
+                            if (!interface_node->IsValid()) { continue; }
 
-                        interface_slot_array[slot_i] = shader_node->m_interface_array[k].location;
-                        ++slot_i;
+                            interface_slot_array[slot_i] = interface_node->location;
+                            ++slot_i;
+                        }
                     }
                 }
             }
@@ -325,37 +346,32 @@ namespace vp::resbui {
                     program_relocation_count += 1;
 
                     /* Interface slots */
-                    const auto interface_lambda = [&](BnshShaderInterfaceNode *attribute_array, u32 attribute_count) {
+                    const u32 slot_base = total_slot_count;
+                    u32 slot_base_ext = 0;
+                    for (u32 i = 0; i < cInterfaceTypeCount; ++i) {
                         NintendoWareDictionaryBuilder dict_builder;
-                        const u32 last_slot_count = total_slot_count;
-                        for (u32 k = 0; k < attribute_count; ++k) {
-                            const char *name_string = attribute_array[k].name.GetString();
-                            if (name_string == nullptr || *name_string == '\0') { continue; }
-
+                        vp::res::GfxShaderInterfaceType type = cInterfaceTypeArray[i];
+                        for (BnshShaderInterfaceNode *&interface_node : shader_node->m_interface_array) {
+                            /* Ensure current interface type */
+                            if (type != interface_node->interface_type) { continue; }
+                            if (!interface_node->IsValid()) { continue; }
+                            
+                            /* Add to dictionary */
                             ++total_slot_count;
-                            dict_builder.AddNode(std::addressof(attribute_array[k].name));
-                            m_string_builder.AddString(std::addressof(attribute_array[k].name));
+                            dict_builder.AddNode(std::addressof(interface_node->name));
+                            m_string_builder.AddString(std::addressof(interface_node->name));
                         }
-                        if (last_slot_count == total_slot_count) { return; }
+                        if (type == vp::res::GfxShaderInterfaceType::Image) {
+                            slot_base_ext = total_slot_count;
+                        }
                         NintendoWareDictionaryBuilderMemoryInfo memory_info = {};
                         dict_builder.CalculateMemoryInfo(std::addressof(memory_info));
                         program_iter += memory_info.total_size;
                         program_relocation_count += memory_info.total_relocation_count;
                         dict_builder.Finalize();
-                    };
-                    const u32 slot_base = total_slot_count;
-                    interface_lambda(shader_node->m_input_attribute_array, vp::res::cMaxBnshInputAttributeCount);
-                    interface_lambda(shader_node->m_output_attribute_array, vp::res::cMaxBnshOutputAttributeCount);
-                    interface_lambda(shader_node->m_texture_sampler_array, vp::res::cMaxBnshTextureSamplerCount);
-                    interface_lambda(shader_node->m_uniform_buffer_array, vp::res::cMaxBnshUniformBufferCount);
-                    interface_lambda(shader_node->m_storage_buffer_array, vp::res::cMaxBnshStorageBufferCount);
-                    interface_lambda(shader_node->m_image_array, vp::res::cMaxBnshImageCount);
-                    const u32 norm_slot_count = total_slot_count - slot_base;
-                    const u32 slot_base_ext = total_slot_count;
-                    interface_lambda(shader_node->m_separate_texture_array, vp::res::cMaxBnshSeparateTextureCount);
-                    interface_lambda(shader_node->m_separate_sampler_array, vp::res::cMaxBnshSeparateSamplerCount);
+                    }
                     const u32 slot_count_ext = total_slot_count - slot_base_ext;
-                    const u32 slot_count = norm_slot_count + slot_count_ext;
+                    const u32 slot_count = (slot_base_ext - slot_base) + slot_count_ext;
 
                     if (0 < slot_count) {
                         program_iter += sizeof(vp::res::ResBnshShaderInterfaceInfo) + vp::util::AlignUp(slot_count * sizeof(u32), alignof(size_t));

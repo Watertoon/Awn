@@ -46,6 +46,28 @@ namespace awn::gfx::impl {
         if (gpu_address == nullptr) { return VK_NULL_HANDLE; }
 
         /* Create VkBuffer */
+        VkBuffer buffer = CreateVkBuffer(usage_flags, size);
+        if (buffer == VK_NULL_HANDLE) { return VK_NULL_HANDLE; }
+
+        /* Bind gpu memory allocation to buffer from offset */
+        mem::GpuRootHeapContext *gpu_root_heap_context = mem::FindGpuRootHeapContextFromAddress(gpu_address);
+        VP_ASSERT(gpu_root_heap_context != nullptr);
+        const u32 result1 = ::pfn_vkBindBufferMemory(Context::GetInstance()->GetVkDevice(), buffer, gpu_root_heap_context->gpu_memory_handle.vk_device_memory, gpu_root_heap_context->GetMemoryOffset(gpu_address));
+        if (result1 != VK_SUCCESS) { DestroyVkBuffer(buffer); return VK_NULL_HANDLE; }
+        
+        return buffer;
+    }
+
+	VkBuffer CreateVkBuffer(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info) {
+        return CreateVkBuffer(memory_handle, memory_offset, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
+    }
+
+    VkBuffer CreateVkBuffer(mem::GpuMemoryHandle memory_handle, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size) {
+
+        /* Ensure memory handle */
+        if (!memory_handle.IsValid()) { return VK_NULL_HANDLE; }
+
+        /* Create VkBuffer */
         VkBuffer buffer = VK_NULL_HANDLE;
         const VkBufferCreateInfo vk_buffer_info = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -56,8 +78,7 @@ namespace awn::gfx::impl {
         if (result0 != VK_SUCCESS) { return VK_NULL_HANDLE; }
 
         /* Bind gpu memory allocation to buffer from offset */
-        mem::GpuRootHeapContext *gpu_root_heap_context = mem::FindGpuRootHeapContextFromAddress(gpu_address);
-        const u32 result1 = ::pfn_vkBindBufferMemory(Context::GetInstance()->GetVkDevice(), buffer, gpu_root_heap_context->gpu_memory_handle.vk_device_memory, gpu_root_heap_context->GetMemoryOffset(gpu_address));
+        const u32 result1 = ::pfn_vkBindBufferMemory(Context::GetInstance()->GetVkDevice(), buffer, memory_handle.vk_device_memory, memory_offset);
         if (result1 != VK_SUCCESS) { DestroyVkBuffer(buffer); return VK_NULL_HANDLE; }
         
         return buffer;
@@ -132,7 +153,36 @@ namespace awn::gfx::impl {
 
         /* Bind gpu memory to image from offset */
         mem::GpuRootHeapContext *gpu_root_heap_context = mem::FindGpuRootHeapContextFromAddress(gpu_address);
+        VP_ASSERT(gpu_root_heap_context != nullptr);
         const u32 result1 = ::pfn_vkBindImageMemory(Context::GetInstance()->GetVkDevice(), image, gpu_root_heap_context->gpu_memory_handle.vk_device_memory, gpu_root_heap_context->GetMemoryOffset(gpu_address));
+        if (result1 != VK_SUCCESS) { DestroyVkImage(image); return VK_NULL_HANDLE; }
+
+        return image;
+    }
+
+	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *texture_info) {
+        return CreateVkImage(memory_handle, offset, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info, nullptr);
+    }
+
+	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *texture_info, const void *pnext) {
+        return CreateVkImage(memory_handle, offset, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info, pnext);
+    }
+
+    VkImage CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
+        return CreateVkImage(memory_handle, offset, image_usage_flags, texture_info, nullptr);
+    }
+
+	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext)  {
+
+        /* Ensure memory handle */
+        if (!memory_handle.IsValid()) { return VK_NULL_HANDLE; }
+
+        /* Create VkImage */
+        VkImage image = CreateVkImage(image_usage_flags, texture_info, pnext);
+        if (image == VK_NULL_HANDLE) { return VK_NULL_HANDLE; }
+
+        /* Bind gpu memory to image from offset */
+        const u32 result1 = ::pfn_vkBindImageMemory(Context::GetInstance()->GetVkDevice(), image, memory_handle.vk_device_memory, offset);
         if (result1 != VK_SUCCESS) { DestroyVkImage(image); return VK_NULL_HANDLE; }
 
         return image;

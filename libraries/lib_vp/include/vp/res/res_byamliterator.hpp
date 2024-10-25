@@ -111,8 +111,10 @@ namespace vp::res {
             bool TryGetKeyIndexByKey(u32 *out_key_index, const char *key) const;
             bool TryGetKeyByData(const char **out_key, ByamlData data) const;
             bool TryGetKeyByIterator(const char **out_key) const;
+            bool TryGetHashByIndex(u32 *out_hash, u32 index) const;
 
             bool TryRemapIndexByKey(u32 *out_container_index, const char *key) const;
+            bool TryRemapIndexByHash(u32 *out_container_index, const char *key) const;
 
             bool TryGetByamlDataByKey(ByamlData *out_byaml_data, const char *key) const;
             bool TryGetByamlDataByIndex(ByamlData *out_byaml_data, u32 index) const;

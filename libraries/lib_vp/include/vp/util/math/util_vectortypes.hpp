@@ -22,17 +22,11 @@ namespace vp::util {
     using __m128i = __int128;
 #endif
 
-    typedef float  v8f __attribute__((vector_size(32)));
-    typedef double v4d __attribute__((vector_size(32)));
+    typedef float v2f __attribute__((vector_size(8)));
 
-    struct v256f {
+    struct v64f {
         union {
-            v8f     f;
-            v4d     d;
-#ifdef VP_TARGET_ARCHITECTURE_x86
-            __m256  mmf;
-            __m256d mmd;
-#endif
+            v2f f;
         };
     };
 
@@ -47,14 +41,23 @@ namespace vp::util {
 #ifdef VP_TARGET_ARCHITECTURE_x86
             __m128d mmd;
 #endif
+            v64f down_vec[2];
         };
     };
 
-    typedef float v2f __attribute__((vector_size(8)));
 
-    struct v64f {
+    typedef float  v8f __attribute__((vector_size(32)));
+    typedef double v4d __attribute__((vector_size(32)));
+
+    struct v256f {
         union {
-            v2f f;
+            v8f     f;
+            v4d     d;
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            __m256  mmf;
+            __m256d mmd;
+#endif
+            v128f down_vec[2];
         };
     };
 

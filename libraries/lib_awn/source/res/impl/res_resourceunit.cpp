@@ -120,7 +120,7 @@ namespace awn::res::impl {
         if (m_status == Status::FailedToPreFinalizeResource) { 
             if (result_info->is_cancelled == true) { RESULT_RETURN_SUCCESS; } 
             this->ScheduleClearCache(); 
-            return async::ResultRescheduled;
+            RESULT_RETURN(async::ResultRescheduled);
         }
 
         /* Release archive binder */
@@ -386,21 +386,21 @@ namespace awn::res::impl {
         };
 
         /* Fail if no size was returned */
-        if (size == 0) { m_is_file_not_found = true; return ResultFileNotFound; }
+        if (size == 0) { m_is_file_not_found = true; RESULT_RETURN(ResultFileNotFound); }
 
         /* Check if user heap */
         if (m_is_external_heap == true) {
             /* Fail is user heap is null */
-            if (m_resource_heap == nullptr) { error_signal_guard.Cancel(); return ResultNoExternalHeap; }
+            if (m_resource_heap == nullptr) { error_signal_guard.Cancel(); RESULT_RETURN(ResultNoExternalHeap); }
         } else {
 
             /* Find memory manager  */
             ResourceMemoryManager *memory_manager = AsyncResourceManager::GetInstance()->GetMemoryManager(std::addressof(m_file_path));
-            if (memory_manager == nullptr) { m_is_memory_allocation_failure = true; return ResultMemoryAllocationFailure; }
+            if (memory_manager == nullptr) { m_is_memory_allocation_failure = true; RESULT_RETURN(ResultMemoryAllocationFailure); }
 
             /* Create resource heap */
             mem::Heap *heap = memory_manager->CreateResourceHeap(this, m_file_path.GetString(), size, static_cast<ResourceHeapType>(m_heap_type));
-            if (heap == nullptr) { m_is_memory_allocation_failure = true; return ResultMemoryAllocationFailure; }
+            if (heap == nullptr) { m_is_memory_allocation_failure = true; RESULT_RETURN(ResultMemoryAllocationFailure); }
 
             /* Set heap and memory manager */
             m_resource_heap  = heap;
@@ -530,7 +530,7 @@ namespace awn::res::impl {
                     /* PreFinalize resource */
                     {                        
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (is_finalized == false) { return ResultFailedToPreFinalizeResource; }
+                        if (is_finalized == false) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                         [[fallthrough]];
                     }
                 case Status::ResourcePreFinalized:
@@ -561,7 +561,7 @@ namespace awn::res::impl {
                 case Status::FailedToPreFinalizeResource:
                 {                        
                     const bool is_finalized = this->PreFinalizeResource();
-                    if (is_finalized == false) { return ResultFailedToPreFinalizeResource; }
+                    if (is_finalized == false) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                     break;
                 }
                 case Status::Error:
@@ -577,7 +577,7 @@ namespace awn::res::impl {
                         m_is_cache_unload_for_no_error   = false;
                         
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (is_finalized == false) { return ResultFailedToPreFinalizeResource; }
+                        if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                         this->FinalizeResource();
                         
                         m_status                         = Status::Uninitialized;
@@ -586,7 +586,7 @@ namespace awn::res::impl {
                     }
                     if (m_status == Status::ResourcePostInitialized) {
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (is_finalized == false) { return ResultFailedToPreFinalizeResource; }
+                        if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                         this->FinalizeResource();
                     }
                     m_is_cache_unload_for_no_error = false;
@@ -606,18 +606,18 @@ namespace awn::res::impl {
                     m_status_update_event.Wait();
                     if (m_status == Status::FailedToPostInitializeResource) {
                         m_is_cache_unload_for_no_error   = false;
-                        
+
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (is_finalized == false) { return ResultFailedToPreFinalizeResource; }
+                        if (is_finalized == false) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                         this->FinalizeResource();
-                        
+
                         m_status                         = Status::Uninitialized;
                         m_is_freeable_for_memory_manager = true;
                         break;
                     }
                     if (m_status == Status::ResourcePostInitialized) {
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (is_finalized == false) { return ResultFailedToPreFinalizeResource; }
+                        if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                         this->FinalizeResource();
                     }
                     break;
@@ -625,14 +625,14 @@ namespace awn::res::impl {
                 case Status::ResourcePostInitialized:
                 {
                     const bool is_finalized = this->PreFinalizeResource();
-                    if (is_finalized == false) { return ResultFailedToPreFinalizeResource; }                        
+                    if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }                        
                     break;
                 }
                 case Status::FailedToPostInitializeResource:
                 {
                     m_is_cache_unload_for_no_error = false;
                     const bool is_finalized = this->PreFinalizeResource();
-                    if (is_finalized == false) { return ResultFailedToPreFinalizeResource; }
+                    if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                     this->FinalizeResource();
                     m_status = Status::Uninitialized;
                     m_is_freeable_for_memory_manager = true;
@@ -642,7 +642,7 @@ namespace awn::res::impl {
         }
 
         /* Add to clear cache if part of res mgr */
-        if (m_is_part_of_resource_unit_mgr == false) {
+        if (!m_is_part_of_resource_unit_mgr) {
 
             /* Clear cache sync */
             m_is_finalized = true;
@@ -654,7 +654,7 @@ namespace awn::res::impl {
             m_is_freeable_for_memory_manager = true;
 
             /* Add to free cache if cacheable */
-            if (m_is_cache_unload == false || m_is_cache_unload_for_no_ref == false || m_is_cache_unload_for_no_error == false || m_memory_manager == nullptr) { RESULT_RETURN_SUCCESS; }
+            if (!m_is_cache_unload || !m_is_cache_unload_for_no_ref || !m_is_cache_unload_for_no_error || m_memory_manager == nullptr) { RESULT_RETURN_SUCCESS; }
             m_memory_manager->AddResourceUnitToFreeCache(this);
         }
 
@@ -744,7 +744,7 @@ namespace awn::res::impl {
         }
 
         /* Succeed if resource does not require initialization */
-        if (m_is_resource_initializable == false) { return true; }
+        if (!m_is_resource_initializable) { return true; }
 
         /* Release managed reference and update status on exit */
         Status guard_status = Status::FailedToInitializeResource;
@@ -792,7 +792,7 @@ namespace awn::res::impl {
         if ((m_status != Status::ResourcePostInitialized && m_status != Status::FailedToPostInitializeResource && m_status != Status::FailedToPreFinalizeResource) || m_resource == nullptr) { m_status = Status::ResourcePreFinalized; return false; }
 
         /* Prefinalize resource */
-        if (m_is_resource_initializable == true) {
+        if (m_is_resource_initializable) {
             m_status = Status::InResourcePreFinalize;
             const Result result = m_resource->PreFinalize();
             if (result != ResultSuccess) { m_status = Status::FailedToPreFinalizeResource; return false; }
@@ -811,7 +811,7 @@ namespace awn::res::impl {
     void ResourceUnit::FinalizeResource() {
 
         /* Check unit is pre finalized and has resource */
-        if ((m_status != Status::ResourcePreFinalized && m_status != Status::FailedToInitializeResource) || m_resource == nullptr || m_is_resource_initializable == false) { m_status = Status::Loaded; return; }
+        if ((m_status != Status::ResourcePreFinalized && m_status != Status::FailedToInitializeResource) || m_resource == nullptr || !m_is_resource_initializable) { m_status = Status::Loaded; return; }
 
         /* Set current heap to resource heap */
         mem::ScopedCurrentThreadHeap l(m_resource_heap);
@@ -857,7 +857,7 @@ namespace awn::res::impl {
             case Status::FailedToPreFinalizeResource:
             {
                 const bool is_finalized = this->PreFinalizeResource();
-                if (is_finalized == false) { return false; }
+                if (!is_finalized) { return false; }
                 break;
             }
             case Status::InLoad:
@@ -870,7 +870,7 @@ namespace awn::res::impl {
                 m_archive_binder.Release();
 
                 /* Request unload for transience */
-                if (m_load_task.IsCancelled() == true && m_is_transient_on_load == true) {
+                if (m_load_task.IsCancelled() && m_is_transient_on_load) {
                     m_is_transient_on_load = false;
                     AsyncResourceManager::GetInstance()->RequestUnloadResourceUnit(this);
                 }
@@ -888,7 +888,7 @@ namespace awn::res::impl {
             {
                 /* PreFinalize resource */
                 const bool is_finalized = this->PreFinalizeResource();
-                if (is_finalized == false) { return false; }
+                if (!is_finalized) { return false; }
                 [[fallthrough]];
             }
             case Status::ResourcePreFinalized:
@@ -951,7 +951,7 @@ namespace awn::res::impl {
         m_resource_unit_manager_tree_node.SetKey(hash);
 
         /* Setup cache on unload */
-        if (async_resource_load_info->is_managed == false && async_resource_load_info->is_cache_on_unload == true) {
+        if (!async_resource_load_info->is_managed && async_resource_load_info->is_cache_on_unload) {
             m_is_cache_unload              = true;
             m_is_cache_unload_for_no_ref   = true;
             m_is_cache_unload_for_no_error = true;

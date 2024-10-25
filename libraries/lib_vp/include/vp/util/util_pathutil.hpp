@@ -72,13 +72,13 @@ namespace vp::util {
         return dot_offset;
     }
 
-    constexpr inline size_t cMaxPath      = 260;
+    constexpr inline size_t cMaxPath = 260;
 
 #ifdef VP_TARGET_PLATFORM_win32
     static_assert(cMaxPath == MAX_PATH);
 #endif
 
-    constexpr inline size_t cMaxDrive     = 32;
+    constexpr inline size_t cMaxDrive = 32;
     constexpr inline size_t cMaxExtension = 16;
 
     using MaxPathString      = vp::util::FixedString<cMaxPath>;
@@ -91,7 +91,7 @@ namespace vp::util {
         if (out_drive == nullptr || path_with_drive == nullptr) { return; }
 
         /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path_with_drive, cMaxPath + 1) : ::strlen(path_with_drive);
+        const u32 path_len = vp::util::StringLength(path_with_drive);
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -135,7 +135,7 @@ namespace vp::util {
         if (out_path == nullptr || path_with_drive == nullptr) { return; }
 
         /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path_with_drive, cMaxPath + 1) : ::strlen(path_with_drive);
+        const u32 path_len = vp::util::StringLength(path_with_drive);
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -181,7 +181,7 @@ namespace vp::util {
         if (out_path == nullptr || path_with_extension == nullptr) { return; }
 
         /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path_with_extension, cMaxPath + 1) : ::strlen(path_with_extension);
+        const u32 path_len = vp::util::StringLength(path_with_extension);
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -225,7 +225,7 @@ namespace vp::util {
         if (path == nullptr) { return path; }
 
         /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path, cMaxPath + 1) : ::strlen(path);
+        const u32 path_len = vp::util::StringLength(path);
 
         /* Length check */
         if (path_len == 0) { return path; }
@@ -243,7 +243,7 @@ namespace vp::util {
         if (out_directory == nullptr || path == nullptr) { return; }
 
         /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path, cMaxPath + 1) : ::strlen(path);
+        const u32 path_len = vp::util::StringLength(path);
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -287,7 +287,7 @@ namespace vp::util {
         if (out_directory == nullptr || path_with_drive == nullptr) { return; }
 
         /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path_with_drive, cMaxPath + 1) : ::strlen(path_with_drive);
+        const u32 path_len = vp::util::StringLength(path_with_drive);
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -333,7 +333,7 @@ namespace vp::util {
         if (out_file_name == nullptr || path == nullptr) { return; }
 
         /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path, cMaxPath + 1) : ::strlen(path);
+        const u32 path_len = vp::util::StringLength(path);
 
         /* Length check */
         if (path_len == 0) { return; }

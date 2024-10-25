@@ -21,21 +21,21 @@ namespace awn::res {
         const u32 last_error = ::GetLastError();
         switch(last_error) {
             case ERROR_FILE_NOT_FOUND:
-                return ResultFileNotFound;
+                RESULT_RETURN(ResultFileNotFound);
             case ERROR_PATH_NOT_FOUND:
-                return ResultPathNotFound;
+                RESULT_RETURN(ResultPathNotFound);
             case ERROR_SHARING_VIOLATION:
-                return ResultFileSharingViolation;
+                RESULT_RETURN(ResultFileSharingViolation);
             case ERROR_LOCK_VIOLATION:
-                return ResultFileLockViolation;
+                RESULT_RETURN(ResultFileLockViolation);
             case ERROR_TOO_MANY_OPEN_FILES:
-                return ResultOpenFileExhaustion;
+                RESULT_RETURN(ResultOpenFileExhaustion);
             case ERROR_NO_MORE_FILES:
-                return ResultDirectoryExhausted;
+                RESULT_RETURN(ResultDirectoryExhausted);
             default:
                 break;
         }
-        return ResultUnknownOSError;
+        RESULT_RETURN(ResultUnknownOSError);
     }
 
     Result SystemFileDevice::OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) {

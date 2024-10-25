@@ -71,4 +71,24 @@ namespace vp::util {
 
     constexpr inline Color4f cBlack4f   = {0.0f, 0.0f, 0.0f, 1.0f};
     constexpr inline Color4f cWhite4f   = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    constexpr ALWAYS_INLINE Color4f operator-(const Color4f &lhs, const Color4f &rhs) {
+        const Color4f new_color = {
+            lhs.r - rhs.r,
+            lhs.g - rhs.g,
+            lhs.b - rhs.b,
+            lhs.a - rhs.a,
+        };
+        return new_color;
+    }
+
+    constexpr ALWAYS_INLINE Color4u8 operator*(const Color4u8 &lhs, const Color4u8 &rhs) {
+        const Color4u8 new_color = {
+            static_cast<u8>(static_cast<u32>(lhs.r) * static_cast<u32>(rhs.r) / 0xff),
+            static_cast<u8>(static_cast<u32>(lhs.g) * static_cast<u32>(rhs.g) / 0xff),
+            static_cast<u8>(static_cast<u32>(lhs.b) * static_cast<u32>(rhs.b) / 0xff),
+            static_cast<u8>(static_cast<u32>(lhs.a) * static_cast<u32>(rhs.a) / 0xff),
+        };
+        return new_color;
+    }
 }

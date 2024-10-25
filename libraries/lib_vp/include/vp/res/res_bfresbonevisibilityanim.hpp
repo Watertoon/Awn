@@ -26,10 +26,10 @@ namespace vp::res {
         const char                 *animation_name;
         const char                 *reserve2;
         ResBfresModel              *runtime_bound_model;
-        u16                        *bind_table;
+        u16                        *bind_fast_table;
         ResBfresAnimCurve          *anim_curve_array;
         bool                       *default_result_array;
-        const char                **bound_bone_names;
+        const char                **bone_name_array;
         ResGfxUserData             *user_data_array;
         ResNintendoWareDictionary  *user_data_dictionary;
         u32                         frame_count;

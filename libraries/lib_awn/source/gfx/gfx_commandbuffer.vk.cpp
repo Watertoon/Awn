@@ -65,11 +65,11 @@ namespace awn::gfx {
         return;
     }
 
-    void CommandBuffer::CommitDescriptorMemory(VkPipelineBindPoint bind_point, VkPipelineLayout pipeline_layout, u32 base_set, void *desc_memory, u32 memory_size) {
+    void CommandBuffer::CommitDescriptorMemory(ShaderStage stage, u32 base_set, void *desc_memory, u32 memory_size) {
 
         /* Allocate descriptor memory */
         const u32 memory_offset = m_command_memory_iter;
-        const u32 next_offset = memory_offset + memory_size;
+        const u32 next_offset = vp::util::AlignUp(memory_offset + memory_size, impl::Context::cTargetDescriptorBufferAlignment);
         VP_ASSERT(next_offset < m_command_memory_size);
         m_command_memory_iter = next_offset;
         void *memory = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_command_memory_base) + memory_offset);
@@ -79,107 +79,55 @@ namespace awn::gfx {
 
         /* Set descriptor set offset */
         const size_t gpu_offset = m_command_memory_base_offset + memory_offset;
-        ::pfn_vkCmdSetDescriptorBufferOffsetsEXT(m_command_list.vk_command_buffer, bind_point, pipeline_layout, base_set, 1, std::addressof(impl::Context::cTargetDescriptorBufferIndexPerStage), std::addressof(gpu_offset));
-
-        return;
-    }
-
-    void CommandBuffer::CommitCombinedDescriptors() {
-
-        /* Check combined descriptor dirty */
-        const u8 combined_dirty = m_combined_dirty;
-        if (combined_dirty == 0) { return; }
-        m_combined_dirty = 0;
-
-        /* Update combined texture sampler, image, ubo, and ssbo descriptors */
-        impl::Context    *context                     = impl::Context::GetInstance();
-        VkPipelineLayout  vk_pipeline_layout_graphics = context->GetVkPipelineLayoutGraphics();
-        if ((combined_dirty & (1 << 0)) != 0) {
-            void *desc_memory = this->GetDescriptorMemoryCombined(ShaderStage::Vertex);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetCombinedVertex, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeCombined);
-        }
-        if ((combined_dirty & (1 << 1)) != 0) {
-            void *desc_memory = this->GetDescriptorMemoryCombined(ShaderStage::TessellationControl);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetCombinedTessellationControl, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeCombined);
-        }
-        if ((combined_dirty & (1 << 2)) != 0) {
-            void *desc_memory = this->GetDescriptorMemoryCombined(ShaderStage::TessellationEvaluation);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetCombinedTessellationEvaluation, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeCombined);
-        }
-        if ((combined_dirty & (1 << 3)) != 0) {
-            void *desc_memory = this->GetDescriptorMemoryCombined(ShaderStage::Geometry);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetCombinedGeometry, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeCombined);
-        }
-        if ((combined_dirty & (1 << 4)) != 0) {
-            void *desc_memory = this->GetDescriptorMemoryCombined(ShaderStage::Fragment);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetCombinedFragment, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeCombined);
-        }
-        if ((combined_dirty & (1 << 5)) != 0) {
-            void *desc_memory = this->GetDescriptorMemoryCombined(ShaderStage::Compute);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetCombinedCompute, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeCombined);
-        }
-        if ((combined_dirty & (1 << 6)) != 0) {
-            void *desc_memory = this->GetDescriptorMemoryCombined(ShaderStage::Task);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetCombinedTask, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeCombined);
-        }
-        if ((combined_dirty & (1 << 7)) != 0) {
-            void *desc_memory = this->GetDescriptorMemoryCombined(ShaderStage::Mesh);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetCombinedMesh, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeCombined);
-        }
-
-        return;
-    }
-
-    void CommandBuffer::CommitSeparateTextureSamplerDescriptors() {
-
-        /* Check separate descriptors are dirty */
-        const u8 separate_texture_sampler_dirty = m_separate_texture_sampler_dirty;
-        if (separate_texture_sampler_dirty == 0) { return; }
-        m_separate_texture_sampler_dirty = 0;
-
-        /* Update separate texture and separate sampler descriptors */
-        impl::Context    *context                     = impl::Context::GetInstance();
-        VkPipelineLayout  vk_pipeline_layout_graphics = context->GetVkPipelineLayoutGraphics();
-        if ((separate_texture_sampler_dirty & (1 << 0)) != 0) {
-            void *desc_memory = this->GetDescriptorMemorySeparateTextureSampler(ShaderStage::Vertex);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetSeparateTextureSamplerVertex, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler);
-        }
-        if ((separate_texture_sampler_dirty & (1 << 1)) != 0) {
-            void *desc_memory = this->GetDescriptorMemorySeparateTextureSampler(ShaderStage::TessellationControl);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetSeparateTextureSamplerTessellationControl, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler);
-        }
-        if ((separate_texture_sampler_dirty & (1 << 2)) != 0) {
-            void *desc_memory = this->GetDescriptorMemorySeparateTextureSampler(ShaderStage::TessellationEvaluation);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetSeparateTextureSamplerTessellationEvaluation, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler);
-        }
-        if ((separate_texture_sampler_dirty & (1 << 3)) != 0) {
-            void *desc_memory = this->GetDescriptorMemorySeparateTextureSampler(ShaderStage::Geometry);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetSeparateTextureSamplerGeometry, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler);
-        }
-        if ((separate_texture_sampler_dirty & (1 << 4)) != 0) {
-            void *desc_memory = this->GetDescriptorMemorySeparateTextureSampler(ShaderStage::Fragment);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetSeparateTextureSamplerFragment, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler);
-        }
-        if ((separate_texture_sampler_dirty & (1 << 5)) != 0) {
-            VkPipelineLayout vk_pipeline_layout_compute = context->GetVkPipelineLayoutCompute();
-            void *desc_memory = this->GetDescriptorMemorySeparateTextureSampler(ShaderStage::Compute);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_COMPUTE, vk_pipeline_layout_compute, impl::Context::cTargetPerStageLayoutSetSeparateTextureSamplerCompute, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler);
-        }
-        if ((separate_texture_sampler_dirty & (1 << 6)) != 0) {
-            void *desc_memory = this->GetDescriptorMemorySeparateTextureSampler(ShaderStage::Task);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetSeparateTextureSamplerTask, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler);
-        }
-        if ((separate_texture_sampler_dirty & (1 << 7)) != 0) {
-            void *desc_memory = this->GetDescriptorMemorySeparateTextureSampler(ShaderStage::Mesh);
-            this->CommitDescriptorMemory(VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout_graphics, impl::Context::cTargetPerStageLayoutSetSeparateTextureSamplerMesh, desc_memory, impl::Context::cTargetMaxPerStageMemorySizeSeparateTextureSampler);
-        }
+        const VkSetDescriptorBufferOffsetsInfoEXT offsets_info = {
+            .sType = VK_STRUCTURE_TYPE_SET_DESCRIPTOR_BUFFER_OFFSETS_INFO_EXT,\
+            .pNext = std::addressof(impl::Context::GetInstance()->GetPerStageDescriptorLayout(stage)->vk_pipeline_layout_create_info),
+            .stageFlags = vp::res::GfxShaderStageToVkShaderStageFlags(stage),
+            .firstSet = base_set,
+            .setCount = 1,
+            .pBufferIndices = std::addressof(impl::Context::cTargetDescriptorBufferIndexPerStage),
+            .pOffsets = std::addressof(gpu_offset),
+        };
+        ::pfn_vkCmdSetDescriptorBufferOffsets2EXT(m_command_list.vk_command_buffer, std::addressof(offsets_info));
 
         return;
     }
 
     void CommandBuffer::CommitDescriptors() {
-        this->CommitCombinedDescriptors();
-        this->CommitSeparateTextureSamplerDescriptors();
+
+        const auto commit_desc_lambda = [this]<size_t BaseSetIndex>() {
+
+            /* Allocate descriptor buffer space, copy descriptor memory to buffer, and update binding offsets for each changed stage */
+            const s16 *size_array = (BaseSetIndex == impl::Context::cTargetTextureSamplerImageSeparateLayoutSet) ? m_ts_i_st_ss_commit_size_array : m_ubo_ssbo_commit_size_array;
+            const auto memory_desc_lambda = [this](ShaderStage stage, s16 size) {                
+                if (-1 < size) {
+                    void *desc_memory = (BaseSetIndex == impl::Context::cTargetTextureSamplerImageSeparateLayoutSet) ? this->GetDescriptorMemoryTextureSamplerImageSeparate(stage) : this->GetDescriptorMemoryUniformBufferStorageBuffer(stage);
+                    this->CommitDescriptorMemory(stage, BaseSetIndex, desc_memory, size);
+                }
+            };
+            memory_desc_lambda(ShaderStage::Vertex, size_array[static_cast<u32>(ShaderStage::Vertex)]);
+            memory_desc_lambda(ShaderStage::TessellationControl, size_array[static_cast<u32>(ShaderStage::TessellationControl)]);
+            memory_desc_lambda(ShaderStage::TessellationEvaluation, size_array[static_cast<u32>(ShaderStage::TessellationEvaluation)]);
+            memory_desc_lambda(ShaderStage::Geometry, size_array[static_cast<u32>(ShaderStage::Geometry)]);
+            memory_desc_lambda(ShaderStage::Fragment, size_array[static_cast<u32>(ShaderStage::Fragment)]);
+            memory_desc_lambda(ShaderStage::Compute, size_array[static_cast<u32>(ShaderStage::Compute)]);
+            memory_desc_lambda(ShaderStage::Task, size_array[static_cast<u32>(ShaderStage::Task)]);
+            memory_desc_lambda(ShaderStage::Mesh, size_array[static_cast<u32>(ShaderStage::Mesh)]);
+
+            return;
+        };
+        /* Commit uniform buffer and storage image descriptors */
+        if (m_is_dirty_ts_i_st_ss) {
+            commit_desc_lambda.template operator()<impl::Context::cTargetTextureSamplerImageSeparateLayoutSet>();
+            m_is_dirty_ts_i_st_ss = false;
+        }
+        /* Commit separate texture and separate sampler descriptors */
+        if (m_is_dirty_ubo_ssbo) {
+            commit_desc_lambda.template operator()<impl::Context::cTargetUniformBufferStorageBufferLayoutSet>();
+            m_is_dirty_ubo_ssbo = false;
+        }
+
+        return;
     }
 
     void CommandBuffer::BeginRenderingIfNotRendering() {
@@ -208,7 +156,7 @@ namespace awn::gfx {
             view_mask     = depth_stencil_target->GetViewMask();
         }
 
-        /* Setup color target attacments */
+        /* Setup color target attachments */
         u32 color_attachment_index_array[cTargetMaxBoundRenderTargetColorCount] = {};
         VkRenderingAttachmentInfo color_attachment_info_array[cTargetMaxBoundRenderTargetColorCount] = {};
         for (u32 i = 0; i < m_color_target_count; ++i) {
@@ -504,17 +452,17 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSampler(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(shader_stage);
         const u32              desc_size     = context->GetTextureSamplerDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseTextureSampler(shader_stage);
         const u32              binding       = base_binding + location;
         VkDeviceSize           desc_offset   = 0;
         ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-
+        
         /* Get memory offset */
         void *desc_memory   = this->GetDescriptorMemoryTextureSampler(shader_stage);
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-
+        
         /* Cache descriptor */
         impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
         const VkImageView image_view = tex_samp_manager->GetVkImageView(texture_slot);
@@ -532,9 +480,11 @@ namespace awn::gfx {
             },
         };
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-
-        /* Set dirty flag */
-        this->SetTextureSamplerDirty(shader_stage);
+        
+        /* Set max binding */
+        const s16 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        m_is_dirty_ts_i_st_ss = true;
 
         return;
     }
@@ -544,7 +494,7 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutImage(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(shader_stage);
         const u32              desc_size     = context->GetImageDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseImage(shader_stage);
         const u32              binding       = base_binding + location;
@@ -571,8 +521,10 @@ namespace awn::gfx {
         };
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
 
-        /* Set dirty flag */
-        this->SetImageDirty(shader_stage);
+        /* Set max binding */
+        const s16 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        m_is_dirty_ts_i_st_ss = true;
 
         return;
     }
@@ -582,7 +534,7 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutUniformBuffer(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutUniformBufferStorageBuffer(shader_stage);
         const u32              desc_size     = context->GetUniformBufferDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseUniformBuffer(shader_stage);
         const u32              binding       = base_binding + location;
@@ -608,8 +560,10 @@ namespace awn::gfx {
         };
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
 
-        /* Set dirty flag */
-        this->SetUniformBufferDirty(shader_stage);
+        /* Set max binding */
+        const s16 prev = m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        m_is_dirty_ubo_ssbo = true;
 
         return;
     }
@@ -619,17 +573,17 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutStorageBuffer(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutUniformBufferStorageBuffer(shader_stage);
         const u32              desc_size     = context->GetStorageBufferDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseStorageBuffer(shader_stage);
         const u32              binding       = base_binding + location;
         VkDeviceSize           desc_offset   = 0;
         ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-
+        
         /* Get memory offset */
         void *desc_memory   = this->GetDescriptorMemoryStorageBuffer(shader_stage);
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-
+        
         /* Cache descriptor */
         const VkDescriptorAddressInfoEXT address_info = {
             .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT,
@@ -644,9 +598,11 @@ namespace awn::gfx {
             },
         };
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-
-        /* Set dirty flag */
-        this->SetStorageBufferDirty(shader_stage);
+        
+        /* Set max binding */
+        const s16 prev = m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        m_is_dirty_ubo_ssbo = true;
 
         return;
     }
@@ -656,25 +612,37 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSampler(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(shader_stage);
         const u32              desc_size     = context->GetSeparateTextureDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseSeparateTexture(shader_stage);
         const u32              binding       = base_binding + location;
         VkDeviceSize           desc_offset   = 0;
         ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
 
-        /* Get cached descriptor */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        const void *desc_data = tex_samp_manager->GetSeparateTextureDescriptor(texture_slot);
-        VP_ASSERT(desc_data != nullptr);
-
         /* Get memory offset */
-        void *desc_memory   = this->GetDescriptorMemorySeparateTextureSampler(shader_stage);
+        void *desc_memory   = this->GetDescriptorMemorySeparateTexture(shader_stage);
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-        ::memcpy(memory_offset, desc_data, desc_size);
 
-        /* Set dirty flag */
-        this->SetSeparateTextureSamplerDirty(shader_stage);
+        /* Cache descriptor */
+        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
+        const VkImageView image_view = tex_samp_manager->GetVkImageView(texture_slot);
+        const VkDescriptorImageInfo image_info = {
+            .imageView   = image_view,
+            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+        };
+        const VkDescriptorGetInfoEXT get_info = {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
+            .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+            .data = {
+                .pSampledImage  = std::addressof(image_info),
+            },
+        };
+        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
+
+        /* Set max binding */
+        const s16 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        m_is_dirty_ts_i_st_ss = true;
 
         return;
     }
@@ -684,25 +652,33 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutSeparateTextureSampler(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(shader_stage);
         const u32              desc_size     = context->GetSeparateSamplerDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseSeparateSampler(shader_stage);
         const u32              binding       = base_binding + location;
         VkDeviceSize           desc_offset   = 0;
         ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
 
-        /* Get cached descriptor */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        const void *desc_data = tex_samp_manager->GetSeparateSamplerDescriptor(sampler_slot);
-        VP_ASSERT(desc_data != nullptr);
-
         /* Get memory offset */
-        void *desc_memory   = this->GetDescriptorMemorySeparateTextureSampler(shader_stage);
+        void *desc_memory   = this->GetDescriptorMemorySeparateSampler(shader_stage);
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-        ::memcpy(memory_offset, desc_data, desc_size);
 
-        /* Set dirty flag */
-        this->SetSeparateTextureSamplerDirty(shader_stage);
+        /* Cache descriptor */
+        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
+        const VkSampler sampler = tex_samp_manager->GetVkSampler(sampler_slot);
+        const VkDescriptorGetInfoEXT get_info = {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
+            .type = VK_DESCRIPTOR_TYPE_SAMPLER,
+            .data = {
+                .pSampler  = std::addressof(sampler),
+            },
+        };
+        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
+
+        /* Set max binding */
+        const s16 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        m_is_dirty_ts_i_st_ss = true;
 
         return;
     }
@@ -719,7 +695,6 @@ namespace awn::gfx {
         ::pfn_vkCmdSetLogicOpEnableEXT(m_command_list.vk_command_buffer, true);
         ::pfn_vkCmdSetLogicOpEXT(m_command_list.vk_command_buffer, vp::res::GfxLogicOperationToVkLogicOp(static_cast<LogicOperation>(blend_state->logic_op)));
 
-        /* Set VkColorBlendEquation array */
         VkColorBlendEquationEXT blend_equation_array[cTargetMaxBlendTargetStateCount] = {};
         VkBool32                blend_enable_array[cTargetMaxBlendTargetStateCount] = {};
         VkColorComponentFlags   channel_mask_array[cTargetMaxBlendTargetStateCount] = {};
@@ -832,7 +807,13 @@ namespace awn::gfx {
     }
 
     void CommandBuffer::Begin() {
-        this->ResetDescriptorMemory();
+        //this->ResetDescriptorMemory();
+
+        /* Reset descriptor memory commit sizes */
+        for (u32 i = 0; i < vp::res::cMaxBnshShaderStageCount; ++i) {
+            m_ts_i_st_ss_commit_size_array[i] = -1;
+            m_ubo_ssbo_commit_size_array[i] = -1;
+        }
 
         /* Allocate a command buffer */
         m_command_list = impl::CommandPoolManager::GetInstance()->CreateCommandList(m_queue_type, m_command_list.pool_id, m_is_primary);

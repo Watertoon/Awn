@@ -283,7 +283,7 @@ namespace awn::para {
                 if constexpr (::awn::para::impl::TIsProperty< FieldType##field_index >()) { \
                     ::awn::para::impl::TPropertyAccessor< FieldType##field_index > accessor = ::awn::para::impl::TGetPropertyAccessor< FieldType##field_index >(std::addressof(m_layout.*cFieldMember##field_index )); \
                     const Result result = this->LoopPropertyImpl(loop_function, std::addressof(accessor), cLayoutNameArray[ field_index ], GetRuntimeTypeInfoStatic(), std::addressof(m_is_non_default_array[ field_index ]), field_index , std::addressof( cDefault##field_index )); \
-                    RESULT_THROW_ON_FAILED(result); \
+                    RESULT_TRY(result); \
                 } 
 #define AWN_TYPED_PARAM_AUTO_MID3() \
                 RESULT_RETURN_SUCCESS; \
@@ -293,7 +293,7 @@ namespace awn::para {
 #define AWN_PARA_LOOP_EMBED_IMPL(field_index) \
                 if constexpr (::awn::para::impl::TIsEmbed< FieldType##field_index >()) { \
                     const Result result = this->LoopEmbeddedImpl(loop_function, cLayoutNameArray[ field_index ], GetRuntimeTypeInfoStatic(), std::addressof(m_is_non_default_array[ field_index ]), field_index , ::awn::para::impl::TGetEmbedClassName< FieldType##field_index >(), ::awn::para::impl::TGetCompositeRtti <FieldType##field_index >(), std::addressof( m_layout.*cFieldMember##field_index )); \
-                    RESULT_THROW_ON_FAILED(result); \
+                    RESULT_TRY(result); \
                 }
 #define AWN_TYPED_PARAM_AUTO_MID4() \
                 RESULT_RETURN_SUCCESS; \
@@ -303,7 +303,7 @@ namespace awn::para {
 #define AWN_PARA_LOOP_COMPOSITE_IMPL(field_index) \
                 if constexpr (::awn::para::impl::TIsComposite< FieldType##field_index >()) { \
                     const Result result = this->LoopCompositeImpl(loop_function, cLayoutNameArray[ field_index ], GetRuntimeTypeInfoStatic(), std::addressof(m_is_non_default_array[ field_index ]), field_index , std::addressof(m_layout.*cFieldMember##field_index )); \
-                    RESULT_THROW_ON_FAILED(result); \
+                    RESULT_TRY(result); \
                 }
 #define AWN_TYPED_PARAM_AUTO_END() \
                 RESULT_RETURN_SUCCESS; \

@@ -24,52 +24,35 @@ namespace vp::util {
         return out;
 	}
 
-#ifdef VP_TARGET_PLATFORM_win32
-    constexpr void MatrixMultiply(MatrixRowMajor4x4d *out_matrix, const MatrixRowMajor4x4d &lhs_matrix, const MatrixRowMajor4x4d &rhs_matrix) {
-        const v256f r_row0 = { .mmd = rhs_matrix.array_row[0].vector.d };
-        const v256f r_row1 = { .mmd = rhs_matrix.array_row[1].vector.d };
-        const v256f r_row2 = { .mmd = rhs_matrix.array_row[2].vector.d };
-        const v256f r_row3 = { .mmd = rhs_matrix.array_row[3].vector.d };
+#ifdef VP_TARGET_ARCHITECTURE_x86
+    constexpr void MatrixMultiply(MatrixRowMajor4x4d *out_matrix, const MatrixRowMajor4x4d *lhs_matrix, const MatrixRowMajor4x4d *rhs_matrix) {
+        const v256f r_row0 = { .mmd = rhs_matrix->array_row[0].vector.d };
+        const v256f r_row1 = { .mmd = rhs_matrix->array_row[1].vector.d };
+        const v256f r_row2 = { .mmd = rhs_matrix->array_row[2].vector.d };
+        const v256f r_row3 = { .mmd = rhs_matrix->array_row[3].vector.d };
 
+        const auto row_lambda = [=] ALWAYS_INLINE_LAMBDA (const v256f &row) {
+            const v256f row0_brod0 = { .mmd = avx2::vbroadcastsd256(std::addressof(row.d[0])), };
+            const v256f row0_mul0  = { .mmd = avx2::mulpd(row0_brod0, r_row0), };
+            const v256f row0_brod1 = { .mmd = avx2::vbroadcastsd256(std::addressof(row.d[1])), };
+            const v256f row0_fmul1 = { .mmd = avx2::fmaddpd(row0_brod1, r_row1, row0_mul0), };
+            const v256f row0_brod2 = { .mmd = avx2::vbroadcastsd256(std::addressof(row.d[2])), };
+            const v256f row0_fmul2 = { .mmd = avx2::fmaddpd(row0_brod2, r_row2, row0_fmul1), };
+            const v256f row0_brod3 = { .mmd = avx2::vbroadcastsd256(std::addressof(row.d[3])), };
+            const v256f row0_fmul3 = { .mmd = avx2::fmaddpd(row0_brod3, r_row3, row0_fmul2), };
+            return row0_fmul3;
+        };
         /* | dot({l_00,l_01,l_02,l_03}, {r_00,r_10,r_20,r_30}) ... dot({l_00,l_01,l_02,l_03}, {r_03,r_13,r_23,r_33}) | */
-        const v256f row0_brod0 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[0].d[0])), };
-        const v256f row0_mul0  = { .mmd = avx2::mulpd(row0_brod0, r_row0), };
-        const v256f row0_brod1 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[0].d[1])), };
-        const v256f row0_fmul1 = { .mmd = avx2::fmaddpd(row0_brod1, r_row1, row0_mul0), };
-        const v256f row0_brod2 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[0].d[2])), };
-        const v256f row0_fmul2 = { .mmd = avx2::fmaddpd(row0_brod2, r_row2, row0_fmul1), };
-        const v256f row0_brod3 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[0].d[3])), };
-        const v256f row0_fmul3 = { .mmd = avx2::fmaddpd(row0_brod3, r_row3, row0_fmul2), };
+        const v256f row0_fmul3 = row_lambda(lhs_matrix->vector[0]);
 
         /* | dot({l_10,l_11,l_12,l_13}, {r_00,r_10,r_20,r_30}) ... dot({l_10,l_11,l_12,l_13}, {r_03,r_13,r_23,r_33}) | */
-        const v256f row1_brod0 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[1].d[0])), };
-        const v256f row1_mul0  = { .mmd = avx2::mulpd(row1_brod0, r_row0), };
-        const v256f row1_brod1 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[1].d[1])), };
-        const v256f row1_fmul1 = { .mmd = avx2::fmaddpd(row1_brod1, r_row1, row1_mul0), };
-        const v256f row1_brod2 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[1].d[2])), };
-        const v256f row1_fmul2 = { .mmd = avx2::fmaddpd(row1_brod2, r_row2, row1_fmul1), };
-        const v256f row1_brod3 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[1].d[3])), };
-        const v256f row1_fmul3 = { .mmd = avx2::fmaddpd(row1_brod3, r_row3, row1_fmul2), };
+        const v256f row1_fmul3 = row_lambda(lhs_matrix->vector[1]);
 
         /* | dot({l_20,l_21,l_22,l_23}, {r_00,r_10,r_20,r_30}) ... dot({l_20,l_21,l_22,l_23}, {r_03,r_13,r_23,r_33}) | */
-        const v256f row2_brod0 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[2].d[0])), };
-        const v256f row2_mul0  = { .mmd = avx2::mulpd(row2_brod0, r_row0), };
-        const v256f row2_brod1 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[2].d[1])), };
-        const v256f row2_fmul1 = { .mmd = avx2::fmaddpd(row2_brod1, r_row1, row2_mul0), };
-        const v256f row2_brod2 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[2].d[2])), };
-        const v256f row2_fmul2 = { .mmd = avx2::fmaddpd(row2_brod2, r_row2, row2_fmul1), };
-        const v256f row2_brod3 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[2].d[3])), };
-        const v256f row2_fmul3 = { .mmd = avx2::fmaddpd(row2_brod3, r_row3, row2_fmul2), };
+        const v256f row2_fmul3 = row_lambda(lhs_matrix->vector[2]);
 
         /* | dot({l_30,l_31,l_32,l_33}, {r_00,r_10,r_20,r_30}) ... dot({l_30,l_31,l_32,l_33}, {r_03,r_13,r_23,r_33}) | */
-        const v256f row3_brod0 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[3].d[0])), };
-        const v256f row3_mul0  = { .mmd = avx2::mulpd(row3_brod0, r_row0), };
-        const v256f row3_brod1 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[3].d[1])), };
-        const v256f row3_fmul1 = { .mmd = avx2::fmaddpd(row3_brod1, r_row1, row3_mul0), };
-        const v256f row3_brod2 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[3].d[2])), };
-        const v256f row3_fmul2 = { .mmd = avx2::fmaddpd(row3_brod2, r_row2, row3_fmul1), };
-        const v256f row3_brod3 = { .mmd = avx2::vbroadcastsd256(std::addressof(lhs_matrix.vector[3].d[3])), };
-        const v256f row3_fmul3 = { .mmd = avx2::fmaddpd(row3_brod3, r_row3, row3_fmul2), };
+        const v256f row3_fmul3 = row_lambda(lhs_matrix->vector[3]);
 
         out_matrix->array_row[0].vector.d = row0_fmul3.d;
         out_matrix->array_row[1].vector.d = row1_fmul3.d;

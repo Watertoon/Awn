@@ -90,6 +90,27 @@ namespace vp::res {
         return this->TryGetKeyByData(out_key, this->GetDataByIterator());
     }
 
+    bool ByamlIterator::TryGetHashByIndex(u32 *out_hash, u32 index) const {
+
+        /* Integrity checks */
+        if (m_byaml == nullptr || (static_cast<ByamlDataType>(m_container_data.data_type & 0xe0) != ByamlDataType::HashArrayU32_1)) { return false; }
+
+        /* Endianess check */
+        const u32 is_reverse_endian = m_byaml->IsReverseEndian();
+
+        /* Setup container and iterators */
+        const u32 stride = (m_container_data.data_type & 0xf) * sizeof(u32) + sizeof(ResByamlContainer);
+        const ResByamlContainer      *hash_container = reinterpret_cast<const ResByamlContainer*>(m_container_data.GetBigData(m_byaml));
+        const ByamlHashArrayIterator  hash_array_iter(hash_container, stride);
+        const u32 count = hash_array_iter.GetCount(is_reverse_endian);
+        if (count <= index) { return false; }
+
+        const ByamlHashAccessor hash_accessor(hash_container, stride, index);
+        *out_hash = hash_accessor.GetHash(is_reverse_endian);
+
+        return true;
+    }
+
     bool ByamlIterator::TryGetKeyIndexByKey(u32 *out_key_index, const char *key) const {
 
         /* Endianess check */
@@ -217,7 +238,7 @@ namespace vp::res {
     bool ByamlIterator::TryGetByamlDataByHash(ByamlData *out_byaml_data, u32 hash) const {
 
         /* Integrity checks */
-        if (m_byaml == nullptr || m_byaml->key_table_offset == 0 || (static_cast<ByamlDataType>(m_container_data.data_type & 0xe0) != ByamlDataType::HashArrayU32_1)) { return false; }
+        if (m_byaml == nullptr || (static_cast<ByamlDataType>(m_container_data.data_type & 0xe0) != ByamlDataType::HashArrayU32_1)) { return false; }
 
         /* Endianess check */
         const u32 is_reverse_endian = m_byaml->IsReverseEndian();
@@ -262,7 +283,7 @@ namespace vp::res {
     bool ByamlIterator::TryGetByamlDataByHash(ByamlData *out_byaml_data, u64 hash) const {
 
         /* Integrity checks */
-        if (m_byaml == nullptr || m_byaml->key_table_offset == 0 || (static_cast<ByamlDataType>(m_container_data.data_type & 0xe0) != ByamlDataType::HashArrayU32_1)) { return false; }
+        if (m_byaml == nullptr || (static_cast<ByamlDataType>(m_container_data.data_type & 0xe0) != ByamlDataType::HashArrayU32_1)) { return false; }
 
         /* Endianess check */
         const u32 is_reverse_endian = m_byaml->IsReverseEndian();

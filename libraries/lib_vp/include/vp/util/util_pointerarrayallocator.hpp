@@ -109,9 +109,8 @@ namespace vp::util {
 
                 /* Construct a free list of objects */
                 for (u32 i = 0; i < (array_size - 1); ++i) {
-                    /* Remember we are adding to a pointer */
                     m_free_list[i].next = m_free_list + i + 1;
-                    m_array[i]  = nullptr;
+                    m_array[i] = nullptr;
                 }
                 m_array[array_size - 1]  = nullptr;
 

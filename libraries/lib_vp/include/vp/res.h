@@ -36,7 +36,7 @@
 
     #include <vp/res/res_bntx.hpp>
     #include <vp/res/res_bnsh.hpp>
-    #include <vp/res/res_gfxtostring.hpp>
+    //#include <vp/res/res_gfxtostring.hpp>
 
     /* Reverse engineered NintendoWare g3d formats */
     #include <vp/res/res_bfresanimcurve.hpp>

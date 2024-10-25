@@ -311,8 +311,108 @@ namespace vp::util {
         out_vector->x = to_parallelize.x * dot;
     }
 
-    //constexpr void MatrixMultiply(MatrixRowMajor4x4f *out_matrix, const MatrixRowMajor4x4f &lhs, const MatrixRowMajor4x4f &rhs) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
 
+    constexpr void MatrixMultiply(MatrixRowMajor4x4f *out_matrix, const MatrixRowMajor4x4f *lhs_matrix, const MatrixRowMajor4x3f *rhs_matrix) {
+        const v128f r_row0 = { .mmf = rhs_matrix->array_row[0].vector.f };
+        const v128f r_row1 = { .mmf = rhs_matrix->array_row[1].vector.f };
+        const v128f r_row2 = { .mmf = rhs_matrix->array_row[2].vector.f };
+        const v128f clear = { .mmf = {0.0f, 0.0f, 0.0f, 0.0f,} };
+    
+        const auto row_lambda = [=](const v128f &row) {
+            const v128f row0_brod0 = { .mmf = avx2::vbroadcastss128(std::addressof(row.f[0])), };
+            const v128f row0_mul0  = { .mmf = avx2::mulps(row0_brod0, r_row0), };
+            const v128f row0_brod1 = { .mmf = avx2::vbroadcastss128(std::addressof(row.f[1])), };
+            const v128f row0_fmul1 = { .mmf = avx2::fmaddps(row0_brod1, r_row1, row0_mul0), };
+            const v128f row0_brod2 = { .mmf = avx2::vbroadcastss128(std::addressof(row.f[2])), };
+            const v128f row0_fmul2 = { .mmf = avx2::fmaddps(row0_brod2, r_row2, row0_fmul1), };
+            const v128f row0_brod3 = { .mmf = avx2::vbroadcastss128(std::addressof(row.f[3])), };
+            const v128f row0_fmul3 = { .mmf = avx2::fmaddps(row0_brod3, clear, row0_fmul2), };
+            return row0_fmul3;
+        };
+    
+        /* | dot({l_00,l_01,l_02,l_03}, {r_00,r_10,r_20,r_30}) ... dot({l_00,l_01,l_02,l_03}, {r_03,r_13,r_23,r_33}) | */
+        const v128f row0_fmul3 = row_lambda(lhs_matrix->vector[0].down_vec[0]);
+    
+        /* | dot({l_10,l_11,l_12,l_13}, {r_00,r_10,r_20,r_30}) ... dot({l_10,l_11,l_12,l_13}, {r_03,r_13,r_23,r_33}) | */
+        const v128f row1_fmul3 = row_lambda(lhs_matrix->vector[0].down_vec[1]);
+    
+        /* | dot({l_20,l_21,l_22,l_23}, {r_00,r_10,r_20,r_30}) ... dot({l_20,l_21,l_22,l_23}, {r_03,r_13,r_23,r_33}) | */
+        const v128f row2_fmul3 = row_lambda(lhs_matrix->vector[1].down_vec[0]);
+    
+        /* | dot({l_30,l_31,l_32,l_33}, {r_00,r_10,r_20,r_30}) ... dot({l_30,l_31,l_32,l_33}, {r_03,r_13,r_23,r_33}) | */
+        const v128f row3_fmul3 = row_lambda(lhs_matrix->vector[1].down_vec[1]);
+    
+        out_matrix->array_row[0].vector.f = row0_fmul3.f;
+        out_matrix->array_row[1].vector.f = row1_fmul3.f;
+        out_matrix->array_row[2].vector.f = row2_fmul3.f;
+        out_matrix->array_row[3].vector.f = row3_fmul3.f;
+    }
+
+    constexpr void MatrixMultiply(MatrixRowMajor4x4f *out_matrix, const MatrixRowMajor4x4f *lhs_matrix, const MatrixRowMajor4x4f *rhs_matrix) {
+        const v128f r_row0 = { .mmf = rhs_matrix->array_row[0].vector.f };
+        const v128f r_row1 = { .mmf = rhs_matrix->array_row[1].vector.f };
+        const v128f r_row2 = { .mmf = rhs_matrix->array_row[2].vector.f };
+        const v128f r_row3 = { .mmf = rhs_matrix->array_row[3].vector.f };
+    
+        const auto row_lambda = [=](const v128f &row) {
+            const v128f row0_brod0 = { .mmf = avx2::vbroadcastss128(std::addressof(row.f[0])), };
+            const v128f row0_mul0  = { .mmf = avx2::mulps(row0_brod0, r_row0), };
+            const v128f row0_brod1 = { .mmf = avx2::vbroadcastss128(std::addressof(row.f[1])), };
+            const v128f row0_fmul1 = { .mmf = avx2::fmaddps(row0_brod1, r_row1, row0_mul0), };
+            const v128f row0_brod2 = { .mmf = avx2::vbroadcastss128(std::addressof(row.f[2])), };
+            const v128f row0_fmul2 = { .mmf = avx2::fmaddps(row0_brod2, r_row2, row0_fmul1), };
+            const v128f row0_brod3 = { .mmf = avx2::vbroadcastss128(std::addressof(row.f[3])), };
+            const v128f row0_fmul3 = { .mmf = avx2::fmaddps(row0_brod3, r_row3, row0_fmul2), };
+            return row0_fmul3;
+        };
+    
+        /* | dot({l_00,l_01,l_02,l_03}, {r_00,r_10,r_20,r_30}) ... dot({l_00,l_01,l_02,l_03}, {r_03,r_13,r_23,r_33}) | */
+        const v128f row0_fmul3 = row_lambda(lhs_matrix->vector[0].down_vec[0]);
+    
+        /* | dot({l_10,l_11,l_12,l_13}, {r_00,r_10,r_20,r_30}) ... dot({l_10,l_11,l_12,l_13}, {r_03,r_13,r_23,r_33}) | */
+        const v128f row1_fmul3 = row_lambda(lhs_matrix->vector[0].down_vec[1]);
+    
+        /* | dot({l_20,l_21,l_22,l_23}, {r_00,r_10,r_20,r_30}) ... dot({l_20,l_21,l_22,l_23}, {r_03,r_13,r_23,r_33}) | */
+        const v128f row2_fmul3 = row_lambda(lhs_matrix->vector[1].down_vec[0]);
+    
+        /* | dot({l_30,l_31,l_32,l_33}, {r_00,r_10,r_20,r_30}) ... dot({l_30,l_31,l_32,l_33}, {r_03,r_13,r_23,r_33}) | */
+        const v128f row3_fmul3 = row_lambda(lhs_matrix->vector[1].down_vec[1]);
+    
+        out_matrix->array_row[0].vector.f = row0_fmul3.f;
+        out_matrix->array_row[1].vector.f = row1_fmul3.f;
+        out_matrix->array_row[2].vector.f = row2_fmul3.f;
+        out_matrix->array_row[3].vector.f = row3_fmul3.f;
+    }
+#endif
+
+    constexpr void ConvertQuaternionToMatrix(MatrixRowMajor4x3f *out_matrix, const Quaternionf &quaternion) {
+        out_matrix->array_row[3].vector = v128f{ .f = { 0.0f, 0.0f, 0.0f, 0.0f, }, };
+        const float x = quaternion.x;
+        const float y = quaternion.y;
+        const float z = quaternion.z;
+        const float w = quaternion.w;
+        const float mag = 2.0f / (x * x + y * y + z * z + w * w);
+        const float m_z = mag * z;
+        const float m_y = mag * y;
+        const float m_xw = mag * x * w;
+        const float m_xx = mag * x * x;
+        /* | 1 - 2y^2 - 2z^2, 2xy - 2zw,       2xz + 2yw,       0 |
+         * | 2xy + 2zw,       1 - 2x^2 - 2z^2, 2yz - 2xw,       0 |
+         * | 2xz - 2yw,       2yz - 2xw,       1 - 2x^2 - 2y^2, 0 |
+         * | 0,               0,               0,               0 |
+         */
+        const Vector4f row0 = { 1.0f - (m_y * y + m_z * z), m_y * x + m_z * w,       m_z * x - m_y * w,       0.0f,};
+        const Vector4f row1 = { m_y * x - m_z * w,          1.0f - (m_xx + m_z * z), m_z * y + m_xw,          0.0f,};
+        const Vector4f row2 = { m_z * x + m_y * w,          m_z * y - m_xw,          1.0f - (m_xx + m_y * y), 0.0f,};
+        out_matrix->array_row[0].vector = row0.vector;
+        out_matrix->array_row[1].vector = row1.vector;
+        out_matrix->array_row[2].vector = row2.vector;
+        return;
+    }
+
+    //constexpr void ConvertMatrixToQuaternion(Quaternionf *out_quat, const MatrixRowMajor4x3f *matrix) {
+    //    return;
     //}
 
     constexpr void RotateLocalX(MatrixRowMajor4x3f *out_rot_matrix, float theta) {

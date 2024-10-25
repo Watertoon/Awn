@@ -20,8 +20,15 @@ namespace vp::resbui {
     struct BnshShaderInterfaceNode {
         static constexpr u32 cInvalidLocation = 0xffff'ffff;
 
-        u32              location = cInvalidLocation;
+        u32 location = cInvalidLocation;
+        vp::res::GfxShaderInterfaceType interface_type;
         DictionaryString name;
+
+        constexpr bool IsValid() const {
+            if (this->location == cInvalidLocation) { return false; }
+            if (this->name.GetString() == nullptr || *this->name.GetString() == '\0') { return false; }
+            return true;
+        }
     };
 
     class BnshShaderProgramNode;
@@ -35,6 +42,8 @@ namespace vp::resbui {
             static constexpr u32 cInterfaceTableCount = vp::res::cMaxBnshInputAttributeCount + vp::res::cMaxBnshOutputAttributeCount + vp::res::cMaxBnshTextureSamplerCount + vp::res::cMaxBnshUniformBufferCount + vp::res::cMaxBnshStorageBufferCount + vp::res::cMaxBnshImageCount;
             static constexpr u32 cInterfaceTableCountExt = vp::res::cMaxBnshSeparateTextureCount + vp::res::cMaxBnshSeparateSamplerCount;
             static constexpr u32 cTotalInterfaceNodeCount = cInterfaceTableCount + cInterfaceTableCountExt;
+        public:
+            using InterfaceArray = vp::util::FixedPointerArrayAllocator<BnshShaderInterfaceNode, cTotalInterfaceNodeCount>;
         private:
             const void *m_code;
             const void *m_control;
@@ -45,21 +54,9 @@ namespace vp::resbui {
             u32         m_workgroup_x;
             u32         m_workgroup_y;
             u32         m_workgroup_z;
-            union {
-                BnshShaderInterfaceNode  m_interface_array[cTotalInterfaceNodeCount];
-                struct {
-                    BnshShaderInterfaceNode  m_input_attribute_array[vp::res::cMaxBnshInputAttributeCount];
-                    BnshShaderInterfaceNode  m_output_attribute_array[vp::res::cMaxBnshOutputAttributeCount];
-                    BnshShaderInterfaceNode  m_texture_sampler_array[vp::res::cMaxBnshTextureSamplerCount];
-                    BnshShaderInterfaceNode  m_uniform_buffer_array[vp::res::cMaxBnshUniformBufferCount];
-                    BnshShaderInterfaceNode  m_storage_buffer_array[vp::res::cMaxBnshStorageBufferCount];
-                    BnshShaderInterfaceNode  m_image_array[vp::res::cMaxBnshImageCount];
-                    BnshShaderInterfaceNode  m_separate_texture_array[vp::res::cMaxBnshSeparateTextureCount];
-                    BnshShaderInterfaceNode  m_separate_sampler_array[vp::res::cMaxBnshSeparateSamplerCount];                    
-                };
-            };
+            InterfaceArray m_interface_array;
         public:
-            constexpr BnshShaderNode() : m_code(), m_control(), m_code_size(), m_control_size(), m_code_offset(), m_control_offset(), m_workgroup_x(), m_workgroup_y(), m_workgroup_z(), m_input_attribute_array(), m_output_attribute_array(), m_texture_sampler_array(), m_uniform_buffer_array(), m_storage_buffer_array(), m_image_array(), m_separate_texture_array(), m_separate_sampler_array() {/*...*/}
+            constexpr BnshShaderNode() : m_code(), m_control(), m_code_size(), m_control_size(), m_code_offset(), m_control_offset(), m_workgroup_x(), m_workgroup_y(), m_workgroup_z(), m_interface_array() {/*...*/}
             constexpr ~BnshShaderNode() {/*...*/}
 
             constexpr void SetShaderCode(const void *code, u32 code_size) {
@@ -77,48 +74,13 @@ namespace vp::resbui {
                 m_workgroup_z = z;
             }
 
-            constexpr Result SetInterface(res::GfxShaderInterfaceType interface_type, u32 location, const char *name) {
-                BnshShaderInterfaceNode *node = nullptr;
-                switch (interface_type) {
-                    case res::GfxShaderInterfaceType::InputAttribute:
-                        RESULT_RETURN_UNLESS(location < res::cMaxBnshInputAttributeCount, ResultOutOfBoundsLocation);
-                        node = std::addressof(m_input_attribute_array[location]);
-                        break;
-                    case res::GfxShaderInterfaceType::OutputAttribute:
-                        RESULT_RETURN_UNLESS(location < res::cMaxBnshOutputAttributeCount, ResultOutOfBoundsLocation);
-                        node = std::addressof(m_output_attribute_array[location]);
-                        break;
-                    case res::GfxShaderInterfaceType::TextureSampler:
-                        RESULT_RETURN_UNLESS(location < res::cMaxBnshTextureSamplerCount, ResultOutOfBoundsLocation);
-                        node = std::addressof(m_texture_sampler_array[location]);
-                        break;
-                    case res::GfxShaderInterfaceType::UniformBuffer:
-                        RESULT_RETURN_UNLESS(location < res::cMaxBnshUniformBufferCount, ResultOutOfBoundsLocation);
-                        node = std::addressof(m_uniform_buffer_array[location]);
-                        break;
-                    case res::GfxShaderInterfaceType::StorageBuffer:
-                        RESULT_RETURN_UNLESS(location < res::cMaxBnshStorageBufferCount, ResultOutOfBoundsLocation);
-                        node = std::addressof(m_storage_buffer_array[location]);
-                        break;
-                    case res::GfxShaderInterfaceType::Image:
-                        RESULT_RETURN_UNLESS(location < res::cMaxBnshImageCount, ResultOutOfBoundsLocation);
-                        node = std::addressof(m_image_array[location]);
-                        break;
-                    case res::GfxShaderInterfaceType::SeparateTexture:
-                        RESULT_RETURN_UNLESS(location < res::cMaxBnshSeparateTextureCount, ResultOutOfBoundsLocation);
-                        node = std::addressof(m_separate_texture_array[location]);
-                        break;
-                    case res::GfxShaderInterfaceType::SeparateSampler:
-                        RESULT_RETURN_UNLESS(location < res::cMaxBnshSeparateSamplerCount, ResultOutOfBoundsLocation);
-                        node = std::addressof(m_separate_sampler_array[location]);
-                        break;
-                    default:
-                        return ResultInvalidShaderInterfaceType;
-                };
+            bool AddInterface(res::GfxShaderInterfaceType interface_type, u32 location, const char *name) {
+                BnshShaderInterfaceNode *node = m_interface_array.Allocate();
+                if (node == nullptr) { return false; }
                 node->location = location;
+                node->interface_type = interface_type;
                 node->name.SetString(name);
-
-                RESULT_RETURN_SUCCESS;
+                return true;
             }
     };
 

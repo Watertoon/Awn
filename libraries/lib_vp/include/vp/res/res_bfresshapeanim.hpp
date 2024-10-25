@@ -36,6 +36,23 @@ namespace vp::res {
         u32                   base_curve;
         u32                   base_key_shape_anim;
         u32                   reserve0;
+
+        constexpr void SetResultDefaults(float *out_default_array) const {
+            for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
+                out_default_array[i] = this->default_result_array[i];
+            }
+        }
+
+        constexpr bool BuildKeyShapeIndices(u8 *out_key_shape_index_array, ResBfresShape *shape) const {
+            if (shape->key_shape_count < 1) { return false; }
+            bool result = false;
+            for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
+                const u32 entry_id = (shape->key_shape_dictionary != nullptr) ? shape->key_shape_dictionary->TryGetEntryIndexByKey(key_shape_anim_array[i].name + 2) : ResNintendoWareDictionary::cInvalidEntryIndex;
+                out_key_shape_index_array[i + this->base_key_shape_anim] = (entry_id != ResNintendoWareDictionary::cInvalidEntryIndex) ? entry_id : 0xff;
+                result |= (entry_id != ResNintendoWareDictionary::cInvalidEntryIndex);
+            }
+            return result;
+        }
     };
     static_assert(sizeof(ResBfresVertexShapeAnim) == 0x30);
 

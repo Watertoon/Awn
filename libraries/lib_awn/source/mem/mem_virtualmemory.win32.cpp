@@ -25,23 +25,13 @@ namespace awn::mem {
     }
 
     Result AllocateMemoryPages(void *address_region, size_t memory_size) {
-        MEM_EXTENDED_PARAMETER ext_param = {
-            {                
-                .Type = MEM_EXTENDED_PARAMETER_NONPAGED,
-            },
-        };
-        void *commit = ::VirtualAlloc2(nullptr, address_region, memory_size, MEM_COMMIT, PAGE_READWRITE, std::addressof(ext_param), 1);
+        void *commit = ::VirtualAlloc2(nullptr, address_region, memory_size, MEM_COMMIT, PAGE_READWRITE, nullptr, 0);
         if (commit == nullptr) { return res::ConvertWin32ErrorToResult(); }
         RESULT_RETURN_SUCCESS;
     }
 
     Result AllocateLargeAddressRegionWithMemoryPages(void **out_large_address_region, size_t large_memory_size) {
-        MEM_EXTENDED_PARAMETER ext_param = {
-            {                
-                .Type = MEM_EXTENDED_PARAMETER_NONPAGED,
-            },
-        };
-        void *large_commit = ::VirtualAlloc2(nullptr, nullptr, large_memory_size, MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES, PAGE_READWRITE, std::addressof(ext_param), 1);
+        void *large_commit = ::VirtualAlloc2(nullptr, nullptr, large_memory_size, MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES, PAGE_READWRITE, nullptr, 0);
         if (large_commit == nullptr) { return res::ConvertWin32ErrorToResult(); }
         *out_large_address_region = large_commit;
         RESULT_RETURN_SUCCESS;

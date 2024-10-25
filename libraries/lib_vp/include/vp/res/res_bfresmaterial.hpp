@@ -66,34 +66,45 @@ namespace vp::res {
     
     struct ResBfresSrt2d {
         util::Float2 scale;
-        float        rotation;
-        util::Float2 translation;
+        float        rotate;
+        util::Float2 translate;
+
+        constexpr void ConvertSrt2d(float *out_matrix) {
+            const vp::util::Float2 sincos = vp::util::SampleSinCos(this->rotate);
+            out_matrix[0] = sincos.y * this->scale.x;
+            out_matrix[1] = sincos.x * this->scale.x;
+            out_matrix[2] = sincos.x * -this->scale.y;
+            out_matrix[3] = sincos.y * this->scale.y;
+            out_matrix[4] = this->translate.x;
+            out_matrix[5] = this->translate.y;
+        }
     };
 
     struct ResBfresSrt3d {
         util::Float3 scale;
-        util::Float3 rotation;
-        util::Float3 translation;
+        util::Float3 rotate;
+        util::Float3 translate;
     };
+
 
     enum class BfresSrtMode : u32 {
         Maya      = 0x0,
         Max       = 0x1,
-        SoftImage = 0x2,
+        SoftImage = 0x2, /* Deprecated? */
     };
 
     struct ResBfresTextureSrt {
         BfresSrtMode srt_mode;
         util::Float2 scale;
-        float        rotation;
-        util::Float2 translation;
+        float        rotate;
+        util::Float2 translate;
     };
 
     struct ResBfresTextureSrtWithUserPointer {
         BfresSrtMode  srt_mode;
         util::Float2  scale;
-        float         rotation;
-        util::Float2  translation;
+        float         rotate;
+        util::Float2  translate;
         void         *runtime_user_pointer;
     };
 
@@ -102,7 +113,7 @@ namespace vp::res {
     using ConvertTextureSrtFunction = u32 (*)(void*, const void*, ResBfresShaderParam*, void*);
 
     struct ResBfresShaderParam {
-        ConvertTextureSrtFunction *runtime_convert_texture_srt_callback;
+        ConvertTextureSrtFunction *runtime_convert_srt_callback;
         const char                *shader_param_name;
         u16                        shader_param_offset;
         u8                         data_type;
@@ -150,7 +161,13 @@ namespace vp::res {
 
     struct ResBfresMaterial {
         u32                          magic;
-        u32                          is_material_visible;
+        union {
+            u32 flags;
+            struct {
+                u32 is_visible : 1;
+                u32 reserve1 : 31;            
+            };
+        };
         const char                  *material_name;
         ResBfresMaterialShaderData  *material_shader_data;
         void                       **runtime_texture_view_array;

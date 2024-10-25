@@ -22,12 +22,13 @@ namespace awn::mem {
 #ifdef VP_TARGET_GRAPHICS_API_vk
     struct GpuMemoryHandle {
         VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
+        void *memory;
 
         constexpr bool IsValid() const {
             return vk_device_memory != VK_NULL_HANDLE;
         }
     };
-    
+
     static constexpr size_t cGpuMemoryHandleMetaDataSize = 0;
     static constexpr size_t cGpuMemoryHandleMetaDataAlignment = 0;
 #elif VP_TARGET_GRAPHICS_API_nvn

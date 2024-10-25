@@ -59,7 +59,7 @@ namespace awn::para {
             PauseTargetMask     m_pause_mask;
         public:
             constexpr PauseManager() : m_document_pause_config(), m_pause_key_array(), m_pause_target_index_map(), m_pause_mask() {/*...*/}
-            constexpr ~PauseManager() {/*...*/}
+            ~PauseManager() {/*...*/}
 
             bool Initialize(mem::Heap *heap, const char *pause_config_file_name) {
 

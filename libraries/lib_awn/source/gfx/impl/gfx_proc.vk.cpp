@@ -366,6 +366,7 @@ DEFINE_VK_PROC(vkCmdSetColorBlendEquationEXT);
 DEFINE_VK_PROC(vkCmdSetColorWriteMaskEXT);
 DEFINE_VK_PROC(vkCmdSetConservativeRasterizationModeEXT);
 DEFINE_VK_PROC(vkCmdSetDescriptorBufferOffsetsEXT);
+DEFINE_VK_PROC(vkCmdSetDescriptorBufferOffsets2EXT);
 DEFINE_VK_PROC(vkCmdSetDepthClampEnableEXT);
 DEFINE_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);
 DEFINE_VK_PROC(vkCmdSetLogicOpEXT);
@@ -602,6 +603,7 @@ void LoadVkCProcsDevice(VkDevice device) {
     LOAD_DEVICE_VK_PROC(vkCmdSetColorWriteMaskEXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetConservativeRasterizationModeEXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetDescriptorBufferOffsetsEXT);
+    LOAD_DEVICE_VK_PROC(vkCmdSetDescriptorBufferOffsets2EXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetDepthClampEnableEXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetLogicOpEXT);

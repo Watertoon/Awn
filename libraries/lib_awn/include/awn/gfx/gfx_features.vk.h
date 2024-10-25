@@ -84,6 +84,9 @@ namespace awn::gfx {
         SupportsShaderSubgroupUniformControlFlow,
         SupportsDepthBounds,
         SupportsShaderObject,
+        SupportsMutableDescriptors,
+        SupportsPerStageDescriptorSets,
+        SupportsCommandBufferInheritance,
     };
     VP_ENUM_TRAITSV(
         awn::gfx::RequiredFeature, RequiredFeature,
@@ -167,7 +170,10 @@ namespace awn::gfx {
         SupportsShaderSubgroupRotate,
         SupportsShaderSubgroupUniformControlFlow,
         SupportsDepthBounds,
-        SupportsShaderObject
+        SupportsShaderObject,
+        SupportsMutableDescriptors,
+        SupportsPerStageDescriptorSets,
+        SupportsCommandBufferInheritance
     );
 
     static constexpr u32 cRequiredFeatureCount = RequiredFeatureTraits::cEnumCount;

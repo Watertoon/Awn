@@ -2,18 +2,20 @@
 Awn is a personal C++ library designed to power low-latency multi-threaded real-time applications.
 
 # Awn Features
-* An asynchronous file resource manager for real-time file streaming
-* A parameter system to autogenerate and manage parameter classes for binary data using the byaml file format
-* A platform agnositic threading api implementing synchronization primitives
-* A CPU and GPU heap tree memory manager for real-time allocations and memory monitoring
-* A graphics api based around supporting file formats reversed from games containing NintendoWare libraries
-* Basic mouse and keyboard support
+* awn::res, an asynchronous file resource api for real-time file streaming
+* awn::para, a collection of parameterized data structures and serializable parameter class generation
+* awn::sys, an OS thread and synchronization primitive wrapper
+* awn::mem, a CPU and GPU memory api for virtual and heap tree-based memory management
+* awn::gfx, a graphics api wrapper over vulkan based around NVN style binding and file formats reverse engineered from NintendoWare gfx
+* awn::hid, a simple mouse and keyboard api
+* awn::render, a windowing system solving the problem of getting vulkan render targets from directx12 resources from a dxgi swapchain on a win32 window while supporting render target alpha, global alpha, transforms, and resizing
 
 # Vp
 Vp is a personal C++ library designed to portably carry common utilities and file format definitions.
 
 # Vp Features
-* Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
+* vp::res, Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
+  * Ainb (AI Node Binary)
   * Bea (Bezel Engine Archive)
   * Bffnt (Binary Cafe Font)
   * Bfres (Binary Cafe Resource)
@@ -23,18 +25,29 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
   * Byaml (Binary Yet Another Markup Language)
   * Bwav (Binary Wave)
   * Common nn::util and NintendoWare gfx structures and enums
-  * rsizetable (Resource Size Table)
-  * sarc (sead Archive?)
+  * Exb (Expression Binary)
+  * Rsizetable (Resource Size Table)
+  * Sarc (sead Archive?)
+* vp::resbui, serializers for select file formats
+  * Bnsh (Binary Nintendo Shader)
+  * Byaml (Binary Yet Another Markup Language)
+  * Rsizetable (Resource Size Table)
+  * Sarc (sead Archive?)
 * Zstd streaming decompression and Yaz0 decompressor for Nintendo szs files
-* Hash algorithms, crc32b, murmur3, and murmur64
-* Avx2 SIMD linear algebra algorithms for fast 3d transformations and projections
-* Common utilities
+* vp::util, Data structures, algorithms, traits
+   * Hash algorithms, crc32b, murmur3, and murmur64
+   * x86_64 SIMD linear algebra
   * Scope Guard
-  * Structured Error Handling
-* Common Data Structures
+  * Result-based Structured Error Handling
+  * Custom Runtime Type Info
+  * Utf8, Utf16, and Utf32 string encoding conversion
+  * File Path Parsing
+  * Enum Reflection
   * Red Black Trees
   * Ring Buffers
-  * Handle Tables
+  * Handle Tables 
+  * Object Allocators
+  * Index Allocators
   * Intrusive Lists
   * Priority Queues
   * Hash Maps
@@ -43,12 +56,14 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
   * Frame Arrays
   * Heap Arrays
   * Fixed Strings
+  * IFunction
 
-# Wrapping up development (Finalzing)
+# Wrapping up development (Finalizing)
 * A multi-threaded main loop based on dependency graphs
 * Acpcm to Pcm16 decoding and Pcm16 to Pcm24 and Pcm Float conversion
+* Audio device management, input, and output
 
-# In Development (prototyping)
+# In Development (Prototyping)
 * An audio renderer for mixing, applying effects, and outputing pcm16, adpcm, and opus encoded audio
 * An Actor and Scene system
 * An AI behavior tree system for scripting actor and scene behavior
@@ -74,6 +89,6 @@ Build instructions:
 
 I'm informed by reverse engineering, text books, free online resources, word on the street, and api documentation. I believe to be conformant with respect to my references.
 
-This repo is currently not all of the project but irregular partial snapshots.
+This repo is currently not all of the project but irregular snapshots of passable parts.
 
 If there are problems of any kind please file an issue or contact me and I'll do my best to resolve the issue.

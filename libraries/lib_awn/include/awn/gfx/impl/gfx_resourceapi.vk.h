@@ -32,6 +32,8 @@ namespace awn::gfx::impl {
 	VkBuffer CreateVkBuffer(VkBufferUsageFlags usage_flags, size_t size);
 	VkBuffer CreateVkBuffer(void *gpu_address, const BufferInfo *buffer_info);
 	VkBuffer CreateVkBuffer(void *gpu_address, VkBufferUsageFlags usage_flags, size_t size);
+	VkBuffer CreateVkBuffer(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info);
+    VkBuffer CreateVkBuffer(mem::GpuMemoryHandle memory_handle, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size);
     
 	VkImage  CreateVkImage(const TextureInfo *buffer_info);
 	VkImage  CreateVkImage(const TextureInfo *buffer_info, const void *pnext);
@@ -41,6 +43,10 @@ namespace awn::gfx::impl {
 	VkImage  CreateVkImage(void *gpu_address, const TextureInfo *buffer_info, const void *pnext);
 	VkImage  CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
 	VkImage  CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
+	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *buffer_info);
+	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *buffer_info, const void *pnext);
+	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
+	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
 
     GpuMemoryRequirements GetVkImageMemoryRequirements(VkImage vk_image);
 

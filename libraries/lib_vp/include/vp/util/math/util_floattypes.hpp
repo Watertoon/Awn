@@ -15,6 +15,10 @@
  */
 #pragma once
 
+namespace vp::res {
+    class ByamlIterator;
+}
+
 namespace vp::util {
 
     struct Float2 {
@@ -35,6 +39,11 @@ namespace vp::util {
         static const Float2 cUnitY;
         static const Float2 cZero;
         static const Float2 cOne;
+
+        bool ApplyByamlArray(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionary(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryUpperCase(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryLowerCase(vp::res::ByamlIterator iter);
     };
     static_assert(sizeof(Float2) == 0x8);
     static_assert(alignof(Float2) == 0x4);
@@ -59,6 +68,11 @@ namespace vp::util {
         static const Float3 cUnitZ;
         static const Float3 cZero;
         static const Float3 cOne;
+
+        bool ApplyByamlArray(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionary(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryUpperCase(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryLowerCase(vp::res::ByamlIterator iter);
     };
     static_assert(sizeof(Float3) == 0xc);
     static_assert(alignof(Float3) == 0x4);
@@ -85,6 +99,11 @@ namespace vp::util {
         static const Float4 cUnitW;
         static const Float4 cZero;
         static const Float4 cOne;
+
+        bool ApplyByamlArray(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionary(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryUpperCase(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryLowerCase(vp::res::ByamlIterator iter);
     };
     static_assert(sizeof(Float4) == 0x10);
     static_assert(alignof(Float4) == 0x4);
@@ -261,7 +280,7 @@ namespace vp::util {
             Float2Vector vector;
         };
 
-        using VectorType                    = float;
+        using VectorType = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
         static constexpr u32 cVectorCount  = 2;
@@ -270,6 +289,11 @@ namespace vp::util {
         static const Vector2f cUnitY;
         static const Vector2f cZero;
         static const Vector2f cOne;
+
+        bool ApplyByamlArray(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionary(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryUpperCase(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryLowerCase(vp::res::ByamlIterator iter);
     };
     static_assert(sizeof(Vector2f) == 0x8);
     static_assert(alignof(Vector2f) == 0x8);
@@ -286,7 +310,7 @@ namespace vp::util {
             Float3Vector vector;
         };
 
-        using VectorType                    = float;
+        using VectorType = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
         static constexpr u32 cVectorCount  = 3;
@@ -297,6 +321,11 @@ namespace vp::util {
         static const Vector3f cUnitZ;
         static const Vector3f cZero;
         static const Vector3f cOne;
+
+        bool ApplyByamlArray(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionary(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryUpperCase(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryLowerCase(vp::res::ByamlIterator iter);
     };
     static_assert(sizeof(Vector3f) == 0x10);
     static_assert(alignof(Vector3f) == 0x10);
@@ -313,7 +342,7 @@ namespace vp::util {
             Float4Vector vector;
         };
 
-        using VectorType                    = float;
+        using VectorType = float;
         static constexpr bool cIsVectorType = true;
         static constexpr bool cIsVectorized = true;
         static constexpr u32 cVectorCount  = 4;
@@ -325,6 +354,11 @@ namespace vp::util {
         static const Vector4f cUnitW;
         static const Vector4f cZero;
         static const Vector4f cOne;
+
+        bool ApplyByamlArray(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionary(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryUpperCase(vp::res::ByamlIterator iter);
+        bool ApplyByamlDictionaryLowerCase(vp::res::ByamlIterator iter);
     };
     static_assert(sizeof(Vector4f) == 0x10);
     static_assert(alignof(Vector4f) == 0x10);
@@ -335,19 +369,23 @@ namespace vp::util {
                 float m00;
                 float m01;
                 float m02;
+                float m03;
                 float m10;
                 float m11;
                 float m12;
+                float m13;
                 float m20;
                 float m21;
                 float m22;
+                float m23;
                 float m30;
                 float m31;
                 float m32;
+                float m33;
             };
             Matrix34fVector vector;
-            Vector4f        array_row[4];
-            float           array_2d[4][3];
+            Vector3f array_row[4];
+            float array_2d[4][3];
         };
 
         static const MatrixRowMajor4x3f cIdentity;
@@ -375,8 +413,8 @@ namespace vp::util {
                 float m33;
             };
             Matrix44fVector vector;
-            Vector4f        array_row[4];
-            float           array_2d[4][4];
+            Vector4f array_row[4];
+            float array_2d[4][4];
         };
 
         static const MatrixRowMajor4x4f cIdentity;
@@ -399,14 +437,13 @@ namespace vp::util {
                 float m22;
                 float m32;
             };
-            Matrix34fVector vector;
-            Vector4f        array_col[3];
-            float           array_2d[3][4];
+            Vector4f array_col[3];
+            float    array_2d[3][4];
         };
 
         static const MatrixColumnMajor4x3f cIdentity;
     };
-    static_assert(sizeof(MatrixColumnMajor4x3f) == 0x40);
+    static_assert(sizeof(MatrixColumnMajor4x3f) == 0x30);
 
     struct MatrixColumnMajor4x4f {
         union {
@@ -429,8 +466,8 @@ namespace vp::util {
                 float m33;
             };
             Matrix44fVector vector;
-            Vector4f       array_col[4];
-            float          array_2d[4][4];
+            Vector4f array_col[4];
+            float array_2d[4][4];
         };
 
         static const MatrixColumnMajor4x4f cIdentity;
@@ -562,7 +599,7 @@ namespace vp::util {
         return { x, y, z, w, };
     }
 
-#ifdef VP_TARGET_PLATFORM_win32
+#ifdef VP_TARGET_ARCHITECTURE_x86
     constexpr void ConvertMatrix(MatrixRowMajor4x3f *out_matrix, const FloatRowMajor3x3 *in_matrix) {
 
         const v128i mask = avx2::GetLoadMaskFloat128(true, true, true, false);
@@ -573,7 +610,7 @@ namespace vp::util {
         out_matrix->array_row[0].vector.f = a.f;
         out_matrix->array_row[1].vector.f = b.f;
         out_matrix->array_row[2].vector.f = c.f;
-        out_matrix->array_row[3]          = Vector4f::cZero;
+        out_matrix->array_row[3] = Vector3f::cZero;
     }
 
     constexpr void ConvertMatrix(MatrixRowMajor4x3f *out_matrix, const FloatRowMajor4x3 *in_matrix) {
@@ -600,7 +637,7 @@ namespace vp::util {
         out_matrix->array_row[0].vector.f = a.f;
         out_matrix->array_row[1].vector.f = b.f;
         out_matrix->array_row[2].vector.f = c.f;
-        out_matrix->array_row[3]          = Vector4f::cUnitW;
+        out_matrix->array_row[3] = Vector4f::cUnitW;
     }
 
     constexpr void ConvertMatrix(MatrixRowMajor4x4f *out_matrix, const FloatRowMajor4x3 *in_matrix) {
@@ -637,7 +674,7 @@ namespace vp::util {
         out_matrix->array_col[0].vector.f = a.f;
         out_matrix->array_col[1].vector.f = b.f;
         out_matrix->array_col[2].vector.f = c.f;
-        out_matrix->array_col[3]          = Vector4f::cZero;
+        out_matrix->array_col[3] = Vector4f::cZero;
     }
 
     constexpr void ConvertMatrix(MatrixColumnMajor4x3f *out_matrix, const FloatColumnMajor4x3 *in_matrix) {
@@ -664,7 +701,7 @@ namespace vp::util {
         out_matrix->array_col[0].vector.f = a.f;
         out_matrix->array_col[1].vector.f = b.f;
         out_matrix->array_col[2].vector.f = c.f;
-        out_matrix->array_col[3]          = Vector4f::cZero;
+        out_matrix->array_col[3] = Vector4f::cZero;
     }
 
     constexpr void ConvertMatrix(MatrixColumnMajor4x4f *out_matrix, const FloatColumnMajor4x3 *in_matrix) {

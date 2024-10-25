@@ -104,8 +104,8 @@ namespace awn::gfx::impl {
                 }
             };
         public:
-            using TextureSlotType      = vp::util::MinUIntType<Context::cTargetMaxTextureDescriptorCount>;
-            using SamplerSlotType      = vp::util::MinUIntType<Context::cTargetMaxSamplerDescriptorCount>;
+            using TextureSlotType      = vp::util::MinUIntType<Context::cTargetMaxTextureDescriptorCount - 1>;
+            using SamplerSlotType      = vp::util::MinUIntType<Context::cTargetMaxSamplerDescriptorCount - 1>;
             using TextureViewUnitArray = vp::util::HeapArray<TextureViewUnit>;
             using SamplerUnitArray     = vp::util::HeapArray<SamplerUnit>;
             using TextureSlotAllocator = vp::util::AtomicIndexAllocator<TextureSlotType>;

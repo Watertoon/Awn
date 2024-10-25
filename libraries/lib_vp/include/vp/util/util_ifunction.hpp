@@ -54,7 +54,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE IFunction() {/*...*/}
             virtual ~IFunction() {/*...*/}
 
-            virtual Return Invoke(Args ...args) { VP_UNUSED(args...); return Return(); }
+            virtual Return Invoke(Args ...args) const { VP_UNUSED(args...); return Return(); }
 
             constexpr virtual bool IsValid() const { return false; }
         protected:
@@ -84,7 +84,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE StaticFunction(FunctionType function) : m_function(function) {/*...*/}
             virtual ~StaticFunction() override {/*...*/}
 
-            virtual Return Invoke(Args ...args) override {
+            virtual Return Invoke(Args ...args) const override {
                 return (m_function)(args...);
             }
 
@@ -123,7 +123,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE MemberFunction(ParentType *parent, FunctionType function) : m_parent(parent), m_function(function) {/*...*/}
             virtual ~MemberFunction() override {/*...*/}
 
-            virtual Return Invoke(Args ...args) override {
+            virtual Return Invoke(Args ...args) const override {
                 return (m_parent->*m_function)(args...);
             }
 
@@ -155,7 +155,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE LambdaFunction(const Lambda&& lambda) : m_lambda(lambda) {/*...*/}
             virtual ~LambdaFunction() override {/*...*/}
 
-            virtual Return Invoke(Args ...args) override {
+            virtual Return Invoke(Args ...args) const override {
                 return Return((m_lambda)(args...));
             }
 
@@ -185,7 +185,7 @@ namespace vp::util {
                     constexpr ALWAYS_INLINE UnbindDummy() : IFunction<Return(Args...)>() {/*...*/}
                     virtual ~UnbindDummy() override {/*...*/}
 
-                    virtual Return Invoke([[maybe_unused]] Args ...args) override { return Return(); }
+                    virtual Return Invoke([[maybe_unused]] Args ...args) const override { return Return(); }
                     constexpr virtual bool IsValid() const override { return false; }
                 protected:
                     constexpr virtual void CopyTo(impl::AnyFunctionBase *any_function) const override {
@@ -199,7 +199,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE AnyFunction() : m_any(std::move(UnbindDummy{})) {/*...*/}
             ALWAYS_INLINE ~AnyFunction() { std::destroy_at(m_any.template GetType<IFunction<Return(Args...)>>()); }
 
-            ALWAYS_INLINE Return Invoke(Args ...args) {
+            ALWAYS_INLINE Return Invoke(Args ...args) const {
                 return Return(m_any.template GetType<IFunction<Return(Args...)>>()->Invoke(args...));
             }
             ALWAYS_INLINE bool IsValid() const {

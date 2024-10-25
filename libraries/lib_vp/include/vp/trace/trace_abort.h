@@ -41,6 +41,7 @@ namespace vp::trace {
     }
 #endif
 
+    NO_RETURN void AbortUnexpectedDefault(const char *func, const char *file, u32 line);
     NO_RETURN void AbortNotImplemented(const char *func, const char *file, u32 line);
     NO_RETURN void AbortAssert(const char *func, const char *file, u32 line, const char *expr);
 

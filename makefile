@@ -19,9 +19,9 @@ platform     ?= win32
 graphics_api ?= vk
 binary_type  ?= debug
 
-#Valid Architectures: x86, Aarch64, Arm, PowerPC, Mips
+#Valid Architectures: x86, aarch64, arm, powerpc, mips
 #Valid platforms:     win32, winnt, nx, ctr, cafe, rvl, dol, ntr, nus, agb
-#Valid graphics apis: vulkan, nvn, awn
+#Valid graphics apis: vk, nvn, awn
 #Valid binary types:  release develop debug
 
 define VP_SUBMAKE

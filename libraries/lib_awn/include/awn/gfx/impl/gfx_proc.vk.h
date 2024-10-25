@@ -287,6 +287,7 @@ DEFINE_EXTERN_VK_PROC(vkCmdSetColorBlendEquationEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetColorWriteMaskEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetConservativeRasterizationModeEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetDescriptorBufferOffsetsEXT);
+DEFINE_EXTERN_VK_PROC(vkCmdSetDescriptorBufferOffsets2EXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetDepthClampEnableEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetLogicOpEXT);

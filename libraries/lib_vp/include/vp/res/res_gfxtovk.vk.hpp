@@ -17,6 +17,42 @@
 
 namespace vp::res {
 
+    constexpr inline VkShaderCodeTypeEXT GfxShaderCodeTypeToVkShaderCodeType(GfxShaderCodeType shader_code_type) {
+        switch (shader_code_type) {
+            case GfxShaderCodeType::Binary:
+                return VK_SHADER_CODE_TYPE_BINARY_EXT;
+            case GfxShaderCodeType::Intermediate:
+                return VK_SHADER_CODE_TYPE_SPIRV_EXT;
+            default:
+                break;
+        }
+        VP_UNEXPECTED_DEFAULT();
+    }
+
+    constexpr inline VkShaderStageFlags GfxShaderStageToVkShaderStageFlags(GfxShaderStage shader_stage) {
+        switch (shader_stage) {
+            case GfxShaderStage::Vertex:
+                return VK_SHADER_STAGE_VERTEX_BIT;
+            case GfxShaderStage::TessellationControl:
+                return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+            case GfxShaderStage::TessellationEvaluation:
+                return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+            case GfxShaderStage::Geometry:
+                return VK_SHADER_STAGE_GEOMETRY_BIT;
+            case GfxShaderStage::Fragment:
+                return VK_SHADER_STAGE_FRAGMENT_BIT;
+            case GfxShaderStage::Compute:
+                return VK_SHADER_STAGE_COMPUTE_BIT;
+            case GfxShaderStage::Task:
+                return VK_SHADER_STAGE_TASK_BIT_EXT;
+            case GfxShaderStage::Mesh:
+                return VK_SHADER_STAGE_MESH_BIT_EXT;
+            default:
+                break;
+        }
+        VP_UNEXPECTED_DEFAULT();
+    }
+
     constexpr inline VkImageTiling GfxTileModeToVkImageTiling(GfxTileMode tile_mode) {
         switch (tile_mode) {
             case GfxTileMode::Optimal:
@@ -26,7 +62,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_IMAGE_TILING_OPTIMAL;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkSamplerAddressMode GfxWrapModeToVkSamplerAddressMode(GfxWrapMode wrap_mode) {
@@ -44,7 +80,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkSamplerMipmapMode GfxMipMapFilterToVkSamplerMipMapMode(GfxMipMapFilter mip_map_filter) {
@@ -56,7 +92,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkFilter GfxMagFilterToVkFilter(GfxMagFilter mag_filter) {
@@ -68,7 +104,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_FILTER_NEAREST;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkFilter GfxMinFilterToVkFilter(GfxMinFilter min_filter) {
@@ -80,7 +116,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_FILTER_NEAREST;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkSamplerReductionMode GfxReductionFilterToVkSamplerReductionMode(GfxReductionFilter reduction_filter) {
@@ -94,7 +130,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkCompareOp GfxCompareOperationToVkCompareOp(GfxCompareOperation compare_op) {
@@ -118,7 +154,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_COMPARE_OP_NEVER;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkLogicOp GfxLogicOperationToVkLogicOp(GfxLogicOperation logic_op) {
@@ -136,7 +172,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkPrimitiveTopology GfxPrimitiveTopologyToVkPrimitiveTopology(GfxPrimitiveTopology primitive_topology) {
@@ -164,7 +200,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkIndexType GfxIndexFormatToVkIndexType(GfxIndexFormat index_format) {
@@ -178,7 +214,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_INDEX_TYPE_NONE_KHR;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     constexpr inline VkImageType GfxImageStorageDimensionToVkImageType(GfxImageStorageDimension image_storage_dimension) {
@@ -427,7 +463,7 @@ namespace vp::res {
             default:
                 break;
         }
-        return VK_FORMAT_UNDEFINED;
+        VP_UNEXPECTED_DEFAULT();
     }
 
 	constexpr inline VkFormat GfxImageFormatToVkFormat(GfxImageFormat image_format) {
@@ -631,6 +667,6 @@ namespace vp::res {
             default:
                 break;
 		}
-        return VK_FORMAT_UNDEFINED;
+        VP_UNEXPECTED_DEFAULT();
 	}
 }

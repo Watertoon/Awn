@@ -16,6 +16,7 @@
 #pragma once
 
 #ifdef VP_TARGET_PLATFORM_win32
+    #include <awn/sys/sys_internalsynchronization.win32.h>
     #include <awn/sys/sys_mutex.win32.h>
 #elif VP_TARGET_PLATFORM_nx
     #include <awn/sys/sys_mutex.nx.hpp>

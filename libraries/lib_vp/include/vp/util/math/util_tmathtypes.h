@@ -156,11 +156,11 @@ namespace vp::util {
     using Real4 = Double4;
     
     using RealRowMajor33 = DoubleRowMajor3x3;
-    using RealRowMajor34 = DoubleRowMajor4x3;
+    using RealRowMajor43 = DoubleRowMajor4x3;
     using RealRowMajor44 = DoubleRowMajor4x4;
 
     using RealColumnMajor33 = DoubleColumnMajor3x3;
-    using RealColumnMajor34 = DoubleColumnMajor4x3;
+    using RealColumnMajor43 = DoubleColumnMajor4x3;
     using RealColumnMajor44 = DoubleColumnMajor4x4;
 
     using Vector2r = Vector2<Real>;

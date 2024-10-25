@@ -54,6 +54,7 @@
 #include <vp/util/util_atomicobjectallocator.hpp>
 #include <vp/util/util_pointerarray.hpp>
 #include <vp/util/util_fixedpointerarray.hpp>
+#include <vp/util/util_fixedpointerarrayallocator.hpp>
 #include <vp/util/util_heaparray.hpp>
 #include <vp/util/util_timestamp.h>
 #include <vp/util/util_timespan.hpp>

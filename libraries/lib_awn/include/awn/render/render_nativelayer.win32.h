@@ -95,7 +95,7 @@ namespace awn::render {
             }
         public:
             constexpr NativeLayer() : m_mgr_node(), m_display_node(), m_resize_function(), m_name(), m_dcmp_visual(), m_dcmp_effect_group(), m_swapchain(), m_settings_cs(), m_is_opacity_effect(), m_is_force_invisible_for_zero_alpha(), m_flags(), m_dpi(), m_settings(), m_update_settings() {/*...*/}
-            constexpr ~NativeLayer() {/*...*/}
+            ~NativeLayer() {/*...*/}
 
             Result Initialize(const NativeLayerInfo *layer_info);
             void Finalize();

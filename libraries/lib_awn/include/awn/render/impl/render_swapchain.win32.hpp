@@ -23,7 +23,7 @@ namespace awn::render::impl {
 
     using NativeWindowHandle = HWND;
 
-	static constexpr gfx::ImageFormat cDefaultSwapchainImageFormat = gfx::ImageFormat::R8G8B8A8_Unorm;
+	static constexpr gfx::ImageFormat cDefaultSwapchainImageFormat = gfx::ImageFormat::R16G16B16A16_Float;
 
     static constexpr u32 cTargetMinSwapchainImageCount = 2;
     static constexpr u32 cTargetMaxSwapchainImageCount = 3;
@@ -43,6 +43,10 @@ namespace awn::render::impl {
                 return DXGI_FORMAT_B8G8R8A8_UNORM;
             case gfx::ImageFormat::R8G8B8A8_Unorm:
                 return DXGI_FORMAT_R8G8B8A8_UNORM;
+            case gfx::ImageFormat::R10G10B10A2_Unorm:
+                return DXGI_FORMAT_R10G10B10A2_UNORM;
+            case gfx::ImageFormat::R11G11B10F_Float:
+                return DXGI_FORMAT_R11G11B10_FLOAT;
             case gfx::ImageFormat::R16G16B16A16_Float:
                 return DXGI_FORMAT_R16G16B16A16_FLOAT;
             default:

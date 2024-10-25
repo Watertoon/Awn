@@ -146,7 +146,7 @@ namespace vp::res {
             const ResByamlContainer *m_byaml_container;
             u32                      m_stride;
         public:
-            constexpr ALWAYS_INLINE ByamlHashArrayIterator(const ResByamlContainer *container) : m_byaml_container(container), m_stride((container->data_type & 0xf) * sizeof(u32) + sizeof(ResByamlContainer)) {/*...*/}
+            constexpr ALWAYS_INLINE ByamlHashArrayIterator(const ResByamlContainer *container) : m_byaml_container(container), m_stride((container->data_type & 0xf) * sizeof(u32) + sizeof(u32)) {/*...*/}
             constexpr ALWAYS_INLINE ByamlHashArrayIterator(const ResByamlContainer *container, u32 stride) : m_byaml_container(container), m_stride(stride) {/*...*/}
 
             constexpr ALWAYS_INLINE ~ByamlHashArrayIterator() {/*...*/}
@@ -164,12 +164,12 @@ namespace vp::res {
 
                 /* Remap index if necessary */
                 if (static_cast<ByamlDataType>(m_byaml_container->data_type & 0xf0) == ByamlDataType::HashArrayWithRemapU32_1) {
-                    const u32 remap_table_offset = util::AlignUp((m_stride + sizeof(ResByamlContainer) + sizeof(u8)) * data_count, sizeof(u32));
+                    const u32 remap_table_offset = util::AlignUp((m_stride + sizeof(u32) + sizeof(u8)) * data_count + sizeof(ResByamlContainer), alignof(u32));
                     index = RemapIndex(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_byaml_container) + remap_table_offset), data_count, index, is_reverse_endian);
                 }
 
                 /* Calculate data offsets */
-                const u32 data_type_offset = (m_stride + sizeof(u32)) * data_count + index * sizeof(u8);
+                const u32 data_type_offset = (m_stride + sizeof(u32)) * data_count + index * sizeof(u8) + sizeof(ResByamlContainer);
                 const u32 value_offset     = (m_stride + sizeof(u32)) * index + m_stride + sizeof(ResByamlContainer);
 
                 /* Set data */
@@ -183,7 +183,7 @@ namespace vp::res {
 
             ALWAYS_INLINE u8 GetDataType(u32 index, u32 is_reverse_endian) const {
                 const u32 data_count = this->GetCount(is_reverse_endian);
-                const u32 data_type_offset = (m_stride + sizeof(u32)) * data_count + index * sizeof(u8);
+                const u32 data_type_offset = (m_stride + sizeof(u32)) * data_count + index * sizeof(u8) + sizeof(ResByamlContainer);
                 return *reinterpret_cast<u8*>(reinterpret_cast<uintptr_t>(m_byaml_container) + data_type_offset);
             }
 

@@ -33,7 +33,7 @@ namespace awn::gfx::impl {
 
         /* Create staging heap */
         m_is_enable_separate_texture_sampler = mgr_info->is_enable_separate_texture_sampler;
-        const size_t block_size = (mgr_info->is_enable_separate_texture_sampler) ? sizeof(StagingExt) : sizeof(Staging);
+        const size_t block_size = sizeof(Staging);
         m_staging_heap = mem::UnitHeap::TryCreate("awn::gfx::DescriptorStagingHeap", heap, block_size, mgr_info->max_command_buffer_count, alignof(size_t));
 
         return;
@@ -69,7 +69,7 @@ namespace awn::gfx::impl {
     }
 
     DescriptorMemoryManager::Staging *DescriptorMemoryManager::AllocateStagingMemory() {
-        const size_t block_size = (m_is_enable_separate_texture_sampler) ? sizeof(StagingExt) : sizeof(Staging);
+        const size_t block_size = sizeof(Staging);
         void *memory = m_staging_heap->TryAllocate(block_size, alignof(size_t));
         return reinterpret_cast<Staging*>(memory);
     }

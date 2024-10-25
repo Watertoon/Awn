@@ -209,6 +209,22 @@ namespace vp::util {
                 return;
             }
 
+            reference GetByIndex(u32 index) {
+                for (reference node : *this) {
+                    if (index == 0) { return node; }
+                    --index;
+                }
+                VP_UNEXPECTED_DEFAULT();
+            }
+
+            const_reference GetByIndex(u32 index) const {
+                for (const_reference node : *this) {
+                    if (index == 0) { return node; }
+                    --index;
+                }
+                VP_UNEXPECTED_DEFAULT();
+            }
+
             constexpr ALWAYS_INLINE size_t GetCount() const {
                 size_t count = 0;
                 for ([[maybe_unused]] const_reference node : *this) {

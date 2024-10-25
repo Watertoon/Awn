@@ -146,7 +146,7 @@ namespace awn::para {
         /* Return this if no string */
         if (search_string[0] == '\0') {
             out_find_info->composite = this;
-            return ResultFoundComposite;
+            RESULT_RETURN(ResultFoundComposite);
         }
 
         /* Search array */
@@ -159,7 +159,7 @@ namespace awn::para {
             if (is_advance == false) { continue; }
 
             const Result result = m_typed_param_array[i].typed_param->FindComposite(out_find_info, next_search);
-            if (result == ResultFoundComposite) { return ResultFoundComposite; }
+            if (result == ResultFoundComposite) { RESULT_RETURN(ResultFoundComposite); }
         }
 
         RESULT_RETURN_SUCCESS;

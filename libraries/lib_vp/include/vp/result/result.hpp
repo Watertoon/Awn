@@ -60,18 +60,26 @@ namespace vp {
             return return_result; \
         } \
     }
+
     #define RESULT_RETURN_UNLESS(expression, return_result)  \
     { \
         if ((expression) == false) { \
             return return_result; \
         } \
     }
-    #define RESULT_THROW_ON_FAILED(result)  \
+
+    #define RESULT_RETURN(result)  \
+        return (result)
+
+    #define RESULT_TRY(result)  \
         if ((result) != ::vp::ResultSuccess) { return result; }
+
     #define RESULT_SUCCEEDED(result)  \
         ((result) == ::vp::ResultSuccess)
+
     #define RESULT_FAILED(result)  \
         ((result) != ::vp::ResultSuccess)
+
     #define RESULT_MATCHES(result0, result1)  \
         ((result0) == (result1))
 

@@ -35,6 +35,7 @@ namespace awn::gfx {
 			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(), m_gpu_buffer_address(), m_address() {/*...*/}
             constexpr ALWAYS_INLINE ~Buffer() {/*...*/}
 
+			bool Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info);
 			bool Initialize(void *gpu_memory_address, const BufferInfo *buffer_info);
             void Finalize();
 

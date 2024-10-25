@@ -54,7 +54,6 @@ namespace awn::gfx {
     };
     static constexpr CommandList cInvalidCommandList = {};
 
-    static constexpr u32 cTargetMaxPerStageMemorySizeCombined = impl::Context::cTargetMaxPerStageMemorySizeCombined;
     static constexpr u32 cTargetMaxBoundRenderTargetColorCount = impl::Context::cTargetMaxBoundRenderTargetColorCount;
     static constexpr u32 cTargetMaxViewportScissorCount = impl::Context::cTargetMaxViewportScissorCount;
     static constexpr u32 cTargetMaxVertexBufferCount = impl::Context::cTargetMaxVertexBufferCount;
@@ -62,50 +61,28 @@ namespace awn::gfx {
 
     struct CommandBufferInfo {
         QueueType queue_type = QueueType::Graphics;
-        u32 per_stage_memory_size = cTargetMaxPerStageMemorySizeCombined * 2;
+        u32 per_stage_memory_size = impl::Context::cTargetMaxPerStageMemorySizeTotal * 2;
         bool is_primary = false;
     };
 
     class CommandBuffer {
         protected:
-            CommandList               m_command_list;
-            QueueType                 m_queue_type;
-            bool                      m_is_primary;
-            bool                      m_is_rendering;
-            bool                      m_is_render_target_dirty;
-            void                     *m_command_memory_base;
-            size_t                    m_command_memory_base_offset;
-            u32                       m_command_memory_iter;
-            u32                       m_command_memory_size;
-            u32                       m_color_target_count;
-            RenderTargetColor        *m_color_target_array[cTargetMaxBoundRenderTargetColorCount];
+            CommandList m_command_list;
+            QueueType m_queue_type;
+            bool m_is_primary;
+            bool m_is_rendering;
+            bool m_is_render_target_dirty;
+            void *m_command_memory_base;
+            size_t m_command_memory_base_offset;
+            u32 m_command_memory_iter;
+            u32 m_command_memory_size;
+            u32 m_color_target_count;
+            RenderTargetColor *m_color_target_array[cTargetMaxBoundRenderTargetColorCount];
             RenderTargetDepthStencil *m_depth_stencil_target;
-            struct {
-                u8 m_combined_dirty;
-                struct {
-                    u8 m_combined_dirty_vertex   : 1;
-                    u8 m_combined_dirty_tessellation_control    : 1;
-                    u8 m_combined_dirty_tessellation_evaluation : 1;
-                    u8 m_combined_dirty_geometry : 1;
-                    u8 m_combined_dirty_fragment : 1;
-                    u8 m_combined_dirty_compute  : 1;
-                    u8 m_combined_dirty_task     : 1;
-                    u8 m_combined_dirty_mesh     : 1;
-                };
-            };
-            struct {
-                u8 m_separate_texture_sampler_dirty;
-                struct {
-                    u8 m_separate_texture_sampler_dirty_vertex   : 1;
-                    u8 m_separate_texture_sampler_dirty_tessellation_control   : 1;
-                    u8 m_separate_texture_sampler_dirty_tessellation_evaluation   : 1;
-                    u8 m_separate_texture_sampler_dirty_geometry : 1;
-                    u8 m_separate_texture_sampler_dirty_fragment : 1;
-                    u8 m_separate_texture_sampler_dirty_compute  : 1;
-                    u8 m_separate_texture_sampler_dirty_task     : 1;
-                    u8 m_separate_texture_sampler_dirty_mesh     : 1;
-                };
-            };
+            bool m_is_dirty_ts_i_st_ss;
+            bool m_is_dirty_ubo_ssbo;
+            s16 m_ts_i_st_ss_commit_size_array[vp::res::cMaxBnshShaderStageCount];
+            s16 m_ubo_ssbo_commit_size_array[vp::res::cMaxBnshShaderStageCount];
             impl::DescriptorMemoryManager::Staging *m_staging_memory;
         protected:
             struct SyncScopeInfo {
@@ -116,47 +93,30 @@ namespace awn::gfx {
             };
         protected:
             constexpr void *GetDescriptorMemoryTextureSampler(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryCombined(shader_stage);
+                return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
             }
             constexpr void *GetDescriptorMemoryImage(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryCombined(shader_stage);
+                return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
             }
             constexpr void *GetDescriptorMemoryUniformBuffer(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryCombined(shader_stage);
+                return this->GetDescriptorMemoryUniformBufferStorageBuffer(shader_stage);
             }
             constexpr void *GetDescriptorMemoryStorageBuffer(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryCombined(shader_stage);
+                return this->GetDescriptorMemoryUniformBufferStorageBuffer(shader_stage);
             }
-            constexpr void *GetDescriptorMemoryCombined(ShaderStage shader_stage) {
+            constexpr void *GetDescriptorMemorySeparateTexture(ShaderStage shader_stage) {
+                return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
+            }
+            constexpr void *GetDescriptorMemorySeparateSampler(ShaderStage shader_stage) {
+                return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
+            }
+            constexpr void *GetDescriptorMemoryTextureSamplerImageSeparate(ShaderStage shader_stage) {
                 const u32 stage_index = static_cast<u32>(shader_stage);
-                return m_staging_memory->descriptor_memory_combined[stage_index];
+                return m_staging_memory->descriptor_memory_ts_i_st_ss[stage_index];
             }
-            constexpr void *GetDescriptorMemorySeparateTextureSampler(ShaderStage shader_stage) {
+            constexpr void *GetDescriptorMemoryUniformBufferStorageBuffer(ShaderStage shader_stage) {
                 const u32 stage_index = static_cast<u32>(shader_stage);
-                return reinterpret_cast<impl::DescriptorMemoryManager::StagingExt*>(m_staging_memory)->descriptor_memory_separate_texture_sampler[stage_index];
-            }
-
-            constexpr void SetTextureSamplerDirty(ShaderStage shader_stage) {
-                this->SetCombinedDirty(shader_stage);
-            }
-            constexpr void SetImageDirty(ShaderStage shader_stage) {
-                this->SetCombinedDirty(shader_stage);
-            }
-            constexpr void SetUniformBufferDirty(ShaderStage shader_stage) {
-                this->SetCombinedDirty(shader_stage);
-            }
-            constexpr void SetStorageBufferDirty(ShaderStage shader_stage) {
-                this->SetCombinedDirty(shader_stage);
-            }
-            constexpr void SetCombinedDirty(ShaderStage shader_stage) {
-                const u32  stage_index = static_cast<u32>(shader_stage);
-                m_combined_dirty |= (1 << (stage_index));
-                return;
-            }
-            constexpr void SetSeparateTextureSamplerDirty(ShaderStage shader_stage) {
-                const u32  stage_index = static_cast<u32>(shader_stage);
-                m_separate_texture_sampler_dirty |= (1 << (stage_index));
-                return;
+                return m_staging_memory->descriptor_memory_ubo_ssbo[stage_index];
             }
 
             constexpr void ResetDescriptorMemory() {
@@ -165,15 +125,7 @@ namespace awn::gfx {
 
             void TransitionRenderTargetsImpl(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target, SyncScopeInfo *sync_scope, VkImageLayout image_layout);
 
-            void CommitDescriptorMemory(VkPipelineBindPoint bind_point, VkPipelineLayout pipeline_layout, u32 base_set, void *desc_memory, u32 memory_size);
-
-            void CommitTextureSamplerDescriptors();
-            void CommitImageDescriptors();
-            void CommitUniformBufferDescriptors();
-            void CommitStorageBufferDescriptors();
-            void CommitCombinedDescriptors();
-            void CommitSeparateTextureSamplerDescriptors();
-
+            void CommitDescriptorMemory(ShaderStage stage, u32 base_set, void *desc_memory, u32 memory_size);
             void CommitDescriptors();
 
             void BeginRenderingIfNotRendering();
@@ -181,7 +133,7 @@ namespace awn::gfx {
 
             void SetSystemDescriptorBuffers();
         public:
-            constexpr CommandBuffer() : m_command_list(), m_queue_type(), m_is_primary(), m_is_rendering(), m_is_render_target_dirty(), m_command_memory_base(), m_command_memory_base_offset(), m_command_memory_iter(), m_command_memory_size(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_combined_dirty(), m_separate_texture_sampler_dirty(), m_staging_memory() {/*...*/}
+            constexpr CommandBuffer() : m_command_list(), m_queue_type(), m_is_primary(), m_is_rendering(), m_is_render_target_dirty(), m_command_memory_base(), m_command_memory_base_offset(), m_command_memory_iter(), m_command_memory_size(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_staging_memory() {/*...*/}
             constexpr ~CommandBuffer() {/*...*/}
 
             void Initialize(const CommandBufferInfo *command_buffer_info) {

@@ -20,8 +20,8 @@ namespace vp::res {
     struct ResBfresShaderParamAnim {
         const char *shader_param_name;
         u16         base_curve;
-        u16         float_curve_count;
-        u16         int_curve_count;
+        u16         curve_count_float;
+        u16         curve_count_int;
         u16         base_constant;
         u16         constant_count;
         u16         material_sub_shader_param_index;
@@ -68,7 +68,7 @@ namespace vp::res {
         const char                 *animation_name;
         const char                 *reserve2;
         ResBfresModel              *runtime_bound_model;
-        u16                        *bind_table;
+        u16                        *bind_fast_table;
         ResBfresPerMaterialAnim    *per_material_anim_array;
         void                      **runtime_texture_view_array;
         const char                **texture_name_array;

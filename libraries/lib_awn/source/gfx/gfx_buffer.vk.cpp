@@ -17,6 +17,21 @@
 
 namespace awn::gfx {
 
+    bool Buffer::Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info) {
+
+        /* Create vk buffer  */
+        m_vk_buffer = gfx::impl::CreateVkBuffer(memory_handle, memory_offset, buffer_info);
+        if (m_vk_buffer == VK_NULL_HANDLE) { return false; }
+
+        /* Set gpu address */
+        m_address = mem::MapGpuMemoryHandle(memory_handle);
+
+        /* Query VkDeviceAddress */
+        m_gpu_buffer_address = gfx::impl::GetGpuBufferAddress(m_vk_buffer);
+
+        return true;
+    }
+
     bool Buffer::Initialize(void *gpu_memory_address, const BufferInfo *buffer_info) {
 
         /* Create vk buffer  */

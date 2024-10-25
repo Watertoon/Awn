@@ -17,36 +17,34 @@
 
 namespace awn::sys {
 
-    class ThreadBase;
-
-    sys::ThreadBase *GetCurrentThread();
+    class ConditionVariable;
 
     class Mutex {
-        private:
-            SRWLOCK          m_cs;
-            sys::ThreadBase *m_owner;
-            u32              m_lock_count;
         public:
-            constexpr ALWAYS_INLINE Mutex() : m_cs(SRWLOCK_INIT), m_owner(), m_lock_count() {/*...*/}
+            friend class ConditionVariable;
+        private:
+            impl::InternalCriticalSection m_cs;
+            u32 m_lock_count;
+        public:
+            constexpr ALWAYS_INLINE Mutex() : m_cs(), m_lock_count() {/*...*/}
             constexpr ~Mutex() {/*...*/}
 
             void Enter();
             bool TryEnter();
             void Leave();
 
-            void lock() {
+            ALWAYS_INLINE void lock() {
                 this->Enter();
             }
-            void unlock() {
+            ALWAYS_INLINE void unlock() {
                 this->Leave();
             }
-            bool try_lock() {
+            ALWAYS_INLINE bool try_lock() {
                 return this->TryEnter();
             }
 
-            ALWAYS_INLINE bool IsLockedByCurrentThread() {
-                sys::ThreadBase *thread = GetCurrentThread();
-                return thread == m_owner;
-            }
+            bool IsLockedByCurrentThread();
+        private:
+            constexpr impl::InternalCriticalSection *GetInternalCriticalSection() { return std::addressof(m_cs); }
     };
 }

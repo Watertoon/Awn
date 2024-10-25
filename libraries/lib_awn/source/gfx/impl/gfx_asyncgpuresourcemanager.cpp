@@ -214,7 +214,7 @@ namespace awn::gfx::impl {
     }
 
     Result AsyncGpuResourceManager::RegisterTextureSync(TextureBinder *texture_binder, const TextureRegisterInfo *register_info) {
-        RESULT_THROW_ON_FAILED(this->ScheduleRegisterTexture(texture_binder, register_info, true));
+        RESULT_TRY(this->ScheduleRegisterTexture(texture_binder, register_info, true));
         texture_binder->WaitForRegister();
         texture_binder->Complete();
         RESULT_RETURN_SUCCESS;
@@ -277,7 +277,7 @@ namespace awn::gfx::impl {
     }
 
     Result AsyncGpuResourceManager::RegisterBufferSync(BufferBinder *buffer_binder, const BufferRegisterInfo *register_info) {
-        RESULT_THROW_ON_FAILED(this->ScheduleRegisterBuffer(buffer_binder, register_info, true));
+        RESULT_TRY(this->ScheduleRegisterBuffer(buffer_binder, register_info, true));
         buffer_binder->WaitForRegister();
         buffer_binder->Complete();
         RESULT_RETURN_SUCCESS;
@@ -333,7 +333,7 @@ namespace awn::gfx::impl {
     }
 
     Result AsyncGpuResourceManager::RegisterShaderArchiveSync(ShaderArchiveBinder *shader_archive_binder, const ShaderArchiveRegisterInfo *register_info) {
-        RESULT_THROW_ON_FAILED(this->ScheduleRegisterShaderArchive(shader_archive_binder, register_info, true));
+        RESULT_TRY(this->ScheduleRegisterShaderArchive(shader_archive_binder, register_info, true));
         shader_archive_binder->WaitForRegister();
         shader_archive_binder->Complete();
         RESULT_RETURN_SUCCESS;

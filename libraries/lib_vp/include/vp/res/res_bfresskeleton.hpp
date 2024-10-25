@@ -42,6 +42,9 @@ namespace vp::res {
         NoRotation              = (1 << 2),
         NoTranslation           = (1 << 3),
     };
+    enum class BfresBonePosture : u8 {
+        
+    };
 
     struct ResBfresBone {
         const char                *bone_name;
@@ -52,18 +55,19 @@ namespace vp::res {
         u16                        bone_parent_index;
         u16                        smooth_bone_index;
         u16                        rigid_bone_index;
-        u16                        billboard_index;
+        u16                        billboard_bone_index;
         u16                        user_data_count;
         union {
             u32 flags;
             struct {
-                u32 reserve1                 : 8;
+                u32 is_visible               : 1;
+                u32 reserve1                 : 7;
                 u32 unknown0                 : 4;
-                u32 is_bone_visible          : 1;
                 u32 unknown1                 : 3;
+                u32 reserve2                 : 1;
                 u32 billboard_mode           : 3;
                 u32 reserve3                 : 1;
-                u32 unknown2                 : 3; /* Posture? */
+                u32 mirror_posture           : 3;
                 u32 local_transform_mode     : 5;
                 u32 hierarchy_transform_mode : 4;                
             };
@@ -90,7 +94,7 @@ namespace vp::res {
         None      = 0,
         Standard  = 1,
         Maya      = 2,
-        SoftImage = 3,
+        SoftImage = 3, /* Deprecated? */
     };
     enum class BfresSkeletonRotationMode : u8 {
         Quarternion = 0,
@@ -118,8 +122,8 @@ namespace vp::res {
         void                      *runtime_user_pointer;
         u16                       *mirrored_bone_index_table;
         u16                        bone_count;
-        u16                        smooth_bone_count;
-        u16                        rigid_bone_count;
+        u16                        bone_count_smooth;
+        u16                        bone_count_rigid;
         u16                        reserve3;
 
         static constexpr u32 cMagic = util::TCharCode32("FSKL");

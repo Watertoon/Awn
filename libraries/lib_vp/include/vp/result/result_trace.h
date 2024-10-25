@@ -20,4 +20,5 @@ namespace vp::trace {
     DECLARE_RESULT_MODULE(1);
     DECLARE_RESULT(AssertFailed, 1);
     DECLARE_RESULT(NotImplemented, 2);
+    DECLARE_RESULT(UnexpectedDefault, 3);
 }

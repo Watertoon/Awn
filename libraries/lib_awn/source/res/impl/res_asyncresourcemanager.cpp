@@ -531,7 +531,7 @@ namespace awn::res::impl {
             if (this->IsLoadThreadSuspended()) {
                 binder->m_status = ResourceBinder::Status::RequiresReprocess;
                 binder->Complete(push_load_info->resource_user_context);
-                return ResultInactiveLoadThread;
+                RESULT_RETURN(ResultInactiveLoadThread);
             }
 
             /* Force priority for non-local archive to normal */
@@ -566,7 +566,7 @@ namespace awn::res::impl {
         };
         if (local_archive == nullptr) {
             is_default_archive = this->AcquireDefaultArchive(std::addressof(local_archive));
-            if (!is_default_archive) { binder->Release(); return ResultNoLocalArchive; }
+            if (!is_default_archive) { binder->Release(); RESULT_RETURN(ResultNoLocalArchive); }
         }
 
         /* Reference binder */

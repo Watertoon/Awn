@@ -17,6 +17,9 @@
 
 namespace vp::trace {
 
+    void AbortUnexpectedDefault(const char *func, const char *file, u32 line) {
+        impl::AbortImpl("Unexpected Default", func, file, line, vp::trace::ResultUnexpectedDefault, "");
+    }
     void AbortNotImplemented(const char *func, const char *file, u32 line) {
         impl::AbortImpl("Method Not Implemented", func, file, line, vp::trace::ResultNotImplemented, "");
     }
@@ -34,6 +37,7 @@ namespace vp::trace {
             const int abort_info_length = ::vsnprintf(nullptr, 0, format, var_args);
             char *abort_info = reinterpret_cast<char*>(::malloc(abort_info_length + 1));
             if (abort_info == nullptr) { Abort(result); }
+            abort_info[0] = '\0';
             ::vsnprintf(abort_info, abort_info_length, format, var_args);
             ::va_end(var_args);
             

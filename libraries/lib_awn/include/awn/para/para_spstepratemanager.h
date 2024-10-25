@@ -57,7 +57,7 @@ namespace awn::para {
             AWN_SINGLETON_TRAITS(SpStepRateManager);
         public:
             constexpr SpStepRateManager() : m_document_sp_step_rate_table(), m_sp_rate_event_array() {/*...*/}
-            constexpr ~SpStepRateManager() {/*...*/}
+            ~SpStepRateManager() {/*...*/}
 
             bool Initialize(mem::Heap *heap, const char *sp_step_rate_table_path_no_ext, const char *sp_event_enum_class, const char *sp_target_enum_class);
             void Finalize();

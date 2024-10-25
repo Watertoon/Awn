@@ -19,34 +19,24 @@ namespace awn::sys {
 
     class ConditionVariable {
         private:
-            CONDITION_VARIABLE m_cond_var;
+            impl::InternalConditionVariable m_cv;
         public:
-            constexpr  ConditionVariable() : m_cond_var(CONDITION_VARIABLE_INIT) {/*...*/}
+            constexpr  ConditionVariable() : m_cv() {/*...*/}
             constexpr ~ConditionVariable() {/*...*/}
 
             void Wait(Mutex *mutex) {
                 const u32 last_lock_count = mutex->m_lock_count;
-                sys::ThreadBase *last_owner = mutex->m_owner;
                 mutex->m_lock_count = 0;
-                mutex->m_owner = nullptr;
-                ::SleepConditionVariableSRW(std::addressof(m_cond_var), mutex->GetSRWLock(), INFINITE, 0);
+                m_cv.Wait(mutex->GetInternalCriticalSection());
                 mutex->m_lock_count = last_lock_count;
-                mutex->m_owner = last_owner;
             }
-            void TimedWait(Mutex *mutex, TimeSpan timeout) {
-                const u32 last_lock_count = mutex->m_lock_count;
-                sys::ThreadBase *last_owner = mutex->m_owner;
-                mutex->m_lock_count = 0;
-                mutex->m_owner = nullptr;
-                ::SleepConditionVariableSRW(std::addressof(m_cond_var), mutex->GetSRWLock(), timeout.GetMilliSeconds(), 0);
-                mutex->m_lock_count = last_lock_count;
-                mutex->m_owner = last_owner;
-            }
+
             void Signal() {
-                ::WakeConditionVariable(std::addressof(m_cond_var));
+                m_cv.Signal();
             }
+
             void Broadcast() {
-                ::WakeAllConditionVariable(std::addressof(m_cond_var));
+                m_cv.Broadcast();
             }
     };
 }

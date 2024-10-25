@@ -517,7 +517,7 @@ namespace vp::util {
         return { x, y, z, w, };
     }
 
-#ifdef VP_TARGET_PLATFORM_win32
+#ifdef VP_TARGET_ARCHITECTURE_x86
     constexpr void ConvertMatrix(MatrixRowMajor4x3d *out_matrix, const DoubleRowMajor3x3 *in_matrix) {
 
         const v256i mask = avx2::GetLoadMaskDouble256(true, true, true, false);

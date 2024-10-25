@@ -20,10 +20,8 @@ namespace awn::sys {
     void Mutex::Enter() {
 
         /* Defer to the internal cs if this thread is not the owner */
-        sys::ThreadBase *thread = GetCurrentThread();
-        if (thread == nullptr || thread != m_owner) {
-            ::AcquireSRWLockExclusive(std::addressof(m_cs));
-            m_owner = thread;
+        if (!m_cs.IsLockedByCurrentThread()) {
+            m_cs.Enter();
         }
 
         /* Increment count as the owner */
@@ -35,12 +33,10 @@ namespace awn::sys {
     bool Mutex::TryEnter() {
 
         /* Defer to the internal cs if this thread is not the owner */
-        sys::ThreadBase *thread = GetCurrentThread();
-        if ((thread == nullptr || thread != m_owner) && !::TryAcquireSRWLockExclusive(std::addressof(m_cs))) { return false; }
+        if (!m_cs.IsLockedByCurrentThread() && !m_cs.TryEnter()) { return false; }
 
         /* Increment count as the owner */
-        m_owner = thread;
-        m_lock_count  = m_lock_count + 1;
+        m_lock_count = m_lock_count + 1;
 
         return true;
     }
@@ -53,9 +49,12 @@ namespace awn::sys {
         if (0 < dec_lock_count) { return; }
 
         /* Leave internal cs when count drops to 0 */
-        m_owner = nullptr;
-        ::ReleaseSRWLockExclusive(std::addressof(m_cs));
+        m_cs.Leave();
 
         return;
+    }
+
+    bool Mutex::IsLockedByCurrentThread() {
+        return m_cs.IsLockedByCurrentThread();
     }
 }

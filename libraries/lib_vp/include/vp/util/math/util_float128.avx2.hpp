@@ -193,7 +193,7 @@ namespace vp::util::avx2 {
         return temp;
     }
 
-    constexpr __m128 vbroadcastss128(float *value) {
+    constexpr __m128 vbroadcastss128(const float *value) {
         if (!std::is_constant_evaluated()) {
             return __builtin_ia32_vbroadcastss(value);
         }

@@ -183,6 +183,51 @@ namespace vp::res {
 
         u32 FindRefBit();
 
+        u32 TryGetEntryIndexByKey(const char *key, u32 length) const {
+
+            /* Dictionary search */
+            const u32         len       = length;
+            s16               next_idx  = root_node.left_node;
+            const ResDicNode *node_iter = std::addressof(root_node) + next_idx;
+            const ResDicNode *last_iter = std::addressof(root_node);
+            s32               last_ref  = root_node.ref_bit;
+            s32               iter_ref  = node_iter->ref_bit;
+            while (last_ref < iter_ref) {
+                const u32 ref_len = iter_ref >> 3;
+                bool is_right = false;
+                if (ref_len < len) {
+                    is_right = key[len + ~ref_len] >> (iter_ref & 7) & 1;
+                }
+                last_iter = std::addressof(root_node) + next_idx;
+                next_idx  = std::addressof(last_iter->left_node)[is_right];
+                node_iter = std::addressof(root_node) + next_idx;
+                last_ref  = last_iter->ref_bit;
+                iter_ref  = node_iter->ref_bit;
+            }
+
+            /* Find larger string size */
+            u16 key_len = *reinterpret_cast<const u16*>(node_iter->key);
+            u16 max_len = len;
+            if (key_len <= len) {
+                max_len = key_len;
+            }
+
+            /* Ensure strings are identical */
+            if (max_len == 0 && key_len < len) { return -1; }
+            const s32 result = ::memcmp(node_iter->key + 2, key, max_len);
+            if (result != 0)   { return cInvalidEntryIndex; }
+            if (len < key_len) { return cInvalidEntryIndex; }
+            if (key_len < len) { return cInvalidEntryIndex; }
+
+            /* Find entry index through ptrdiff */
+            ptrdiff_t ptr_diff = reinterpret_cast<uintptr_t>(node_iter) - sizeof(ResNintendoWareDictionary) - reinterpret_cast<uintptr_t>(this);
+            if ((~ptr_diff & 0xf'ffff'fff0) != 0) {
+                return ptr_diff >> 4;
+            }
+
+            return cInvalidEntryIndex;
+        }
+
         u32 TryGetEntryIndexByKey(const char *key) const {
 
             /* Dictionary search */
