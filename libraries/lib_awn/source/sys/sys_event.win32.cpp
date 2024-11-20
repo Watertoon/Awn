@@ -40,7 +40,7 @@ namespace awn::sys {
         const bool result = ::WaitOnAddress(std::addressof(m_state), std::addressof(value), sizeof(u32), time_left.GetMilliSeconds());
         if (!result) {
             time_left = TimeSpan::GetTimeLeftOnTarget(timeout_tick); 
-            if (time_left.GetNanoSeconds() == 0) { 
+            if (time_left.GetNanoSeconds() < 0) { 
                 RESULT_RETURN(ResultTimeout); 
             }
         }
@@ -50,7 +50,7 @@ namespace awn::sys {
     void Event::Wait() {
 
 		/* Ensure memory coherancy */
-		ON_SCOPE_EXIT { vp::util::MemoryBarrierReadWrite(); };
+		ON_SCOPE_EXIT { vp::util::MemoryBarrierInnerReadWrite(); };
 
 		/* Check signal state */
 		if (!m_is_auto_reset) { 
@@ -69,20 +69,16 @@ namespace awn::sys {
 			/* Set waiter bit */
 			u32 last;
 			for(;;) {
-				/* Set is waiters */
-                if (vp::util::InterlockedCompareExchange(std::addressof(last), std::addressof(m_state), 1u, 0u)) { continue; }
-
-				/* Is waiters */
-				if (last == 1) { continue; }
-
-				/* Ensure valid state */
-				VP_ASSERT(last == 2);
-
 				/* Try auto clear */
 				if (vp::util::InterlockedCompareExchange(std::addressof(last), std::addressof(m_state), 0u, 2u)) { return; }
 
-				/* Wait until conditions improve */
-                this->WaitImpl(last);
+                /* Set is waiters and wait */
+                if (last == 1 || vp::util::InterlockedCompareExchange(std::addressof(last), std::addressof(m_state), 1u, 0u) || last == 1) { 
+                    this->WaitImpl(1);
+                    continue;
+                }
+
+                VP_ASSERT(last == 2);
 			}
 		}
 
@@ -132,7 +128,7 @@ namespace awn::sys {
 		const TickSpan timeout_tick = TimeSpan::GetAbsoluteTimeToWakeup(timeout);
 
 		/* Ensure memory coherancy on exit */
-		ON_SCOPE_EXIT { vp::util::MemoryBarrierReadWrite(); };
+		ON_SCOPE_EXIT { vp::util::MemoryBarrierInnerReadWrite(); };
 
 		/* Check signal state */
 		Result result = ResultSuccess;

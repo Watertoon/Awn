@@ -2,19 +2,18 @@
 Awn is a personal C++ library designed to power low-latency multi-threaded real-time applications.
 
 # Awn Features
-* awn::res, an asynchronous file resource api for real-time file streaming
-* awn::para, a collection of parameterized data structures and serializable parameter class generation
-* awn::sys, an OS thread and synchronization primitive wrapper
-* awn::mem, a CPU and GPU memory api for virtual and heap tree-based memory management
-* awn::gfx, a graphics api wrapper over vulkan based around NVN style binding and file formats reverse engineered from NintendoWare gfx
-* awn::hid, a simple mouse and keyboard api
-* awn::render, a windowing system solving the problem of getting vulkan render targets from directx12 resources from a dxgi swapchain on a win32 window while supporting render target alpha, global alpha, transforms, and resizing
+* An asynchronous file resource manager for real-time file streaming
+* A parameter system to autogenerate and manage parameter classes for binary data using the byaml file format
+* A platform agnositic threading api implementing synchronization primitives using modern techniques (atomics, WaitOnAddress)
+* A CPU and GPU heap tree memory manager for real-time allocations and memory monitoring
+* A graphics api based around supporting file formats reversed from nn::gfx
+* Basic mouse and keyboard support
 
 # Vp
 Vp is a personal C++ library designed to portably carry common utilities and file format definitions.
 
 # Vp Features
-* vp::res, Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
+* Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
   * Ainb (AI Node Binary)
   * Bea (Bezel Engine Archive)
   * Bffnt (Binary Cafe Font)
@@ -28,21 +27,17 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
   * Exb (Expression Binary)
   * Rsizetable (Resource Size Table)
   * Sarc (sead Archive?)
-* vp::resbui, serializers for select file formats
-  * Bnsh (Binary Nintendo Shader)
-  * Byaml (Binary Yet Another Markup Language)
-  * Rsizetable (Resource Size Table)
-  * Sarc (sead Archive?)
 * Zstd streaming decompression and Yaz0 decompressor for Nintendo szs files
-* vp::util, Data structures, algorithms, traits
-   * Hash algorithms, crc32b, murmur3, and murmur64
-   * x86_64 SIMD linear algebra
+* Hash algorithms, crc32b, murmur3, and murmur64
+* Avx2 SIMD linear algebra algorithms for fast 3d transformations and projections
+* Utilities
   * Scope Guard
   * Result-based Structured Error Handling
   * Custom Runtime Type Info
   * Utf8, Utf16, and Utf32 string encoding conversion
   * File Path Parsing
   * Enum Reflection
+* Data Structures
   * Red Black Trees
   * Ring Buffers
   * Handle Tables 

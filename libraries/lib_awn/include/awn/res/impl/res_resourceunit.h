@@ -29,9 +29,12 @@ namespace awn::res::impl {
 
     struct ResourceUnitInfo {
         AsyncResourceLoadInfo *async_resource_info;
-        ResourceBinder        *resource_binder;
-        ResourceUnitManager   *resource_unit_manager;
-        const char            *file_path;
+        ResourceBinder *resource_binder;
+        ResourceUnitManager *resource_unit_manager;
+        const char *file_path;
+        bool is_initialize_resource;
+        bool is_compose;
+        bool is_boost_compose;
     };
 
     class ResourceUnit {
@@ -58,45 +61,60 @@ namespace awn::res::impl {
                 FailedToPostInitializeResource = 13,
                 FailedToPreFinalizeResource    = 14,
             };
-        public:
-            using ResourceUnitTreeNode = vp::util::IntrusiveRedBlackTreeNode<u32>;
-        private:
-            union {
-                u32 m_state;
-                struct {
-                    u32 m_is_resource_initializable      : 1;
-                    u32 m_is_external_heap               : 1;
-                    u32 m_is_tracked_memory_usage_global : 1;
-                    u32 m_is_tracked_memory_usage_active : 1;
-                    u32 m_is_heap_adjusted               : 1;
-                    u32 m_has_user_resource_size         : 1;
-                    u32 m_is_retry_on_busy               : 1;
-                    u32 m_allow_archive_reference        : 1;
-                    u32 m_is_file_not_found              : 1;
-                    u32 m_is_fail_get_file_size          : 1;
-                    u32 m_is_fail_init_resource          : 1;
-                    u32 m_is_bad_user_resource_size      : 1;
-                    u32 m_is_bad_resource_size           : 1;
-                    u32 m_is_file_not_available          : 1;
-                    u32 m_is_memory_allocation_failure   : 1;
-                    u32 m_is_finalized                   : 1;
-                    u32 m_is_managed                     : 1;
-                    u32 m_is_cache_unload                : 1;
-                    u32 m_is_cache_unload_for_no_ref     : 1;
-                    u32 m_is_cache_unload_for_no_error   : 1;
-                    u32 m_is_require_heap_adjust         : 1;
-                    u32 m_is_part_of_resource_unit_mgr   : 1;
-                    u32 m_is_freeable_for_memory_manager : 1;
-                    u32 m_is_transient_on_load           : 1;
-                    u32 m_is_user_resource_size          : 1;
-                    u32 m_heap_type                      : 3;
-                    u32 m_compression_type               : 3;
-                    u32 m_reserve0                       : 1;
-                };
+            enum State : u32 {
+                State_IsExternalHeap = 0,
+                State_IsTrackedMemoryGlobal = 1,
+                State_IsTrackedMemoryActive = 2,
+                State_IsHeapAdjusted = 3,
+                State_IsUserResourceSize = 3,
+                State_IsRetryOnBusy = 4,
+                State_IsAllowArchiveReference = 5,
+                
+                State_IsMemoryAllocationFailure = 7,
+                State_IsFileNotFound = 8,
+                State_IsFailGetFileSize = 9,
+                State_IsFailInitializeResource = 10,
+                State_IsInvalidUserResourceSize = 11,
+                State_IsInvalidResourceSize = 13,
+                State_IsFileNotAvailable = 14,
+                
+                State_IsFinalized = 13,
+                State_IsPersistant = 14, /* Managed */
+                State_IsCacheUnload = 15,
+                State_IsRequireHeapAdjust = 18,
+                State_IsFreeableForMemoryManager = 19,
+                State_IsTransient = 20,
+                State_IsBoostCompose = 21,
+                State_IsRequireResourceInitialize = 22,
             };
+            enum CacheUnloadFlag : u32 {
+                CacheUnloadFlag_IsValid = 0,
+                CacheUnloadFlag_IsTransientRef = 1,
+            };
+            enum CacheUnloadNoErrorFlag : u32 {
+                CacheUnloadNoErrorFlag_IsValid = 0,
+            };
+            enum CompressionFlag : u32 {
+                CompressionFlag_IsExternalHeap = 0,
+                CompressionFlag_IsCompressSzs = 1,
+                CompressionFlag_IsCompressZstd = 2,
+                CompressionFlag_IsCompressMc = 3,
+                CompressionFlag_IsResourceInitializable = 4,
+                CompressionFlag_IsFrameHeap = 6,
+                CompressionFlag_IsCompose = 7,
+            };
+        public:
+            using ResourceUnitTreeNode = vp::util::IntrusiveRedBlackTreeNode<vp::util::HashString<u32>>;
+        private:
+            vp::util::FixedConnection<u32, BITSIZEOF(u32)> m_state;
+            vp::util::FixedConnection<u8, BITSIZEOF(u8)> m_compression_flags;
+            vp::util::FixedConnection<u8, BITSIZEOF(u8)> m_cache_unload_flags;
+            vp::util::FixedConnection<u8, BITSIZEOF(u8)> m_cache_unload_no_error_flags;
+            u8                           m_is_part_of_resource_unit_mgr;
             Status                       m_status;
             s32                          m_reference_count;
             s32                          m_deferred_adjust_count[2];
+            s32                          m_compose_reference_count;
             u32                          m_resource_initialize_guard;
             size_t                       m_user_resource_size;
             s32                          m_file_alignment;
@@ -112,7 +130,7 @@ namespace awn::res::impl {
             Resource                    *m_resource;
 
             async::AsyncTask             m_load_task;
-            async::AsyncTask             m_heap_adjust_task;
+            async::AsyncTask             m_compose_task;
             async::AsyncTask             m_unload_task;
 
             mem::Heap                   *m_resource_heap;
@@ -125,20 +143,25 @@ namespace awn::res::impl {
         private:
             void AdjustReferenceCount(s32 adjust_amount);
 
+            constexpr u32 GetReferenceCount() const {
+                return m_reference_count + m_cache_unload_flags.GetBit(CacheUnloadFlag_IsTransientRef);
+            }
             void IncrementReference();
             void DecrementReference();
+            void DecrementComposeReferenceCount();
 
-            void ReleaseManagedReference();
+            void ReleaseTransient();
+            void ReleasePersistantReference();
 
             void SetToBinder(ResourceBinder *resource_binder);
             constexpr void SetBinderStatusFromError(ResourceBinder *binder) const {
-                if (m_is_file_not_found)            { binder->m_status = ResourceBinder::Status::FileNotFound;                return; }
-                if (m_is_fail_get_file_size)        { binder->m_status = ResourceBinder::Status::FailedToGetDecompressedSize; return; }
-                if (m_is_fail_init_resource)        { binder->m_status = ResourceBinder::Status::FailedToInitializeResource;  return; }
-                if (m_is_bad_user_resource_size)    { binder->m_status = ResourceBinder::Status::InvalidUserResourceSize;     return; }
-                if (m_is_bad_resource_size)         { binder->m_status = ResourceBinder::Status::InvalidResourceSize;         return; }
-                if (m_is_file_not_available)        { binder->m_status = ResourceBinder::Status::FileNotAvailable;            return; }
-                if (m_is_memory_allocation_failure) { binder->m_status = ResourceBinder::Status::MemoryAllocationFailure;     return; }
+                if (m_state.GetBit(State_IsFileNotFound)) { binder->m_status = ResourceBinder::Status::FileNotFound; return; }
+                if (m_state.GetBit(State_IsFailGetFileSize)) { binder->m_status = ResourceBinder::Status::FailedToGetDecompressedSize; return; }
+                if (m_state.GetBit(State_IsFailInitializeResource)) { binder->m_status = ResourceBinder::Status::FailedToInitializeResource; return; }
+                if (m_state.GetBit(State_IsInvalidUserResourceSize)) { binder->m_status = ResourceBinder::Status::InvalidUserResourceSize; return; }
+                if (m_state.GetBit(State_IsInvalidResourceSize)) { binder->m_status = ResourceBinder::Status::InvalidResourceSize; return; }
+                if (m_state.GetBit(State_IsFileNotAvailable)) { binder->m_status = ResourceBinder::Status::FileNotAvailable; return; }
+                if (m_state.GetBit(State_IsMemoryAllocationFailure)) { binder->m_status = ResourceBinder::Status::MemoryAllocationFailure; return; }
                 binder->m_status = ResourceBinder::Status::UnknownError;
                 return;
             }
@@ -150,27 +173,50 @@ namespace awn::res::impl {
 
             void ChangeLoadPriority(async::AsyncQueue *memory_queue, async::AsyncQueue *load_queue, u32 priority);
         public:
-            void WaitForLoad() { m_load_task.Wait(); }
+            void WaitForLoad();
 
-            constexpr bool IsInLoad() const {
-                const async::AsyncTask::Status status = m_load_task.GetStatus();
-                if ((async::AsyncTask::Status::Uninitialized == status) || (async::AsyncTask::Status::Complete == status)) { return (m_status == Status::InLoad); }
-                if (async::AsyncTask::Status::Cancelled != status)                                                         { return true; }
-                return false;
-            }
-            constexpr bool IsLoaded() const {
-                const async::AsyncTask::Status status = m_load_task.GetStatus();
-                return (async::AsyncTask::Status::Cancelled == status) || (((async::AsyncTask::Status::Uninitialized == status) || (async::AsyncTask::Status::Complete == status)) && (m_status != Status::InLoad));
-            }
+            bool IsInLoad() const;
             constexpr bool IsResourceInitialized() const {
+                /* Succeed if the resource is post initialization */
                 if (m_status == Status::ResourcePostInitialized) { return true; }
-                return (m_resource != nullptr) && (m_status == Status::Loaded) && (!m_is_resource_initializable);
+                /* Fail if not loaded */
+                if (m_status != Status::Loaded) { return false; }
+                /* Fail if no resource */
+                if (m_resource == nullptr) { return false; }
+                /* Succeed if we don't care about initialization */
+                if (!m_state.GetBit(State_IsRequireResourceInitialize)) { return true; }
+                /* Fail if we are loaded and have a resource, it requires initialization, and it is still initializable */
+                if (m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) { return false; }
+                return true;
             }
+            bool IsUnloadable() const;
             constexpr bool IsErrorStatus() const { return static_cast<u32>(Status::Error) <= static_cast<u32>(m_status);}
+        public:
+            constexpr CompressionType GetCompressionType() const {
+                if (m_compression_flags.GetBit(CompressionFlag_IsCompressZstd)) { return CompressionType::Zstandard; }
+                if (m_compression_flags.GetBit(CompressionFlag_IsCompressSzs)) { return CompressionType::Szs; }
+                return CompressionType::None;
+            }
+            constexpr void SetCompressionType(CompressionType compression_type) {
+                constexpr u32 cMask = (1 << CompressionFlag_IsCompressSzs) | (1 << CompressionFlag_IsCompressZstd) | (1 << CompressionFlag_IsCompressMc);
+                u32 next = m_compression_flags.GetBitMask(0) & (~cMask);
+                switch (compression_type) {
+                    case CompressionType::Szs:
+                        next |= (1 << CompressionFlag_IsCompressSzs);
+                        break;
+                    case CompressionType::Zstandard:
+                        next |= (1 << CompressionFlag_IsCompressZstd);
+                        break;
+                    default:
+                    break;
+                };
+                m_compression_flags.SetBitMask(next, 0);
+                return;
+            }
         public:
             void FreeResourceHeap();
 
-            void TrackMemoryUsage();
+            void RequestHeapAdjust();
             void UpdateMemoryUsage();
             void ReleaseMemoryUsageGlobal();
             void ReleaseMemoryUsageActive();
@@ -181,15 +227,22 @@ namespace awn::res::impl {
 
             size_t PrepareResourceLoad();
             Result LoadMemory();
+            Result LoadMemoryResult(async::TaskResultInvokeInfo *result_info);
+            
             Result LoadFile();
+            void RequestComposeForAfter();
+
+            Result Compose();
 
             Result Unload();
             Result ClearCache();
         public:
+            void ScheduleCompose(u32 priority);
+
             Result TryLoadFile(const char *file_path);
-            void   ScheduleUnload();
+            void ScheduleUnload();
         public:
-            void CancelUnloadTask();
+            void CancelUnload(AsyncResourceManager *manager);
 
             void UnregisterFromResourceUnitManager();
 
@@ -215,80 +268,4 @@ namespace awn::res::impl {
 
             void Initialize(ResourceUnitInfo *unit_info);
     };
-}
-
-namespace awn::res {
-
-    constexpr Resource *ResourceBinder::GetResourceDirect() const {
-        /* Fail if we did not schedule a load */
-        if (!m_load_guard) { return nullptr; }
-        /* Fail if the control task is still pending */
-        if (m_watcher.IsPending()) { return nullptr; }
-        /* Fail if the control task did not set a resource unit */
-        if (m_resource_unit == nullptr) { return nullptr; }
-        /* Fail if the resource is not initialized */
-        if (!m_resource_unit->IsResourceInitialized()) { return nullptr; }
-        /* Fail if we are not complete */
-        if (!m_complete_guard) { return nullptr; }
-        Resource *resource = m_resource_unit->m_resource;
-        /* Succeed if the resource unit has initialized */
-        if (m_resource_unit->m_status == impl::ResourceUnit::Status::ResourcePostInitialized) { return resource; }
-        /* Fail if we do not have a resource */
-        if (resource == nullptr) { return nullptr; }
-        /* Fail if the resource unit is not loaded */
-        if (m_resource_unit->m_status != impl::ResourceUnit::Status::Loaded) { return nullptr; }
-        /* Fail if the resource requires initialization */
-        if (m_resource_unit->m_is_resource_initializable) { return nullptr; }
-        return m_resource_unit->m_resource;
-    }
-
-    constexpr bool ResourceBinder::IsResourceInitialized() const {
-        /* Fail if we did not schedule a load */
-        if (!m_load_guard) { return false; }
-        /* Fail if the control task is still pending */
-        if (m_watcher.IsPending()) { return false; }
-        /* Fail if the control task did not set a resource unit */
-        if (m_resource_unit == nullptr) { return false; }
-        /* Fail if the resource unit is not loaded */
-        if (!m_resource_unit->IsLoaded()) { return false; }
-        /* Fail if we are not complete */
-        if (!m_complete_guard) { return false; }
-        /* Defer to the resource unit */
-        return m_resource_unit->IsResourceInitialized();
-    }
-
-    constexpr bool ResourceBinder::IsInLoad() const {
-        /* Succeed if the watcher is pending */
-        if (m_watcher.IsPending()) { return true; }
-        /* Fail if we have not scheduled a load */
-        if (m_load_guard == false) { return false; }
-        /* Fail if we do not have a resource unit, as the control task is pending or it failed */
-        if (m_resource_unit == nullptr) { return false; }
-        /* Defer to the resource unit */
-        return m_resource_unit->IsInLoad();
-    }
-
-    constexpr bool ResourceBinder::IsLoaded() const {
-        /* Fail if we have not scheduled a load */
-        if (!m_load_guard) { return false; }
-        /* Fail if we are finalized */
-        if (m_is_finalize) { return false; }
-        /* Fail if the control task is still pending */
-        if (m_watcher.IsPending()) { return false; }
-        /* Fail if the control task did not set a resource unit */
-        if (m_resource_unit == nullptr) { return false; }
-        /* Defer to the resource unit */
-        return m_resource_unit->IsLoaded();
-    }
-
-    constexpr bool ResourceBinder::IsFailed() const {
-        /* We haven't failed if we are still loading */
-        if (this->IsInLoad()) { return false; }
-        /* If we or our resource unit has an error status, we failed */
-        bool is_res_unit_failed = false;
-        if (m_load_guard && m_resource_unit != nullptr) {
-            is_res_unit_failed = m_resource_unit->IsErrorStatus();
-        }
-        return this->IsErrorStatus() | is_res_unit_failed;
-    }
 }

@@ -56,14 +56,19 @@ namespace vp::res {
             s16   *value_array_s16;
             s8    *value_array_s8;
         };
-        u16   frame_data_type : 2;
-        u16   value_data_type : 2;
-        u16   curve_type      : 3;
-        u16   reserve0        : 1;
-        u16   pre_wrap_mode   : 2;
-        u16   reserve1        : 2;
-        u16   post_wrap_mode  : 2;
-        u16   reserve2        : 2;
+        union {
+            u16 packed;
+            struct {                
+                u16   frame_data_type : 2;
+                u16   value_data_type : 2;
+                u16   curve_type      : 3;
+                u16   reserve0        : 1;
+                u16   pre_wrap_mode   : 2;
+                u16   reserve1        : 2;
+                u16   post_wrap_mode  : 2;
+                u16   reserve2        : 2;
+            };
+        };
         u16   frame_count;
         u32   base_result_offset;
         float start_key;

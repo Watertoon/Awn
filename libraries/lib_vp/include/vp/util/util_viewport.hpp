@@ -26,14 +26,12 @@ namespace vp::util {
             constexpr Viewport(const BoundingBox2f& bound_box) : m_bounding_box(bound_box) {/*...*/}
 
             constexpr Viewport(const LogicalFrameBuffer *framebuffer) : m_bounding_box() {
-                float width  = 0.0f;
-                float height = 0.0f;
-                framebuffer->GetVirtualCanvasSize(std::addressof(width), std::addressof(height));
+                const Vector2f size = framebuffer->GetVirtualCanvasSize();
 
-                m_bounding_box.min_x = Min(width, 0.0f);
-                m_bounding_box.min_y = Min(height, 0.0f);
-                m_bounding_box.max_x = Max(width, 0.0f);
-                m_bounding_box.max_y = Max(height, 0.0f);
+                m_bounding_box.min_x = Min(size[0], 0.0f);
+                m_bounding_box.min_y = Min(size[1], 0.0f);
+                m_bounding_box.max_x = Max(size[0], 0.0f);
+                m_bounding_box.max_y = Max(size[1], 0.0f);
             }
 
             constexpr ~Viewport() {/*...*/}

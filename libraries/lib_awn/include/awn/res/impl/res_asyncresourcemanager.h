@@ -77,6 +77,8 @@ namespace awn::res::impl {
             static constexpr u32 cControlPriorityLevelCount = 0x8;
             static constexpr u32 cMemoryPriorityLevelCount  = 0xf;
             static constexpr u32 cLoadPriorityLevelCount    = 0x5;
+            static constexpr u32 cComposePriorityLevelCount = 0x5;
+            static constexpr u16 cInvalidRequestIndex = 0xffff;
         public:
             using ResourceUnitIndexFrame   = vp::util::BufferedFrameArray<u16, 2>;
             using MemberTaskFunction       = vp::util::MemberFunction<AsyncResourceManager, void(void*)>;
@@ -93,17 +95,23 @@ namespace awn::res::impl {
             ResourceUnitFinalizeList       m_resource_unit_finalize_list;
             sys::Mutex                     m_finalize_list_cs;
 
-            async::AsyncQueueThread       *m_async_queue_thread_control;
-            async::AsyncQueueThread       *m_async_queue_thread_memory;
-            async::AsyncQueue              m_async_queue_control;
-            async::AsyncQueue              m_async_queue_memory;
-            async::AsyncQueue              m_async_queue_load;
-            AsyncQueueThreadArray          m_async_queue_load_thread_array;
+            async::AsyncQueue              m_queue_control;
+            async::AsyncQueue              m_queue_memory;
+            async::AsyncQueue              m_queue_load;
+            async::AsyncQueue              m_queue_compose;
+            async::AsyncQueueThread       *m_thread_control;
+            async::AsyncQueueThread       *m_thread_memory;
+            AsyncQueueThreadArray          m_load_thread_array;
+            AsyncQueueThreadArray          m_compose_thread_array;
 
             async::AsyncTaskAllocator      m_async_task_allocator_load;
 
-            sys::Mutex                     m_free_frame_cs;
-            ResourceUnitIndexFrame         m_resource_unit_free_frame_buffer;
+            sys::Mutex                     m_unload_frame_cs;
+            ResourceUnitIndexFrame         m_unload_frame_buffer;
+            sys::Mutex                     m_adjust_ref_frame_cs;
+            ResourceUnitIndexFrame         m_adjust_ref_frame_buffer;
+            sys::Mutex                     m_heap_adjust_frame_cs;
+            ResourceUnitIndexFrame         m_heap_adjust_frame_buffer;
 
             ArchiveFileDevice              m_default_archive_file_device;
             ArchiveFileDevice              m_default_archive_file_device_for_size_prepare;
@@ -127,9 +135,11 @@ namespace awn::res::impl {
             async::AsyncTask              *m_task_for_force_clear_all_caches;
             MemberTaskFunction             m_calc_exe;
             MemberTaskFunction             m_load_control_exe;
-            MemberTaskFunction             m_load_memory_exe;
-            MemberResultFunction           m_load_memory_result;
-            MemberTaskFunction             m_load_file_exe;
+            async::StaticTaskFunction      m_load_memory_exe;
+            async::StaticResultFunction    m_load_memory_result;
+            async::StaticTaskFunction      m_load_file_exe;
+            async::StaticResultFunction    m_load_file_result;
+            async::StaticTaskFunction      m_compose_exe;
             MemberTaskFunction             m_reserve_unload_exe;
             MemberTaskFunction             m_clear_cache_for_allocate_exe;
             async::StaticTaskFunction      m_heap_adjust_exe;
@@ -149,9 +159,18 @@ namespace awn::res::impl {
             void ReserveUnload();
 
             ResourceUnit *AllocateResourceUnit();
-            void          FreeResourceUnit(ResourceUnit *resource_unit);
+            void FreeResourceUnit(ResourceUnit *resource_unit);
 
-            void RequestUnloadResourceUnit(ResourceUnit *resource_unit);
+            void RequestAdjustReference(ResourceUnit *resource_unit);
+            void RequestUnload(ResourceUnit *resource_unit);
+            void CancelUnloadRequest(ResourceUnit *resource_unit);
+            void RequestHeapAdjust(ResourceUnit *resource_unit);
+            void CancelHeapAdjustRequest(ResourceUnit *resource_unit);
+
+            void ProcessAdjustReference();
+            void ProcessUnload();
+            void ProcessHeapAdjust();
+
             void FinalizeResourceUnitSync(ResourceUnit *resource_unit);
 
             bool TryReferenceResourceUnit(ResourceUnit *resource_unit, LoadTask::LoadUserData *load_info);
@@ -161,11 +180,14 @@ namespace awn::res::impl {
         private:
             void LoadControlExe(void *load_task_user_data_arg);
 
-            void   LoadMemoryExe(void *resource_unit);
-            Result LoadMemoryResult(async::TaskResultInvokeInfo *result_info);
+            static void LoadMemoryExe(void *resource_unit);
+            static Result LoadMemoryResult(async::TaskResultInvokeInfo *result_info);
 
-            void LoadFileExe(void *resource_unit);
-            
+            static void LoadFileExe(void *resource_unit);
+            static Result LoadFileResult(async::TaskResultInvokeInfo *result_info);
+
+            static void ComposeExe(void *resource_unit);
+
             void ReserveUnloadExe(void *arg);
 
             void ClearCacheForAllocateExe(void *count) {
@@ -177,7 +199,7 @@ namespace awn::res::impl {
             static void UnloadForSyncExe(void *arg);
             static Result UnloadForSyncResult(async::TaskResultInvokeInfo *result_info);
 
-            static void   UnloadExe(void *resource_unit);
+            static void UnloadExe(void *resource_unit);
             static Result UnloadResult(async::TaskResultInvokeInfo *result_info);
 
             static void ClearCacheExe(void *resource_unit);
@@ -196,12 +218,12 @@ namespace awn::res::impl {
             void CancelLoadTasks();
         public:
             constexpr AsyncResourceManager() : m_system_heap(), m_app_impl(), m_extension_manager(), m_memory_manager(), m_is_trigger_clear_all_caches(), m_resource_unit_allocator(), m_resource_unit_finalize_list(), m_finalize_list_cs(),
-            m_async_queue_thread_control(), m_async_queue_thread_memory(), m_async_queue_control(), m_async_queue_memory(), m_async_queue_load(), m_async_queue_load_thread_array(), m_async_task_allocator_load(),
-            m_free_frame_cs(), m_resource_unit_free_frame_buffer(), 
+            m_thread_control(), m_thread_memory(), m_queue_control(), m_queue_memory(), m_queue_load(), m_queue_compose(), m_load_thread_array(), m_compose_thread_array(), m_async_task_allocator_load(),
+            m_unload_frame_cs(), m_unload_frame_buffer(), m_adjust_ref_frame_cs(), m_adjust_ref_frame_buffer(), m_heap_adjust_frame_cs(), m_heap_adjust_frame_buffer(),
             m_default_archive_file_device(), m_default_archive_file_device_for_size_prepare(), m_default_archive_binder(), m_default_archive_reference_count(), m_thread_local_archive_manager(), m_resource_size_table_manager(),
             m_zsdic_heap(), m_decompressor_manager(), m_managed_thread_array_cs(), m_managed_thread_array(), m_enable_managed(),
             m_task_for_calculate(), m_task_for_load_sync(), m_task_for_clear_cache_for_allocate(), m_task_for_force_reserve_unload(), m_task_for_force_clear_all_caches(),
-            m_calc_exe(this, &AsyncResourceManager::CalculateExe), m_load_control_exe(this, &AsyncResourceManager::LoadControlExe), m_load_memory_exe(this, &AsyncResourceManager::LoadMemoryExe), m_load_memory_result(this, &AsyncResourceManager::LoadMemoryResult), m_load_file_exe(this, &AsyncResourceManager::LoadFileExe), 
+            m_calc_exe(this, &AsyncResourceManager::CalculateExe), m_load_control_exe(this, &AsyncResourceManager::LoadControlExe), m_load_memory_exe(LoadMemoryExe), m_load_memory_result(LoadMemoryResult), m_load_file_exe(LoadFileExe), m_load_file_result(LoadFileResult), m_compose_exe(ComposeExe),
             m_reserve_unload_exe(this, &AsyncResourceManager::ReserveUnloadExe), m_clear_cache_for_allocate_exe(this, &AsyncResourceManager::ClearCacheForAllocateExe), m_heap_adjust_exe(HeapAdjustExe), m_clear_cache_exe(ClearCacheExe), m_clear_cache_result(ClearCacheResult),
             m_unload_exe(UnloadExe), m_unload_result(UnloadResult), m_unload_for_sync_exe(UnloadForSyncExe), m_unload_for_sync_result(UnloadForSyncResult) {/*...*/}
 
@@ -223,45 +245,47 @@ namespace awn::res::impl {
                 return m_decompressor_manager.GetDecompressor(handle, decompressor_type, priority, core_mask);
             }
         public:
-            void SetControlThreadPriority(u32 priority) { m_async_queue_thread_control->SetPriority(priority); }
-            void SetMemoryThreadPriority(u32 priority)  { m_async_queue_thread_memory->SetPriority(priority); }
-            void SetLoadThreadsPriority(u32 priority)   {
-                for (async::AsyncQueueThread *&thread : m_async_queue_load_thread_array) {
-                    thread->SetPriority(priority); 
-                }
-            }
+            bool IsComposeEnabled() { return false; }
+
+            void SetControlThreadPriority(u32 priority);
+            void SetMemoryThreadPriority(u32 priority);
+            void SetLoadThreadsPriority(u32 priority);
+            void SetComposeThreadsPriority(u32 priority);
 
             void SuspendControlThread();
             void SuspendMemoryThread();
             void SuspendLoadThreads();
+            void SuspendComposeThreads();
 
             void ResumeControlThread();
             void ResumeMemoryThread();
             void ResumeLoadThreads();
+            void ResumeComposeThreads();
 
-            bool IsLoadThreadSuspended() {
-                for (async::AsyncQueueThread *&thread : m_async_queue_load_thread_array) {
-                    if (thread->IsSuspended() == true) { return true; }
-                }
-                return false;
-            }
+            bool IsLoadThreadSuspended();
+            bool IsComposeThreadSuspended();
+
+            bool IsCurrentThreadControlThread();
+            bool IsCurrentThreadMemoryThread();
+            bool IsCurrentThreadLoadThread();
+            bool IsCurrentThreadComposeThread();
         public:
             void SetManagedThreadArray(ManagedThreadArray *array) {
                 std::scoped_lock l(m_managed_thread_array_cs);
                 m_managed_thread_array = array;
-                m_enable_managed       = true;
+                m_enable_managed = true;
             }
             void ReleaseManagedThreadArray() {
                 std::scoped_lock l(m_managed_thread_array_cs);
                 m_managed_thread_array = nullptr;
-                m_enable_managed       = false;
+                m_enable_managed = false;
             }
 
             bool IsManagedThread() {
                 std::scoped_lock l(m_managed_thread_array_cs);
                 if (m_enable_managed) { return false; }
-                for (async::AsyncQueueThread *&thread : m_async_queue_load_thread_array) {
-                    if (thread->IsSuspended() == true) { return true; }
+                for (async::AsyncQueueThread *&thread : m_load_thread_array) {
+                    if (thread->IsSuspended()) { return true; }
                 }
                 return false;
             }

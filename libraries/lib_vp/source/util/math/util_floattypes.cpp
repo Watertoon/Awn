@@ -7,18 +7,18 @@ namespace vp::util {
             requires (T::cIsVectorType)
         ALWAYS_INLINE bool ParseByamlVectorArrayImpl(T *vector, vp::res::ByamlIterator iter) {
             T vec;
-            const bool result0 = iter.TryGetValueByIndex(std::addressof(vec.x), 0);
+            const bool result0 = iter.TryGetValueByIndex(std::addressof(vec[0]), 0);
             if (!result0) { return false; }
             if constexpr (1 < T::cVectorCount) {
-                const bool result1 = iter.TryGetValueByIndex(std::addressof(vec.y), 1);
+                const bool result1 = iter.TryGetValueByIndex(std::addressof(vec[1]), 1);
                 if (!result1) { return false; }
             }
             if constexpr (2 < T::cVectorCount) {
-                const bool result2 = iter.TryGetValueByIndex(std::addressof(vec.z), 2);
+                const bool result2 = iter.TryGetValueByIndex(std::addressof(vec[2]), 2);
                 if (!result2) { return false; }
             }
             if constexpr (3 < T::cVectorCount) {
-                const bool result3 = iter.TryGetValueByIndex(std::addressof(vec.w), 3);
+                const bool result3 = iter.TryGetValueByIndex(std::addressof(vec[3]), 3);
                 if (!result3) { return false; }
             }
             *vector = vec;
@@ -28,19 +28,19 @@ namespace vp::util {
             requires (T::cIsVectorType)
         ALWAYS_INLINE bool ParseByamlVectorDictionaryImpl(T *vector, vp::res::ByamlIterator iter) {
             T vec;
-            const bool result0 = iter.TryGetValueByKey(std::addressof(vec.x), "X");
-            if (!result0 && !iter.TryGetValueByKey(std::addressof(vec.x), "x")) { return false; }
+            const bool result0 = iter.TryGetValueByKey(std::addressof(vec[0]), "X");
+            if (!result0 && !iter.TryGetValueByKey(std::addressof(vec[0]), "x")) { return false; }
             if constexpr (1 < T::cVectorCount) {
-                const bool result1 = iter.TryGetValueByKey(std::addressof(vec.y), "Y");
-                if (!result1 && !iter.TryGetValueByKey(std::addressof(vec.y), "y")) { return false; }
+                const bool result1 = iter.TryGetValueByKey(std::addressof(vec[1]), "Y");
+                if (!result1 && !iter.TryGetValueByKey(std::addressof(vec[1]), "y")) { return false; }
             }
             if constexpr (2 < T::cVectorCount) {
-                const bool result2 = iter.TryGetValueByKey(std::addressof(vec.z), "Z");
-                if (!result2 && !iter.TryGetValueByKey(std::addressof(vec.z), "z")) { return false; }
+                const bool result2 = iter.TryGetValueByKey(std::addressof(vec[2]), "Z");
+                if (!result2 && !iter.TryGetValueByKey(std::addressof(vec[2]), "z")) { return false; }
             }
             if constexpr (3 < T::cVectorCount) {
-                const bool result3 = iter.TryGetValueByKey(std::addressof(vec.w), "W");
-                if (!result3 && !iter.TryGetValueByKey(std::addressof(vec.w), "w")) { return false; }
+                const bool result3 = iter.TryGetValueByKey(std::addressof(vec[3]), "W");
+                if (!result3 && !iter.TryGetValueByKey(std::addressof(vec[3]), "w")) { return false; }
             }
             *vector = vec;
             return true;
@@ -49,18 +49,18 @@ namespace vp::util {
             requires (T::cIsVectorType)
         ALWAYS_INLINE bool ParseByamlVectorDictionaryUpperCaseImpl(T *vector, vp::res::ByamlIterator iter) {
             T vec;
-            const bool result0 = iter.TryGetValueByKey(std::addressof(vec.x), "X");
+            const bool result0 = iter.TryGetValueByKey(std::addressof(vec[0]), "X");
             if (!result0) { return false; }
             if constexpr (1 < T::cVectorCount) {
-                const bool result1 = iter.TryGetValueByKey(std::addressof(vec.y), "Y");
+                const bool result1 = iter.TryGetValueByKey(std::addressof(vec[1]), "Y");
                 if (!result1) { return false; }
             }
             if constexpr (2 < T::cVectorCount) {
-                const bool result2 = iter.TryGetValueByKey(std::addressof(vec.z), "Z");
+                const bool result2 = iter.TryGetValueByKey(std::addressof(vec[2]), "Z");
                 if (!result2) { return false; }
             }
             if constexpr (3 < T::cVectorCount) {
-                const bool result3 = iter.TryGetValueByKey(std::addressof(vec.w), "W");
+                const bool result3 = iter.TryGetValueByKey(std::addressof(vec[3]), "W");
                 if (!result3) { return false; }
             }
             *vector = vec;
@@ -70,18 +70,18 @@ namespace vp::util {
             requires (T::cIsVectorType)
         ALWAYS_INLINE bool ParseByamlVectorDictionaryLowerCaseImpl(T *vector, vp::res::ByamlIterator iter) {
             T vec;
-            const bool result0 = iter.TryGetValueByKey(std::addressof(vec.x), "x");
+            const bool result0 = iter.TryGetValueByKey(std::addressof(vec[0]), "x");
             if (!result0) { return false; }
             if constexpr (1 < T::cVectorCount) {
-                const bool result1 = iter.TryGetValueByKey(std::addressof(vec.y), "y");
+                const bool result1 = iter.TryGetValueByKey(std::addressof(vec[1]), "y");
                 if (!result1) { return false; }
             }
             if constexpr (2 < T::cVectorCount) {
-                const bool result2 = iter.TryGetValueByKey(std::addressof(vec.z), "z");
+                const bool result2 = iter.TryGetValueByKey(std::addressof(vec[2]), "z");
                 if (!result2) { return false; }
             }
             if constexpr (3 < T::cVectorCount) {
-                const bool result3 = iter.TryGetValueByKey(std::addressof(vec.w), "w");
+                const bool result3 = iter.TryGetValueByKey(std::addressof(vec[3]), "w");
                 if (!result3) { return false; }
             }
             *vector = vec;

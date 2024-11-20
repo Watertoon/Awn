@@ -21,7 +21,7 @@ namespace vp::util {
         s64 low = 0;
         s64 high = 0;
         asm volatile ("rdtsc\n" : "=a" (low), "=d" (high) : : );
-        vp::util::MemoryBarrierLoad();
+        vp::util::MemoryBarrierInnerRead();
         const s64 ret = (high << 32) | low;
         return ret;
     }

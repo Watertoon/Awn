@@ -66,6 +66,18 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfresVertex) == 0x58);
 
+    struct ResBfresMeshlet {
+        u64 reserve0;
+        void *runtime_meshlet_buffer_array;
+        ResGfxBufferInfo *meshlet_buffer_info_array;
+        s64 *meshlet_buffer_memory_offset_array;
+        u64 reserve1[4];
+        u32 reserve2;
+        u8 meshlet_buffer_count;
+        u8 reserve3[3];
+    };
+    static_assert(sizeof(ResBfresMeshlet) == 0x48);
+
     struct ResBfresSubMeshRange {
         u32 base_gpu_region_offset;
         u32 index_count;
@@ -111,10 +123,14 @@ namespace vp::res {
         u32                        is_bounding_consistent      : 1;
         u32                        has_vertex_buffer           : 1;
         u32                        is_skip_setup_index_buffers : 1;
-        u32                        reserve1                    : 28;
+        u32                        is_meshlet                  : 1;
+        u32                        reserve1                    : 27;
         const char                *shape_name;
         ResBfresVertex            *vertex;
-        ResBfresMesh              *mesh_array;
+        union {
+            ResBfresMesh          *mesh_array;
+            ResBfresMeshlet       *meshlet;
+        };
         u16                       *skin_bone_index_array;
         ResBfresKeyShape          *key_shape_array;
         ResNintendoWareDictionary *key_shape_dictionary;

@@ -26,7 +26,7 @@ namespace awn::async {
         std::scoped_lock l(m_queue->m_queue_mutex);
 
         const u32 new_count = m_reference_count - 1;
-        if ((m_reference_count < 1 || (m_reference_count = new_count) == 0) && m_async_task != nullptr) {
+        if ((m_reference_count < 1 || (m_reference_count = new_count, new_count == 0)) && m_async_task != nullptr) {
             m_async_task->FreeToAllocator();
             m_async_task = nullptr;
         }
@@ -42,7 +42,7 @@ namespace awn::async {
 
         /* Wait for task to finish (if not out of reference) */
         if (m_async_task != nullptr && m_async_task->m_queue != nullptr) {
-            m_async_task->m_queue->CancelTask(m_async_task);                    
+            m_async_task->m_queue->CancelTask(m_async_task, true);                    
         }
 
         /* Unreference watcher */
@@ -54,7 +54,7 @@ namespace awn::async {
     void AsyncTaskWatcher::WaitForCompletion() {
 
         /* Nothing to do if no task or queue */
-        if (m_async_task == nullptr || m_queue == nullptr) { return; }
+        if (m_queue == nullptr || m_async_task == nullptr) { return; }
 
         /* Reference watcher */
         this->Reference();

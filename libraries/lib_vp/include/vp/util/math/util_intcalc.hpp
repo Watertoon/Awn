@@ -17,33 +17,6 @@
 
 namespace vp::util {
 
-    constexpr Vector2i operator+(const Vector2i &left, const Vector2i &right) {
-        const Vector2i out = { .vector = left.vector + right.vector };
-        return out;
-    }
-    constexpr Vector2i operator-(const Vector2i &left, const Vector2i &right) {
-        const Vector2i out = { .vector = left.vector - right.vector };
-        return out;
-    }
-
-    constexpr Vector3i operator+(const Vector3i &left, const Vector3i &right) {
-        const Vector3i out = { .vector = left.vector + right.vector };
-        return out;
-    }
-    constexpr Vector3i operator-(const Vector3i &left, const Vector3i &right) {
-        const Vector3i out = { .vector = left.vector - right.vector };
-        return out;
-    }
-
-    constexpr Vector4i operator+(const Vector4i &left, const Vector4i &right) {
-        const Vector4i out = { .vector = left.vector + right.vector };
-        return out;
-    }
-    constexpr Vector4i operator-(const Vector4i &left, const Vector4i &right) {
-        const Vector4i out = { .vector = left.vector - right.vector };
-        return out;
-    }
-
     constexpr bool operator==(const Int2 &left, const Int2 &right) {
         const bool out = (left.x == right.x && left.y == right.y);
         return out;

@@ -24,11 +24,11 @@ namespace vp::res {
     };
 
     struct ResBfresRenderInfo {
-        const char              *render_info_name;
-        u8                       data_type;
-        u8                       reserve0;
-        u16                      reserve1;
-        u32                      reserve2;
+        const char *render_info_name;
+        u8          data_type;
+        u8          reserve0;
+        u16         reserve1;
+        u32         reserve2;
     };
     static_assert(sizeof(ResBfresRenderInfo) == 0x10);
 
@@ -86,11 +86,10 @@ namespace vp::res {
         util::Float3 translate;
     };
 
-
     enum class BfresSrtMode : u32 {
         Maya      = 0x0,
         Max       = 0x1,
-        SoftImage = 0x2, /* Deprecated? */
+        //SoftImage = 0x2, /* Deprecated */
     };
 
     struct ResBfresTextureSrt {

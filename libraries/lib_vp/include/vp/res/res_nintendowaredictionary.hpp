@@ -231,7 +231,7 @@ namespace vp::res {
         u32 TryGetEntryIndexByKey(const char *key) const {
 
             /* Dictionary search */
-            const u32         len       = (key != nullptr) ? ::strlen(key) : 0;
+            const u32         len       = (key != nullptr) ? vp::util::StringLength(key) : 0;
             s16               next_idx  = root_node.left_node;
             const ResDicNode *node_iter = std::addressof(root_node) + next_idx;
             const ResDicNode *last_iter = std::addressof(root_node);

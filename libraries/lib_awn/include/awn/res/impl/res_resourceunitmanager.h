@@ -19,7 +19,7 @@ namespace awn::res::impl {
 
     class ResourceUnitManager {
         public:
-            using ResourceUnitMap = vp::util::IntrusiveRedBlackTreeTraits<ResourceUnit, &ResourceUnit::m_resource_unit_manager_tree_node>::Tree;
+            using ResourceUnitMap = vp::util::IntrusiveRedBlackTreeHashStringTraits<ResourceUnit, &ResourceUnit::m_resource_unit_manager_tree_node>::Tree;
         private:
             ResourceUnitMap m_resource_unit_map;
             sys::Mutex m_map_cs;

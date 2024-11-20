@@ -17,12 +17,31 @@
 
 namespace vp::util {
 
-    ALWAYS_INLINE void MemoryBarrierReadWrite() {
+    constexpr ALWAYS_INLINE void MemoryBarrierInnerReadWrite() {
+        if (std::is_constant_evaluated()) { return; }
         __builtin_ia32_mfence();
         return;
     }
-    ALWAYS_INLINE void MemoryBarrierLoad() {
-        __builtin_ia32_lfence();
+
+    constexpr ALWAYS_INLINE void MemoryBarrierInnerRead() {
+        if (std::is_constant_evaluated()) { return; }
+        asm volatile(
+            ""
+            :
+            :
+            : "memory"
+        );
+        return;
+    }
+
+    constexpr ALWAYS_INLINE void MemoryBarrierInnerWrite() {
+        if (std::is_constant_evaluated()) { return; }
+        asm volatile(
+            ""
+            :
+            :
+            : "memory"
+        );
         return;
     }
 }

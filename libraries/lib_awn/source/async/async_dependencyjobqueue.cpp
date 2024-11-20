@@ -396,7 +396,7 @@ namespace awn::async {
         }
 
         /* Memory barrier */
-        vp::util::MemoryBarrierReadWrite();
+        vp::util::MemoryBarrierInnerReadWrite();
 
         return;
     }

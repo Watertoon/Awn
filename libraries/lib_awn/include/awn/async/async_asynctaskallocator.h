@@ -51,6 +51,6 @@ namespace awn::async {
             void Initialize(mem::Heap *heap, AsyncTaskCreateFunction *create_function, u32 count);
             void Finalize();
 
-            void ScheduleTask(AsyncTaskScheduleInfo *schedule_info);
+            Result ScheduleTask(AsyncTaskScheduleInfo *schedule_info);
     };
 }

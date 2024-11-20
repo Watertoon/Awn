@@ -94,11 +94,12 @@ namespace vp::res {
         None      = 0,
         Standard  = 1,
         Maya      = 2,
-        SoftImage = 3, /* Deprecated? */
+        //SoftImage = 3, /* Deprecated */
     };
     enum class BfresSkeletonRotationMode : u8 {
         Quarternion = 0,
-        EulerXYZ    = 1,
+        EulerXYZ = 1,
+        PerBoneRotationMode = 2,
     };
 
     struct ResBfresSkeleton {
@@ -117,10 +118,10 @@ namespace vp::res {
         };
         ResNintendoWareDictionary *bone_dictionary;
         ResBfresBone              *bone_array;
-        u16                       *bone_index_table;
+        u16                       *bone_index_array;
         util::FloatColumnMajor4x3 *inverse_transformation_matrix_array;
         void                      *runtime_user_pointer;
-        u16                       *mirrored_bone_index_table;
+        u16                       *mirrored_bone_index_array;
         u16                        bone_count;
         u16                        bone_count_smooth;
         u16                        bone_count_rigid;

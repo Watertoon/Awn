@@ -97,9 +97,8 @@ namespace awn::gfx::impl {
             constexpr u32 DecrementReferenceCount() { return --m_reference_count; }
 
             constexpr bool IsInRegister() const {
-                const async::AsyncTask::Status status = m_transfer_task.GetStatus();
-                if ((async::AsyncTask::Status::Uninitialized == status) || (async::AsyncTask::Status::Complete == status)) { return (m_status == Status::InRegister); }
-                if (async::AsyncTask::Status::Cancelled != status)                                                         { return true; }
+                if (m_transfer_task.IsCancelled()) { return true; }
+                if (m_transfer_task.IsComplete()) { return (m_status == Status::InRegister); }
                 return false;
             }
             constexpr bool IsRegistered() const { return m_status == Status::Registered; }
@@ -117,14 +116,14 @@ namespace awn::gfx {
         /* Fail if the memory task is still pending */
         if (m_watcher.IsPending()) { return false; }
         /* Fail if the texture unit is still in register */
-        if (m_texture_unit != nullptr && m_texture_unit->IsInRegister() == true) { return false; }
+        if (m_texture_unit != nullptr && m_texture_unit->IsInRegister()) { return false; }
         /* Succeed if the memory task got cancelled */
-        if (m_texture_unit == nullptr && m_watcher.IsCancelled() == true) { 
+        if (m_texture_unit == nullptr && m_watcher.IsCancelled()) { 
             m_status = Status::Cancelled; 
             return true; 
         }
         /* Succeed if the binder has an error result */
-        if (this->IsErrorStatus() == true) { return true; }
+        if (this->IsErrorStatus()) { return true; }
         /* Fail if the memory task did not set a texture unit */
         if (m_texture_unit == nullptr || m_status == Status::Uninitialized) { return false; }
 

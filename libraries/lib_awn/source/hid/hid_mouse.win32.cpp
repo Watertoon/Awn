@@ -71,8 +71,8 @@ namespace awn::hid {
                             //const vp::util::Float2 norm_pos = virt_rect.NormalizePointFloat(std::addressof(pos));
                             //mouse_state->x = static_cast<s32>(static_cast<float>(vp::util::cMaxU16) * norm_pos.x);
                             //mouse_state->y = static_cast<s32>(static_cast<float>(vp::util::cMaxU16) * norm_pos.y);
-                            mouse_state->position.x = pos.x;
-                            mouse_state->position.y = pos.y;
+                            mouse_state->position.x = pos[0];
+                            mouse_state->position.y = pos[1];
 
                             /* Set delta direct */
                             mouse_state->delta.x = raw_mouse->lLastX;

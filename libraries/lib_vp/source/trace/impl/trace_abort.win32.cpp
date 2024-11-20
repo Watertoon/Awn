@@ -24,7 +24,13 @@ namespace vp::trace {
         impl::AbortImpl("Method Not Implemented", func, file, line, vp::trace::ResultNotImplemented, "");
     }
     void AbortAssert(const char *func, const char *file, u32 line, const char *expr) {
-        impl::AbortImpl("Assert failed!!!", func, file, line, vp::trace::ResultAssertFailed, "Failed: %s\n", expr);
+        impl::AbortImpl("Assert failed!!!", func, file, line, vp::trace::ResultAssertFailed, "Expression: %s\n", expr);
+    }
+    void AbortResult(const char *func, const char *file, u32 line, u32 result, const char *expr) {
+        impl::AbortImpl("ResultSuccess", func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, vp::result::GetModule(result), vp::result::GetDescription(result));
+    }
+    void AbortResultExpected(const char *expected_result, const char *func, const char *file, u32 line, u32 result, const char *expr) {
+        impl::AbortImpl(expected_result, func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, vp::result::GetModule(result), vp::result::GetDescription(result));
     }
 
     namespace impl {
@@ -40,7 +46,7 @@ namespace vp::trace {
             abort_info[0] = '\0';
             ::vsnprintf(abort_info, abort_info_length, format, var_args);
             ::va_end(var_args);
-            
+
             /* Create file output */
             const int output_length = ::snprintf(nullptr, 0, "VP ABORT\nFunction: %s\n File: %s:%d\nExpected: %s\n%s", function_name, full_file_path, line_number, expected_result, abort_info);
             char *output = reinterpret_cast<char*>(::malloc(output_length));
@@ -61,7 +67,7 @@ namespace vp::trace {
                 Abort(result);
             }
             const bool write_result = ::WriteFile(crash_file, output, output_length, nullptr, nullptr);
-            if (write_result == false) {
+            if (!write_result) {
                 Abort(result);
             }
 

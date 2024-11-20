@@ -125,7 +125,7 @@ namespace awn::gfx::impl {
     void BufferUnit::RequestFinalize() {
 
         /* Cancel transfer if it's scheduled */
-        if (m_transfer_task.IsBusy()) {
+        if (m_transfer_task.IsPending()) {
             m_transfer_task.CancelTask();
         }
 

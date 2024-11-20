@@ -37,19 +37,30 @@ namespace awn::gfx::impl {
         m_shader_archive_unit_array.Initialize(heap, mgr_info->shader_archive_unit_count);
 
         /* Initialize task queues, threads, and allocator */
+        const async::AsyncQueuePerSetCount per_set_count =  {
+            .thread_count_primary = 1,
+        };
         const async::AsyncQueueInfo queue_info_memory = {
             .priority_level_count = 3,
-            .queue_thread_count   = 1,
+            .thread_set_count = 1,
+            .per_set_count_array = std::addressof(per_set_count),
         };
         m_memory_queue.Initialize(heap, std::addressof(queue_info_memory));
-        m_memory_thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(m_memory_queue), "AwnGfxMemoryThread", heap, vp::util::c16KB, mgr_info->memory_thread_priority);
+        const async::AsyncQueueThreadInfo memory_thread_info = {
+            .queue = std::addressof(m_memory_queue),
+        };
+        m_memory_thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(memory_thread_info), "AwnGfxMemoryThread", heap, vp::util::c16KB, mgr_info->memory_thread_priority);
 
         const async::AsyncQueueInfo queue_info_transfer = {
             .priority_level_count = 3,
-            .queue_thread_count   = 1,
+            .thread_set_count = 1,
+            .per_set_count_array = std::addressof(per_set_count),
         };
         m_transfer_queue.Initialize(heap, std::addressof(queue_info_transfer));
-        m_transfer_thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(m_transfer_queue), "AwnGfxTransferThread", heap, vp::util::c32KB, mgr_info->transfer_thread_priority);
+        const async::AsyncQueueThreadInfo transfer_thread_info = {
+            .queue = std::addressof(m_transfer_queue),
+        };
+        m_transfer_thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(transfer_thread_info), "AwnGfxTransferThread", heap, vp::util::c32KB, mgr_info->transfer_thread_priority);
 
         const auto task_create_lambda = [](async::AsyncTaskAllocator *allocator, mem::Heap *heap) {
             VP_UNUSED(allocator);

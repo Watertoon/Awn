@@ -14,11 +14,12 @@ namespace awn::res {
                 u32 is_allow_compression       : 1;
                 u32 is_require_heap_adjust     : 1;
                 u32 is_transient               : 1;
-                u32 is_managed                 : 1;
+                u32 is_persistant              : 1;
                 u32 is_cache_on_unload         : 1;
+                u32 is_compose                 : 1;
                 u32 compression_type           : 3;
                 u32 resource_heap_type         : 2;
-                u32 reserve0                   : 18;
+                u32 reserve0                   : 15;
             };
         };
         s32                  file_alignment;
@@ -57,30 +58,37 @@ namespace awn::res {
                 MemoryAllocationFailure     = 13,
                 NoResourceUnitOnFinalize    = 14,
             };
+            enum class Type : u8 {
+                Uninitialized = 0,
+                Load = 1,
+                Reference = 3,
+            };
         private:
             union {
-                u32 m_state_mask;
+                u8 m_state_mask;
                 struct {
-                    u32 m_is_initialized : 1;
-                    u32 m_load_guard     : 1;
-                    u32 m_is_finalize    : 1;
-                    u32 m_complete_guard : 1;
-                    u32 m_reserve0       : 28;
+                    u8 m_is_initialized : 1;
+                    u8 m_load_guard     : 1;
+                    u8 m_is_finalize    : 1;
+                    u8 m_complete_guard : 1;
+                    u8 m_reserve0       : 4;
                 };
             };
-            Status                   m_status;
-            impl::ResourceUnit      *m_resource_unit;
-            async::AsyncTaskWatcher  m_watcher;
+            Type m_type;
+            Status m_status;
+            impl::ResourceUnit *m_resource_unit;
+            async::AsyncTaskWatcher m_watcher;
         private:
             void HandleMemoryAllocationError() {/*...*/}
             void HandleResourceUnitError();
 
             void InitializeResource(ResourceUserContext *resource_user_context);
         public:
-            constexpr  ResourceBinder() : m_state_mask(), m_status(Status::Uninitialized), m_resource_unit(), m_watcher() {/*...*/}
+            constexpr  ResourceBinder() : m_state_mask(), m_type(Type::Uninitialized), m_status(Status::Uninitialized), m_resource_unit(), m_watcher() {/*...*/}
             ~ResourceBinder() { this->Release(); }
 
             void Release();
+            void ReleaseSync();
 
             Result TryLoadSync(const char *file_path, const AsyncResourceLoadInfo *bind_info);
 
@@ -99,7 +107,7 @@ namespace awn::res {
             Result ReferenceBinderSync(ResourceBinder *binder_to_reference);
             Result ReferenceLocalArchiveSync();
 
-            constexpr Resource *GetResourceDirect() const;
+            Resource *GetResourceDirect() const;
 
             constexpr Status GetStatus() const { return m_status; }
             constexpr bool IsErrorStatus() const { return static_cast<u32>(Status::UnknownError) <= static_cast<u32>(m_status); }
@@ -107,10 +115,11 @@ namespace awn::res {
             constexpr bool IsLoadGuard() const { return m_load_guard; }
             constexpr bool IsCompleteGuard() const { return m_complete_guard; }
 
-            /* Defined in res_resourceunit.hpp */
-            constexpr bool IsResourceInitialized() const;
-            constexpr bool IsInLoad() const;
-            constexpr bool IsLoaded() const;
-            constexpr bool IsFailed() const;
+            constexpr bool IsReferenceBinder() const { return m_type == Type::Reference; }
+
+            bool IsResourceInitialized() const;
+            bool IsInLoad() const;
+            bool IsLoaded() const;
+            bool IsFailed() const;
     };
 }

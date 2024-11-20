@@ -20,7 +20,7 @@ namespace awn::sys {
     void MessageQueue::WaitForMessage() {
 
         /* Ensure memory coherancy on exit */
-        ON_SCOPE_EXIT { vp::util::MemoryBarrierReadWrite(); };
+        ON_SCOPE_EXIT { vp::util::MemoryBarrierInnerReadWrite(); };
 
         /* Complete if we have a message, set value to waiting unless set */
         bool result;
@@ -46,7 +46,7 @@ namespace awn::sys {
     void MessageQueue::WaitForMessageClear() {
 
         /* Ensure memory coherancy on exit */
-        ON_SCOPE_EXIT { vp::util::MemoryBarrierReadWrite(); };
+        ON_SCOPE_EXIT { vp::util::MemoryBarrierInnerReadWrite(); };
 
         /* Complete if we are clear, set value to waiting unless set */
         bool result;

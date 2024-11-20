@@ -18,23 +18,23 @@
 namespace vp::codec {
 
     ALWAYS_INLINE vp::util::v2sll Aesimc(vp::util::v2sll round_key) {
-        return __builtin_ia32_aesimc128(round_key);
+        return vp::util::v2sll{ __builtin_ia32_aesimc128(round_key.v), };
     }
 
     ALWAYS_INLINE vp::util::v2sll Aesdec(vp::util::v2sll a, vp::util::v2sll round_key) {
-        return __builtin_ia32_aesdec128(a, round_key);
+        return vp::util::v2sll{ __builtin_ia32_aesdec128(a.v, round_key.v), };
     }
 
     ALWAYS_INLINE vp::util::v2sll Aesdeclast(vp::util::v2sll a, vp::util::v2sll round_key) {
-        return __builtin_ia32_aesdeclast128(a, round_key);
+        return vp::util::v2sll{ __builtin_ia32_aesdeclast128(a.v, round_key.v), };
     }
 
     ALWAYS_INLINE vp::util::v2sll Aesenc(vp::util::v2sll a, vp::util::v2sll round_key) {
-        return __builtin_ia32_aesenc128(a, round_key);
+        return vp::util::v2sll{ __builtin_ia32_aesenc128(a.v, round_key.v), };
     }
 
     ALWAYS_INLINE vp::util::v2sll Aesenclast(vp::util::v2sll a, vp::util::v2sll round_key) {
-        return __builtin_ia32_aesenclast128(a, round_key);
+        return vp::util::v2sll{ __builtin_ia32_aesenclast128(a.v, round_key.v), };
     }
     //vp::util::v2sll Aeskeygenassist(vp::util::v2sll a, const u32 round_constant) {
     //    return __builtin_ia32_aeskeygenassist128(a, round_constant);

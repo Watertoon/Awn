@@ -49,85 +49,100 @@ namespace vp::util {
         public:
             VP_RTTI_DERIVED(LookAtCamera, Camera);
         public:
-            constexpr LookAtCamera(const Vector3f& pos, const Vector3f& at, const Vector3f& up) : Camera(), m_pos(CastVector(pos)), m_at(CastVector(at)), m_up(up) {/*...*/}
+            constexpr LookAtCamera(const Vector3f& pos, const Vector3f& at, const Vector3f& up) : Camera(), m_pos(CastVector3d(pos)), m_at(CastVector3d(at)), m_up(up) {/*...*/}
             constexpr virtual ~LookAtCamera() override {/*...*/}
 
             constexpr virtual void CalculateCameraMatrix(MatrixRowMajor4x3f *out_view_matrix) const override {
 
                 /* Calculate normalized direction */
-                Vector3f dir = CastVector(m_pos - m_at);
-                dir          = Normalize(dir);
+                Vector3f dir = CastVector3f(m_pos - m_at);
+                dir = Normalize(dir);
 
                 /* Calculate normalized right */
                 Vector3f right = Cross(m_up, dir);
-                right          = Normalize(right);
+                right = Normalize(right);
 
                 /* Calculate normalized up */
                 const Vector3f up = Cross(dir, right);
 
                 /* Set matrix */
-                out_view_matrix->array_2d[0][0] = right.x;
-                out_view_matrix->array_2d[1][0] = right.y;
-                out_view_matrix->array_2d[2][0] = right.z;
-                out_view_matrix->array_2d[0][1] = up.x;
-                out_view_matrix->array_2d[1][1] = up.y;
-                out_view_matrix->array_2d[2][1] = up.z;
-                out_view_matrix->array_2d[0][2] = dir.x;
-                out_view_matrix->array_2d[1][2] = dir.y;
-                out_view_matrix->array_2d[2][2] = dir.z;
+                (*out_view_matrix)[0,0] = right[0];
+                (*out_view_matrix)[1,0] = right[1];
+                (*out_view_matrix)[2,0] = right[2];
+                (*out_view_matrix)[0,1] = up[0];
+                (*out_view_matrix)[1,1] = up[1];
+                (*out_view_matrix)[2,1] = up[2];
+                (*out_view_matrix)[0,2] = dir[0];
+                (*out_view_matrix)[1,2] = dir[1];
+                (*out_view_matrix)[2,2] = dir[2];
 
                 /* Calculate position inline */
-                out_view_matrix->array_2d[3][0] = -(right.x * m_pos.x + right.y * m_pos.y + right.z * m_pos.z);
-                out_view_matrix->array_2d[3][1] = -(up.x    * m_pos.x + up.y    * m_pos.y + up.z    * m_pos.z);
-                out_view_matrix->array_2d[3][2] = -(dir.x   * m_pos.x + dir.y   * m_pos.y + dir.z   * m_pos.z);
+                (*out_view_matrix)[3,0] = -(right[0] * m_pos[0] + right[1] * m_pos[1] + right[2] * m_pos[2]);
+                (*out_view_matrix)[3,1] = -(up[0]    * m_pos[0] + up[1]    * m_pos[1] + up[2]    * m_pos[2]);
+                (*out_view_matrix)[3,2] = -(dir[0]   * m_pos[0] + dir[1]   * m_pos[1] + dir[2]   * m_pos[2]);
 
                 return;
             }
 
-            constexpr ALWAYS_INLINE void SetPosition(const Vector3f &new_pos) { m_pos = CastVector(new_pos); }
-            constexpr ALWAYS_INLINE void SetAt(const Vector3f &new_at)        { m_at  = CastVector(new_at); }
-
-            constexpr ALWAYS_INLINE void SetUp(const Vector3f &new_up) {
-                m_up = Normalize(new_up);
+            template <typename V>
+                requires (V::cIsVectorType && 3 <= V::cVectorCount)
+            constexpr void SetPosition(const V &new_pos) {
+                const Vector3d next = CastVector3d(new_pos);
+                m_pos = next;
             }
 
-            constexpr ALWAYS_INLINE void GetPosition(Vector3f *out_pos) const { *out_pos = CastVector(m_pos); }
-            constexpr ALWAYS_INLINE void GetAt(Vector3f *out_at)        const { *out_at  = CastVector(m_at); }
-            constexpr ALWAYS_INLINE void GetUp(Vector3f *out_up)        const { *out_up  = m_up; }
-
-            constexpr void GetRightByMatrix(Vector3f *out_right_vec) const {
-                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
-                out_right_vec->x = camera_mtx->array_2d[0][0];
-                out_right_vec->y = camera_mtx->array_2d[1][0];
-                out_right_vec->z = camera_mtx->array_2d[2][0];
+            template <typename V>
+                requires (V::cIsVectorType && 3 <= V::cVectorCount)
+            constexpr void SetAt(const Vector3f &new_at) {
+                const Vector3d next = CastVector3d(new_at);
+                m_pos = next;
             }
 
-            constexpr void GetDirectionByMatrix(Vector3f *out_look_dir_vec) const {
-                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
-                out_look_dir_vec->x = camera_mtx->array_2d[0][1];
-                out_look_dir_vec->y = camera_mtx->array_2d[1][1];
-                out_look_dir_vec->z = camera_mtx->array_2d[2][1];
+            template <typename V>
+                requires (V::cIsVectorType && 3 <= V::cVectorCount)
+            constexpr void SetUp(const V &new_up) {
+                const Vector3f cast = CastVector3f(new_up);
+                const Vector3f next = Normalize(cast);
+                m_up = next;
             }
 
-            constexpr void GetUpByMatrix(Vector3f *out_up_vec) const {
+            constexpr Vector3f GetPosition() const { return CastVector3f(m_pos); }
+            constexpr Vector3f GetAt() const {  return CastVector3f(m_at); }
+            constexpr Vector3f GetUp() const {  return m_up; }
+
+            constexpr Vector3f GetRightByMatrix() const {
                 const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
-                out_up_vec->x = camera_mtx->array_2d[0][2];
-                out_up_vec->y = camera_mtx->array_2d[1][2];
-                out_up_vec->z = camera_mtx->array_2d[2][2];
+                return Vector3f { (*camera_mtx)[1,0], (*camera_mtx)[2,0], (*camera_mtx)[3,0], };
             }
 
-            constexpr void GetWorldPositionByMatrix(Vector3f *out_world_pos_vec) const {
+            constexpr Vector3f GetDirectionByMatrix() const {
                 const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
-                out_world_pos_vec->x = (-(camera_mtx->array_2d[0][0] * camera_mtx->array_2d[3][0]) - (camera_mtx->array_2d[0][1] * camera_mtx->array_2d[3][1])) - (camera_mtx->array_2d[0][2] * camera_mtx->array_2d[3][2]);
-                out_world_pos_vec->y = (-(camera_mtx->array_2d[1][0] * camera_mtx->array_2d[3][0]) - (camera_mtx->array_2d[1][1] * camera_mtx->array_2d[3][1])) - (camera_mtx->array_2d[1][2] * camera_mtx->array_2d[3][2]);
-                out_world_pos_vec->z = (-(camera_mtx->array_2d[2][0] * camera_mtx->array_2d[3][0]) - (camera_mtx->array_2d[2][1] * camera_mtx->array_2d[3][1])) - (camera_mtx->array_2d[2][2] * camera_mtx->array_2d[3][2]);
+                return Vector3f { (*camera_mtx)[1,1], (*camera_mtx)[2,1], (*camera_mtx)[3,1], };
             }
 
-            constexpr void GetWorldPositionFromCameraPositionByMatrix(Vector3f *out_world_pos_vec, const Vector3f& camera_pos) const {
+            constexpr Vector3f GetUpByMatrix() const {
                 const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
-                out_world_pos_vec->x = camera_pos.x + camera_pos.y + camera_pos.z + (-(camera_mtx->array_2d[0][0] * camera_mtx->array_2d[3][0]) - (camera_mtx->array_2d[0][1] * camera_mtx->array_2d[3][1])) - (camera_mtx->array_2d[0][2] * camera_mtx->array_2d[3][2]);
-                out_world_pos_vec->y = camera_pos.x + camera_pos.y + camera_pos.z + (-(camera_mtx->array_2d[1][0] * camera_mtx->array_2d[3][0]) - (camera_mtx->array_2d[1][1] * camera_mtx->array_2d[3][1])) - (camera_mtx->array_2d[1][2] * camera_mtx->array_2d[3][2]);
-                out_world_pos_vec->z = camera_pos.x + camera_pos.y + camera_pos.z + (-(camera_mtx->array_2d[2][0] * camera_mtx->array_2d[3][0]) - (camera_mtx->array_2d[2][1] * camera_mtx->array_2d[3][1])) - (camera_mtx->array_2d[2][2] * camera_mtx->array_2d[3][2]);
+                return Vector3f { (*camera_mtx)[1,2], (*camera_mtx)[2,2], (*camera_mtx)[3,2], };
+            }
+
+            constexpr Vector3f GetWorldPositionByMatrix() const {
+                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
+                const Vector3f world_pos = {
+                    (-((*camera_mtx)[0,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[0,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[0,2] * (*camera_mtx)[3,2]),
+                    (-((*camera_mtx)[1,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[1,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[1,2] * (*camera_mtx)[3,2]),
+                    (-((*camera_mtx)[2,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[2,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[2,2] * (*camera_mtx)[3,2]),
+                };
+                return world_pos;
+            }
+
+            constexpr Vector3f GetWorldPositionFromCameraPositionByMatrix(const Vector3f& camera_pos) const {
+                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
+                const Vector3f world_pos = {
+                    camera_pos[0] + camera_pos[1] + camera_pos[2] + (-((*camera_mtx)[0,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[0,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[0,2] * (*camera_mtx)[3,2]),
+                    camera_pos[0] + camera_pos[1] + camera_pos[2] + (-((*camera_mtx)[1,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[1,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[1,2] * (*camera_mtx)[3,2]),
+                    camera_pos[0] + camera_pos[1] + camera_pos[2] + (-((*camera_mtx)[2,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[2,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[2,2] * (*camera_mtx)[3,2]),
+                };
+                return world_pos;
             }
     };
 }

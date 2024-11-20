@@ -132,8 +132,8 @@ namespace awn::render {
 
         /* Adjust size of window with respect to dpi */
         vp::util::Rectanglei rect_helper;
-        rect_helper.SetSize(vp::util::ConvertVector(m_update_settings.size));
-        rect_helper.SetPosition(vp::util::ConvertVector(m_update_settings.position));
+        rect_helper.SetSize(m_update_settings.size);
+        rect_helper.SetPosition(m_update_settings.position);
         RECT monitor_rect = {
             .left = rect_helper.left,
             .top = rect_helper.top,

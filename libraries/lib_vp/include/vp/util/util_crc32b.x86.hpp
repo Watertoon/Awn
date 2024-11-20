@@ -19,22 +19,22 @@ namespace vp::util {
 
 	constexpr ALWAYS_INLINE u32 Crc32b_32(u32 value, u32 accumulate) {
 
-        const v2ull constant = {0xB4E5B025F7011641, 0x00000001DB710641};
-        v2ull state = {static_cast<size_t>(value ^ accumulate) << 32, 0ull};
+        const v2sll constant = { static_cast<s64>(0xB4E5B025F7011641), static_cast<s64>(0x00000001DB710641), };
+        v2sll state = {static_cast<size_t>(value ^ accumulate) << 32, 0ull};
 
-        state = avx2::pclmulqdq(state, constant, avx2::PclmulSelectionMask(false, false));
-        state = avx2::pclmulqdq(state, constant, avx2::PclmulSelectionMask(false, true));
+        state = CarryLessMultiply2(state, constant, CarryLessMultiply2SelectionMask(false, false));
+        state = CarryLessMultiply2(state, constant, CarryLessMultiply2SelectionMask(false, true));
 
         return static_cast<u32>(state[1]);
     }
 
     constexpr ALWAYS_INLINE u32 Crc32b_64(u64 value, u32 accumulate) {
 
-        const v2ull constant = {0xB4E5B025F7011641, 0x00000001DB710641};
-        v2ull state = {value ^ accumulate, 0ull};
+        const v2sll constant = { static_cast<s64>(0xB4E5B025F7011641), static_cast<s64>(0x00000001DB710641), };
+        v2sll state = {static_cast<size_t>(value ^ accumulate) << 32, 0ull};
 
-        state = avx2::pclmulqdq(state, constant, avx2::PclmulSelectionMask(false, false));
-        state = avx2::pclmulqdq(state, constant, avx2::PclmulSelectionMask(false, true));
+        state = CarryLessMultiply2(state, constant, CarryLessMultiply2SelectionMask(false, false));
+        state = CarryLessMultiply2(state, constant, CarryLessMultiply2SelectionMask(false, true));
 
         return static_cast<u32>(state[1]);
     }

@@ -20,6 +20,8 @@ namespace vp::util {
     template <typename T, u32 Count>
     class FixedPointerArray {
         public:
+            static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
+        public:
             class Iterator {
                 private:
                     T **m_array;
@@ -87,10 +89,12 @@ namespace vp::util {
                 return m_array[index];
             }
 
-            constexpr ALWAYS_INLINE void PushPointer(T *pointer) {
+            constexpr ALWAYS_INLINE u32 PushPointer(T *pointer) {
                 VP_ASSERT(m_used_count < Count);
                 m_array[m_used_count] = pointer;
-                ++m_used_count;
+                const u32 index = m_used_count;
+                m_used_count = index + 1;
+                return index;
             }
 
             constexpr ALWAYS_INLINE T *PopPointer() {
@@ -107,15 +111,21 @@ namespace vp::util {
                 VP_ASSERT(move_element_index <= m_used_count);
 
                 if (move_element_count != 0) {
-                    ::memmove(std::addressof(m_array[base_index], std::addressof(m_array[move_element_index]), move_element_count * sizeof(T**)));
+                    ::memmove(std::addressof(m_array[base_index]), std::addressof(m_array[move_element_index]), move_element_count * sizeof(T**));
                 }
                 m_used_count = m_used_count - number_of_elements;
 
                 return;
             }
 
-            void Clear() { m_used_count = 0; }
+            constexpr void Clear() { m_used_count = 0; }
 
+            constexpr u32 FindIndexOf(const T *pointer) const {
+                for (u32 i = 0; i < m_used_count; ++i) {
+                    if (m_array[i] == pointer) { return i; }
+                }
+                return cInvalidEntryIndex;
+            }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return Count; }
 

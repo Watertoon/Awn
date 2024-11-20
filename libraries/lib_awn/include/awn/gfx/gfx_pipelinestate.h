@@ -171,14 +171,14 @@ namespace awn::gfx {
     };
 
     struct ViewportState {
-        vp::util::Vector2f position;
-        vp::util::Vector2f extents;
-        vp::util::Vector2f depth_range;
+        vp::util::Float2 position;
+        vp::util::Float2 extents;
+        vp::util::Float2 depth_range;
     };
 
     struct ScissorState {
-        vp::util::Vector2i position;
-        vp::util::Vector2i extents;
+        vp::util::Int2 position;
+        vp::util::Int2 extents;
     };
 
     struct ViewportScissorState {

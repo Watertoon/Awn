@@ -19,6 +19,8 @@ namespace vp::util {
 
     template <typename T>
     class PointerArrayAllocator {
+        public:
+            static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
         private:
             static constexpr size_t cPaddingSize = (sizeof(T) < sizeof(size_t)) ? sizeof(size_t) : (sizeof(T) - sizeof(void*)) & ~(alignof(T) - 1);
             struct FreeList {
@@ -97,7 +99,9 @@ namespace vp::util {
             
             void Initialize(imem::IHeap *heap, u32 array_size) {
 
-                VP_ASSERT(array_size != 0);
+                VP_ASSERT(m_max_count == 0);
+                if (array_size < 1) { return; }
+                VP_ASSERT(array_size < 0xffff'ffff);
 
                 /* Allocate memory for both arrays */
                 uintptr_t memory = reinterpret_cast<uintptr_t>(::operator new((sizeof(FreeList) + sizeof(T**)) * array_size, heap, alignof(T)));
@@ -176,6 +180,12 @@ namespace vp::util {
                 m_used_count = 0;
             }
 
+            constexpr u32 FindIndexOf(const T *pointer) const {
+                for (u32 i = 0; i < m_used_count; ++i) {
+                    if (m_array[i] == pointer) { return i; }
+                }
+                return cInvalidEntryIndex;
+            }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return m_max_count; }
 

@@ -34,46 +34,59 @@ namespace vp::util {
             };
         };
 
-        constexpr Vector2<T> GetPosition() const {
-            const T x = (left + right) / static_cast<T>(2);
-            const T y = (top + bottom) / static_cast<T>(2);
-            return Vector2<T>{ x, y };
-        }
-        constexpr Vector2<T> GetSize() const {
-            const T w = right - left;
-            const T h = top - bottom;
-            return Vector2<T>{ w, h };
+        template <typename V>
+            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+        constexpr V GetPosition() const {
+            using Type = typename V::UnderlyingType;
+            const Type x = static_cast<Type>(this->left + this->right) / static_cast<Type>(2);
+            const Type y = static_cast<Type>(this->top + this->bottom) / static_cast<Type>(2);
+            return V{ x, y, };
         }
 
-        constexpr void SetPosition(const Vector2<T> position) {
-            const Vector2<T> size = this->GetSize();
-            const T next_l = position.x - (size.x / static_cast<T>(2));
-            const T next_t = position.y - (size.y / static_cast<T>(2));
-            const T next_r = position.x + (size.x / static_cast<T>(2));
-            const T next_b = position.y + (size.y / static_cast<T>(2));
-            left   = next_l;
-            top    = next_t;
-            right  = next_r;
-            bottom = next_b;
+        template <typename V>
+            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+        constexpr V GetSize() const {
+            using Type = typename V::UnderlyingType;
+            const Type w = static_cast<T>(right - left);
+            const Type h = static_cast<T>(top - bottom);
+            return V{ w, h, };
         }
 
-        constexpr void SetSize(const Vector2<T> size) {
-            const Vector2<T> position = this->GetPosition();
-            const T next_l = position.x - (size.x / static_cast<T>(2));
-            const T next_t = position.y - (size.y / static_cast<T>(2));
-            const T next_r = position.x + (size.x / static_cast<T>(2));
-            const T next_b = position.y + (size.y / static_cast<T>(2));
-            left   = next_l;
-            top    = next_t;
-            right  = next_r;
-            bottom = next_b;
+        template <typename V>
+            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+        constexpr void SetPosition(const V &position) {
+            using Type = typename V::UnderlyingType;
+            const V size = this->GetSize<V>();
+            const Type next_l = position[0] - (size[0] / static_cast<Type>(2));
+            const Type next_t = position[1] - (size[1] / static_cast<Type>(2));
+            const Type next_r = position[0] + (size[0] / static_cast<Type>(2));
+            const Type next_b = position[1] + (size[1] / static_cast<Type>(2));
+            this->left   = static_cast<T>(next_l);
+            this->top    = static_cast<T>(next_t);
+            this->right  = static_cast<T>(next_r);
+            this->bottom = static_cast<T>(next_b);
+        }
+
+        template <typename V>
+            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+        constexpr void SetSize(const V &size) {
+            using Type = typename V::UnderlyingType;
+            const V position = this->GetPosition<V>();
+            const Type next_l = position[0] - (size[0] / static_cast<Type>(2));
+            const Type next_t = position[1] - (size[1] / static_cast<Type>(2));
+            const Type next_r = position[0] + (size[0] / static_cast<Type>(2));
+            const Type next_b = position[1] + (size[1] / static_cast<Type>(2));
+            this->left   = static_cast<T>(next_l);
+            this->top    = static_cast<T>(next_t);
+            this->right  = static_cast<T>(next_r);
+            this->bottom = static_cast<T>(next_b);
         }
 
         constexpr bool IsOverlapping(const Rectangle *overlapping_rect) const {
-            const T left_l   = left;
-            const T top_l    = top;
-            const T right_l  = right;
-            const T bottom_l = bottom;
+            const T left_l   = this->left;
+            const T top_l    = this->top;
+            const T right_l  = this->right;
+            const T bottom_l = this->bottom;
             const T left_r   = overlapping_rect->left;
             const T top_r    = overlapping_rect->top;
             const T right_r  = overlapping_rect->right;
@@ -87,14 +100,16 @@ namespace vp::util {
             return result;
         }
 
-        constexpr bool IsOverlapping(const Vector2<T> position) const {
-            const T left_l   = left;
-            const T top_l    = top;
-            const T right_l  = right;
-            const T bottom_l = bottom;
+        template <typename V>
+            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+        constexpr bool IsOverlapping(const V &position) const {
+            const T left_l   = this->left;
+            const T top_l    = this->top;
+            const T right_l  = this->right;
+            const T bottom_l = this->bottom;
 
-            const T x = position.x;
-            const T y = position.y;
+            const T x = static_cast<T>(position[0]);
+            const T y = static_cast<T>(position[1]);
 
             /* Check X and Y is in bounds */
             const bool is_hit_x = (x < right_l) & (left_l < x);
@@ -105,10 +120,10 @@ namespace vp::util {
         }
 
         constexpr bool IsTouching(const Rectangle *touching_rect) const {
-            const T left_l   = left;
-            const T top_l    = top;
-            const T right_l  = right;
-            const T bottom_l = bottom;
+            const T left_l   = this->left;
+            const T top_l    = this->top;
+            const T right_l  = this->right;
+            const T bottom_l = this->bottom;
             const T left_r   = touching_rect->left;
             const T top_r    = touching_rect->top;
             const T right_r  = touching_rect->right;
@@ -126,10 +141,10 @@ namespace vp::util {
         }
 
         constexpr bool TryReject(Rectangle *out_reject_rect, const Rectangle *overlapping_rect) {
-            const T left_l   = left;
-            const T top_l    = top;
-            const T right_l  = right;
-            const T bottom_l = bottom;
+            const T left_l   = this->left;
+            const T top_l    = this->top;
+            const T right_l  = this->right;
+            const T bottom_l = this->bottom;
             const T left_r   = overlapping_rect->left;
             const T top_r    = overlapping_rect->top;
             const T right_r  = overlapping_rect->right;
@@ -346,26 +361,31 @@ namespace vp::util {
             return false;
         }
 
-        constexpr Vector2<T> ClampPoint(const Vector2<T> position) const {
+        template <typename V>
+            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+        constexpr V ClampPoint(const V &position) const {
 
             /* Clamp position to rect */
-            const T pos_x   = position.x;
-            const T pos_y   = position.y;
+            using Type = typename V::UnderlyingType;
+            const T pos_x   = static_cast<T>(position[0]);
+            const T pos_y   = static_cast<T>(position[1]);
             const T min_x   = vp::util::Max(left, pos_x);
             const T min_y   = vp::util::Max(top, pos_y);
             const T clamp_x = vp::util::Min(right, min_x);
             const T clamp_y = vp::util::Min(bottom, min_y);
 
-            return { clamp_x, clamp_y, };
+            return V{ static_cast<Type>(clamp_x), static_cast<Type>(clamp_y), };
         }
 
-        constexpr vp::util::Float2 NormalizePointFloat(const Vector2<T> position) const {
+        template <typename V>
+            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+        constexpr vp::util::Float2 NormalizePointFloat(const V &position) const {
 
             /* Convert to normalized floating point */
-            Vector2<T>  point = this->ClampPoint(position);
-            Vector2<T>  size  = this->GetSize();
-            const float logical_x = static_cast<float>(point.x) / static_cast<float>(size.x);
-            const float logical_y = static_cast<float>(point.y) / static_cast<float>(size.y);
+            V point = this->ClampPoint(position);
+            V size = this->GetSize();
+            const float logical_x = static_cast<float>(point[0]) / static_cast<float>(size[0]);
+            const float logical_y = static_cast<float>(point[1]) / static_cast<float>(size[1]);
 
             return { logical_x, logical_y, };
         }

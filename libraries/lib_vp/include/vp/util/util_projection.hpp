@@ -20,20 +20,20 @@ namespace vp::util {
     class Projection {
         protected:
             MatrixRowMajor4x4f m_projection_matrix;
-            bool               m_requires_update;
+            bool m_is_require_update;
         public:
             VP_RTTI_BASE(Projection);
         public:
-            constexpr Projection() : m_requires_update(true) {/*...*/}
+            constexpr Projection() : m_is_require_update(true) {/*...*/}
             constexpr virtual ~Projection() {/*...*/}
 
             constexpr void UpdateProjectionMatrixSelf() {
                 this->UpdateMatrix(std::addressof(m_projection_matrix));
-                m_requires_update = false;
+                m_is_require_update = false;
             }
 
             constexpr MatrixRowMajor4x4f *GetProjectionMatrix() {
-                if (m_requires_update == true) {
+                if (m_is_require_update) {
                     this->UpdateProjectionMatrixSelf();
                 }
                 return std::addressof(m_projection_matrix);
@@ -65,34 +65,20 @@ namespace vp::util {
             constexpr virtual ~FrustumProjection() override {/*...*/}
 
             constexpr virtual void UpdateMatrix(MatrixRowMajor4x4f *out_proj_matrix) const override {
+
                 const float reciprocal_a = 1.0f / (m_right + m_left);
-                const Vector4f row1 = {
-                    (m_near + m_near) *  reciprocal_a,
-                    0.0f,
-                    (m_left + m_right) * reciprocal_a,
-                    0.0f
-                };
-                out_proj_matrix->array_row[0] = row1;
-
                 const float reciprocal_b = 1.0f / (m_top - m_bottom);
-                const Vector4f row2 = {
-                    0.0f,
-                    (m_near + m_near) * reciprocal_b,
-                    (m_top + m_bottom) * reciprocal_b,
-                    0.0f
-                };
-                out_proj_matrix->array_row[1] = row2;
-
                 const float reciprocal_c = 1.0f / (m_far - m_near);
-                const Vector4f row3 = {
-                    0.0f,
-                    0.0f,
-                    -((m_near + m_far) * reciprocal_c),
-                    -((m_far + m_far) * m_near * reciprocal_c)
-                };
-                out_proj_matrix->array_row[2] = row3;
 
-                out_proj_matrix->array_row[3] = { 0.0f, 0.0f, -1.0f, 0.0f };
+                const v4f row0 = { (m_near + m_near) *  reciprocal_a, 0.0f,                            (m_left + m_right) * reciprocal_a,  0.0f, };
+                const v4f row1 = { 0.0f,                              (m_near + m_near) * reciprocal_b, (m_top + m_bottom) * reciprocal_b, 0.0f, };
+                const v4f row2 = { 0.0f,                              0.0f,                            -((m_near + m_far) * reciprocal_c), -((m_far + m_far) * m_near * reciprocal_c), };
+                const v4f row3 = { 0.0f,                              0.0f,                            -1.0f,                              0.0f };
+
+                StoreRow(out_proj_matrix, row0, 0);
+                StoreRow(out_proj_matrix, row1, 1);
+                StoreRow(out_proj_matrix, row2, 2);
+                StoreRow(out_proj_matrix, row3, 3);
             }
     };
 
@@ -107,42 +93,27 @@ namespace vp::util {
             constexpr virtual ~PerspectiveProjection() override {/*...*/}
 
             constexpr virtual void UpdateMatrix(MatrixRowMajor4x4f *out_proj_matrix) const override {
-                const Vector4f row1 = {
-                    1.0f / (m_right * m_fov_x),
-                    0.0f,
-                    0.0f,
-                    0.0f
-                };
-                out_proj_matrix->array_row[0] = row1;
-
-                const Vector4f row2 = {
-                    0.0f,
-                    1.0f / m_right,
-                    0.0f,
-                    0.0f
-                };
-                out_proj_matrix->array_row[1] = row2;
 
                 const float reciprocal_c = 1.0f / (m_far - m_near);
-                const Vector4f row3 = {
-                    0.0f,
-                    0.0f,
-                    -((m_near + m_far) * reciprocal_c),
-                    -((m_far + m_far) * m_near * reciprocal_c)
-                };
-                out_proj_matrix->array_row[2] = row3;
+                const v4f row0 = { 1.0f / (m_right * m_fov_x), 0.0f,           0.0f,                               0.0f, };
+                const v4f row1 = { 0.0f,                       1.0f / m_right, 0.0f,                               0.0f, };
+                const v4f row2 = { 0.0f,                       0.0f,           -((m_near + m_far) * reciprocal_c), -((m_far + m_far) * m_near * reciprocal_c), };
+                const v4f row3 = { 0.0f,                       0.0f,           -1.0f,                              0.0f };
 
-                out_proj_matrix->array_row[3] = { 0.0f, 0.0f, -1.0f, 0.0f };
+                StoreRow(out_proj_matrix, row0, 0);
+                StoreRow(out_proj_matrix, row1, 1);
+                StoreRow(out_proj_matrix, row2, 2);
+                StoreRow(out_proj_matrix, row3, 3);
             }
 
             void SetAspect(float new_aspect) {
                 m_fov_x = new_aspect;
-                m_requires_update = true;
+                m_is_require_update = true;
             }
 
             void SetFovX(float new_fov_x) {
                 m_fov_x = ::tanf(new_fov_x * 0.5f) / m_right;
-                m_requires_update = true;
+                m_is_require_update = true;
             }
     };
 }

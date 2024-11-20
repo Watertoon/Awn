@@ -56,8 +56,8 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE T operator[](u32 index) {
-                if (index < m_count) {
-                    VP_ASSERT(index < m_count);
+                if (index <= m_count) {
+                    VP_ASSERT(index <= m_count);
                     index = 0;
                     VP_ASSERT(0 < m_max);
                 }
@@ -65,8 +65,8 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE const T operator[](u32 index) const {
-                if (index < m_count) {
-                    VP_ASSERT(index < m_count);
+                if (index <= m_count) {
+                    VP_ASSERT(index <= m_count);
                     index = 0;
                     VP_ASSERT(0 < m_max);
                 }
@@ -137,7 +137,7 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE T PopValue() {
-                T ret                = m_array[m_count - 1];
+                T ret = m_array[m_count - 1];
                 m_array[m_count - 1] = nullptr;
                 --m_count;
                 return ret;
@@ -150,7 +150,7 @@ namespace vp::util {
                 VP_ASSERT(move_element_index <= m_count);
 
                 if (move_element_count != 0) {
-                    ::memmove(std::addressof(m_array[base_index], std::addressof(m_array[move_element_index]), move_element_count * sizeof(T)));
+                    ::memmove(std::addressof(m_array[base_index]), std::addressof(m_array[move_element_index]), move_element_count * sizeof(T));
                 }
                 m_count = m_count - number_of_elements;
 

@@ -39,8 +39,8 @@ namespace awn::para {
         requires (std::is_same<T, const char*>::value) || (std::is_same<T, bool>::value) || (std::is_same<T, float>::value) || (std::is_same<T, double>::value)
         || (std::is_same<T, s8>::value) || (std::is_same<T, s16>::value) || (std::is_same<T, s32>::value) || (std::is_same<T, s64>::value)
         || (std::is_same<T, u8>::value) || (std::is_same<T, u16>::value) || (std::is_same<T, u32>::value) || (std::is_same<T, u64>::value)
-        || (std::is_same<T, vp::util::Float3>::value) || (std::is_same<T, vp::util::Int3>::value) || (std::is_same<T, vp::util::FloatRowMajor3x3>::value) || (std::is_same<T, vp::util::FloatRowMajor4x3>::value)
-        || (std::is_same<T, vp::util::Quaternionf>::value) || (std::is_same<T, vp::util::Color4f>::value) || (std::is_same<T, void*>::value)
+        || (std::is_same<T, vp::util::Float3>::value) || (std::is_same<T, vp::util::Int3>::value) || (std::is_same<T, vp::util::FloatColumnMajor3x3>::value) || (std::is_same<T, vp::util::FloatColumnMajor4x3>::value)
+        || (std::is_same<T, vp::util::Float4>::value) || (std::is_same<T, vp::util::Color4f>::value) || (std::is_same<T, void*>::value)
     constexpr bool TIsBlackboardCompatible() {
         return true;
     }
@@ -122,11 +122,11 @@ namespace awn::para {
                 return std::addressof(this->info_vector3f);
             } else if constexpr (std::is_same<T, vp::util::Int3>::value) {
                 return std::addressof(this->info_vector3i);
-            } else if constexpr (std::is_same<T, vp::util::FloatRowMajor3x3>::value) {
+            } else if constexpr (std::is_same<T, vp::util::FloatColumnMajor3x3>::value) {
                 return std::addressof(this->info_matrix33f);
-            } else if constexpr (std::is_same<T, vp::util::FloatRowMajor4x3>::value) {
+            } else if constexpr (std::is_same<T, vp::util::FloatColumnMajor4x3>::value) {
                 return std::addressof(this->info_matrix34f);
-            } else if constexpr (std::is_same<T, vp::util::Quaternionf>::value) {
+            } else if constexpr (std::is_same<T, vp::util::Float4>::value) {
                 return std::addressof(this->info_quaternionf);
             } else if constexpr (std::is_same<T, vp::util::Color4f>::value) {
                 return std::addressof(this->info_color4f);
@@ -193,9 +193,9 @@ namespace awn::para {
             double value_double;
             vp::util::Int3 value_vector3i;
             vp::util::Color4f value_color4f;
-            vp::util::FloatRowMajor3x3 value_matrix33f;
-            vp::util::FloatRowMajor4x3 value_matrix34f;
-            vp::util::Quaternionf value_quaternionf;
+            vp::util::FloatColumnMajor3x3 value_matrix33f;
+            vp::util::FloatColumnMajor4x3 value_matrix34f;
+            vp::util::Float4 value_quaternionf;
             BlackboardCustomTypeBase *value_custom_type;
         };
     };

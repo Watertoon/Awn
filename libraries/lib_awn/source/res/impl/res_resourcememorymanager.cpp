@@ -48,14 +48,14 @@ namespace awn::res::impl {
     bool ResourceMemoryManager::FreeFromCache(size_t target_size) {
 
         std::scoped_lock l(m_memory_mgr_mutex);
-        
+
         while (m_resource_unit_free_cache_list.IsEmpty() == true) {
             ResourceUnit *resource_unit = std::addressof(m_resource_unit_free_cache_list.PopBack());
-            if (resource_unit->m_is_freeable_for_memory_manager == false) { continue; }
-            
+            if (!resource_unit->m_state.GetBit(ResourceUnit::State_IsFreeableForMemoryManager)) { continue; }
+
             resource_unit->UnregisterFromResourceUnitManager();
             AsyncResourceManager::GetInstance()->RemoveResourceUnitFromFinalizeList(resource_unit);
-            
+
             m_max_allocatable_size = 0;
             AsyncResourceManager::GetInstance()->FinalizeResourceUnitSync(resource_unit);
             if (m_max_allocatable_size < target_size) { return true; }
@@ -67,15 +67,15 @@ namespace awn::res::impl {
     void ResourceMemoryManager::ClearCacheForAllocate(u32 count) {
 
         std::scoped_lock l(m_memory_mgr_mutex);
-        
+
         while (0 < count && m_resource_unit_free_cache_list.IsEmpty() == false) {
             --count;
             ResourceUnit *resource_unit = std::addressof(m_resource_unit_free_cache_list.PopBack());
-            if (resource_unit->m_is_freeable_for_memory_manager == false) { continue; }
-            
+            if (!resource_unit->m_state.GetBit(ResourceUnit::State_IsFreeableForMemoryManager)) { continue; }
+
             resource_unit->UnregisterFromResourceUnitManager();
             AsyncResourceManager::GetInstance()->RemoveResourceUnitFromFinalizeList(resource_unit);
-            
+
             m_max_allocatable_size = 0;
             AsyncResourceManager::GetInstance()->FinalizeResourceUnitSync(resource_unit);
         }

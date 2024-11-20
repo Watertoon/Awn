@@ -87,7 +87,10 @@ namespace awn::sys {
             }
             virtual void ExitThread(ExitType exit_type) override {
                 this->ThreadBase::ExitThread(exit_type);
-                ::CloseHandle(m_waitable_timer_for_sleep);
+                if (m_waitable_timer_for_sleep != nullptr) {                    
+                    ::CloseHandle(m_waitable_timer_for_sleep);
+                    m_waitable_timer_for_sleep = nullptr;
+                }
             }
             virtual void WaitForThreadExit() override {
                 s32 result0 = ::WaitForSingleObject(m_handle, INFINITE);
@@ -112,6 +115,10 @@ namespace awn::sys {
 
                 const u32 result0 = ::WaitForSingleObject(m_waitable_timer_for_sleep, INFINITE);
                 VP_ASSERT(result0 == WAIT_OBJECT_0);
+            }
+
+            virtual void YieldThread() override {
+                ::SwitchToThread();
             }
 
             virtual void SetPriority(s32 priority) override {

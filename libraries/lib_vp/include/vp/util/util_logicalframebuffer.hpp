@@ -32,30 +32,21 @@ namespace vp::util {
             }
 
             void SetVirtualCanvasSize(float x, float y) {
-                Vector2f temp = {x, y};
+                Vector2f temp = { x, y, };
                 m_virtual_size = temp;
             }
 
             void SetDimensions(float x, float y) {
-                Vector2f temp = {x, y};
+                Vector2f temp = { x, y, };
                 m_dimensions = temp;
             }
 
-            constexpr void GetVirtualCanvasSize(float *out_x, float *out_y) const {
-                *out_x = m_virtual_size.x;
-                *out_y = m_virtual_size.y;
+            constexpr Vector2f GetVirtualCanvasSize() const {
+                return m_virtual_size;
             }
 
-            constexpr void GetDimensions(float *out_x, float *out_y) const {
-                *out_x = m_dimensions.x;
-                *out_y = m_dimensions.y;
-            }
-            constexpr void GetVirtualCanvasSize(vp::util::Vector2f *out_vec2f) const {
-                *out_vec2f = m_virtual_size;
-            }
-
-            constexpr void GetDimensions(vp::util::Vector2f *out_vec2f) const {
-                *out_vec2f = m_dimensions;
+            constexpr Vector2f GetDimensions() const {
+                return m_dimensions;
             }
     };
 }

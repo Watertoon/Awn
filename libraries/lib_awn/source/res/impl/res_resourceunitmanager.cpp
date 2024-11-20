@@ -49,8 +49,11 @@ namespace awn::res::impl {
     }
 
     ResourceUnit *ResourceUnitManager::FindResourceUnit(const char *path) {
-        const u32 hash = vp::util::HashCrc32b(path);
+        const vp::util::HashString<u32> hash_string = {
+            .hash = vp::util::HashCrc32b(path),
+            .string = path,
+        };
         std::scoped_lock l(m_map_cs);
-        return m_resource_unit_map.Find(hash);
+        return m_resource_unit_map.Find(hash_string);
     }
 }

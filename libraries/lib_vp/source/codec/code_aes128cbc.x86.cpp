@@ -39,7 +39,7 @@ namespace vp::codec {
             const vp::util::v2sll input_i = *input;
             vp::util::v2sll       round_iter;
 
-            round_iter = input_i ^ round_key9;
+            round_iter = vp::util::v2sll{ .v = input_i.v ^ round_key9.v, };
             round_iter = Aesdec(round_iter, round_key8);
             round_iter = Aesdec(round_iter, round_key7);
             round_iter = Aesdec(round_iter, round_key6);
@@ -49,7 +49,7 @@ namespace vp::codec {
             round_iter = Aesdec(round_iter, round_key2);
             round_iter = Aesdec(round_iter, round_key1);
             round_iter = Aesdec(round_iter, round_key0);
-            *output    = iv_iter ^ Aesdeclast(round_iter, key);
+            *output    = vp::util::v2sll{ .v = iv_iter.v ^ Aesdeclast(round_iter, key).v };
 
             /* Advance iters */
             output  = output + 1;
@@ -97,7 +97,7 @@ namespace vp::codec {
             /* Perform ten rounds of aes decryption on input */
             const vp::util::v2sll input_i = *input;
             vp::util::v2sll       round_iter;
-            round_iter = input_i ^ key ^ iv_iter;
+            round_iter = vp::util::v2sll{ .v = input_i.v ^ key.v ^ iv_iter.v };
             round_iter = Aesenc(round_iter,     round_key0);
             round_iter = Aesenc(round_iter,     round_key1);
             round_iter = Aesenc(round_iter,     round_key2);

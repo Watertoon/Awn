@@ -439,6 +439,25 @@ namespace vp::util {
     }
 
     template <class RP, auto M>
-        requires (std::is_same<typename vp::util::MemberType<M>::key_type, const char*>::value == true || std::is_same<typename vp::util::MemberType<M>::key_type, char*>::value == true)
+        requires (std::is_same_v<typename vp::util::MemberType<M>::key_type, const char*> || std::is_same_v<typename vp::util::MemberType<M>::key_type, char*>)
     using IntrusiveRedBlackTreeStringTraits = IntrusiveRedBlackTreeTraits<RP, M, RedBlackTreeDefaultStringCompare<typename vp::util::MemberType<M>::key_type>>;
+
+    template <typename T>
+    struct HashString {
+        using HashType = T;
+
+        HashType hash;
+        const char *string;
+    };
+
+    template <typename T>
+    constexpr ALWAYS_INLINE std::strong_ordering RedBlackTreeDefaultHashStringCompare(const T &rhs, const T &lhs) {
+        if (lhs.hash > rhs.hash) { return std::strong_ordering::greater; }
+        if (lhs.hash < rhs.hash) { return std::strong_ordering::less; }
+        return ConvertComparisionToStrongOrdering(::strcmp(lhs.string, rhs.string));
+    }
+
+    template <class RP, auto M>
+        requires (std::is_same_v<typename vp::util::MemberType<M>::key_type, HashString<typename vp::util::MemberType<M>::key_type::HashType>>)
+    using IntrusiveRedBlackTreeHashStringTraits = IntrusiveRedBlackTreeTraits<RP, M, RedBlackTreeDefaultHashStringCompare<typename vp::util::MemberType<M>::key_type>>;
 }

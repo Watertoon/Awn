@@ -17,8 +17,8 @@
 
 namespace awn::res::impl {
 
-    ResourceUnit::ResourceUnit() : m_state(), m_status(Status::Uninitialized), m_reference_count(), m_deferred_adjust_count{}, m_resource_initialize_guard(), m_user_resource_size(), m_file_alignment(), m_resource_unit_manager(),
-                     m_resource_unit_manager_tree_node(), m_file_path(), m_file_device(), m_resource_factory(), m_resource_user_context(), m_archive_binder(), m_archive_resource(), m_resource(), m_load_task(), m_heap_adjust_task(), m_unload_task(), 
+    ResourceUnit::ResourceUnit() : m_state(), m_compression_flags(), m_cache_unload_flags(), m_cache_unload_no_error_flags(), m_is_part_of_resource_unit_mgr(), m_status(Status::Uninitialized), m_reference_count(), m_deferred_adjust_count{}, m_compose_reference_count(), m_resource_initialize_guard(), m_user_resource_size(), m_file_alignment(), m_resource_unit_manager(),
+                     m_resource_unit_manager_tree_node(), m_file_path(), m_file_device(), m_resource_factory(), m_resource_user_context(), m_archive_binder(), m_archive_resource(), m_resource(), m_load_task(), m_compose_task(), m_unload_task(), 
                      m_resource_heap(), m_gpu_heap(), m_memory_manager(), m_finalize_async_res_mgr_list_node(), m_memory_manager_node(), m_memory_manager_free_cache_node(), m_status_update_event(sys::SignalState::Cleared, sys::ResetMode::Manual) 
     {/*...*/}
 
@@ -31,59 +31,85 @@ namespace awn::res::impl {
         }
     }
 
+    void ResourceUnit::DecrementComposeReferenceCount() {
+
+        if (!m_compression_flags.GetBit(CompressionFlag_IsCompose) || m_reference_count != 0) { return; }
+
+        /* Lock compose queue */
+        sys::Mutex *queue_mutex = AsyncResourceManager::GetInstance()->m_queue_compose.GetQueueMutex();
+        std::scoped_lock l(*queue_mutex);
+
+        /* Decrement ref count */
+        const s32 prev_count = vp::util::InterlockedFetchAdd(std::addressof(m_compose_reference_count), -1);
+
+        /* Cancel compose or fixup ref */
+        if (prev_count == 1) {
+            m_compose_task.CancelTask();
+        } else if (prev_count < 0) {
+            m_compose_reference_count = -1;
+        }
+
+        return;
+    }
     void ResourceUnit::AdjustReferenceCount(s32 adjust_amount) {
 
         /* Adjust ref */
-        const u32 new_count = vp::util::InterlockedAdd(std::addressof(m_reference_count), adjust_amount);
+        const s32 prev_count = vp::util::InterlockedFetchAdd(std::addressof(m_reference_count), adjust_amount);
 
-        /* Remove last reference if managed, ensure last reference */
-        if (new_count == 1) {
-            this->ReleaseManagedReference();
-        } else if (new_count != 0) { return; }
+        /* Fixup negative ref */
+        if (m_reference_count == -1) {
+            /* TODO; special ref */
+            m_reference_count = 0;
+        }
 
-        /* Fail cache unload guard */
-        auto fail_cache_unload_guard = SCOPE_GUARD {
-            this->UnregisterFromResourceUnitManager();
-            m_is_cache_unload_for_no_ref = false;
-        };
+        /* Cancel compose */
+        if (0 < prev_count) {
+            this->DecrementComposeReferenceCount();
+        }
 
-        /* Complete if cache unload is not enabled */
-        if (!m_is_cache_unload || !m_is_cache_unload_for_no_ref || !m_is_cache_unload_for_no_error) { return; }
+        /* Release managed ref if last ref */
+        if (this->GetReferenceCount() != 1) {            
+            this->ReleasePersistantReference();
+        }
 
-        /* Update status for cache unload */
-        switch (m_status) {
-            case Status::Error:
-            case Status::FailedToInitializeResource:
-            case Status::FailedToPostInitializeResource:
-                /* The resource has failed */
-                break;
-            case Status::InResourceInitialize:
-            case Status::ResourceInitialized:
-                /* Wait for resource to initialize, ensure success */
-                m_status_update_event.Wait();
-                if (m_status == Status::FailedToPostInitializeResource) { return; }
-                [[fallthrough]];
-            default:
-                fail_cache_unload_guard.Cancel();
-                break;
-        };
+        /* Unregister from unit manager if: */
+        /* >Out of reference when */
+        /* >Cache unload is not enabled or */
+        /* >We had an error */
+        if (this->GetReferenceCount() != 0) { return; }
+        Status status;
+        if (!m_state.GetBit(State_IsCacheUnload) 
+            && !m_cache_unload_flags.GetBit(CacheUnloadFlag_IsValid)
+            && !m_cache_unload_no_error_flags.GetBit(CacheUnloadNoErrorFlag_IsValid)
+            && (status = m_status, (status != Status::FailedToPostInitializeResource && status != Status::FailedToInitializeResource && status != Status::Error))) { return; }
+        this->UnregisterFromResourceUnitManager();
+        m_cache_unload_flags.ClearBit(CacheUnloadFlag_IsValid);
 
         return;
     }
 
     void ResourceUnit::IncrementReference() {
         vp::util::InterlockedIncrement(std::addressof(m_reference_count));
-        m_is_freeable_for_memory_manager = false;
+        m_state.ClearBit(State_IsFreeableForMemoryManager);
     }
 
     void ResourceUnit::DecrementReference() {
         vp::util::InterlockedDecrement(std::addressof(m_reference_count));
     }
 
-    void ResourceUnit::ReleaseManagedReference() {
-        if (!m_is_managed) { return; }
+    void ResourceUnit::ReleaseTransient() {
+        /* Release if transient */
+        if (m_state.GetBit(State_IsTransient)) {
+            m_state.ClearBit(State_IsTransient);
+            AsyncResourceManager::GetInstance()->RequestAdjustReference(this);
+        }
+        return;
+    }
+
+    void ResourceUnit::ReleasePersistantReference() {
+        if (!m_state.GetBit(State_IsPersistant)) { return; }
         this->DecrementReference();
-        m_is_managed = false;
+        m_state.ClearBit(State_IsPersistant);
     }
 
     void ResourceUnit::SetToBinder(ResourceBinder *resource_binder) {
@@ -94,12 +120,12 @@ namespace awn::res::impl {
     void ResourceUnit::ScheduleClearCache() {
         AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
         async::AsyncTaskPushInfo push_info = {
-            .queue_thread    = manager->m_async_queue_thread_memory,
+            .queue_thread    = manager->m_thread_memory,
             .task_function   = std::addressof(manager->m_clear_cache_exe),
             .result_function = std::addressof(manager->m_clear_cache_result),
             .priority        = 0xd,
         };
-        m_unload_task.PushTask(std::addressof(push_info));
+        RESULT_ABORT_UNLESS(m_unload_task.PushTask(std::addressof(push_info)));
     }
 
     void ResourceUnit::FinalizeIfOutOfReference() {
@@ -146,13 +172,44 @@ namespace awn::res::impl {
         /* Convert priority depending on queue */
         async::AsyncQueue *queue = m_load_task.GetQueue();
         if (queue == memory_queue) {
-            priority = (priority << 1) + (m_allow_archive_reference == true);                    
+            priority = (priority << 1) + m_state.GetBit(State_IsAllowArchiveReference);                    
         } else if (queue != load_queue) { return; }
 
         /* Change priority */
-        m_load_task.ChangePriority(priority);
+        m_load_task.AdjustPriority(priority);
 
         return;
+    }
+
+    void ResourceUnit::WaitForLoad() {
+        const bool is_compose_thread = AsyncResourceManager::GetInstance()->IsCurrentThreadComposeThread();
+        m_load_task.Wait();
+        if (is_compose_thread) {
+            m_compose_task.CancelTask();
+            return;
+        }
+        m_compose_task.Wait();
+    }
+
+    bool ResourceUnit::IsInLoad() const {
+        /* Check load task is pending */
+        if (m_load_task.IsPending()) { return true; }
+        /* Loading completed if we are the compose thread */
+        if (AsyncResourceManager::GetInstance()->IsCurrentThreadComposeThread()) { return false; }
+        /* Loading completed if the load task was cancelled */
+        if (m_load_task.IsCancelled()) { return false; }
+        /* Loading is not complete if we are composing, not the compose thread, and the compose task is pending */
+        if (m_compression_flags.GetBit(CompressionFlag_IsCompose)) { return m_compose_task.IsPending(); }
+        /* Loading is complete if the resource unit is not InLoad */
+        return m_status == Status::InLoad;
+    }
+
+    bool ResourceUnit::IsUnloadable() const {
+        /* We are unload safe if not in compose */
+        if (!m_compose_task.IsPending()) { return true; }
+        /* We are unload safe if we are the compose thread and in post execute */
+        if (m_compose_task.IsQueuedOnCurrentThread()) { return true; }
+        return false;
     }
 
     void ResourceUnit::FreeResourceHeap() {
@@ -161,23 +218,23 @@ namespace awn::res::impl {
         m_memory_manager->FreeHeap(m_resource_heap, nullptr, this);
     }
 
-    void ResourceUnit::TrackMemoryUsage() {
+    void ResourceUnit::RequestHeapAdjust() {
 
-        /* Skip tracking memory memory if external heap */
-        if (m_is_external_heap == true) { m_is_heap_adjusted = true; return; }
+        /* If we use an external heap, skip adjusting altogether */
+        if (m_state.GetBit(State_IsExternalHeap)) { 
+            m_state.SetBit(State_IsHeapAdjusted);
+            return;
+        }
 
         /* Update memory usage sync if no heap adjust is required */
-        if (m_is_heap_adjusted == true || m_is_require_heap_adjust == false) { this->UpdateMemoryUsage(); }
+        if (m_state.GetBit(State_IsHeapAdjusted) || !m_state.GetBit(State_IsRequireHeapAdjust)) {
+            this->UpdateMemoryUsage();
+            return;
+        }
 
         /* Schedule a heap adjust */
         AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
-        async::AsyncTaskPushInfo push_info = {
-            .queue_thread  = manager->m_async_queue_thread_memory,
-            .task_function = std::addressof(manager->m_heap_adjust_exe),
-            .user_data     = this,
-            .priority      = 0xe,
-        };
-        m_heap_adjust_task.PushTask(std::addressof(push_info));
+        manager->RequestHeapAdjust(this);
 
         return;
     }
@@ -185,15 +242,15 @@ namespace awn::res::impl {
     void ResourceUnit::UpdateMemoryUsage() {
 
         /* Track global */
-        if (m_is_tracked_memory_usage_global == false) {
+        if (!m_state.GetBit(State_IsTrackedMemoryGlobal)) {
             m_memory_manager->TrackMemoryUsageGlobal(m_resource_heap);
-            m_is_tracked_memory_usage_global = true;
+            m_state.SetBit(State_IsTrackedMemoryGlobal);
         }
 
-        /* Track resident */
-        if (m_is_tracked_memory_usage_active == false && m_is_freeable_for_memory_manager == false) {
+        /* Track active */
+        if (!m_state.GetBit(State_IsTrackedMemoryActive) && !m_state.GetBit(State_IsFreeableForMemoryManager)) {
             m_memory_manager->TrackMemoryUsageActive(m_resource_heap);
-            m_is_tracked_memory_usage_active = true;
+            m_state.SetBit(State_IsTrackedMemoryActive);
         }
 
         return;
@@ -201,20 +258,20 @@ namespace awn::res::impl {
 
     void ResourceUnit::ReleaseMemoryUsageGlobal() {
 
-        /* Track global */
-        if (m_is_tracked_memory_usage_global == true) {
+        /* Release global */
+        if (m_state.GetBit(State_IsTrackedMemoryGlobal)) {
             m_memory_manager->ReleaseMemoryUsageGlobal(m_resource_heap);
-            m_is_tracked_memory_usage_global = false;
+            m_state.ClearBit(State_IsTrackedMemoryGlobal);
         }
 
         return;
     }
     void ResourceUnit::ReleaseMemoryUsageActive() {
 
-        /* Track global */
-        if (m_is_tracked_memory_usage_active == true) {
+        /* Release active */
+        if (m_state.GetBit(State_IsTrackedMemoryActive)) {
             m_memory_manager->ReleaseMemoryUsageActive(m_resource_heap);
-            m_is_tracked_memory_usage_active = false;
+            m_state.ClearBit(State_IsTrackedMemoryActive);
         }
 
         return;
@@ -244,7 +301,7 @@ namespace awn::res::impl {
         if (prepare_result->resource_size == 0) { return; }
 
         /* Set file device */
-        m_file_device = (prepare_result->is_default_archive_file_device == true) ? nullptr : prepare_result->file_device;
+        m_file_device = (prepare_result->is_default_archive_file_device) ? nullptr : prepare_result->file_device;
 
         return;
     }
@@ -252,8 +309,9 @@ namespace awn::res::impl {
     size_t ResourceUnit::PrepareResourceLoad() {
         
         /* Format compression extension */
+        const CompressionType compression_type = this->GetCompressionType();
         MaxPathString path_with_compression;
-        FormatPathWithCompressionExtension(std::addressof(path_with_compression), std::addressof(m_file_path), static_cast<CompressionType>(m_compression_type));
+        FormatPathWithCompressionExtension(std::addressof(path_with_compression), std::addressof(m_file_path), compression_type);
 
         /* Lookup resource size */
         ResourceSizePrepareInfo prepare_info = {
@@ -262,7 +320,7 @@ namespace awn::res::impl {
             .archive_resource   = m_archive_resource,
             .file_device        = m_file_device,
             .resource_factory   = m_resource_factory,
-            .compression_type   = static_cast<CompressionType>(m_compression_type),
+            .compression_type   = compression_type,
             .formatted_path     = path_with_compression.GetString(),
             .original_path      = m_file_path.GetString(),
         };
@@ -274,7 +332,8 @@ namespace awn::res::impl {
         if (prepare_result.resource_size == 0) {
 
             /* Nothing else to try if no archive or compresion */
-            if (m_allow_archive_reference == false && static_cast<CompressionType>(m_compression_type) == CompressionType::None) { return 0; }
+            const CompressionType comp_type = this->GetCompressionType();
+            if (!m_state.GetBit(State_IsAllowArchiveReference) && comp_type == CompressionType::None) { return 0; }
 
             /* Get auto compression type */
             MaxExtensionString extension;
@@ -282,25 +341,25 @@ namespace awn::res::impl {
             const CompressionType auto_comp_type = manager->GetCompressionTypeByExtension(std::addressof(extension));
 
             /* Try archive */
-            if (m_archive_resource != nullptr && m_allow_archive_reference == true) {
+            if (m_archive_resource != nullptr && m_state.GetBit(State_IsAllowArchiveReference)) {
 
                 /* Try archive with auto compression */
-                if (auto_comp_type != CompressionType::None && static_cast<CompressionType>(m_compression_type) == CompressionType::None) {
+                if (auto_comp_type != CompressionType::None && comp_type == CompressionType::None) {
                     FormatPathWithCompressionExtension(std::addressof(path_with_compression), std::addressof(m_file_path), auto_comp_type);
                     prepare_info.formatted_path = path_with_compression.GetString();
                     this->PrepareSizeImpl(std::addressof(prepare_result), std::addressof(prepare_info));
                     if (prepare_result.resource_size != 0) {
-                        m_compression_type = static_cast<u32>(auto_comp_type);
+                        this->SetCompressionType(auto_comp_type);
                         return prepare_result.resource_size;
                     }
                 }
 
                 /* Try archive no compression */
-                if (m_compression_type != static_cast<u32>(CompressionType::None)) {
+                if (comp_type != CompressionType::None) {
                     prepare_info.formatted_path = m_file_path.GetString();
                     this->PrepareSizeImpl(std::addressof(prepare_result), std::addressof(prepare_info));
                     if (prepare_result.resource_size != 0) {
-                        m_compression_type = static_cast<u32>(CompressionType::None);
+                        this->SetCompressionType(CompressionType::None);
                         return prepare_result.resource_size;
                     }
                 }
@@ -308,26 +367,26 @@ namespace awn::res::impl {
                 /* Release archive since we failed to find the file in it */
                 m_archive_resource = nullptr;
                 m_archive_binder.Release();
-                m_allow_archive_reference = false;
+                m_state.ClearBit(State_IsAllowArchiveReference);
             }
 
             /* Try loose auto compression */
-            if (auto_comp_type != CompressionType::None && static_cast<CompressionType>(m_compression_type) == CompressionType::None) {
+            if (auto_comp_type != CompressionType::None && comp_type == CompressionType::None) {
                 FormatPathWithCompressionExtension(std::addressof(path_with_compression), std::addressof(m_file_path), auto_comp_type);
                 prepare_info.formatted_path = path_with_compression.GetString();
                 this->PrepareSizeImpl(std::addressof(prepare_result), std::addressof(prepare_info));
                 if (prepare_result.resource_size != 0) {
-                    m_compression_type = static_cast<u32>(auto_comp_type);
+                    this->SetCompressionType(auto_comp_type);
                     return prepare_result.resource_size;
                 }
             }
 
             /* Try loose no compression */
-            if (static_cast<CompressionType>(m_compression_type) != CompressionType::None) {
+            if (comp_type != CompressionType::None) {
                 prepare_info.formatted_path = m_file_path.GetString();
                 this->PrepareSizeImpl(std::addressof(prepare_result), std::addressof(prepare_info));
                 if (prepare_result.resource_size != 0) {
-                    m_compression_type = static_cast<u32>(CompressionType::None);
+                    this->SetCompressionType(CompressionType::None);
                     return prepare_result.resource_size;
                 }
             }
@@ -336,23 +395,26 @@ namespace awn::res::impl {
         }
 
         /* Finish if no archive binder */
-        if (m_allow_archive_reference == false) { return prepare_result.resource_size; }
+        if (m_state.GetBit(State_IsAllowArchiveReference)) { return prepare_result.resource_size; }
 
         /* Check archive file exists */
         const bool is_archive_file = manager->CheckArchiveFileExists(m_archive_resource, std::addressof(path_with_compression));
-        if (is_archive_file == true) { return prepare_result.resource_size; }
+        if (is_archive_file) { return prepare_result.resource_size; }
 
-        /* Try again without compression */
+        /* Check existance again but without compression extension */
         const bool is_no_compress_archive_file = manager->CheckArchiveFileExists(m_archive_resource, std::addressof(m_file_path));
-        if (is_no_compress_archive_file == true) { m_compression_type = static_cast<u32>(CompressionType::None); return prepare_result.resource_size; }
+        if (is_no_compress_archive_file) {
+            this->SetCompressionType(CompressionType::None);
+            return prepare_result.resource_size;
+        }
 
         /* If it's a user file device respect it */
         if (m_file_device != nullptr) { return prepare_result.resource_size; }
 
-        /* Remove archive resource */
+        /* Release archive resource */
         m_archive_resource = nullptr;
         m_archive_binder.Release();
-        m_allow_archive_reference = false;
+        m_state.ClearBit(State_IsAllowArchiveReference);
 
         /* Use default file device */
         m_file_device = manager->GetDefaultFileDevice();
@@ -360,15 +422,17 @@ namespace awn::res::impl {
         /* Use default compression type */
         MaxExtensionString extension;
         vp::util::GetExtension(std::addressof(extension), std::addressof(m_file_path));
-        m_compression_type = static_cast<u32>(manager->GetCompressionTypeByExtension(std::addressof(extension)));
+        const CompressionType auto_comp = manager->GetCompressionTypeByExtension(std::addressof(extension));
+        this->SetCompressionType(auto_comp);
 
         return prepare_result.resource_size;
     }
 
+
     Result ResourceUnit::LoadMemory() {
 
-        /* Handle transience */
-        if (m_is_transient_on_load == true) { m_is_transient_on_load = false; AsyncResourceManager::GetInstance()->RequestUnloadResourceUnit(this); }
+        /* Release if transient */
+        this->ReleaseTransient();
 
         /* Set status to in load */
         m_status = Status::InLoad;
@@ -382,29 +446,41 @@ namespace awn::res::impl {
             m_status_update_event.Signal();
         };
         auto release_managed_ref_on_error_guard = SCOPE_GUARD {
-            this->ReleaseManagedReference();
+            this->ReleasePersistantReference();
         };
 
         /* Fail if no size was returned */
-        if (size == 0) { m_is_file_not_found = true; RESULT_RETURN(ResultFileNotFound); }
+        if (size == 0) {
+            m_state.SetBit(State_IsFileNotFound);
+            RESULT_RETURN(ResultFileNotFound);
+        }
 
         /* Check if user heap */
-        if (m_is_external_heap == true) {
+        if (m_state.GetBit(State_IsExternalHeap)) {
             /* Fail is user heap is null */
             if (m_resource_heap == nullptr) { error_signal_guard.Cancel(); RESULT_RETURN(ResultNoExternalHeap); }
         } else {
 
             /* Find memory manager  */
             ResourceMemoryManager *memory_manager = AsyncResourceManager::GetInstance()->GetMemoryManager(std::addressof(m_file_path));
-            if (memory_manager == nullptr) { m_is_memory_allocation_failure = true; RESULT_RETURN(ResultMemoryAllocationFailure); }
+            if (memory_manager == nullptr) {
+                m_state.SetBit(State_IsMemoryAllocationFailure);
+                RESULT_RETURN(ResultMemoryAllocationFailure);
+            }
 
             /* Create resource heap */
-            mem::Heap *heap = memory_manager->CreateResourceHeap(this, m_file_path.GetString(), size, static_cast<ResourceHeapType>(m_heap_type));
-            if (heap == nullptr) { m_is_memory_allocation_failure = true; RESULT_RETURN(ResultMemoryAllocationFailure); }
+            mem::Heap *heap = memory_manager->CreateResourceHeap(this, m_file_path.GetString(), size, static_cast<ResourceHeapType>(m_compression_flags.GetBit(CompressionFlag_IsFrameHeap)));
+            if (heap == nullptr) {
+                m_state.SetBit(State_IsMemoryAllocationFailure);
+                RESULT_RETURN(ResultMemoryAllocationFailure);
+            }
 
             /* Set heap and memory manager */
             m_resource_heap  = heap;
             m_memory_manager = memory_manager;
+
+            /* Todo; user data */
+            //this->ForkUserData();
         }
 
         /* Cancel error guards */
@@ -412,39 +488,66 @@ namespace awn::res::impl {
         release_managed_ref_on_error_guard.Cancel();
 
         /* Add to memory manager free cache if freeable */
-        if (m_is_freeable_for_memory_manager == true) {
+        if (m_state.GetBit(State_IsFreeableForMemoryManager)) {
             m_memory_manager->AddResourceUnitToFreeCache(this);
         }
 
         /* Load sync for archive */
-        if (m_allow_archive_reference == true) {                    
+        if (m_state.GetBit(State_IsAllowArchiveReference)) {                    
             return this->LoadFile();
         }
 
         RESULT_RETURN_SUCCESS;
     }
 
+    Result ResourceUnit::LoadMemoryResult(async::TaskResultInvokeInfo *result_info) {
+
+        /* Ensure in load */
+        if (m_resource_heap == nullptr || m_status != ResourceUnit::Status::InLoad) {
+            /* Compose if we loaded from an archive */
+            if (m_state.GetBit(State_IsAllowArchiveReference)) {                
+                this->RequestComposeForAfter();
+            }
+            RESULT_RETURN_SUCCESS;
+        }
+
+        /* Queue load file  */
+        AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
+        const u32 convert_priority = manager->ConvertPriorityMemoryThreadToLoadThread(result_info->task->GetPriority());
+        async::AsyncTaskPushInfo push_info = {
+            .queue         = std::addressof(manager->m_queue_load),
+            .task_function = std::addressof(manager->m_load_file_exe),
+            .result_function = std::addressof(manager->m_load_file_result),
+            .user_data     = this,
+            .priority      = convert_priority,
+        };
+        RESULT_ABORT_UNLESS(result_info->task->PushTask(std::addressof(push_info)));
+
+        RESULT_RETURN(async::ResultRescheduled);
+    }
+
     void ResourceUnit::ScheduleUnload() {
         AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
         async::AsyncTaskPushInfo push_info = {
-            .queue_thread    = manager->m_async_queue_thread_memory,
+            .queue_thread    = manager->m_thread_memory,
             .task_function   = std::addressof(manager->m_unload_exe),
             .result_function = std::addressof(manager->m_unload_result),
             .priority        = 0xd,
         };
-        m_unload_task.PushTask(std::addressof(push_info));
+        RESULT_ABORT_UNLESS(m_unload_task.PushTask(std::addressof(push_info)));
     }
 
     Result ResourceUnit::LoadFile() {
 
         /* Format file path with compression extension */
         MaxPathString path_with_compression;
-        FormatPathWithCompressionExtension(std::addressof(path_with_compression), std::addressof(m_file_path), static_cast<CompressionType>(m_compression_type));
+        CompressionType compression_type = this->GetCompressionType();
+        FormatPathWithCompressionExtension(std::addressof(path_with_compression), std::addressof(m_file_path), compression_type);
 
         /* Setup file device */
         FileDeviceBase *og_device = m_file_device;
-        if (og_device == nullptr)                                                 { m_file_device = AsyncResourceManager::GetInstance()->GetDefaultArchiveFileDevice(); }
-        if (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device) == true) { reinterpret_cast<ArchiveFileDevice*>(m_file_device)->SetArchiveResource(m_archive_resource); }
+        if (og_device == nullptr) { m_file_device = AsyncResourceManager::GetInstance()->GetDefaultArchiveFileDevice(); }
+        if (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device)) { reinterpret_cast<ArchiveFileDevice*>(m_file_device)->SetArchiveResource(m_archive_resource); }
 
         /* Try to load the file */
         const Result result = this->TryLoadFile(path_with_compression.GetString());
@@ -462,12 +565,12 @@ namespace awn::res::impl {
         m_archive_binder.Release();
 
         /* Check if no resource or is not initializable */
-        if (m_resource == nullptr || m_resource->IsRequireInitializeOnCreate() == false) {
-            m_is_resource_initializable = false;
+        if (m_resource == nullptr || !m_resource->IsRequireInitializeOnCreate()) {
+            m_compression_flags.ClearBit(CompressionFlag_IsResourceInitializable);
             if (m_resource == nullptr) {
                 m_status = Status::Error;
             } else {
-                this->TrackMemoryUsage();
+                this->RequestHeapAdjust();
                 m_status = Status::Loaded;
             }
             m_status_update_event.Signal();
@@ -478,8 +581,8 @@ namespace awn::res::impl {
         }
 
         /* Set resource as initializable */
-        m_is_resource_initializable = true;
-        m_status                    = Status::Loaded;
+        m_compression_flags.SetBit(CompressionFlag_IsResourceInitializable);
+        m_status = Status::Loaded;
         m_status_update_event.Clear();
 
         RESULT_RETURN_UNLESS(m_status == Status::Loaded, ResultFailedToLoadResource);
@@ -487,134 +590,204 @@ namespace awn::res::impl {
         RESULT_RETURN_SUCCESS;
     }
 
+    void ResourceUnit::RequestComposeForAfter() {
+
+        /* Ensure compose */
+        auto release_archive_exit = SCOPE_GUARD {
+            m_archive_resource = nullptr;
+            m_archive_binder.Release();
+        };
+        if (m_compression_flags.GetBit(CompressionFlag_IsCompose)) { return; }
+        if (m_resource != nullptr && (!m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable) || !m_state.GetBit(State_IsRequireResourceInitialize))) { return; }
+        if (m_status != Status::Loaded) { return; }
+        release_archive_exit.Cancel();
+
+        /* Ensure we are not a compose thread */
+        AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
+        if (manager->IsCurrentThreadComposeThread()) { return; }
+
+        /* Convert priority and schedule compose */
+        const u32 prev_priority = m_load_task.GetPriority();
+        u8 conv_priority = 0;
+        sys::ThreadBase *thread = sys::GetCurrentThread();
+        if (reinterpret_cast<sys::ThreadBase*>(manager->m_thread_memory) == thread) {
+            conv_priority = static_cast<u8>(0x0404030302020101ull >> (((prev_priority - 3) & 7) * CHAR_BIT));
+        } else if (manager->IsCurrentThreadComposeThread()) {
+            conv_priority = (prev_priority < 5) ? prev_priority : 0;
+        }
+        this->ScheduleCompose(conv_priority);
+
+        return;
+    }
+
+    void ResourceUnit::ScheduleCompose(u32 priority) {
+        
+        /* Ensure compose */
+        if (!m_compression_flags.GetBit(CompressionFlag_IsCompose)) { return; }
+
+        /* Lock compose queue */
+        AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
+        sys::Mutex *mutex = manager->m_queue_compose.GetQueueMutex();
+        std::scoped_lock l(*mutex);
+
+        /* Increment compose ref */
+        s32 compose_count = vp::util::InterlockedFetchIncrement(std::addressof(m_compose_reference_count));
+        if (compose_count != 0) { return; }
+
+        /* Ensure not unloadable */
+        if (this->IsUnloadable()) { return; }
+
+        /* Push compose */
+        async::AsyncTaskPushInfo push_info = {
+            .queue         = std::addressof(manager->m_queue_compose),
+            .task_function = std::addressof(manager->m_compose_exe),
+            .user_data     = this,
+            .priority      = priority,
+        };
+        RESULT_ABORT_UNLESS(m_compose_task.PushTask(std::addressof(push_info)));
+
+        return;
+    }
+
+    Result ResourceUnit::Compose() {
+        ScopedThreadLocalArchive l(std::addressof(m_archive_binder));
+        this->InitializeResource(nullptr);
+        if (m_archive_resource != nullptr) {
+            m_archive_resource = nullptr;
+            m_archive_binder.Release();
+        }
+        RESULT_RETURN_SUCCESS;
+    }
+
     Result ResourceUnit::Unload() {
+
+        /* Release transient ref */
+        this->ReleaseTransient();
 
         /* Release active memory usage for unload */
         this->ReleaseMemoryUsageActive();
 
         /* Cancel resource if not cachable */
-        if (m_is_cache_unload == false || m_is_cache_unload_for_no_ref == false || m_is_cache_unload_for_no_error == false) {                    
+        if (!m_state.GetBit(State_IsCacheUnload) || !m_cache_unload_flags.GetBit(CacheUnloadFlag_IsValid) || !m_cache_unload_no_error_flags.GetBit(CacheUnloadNoErrorFlag_IsValid)) {                   
 
             /* Set as uninitialized on completion */
             auto uninitialized_guard = SCOPE_GUARD {
                 m_status = Status::Uninitialized;
             };
 
-            /* Advance on status */
-            switch (m_status) {
-                case Status::Loaded:
-                case Status::Error:
-                    break;
-                case Status::InLoad:
-                    /* Cancel load task  */
-                    m_load_task.CancelTask();
+            m_load_task.CancelTask();
+            m_archive_resource = nullptr;
+            m_archive_binder.Release();
+            if (!m_load_task.IsCancelled()) {
+                const Result cancel_result = m_compose_task.TryCancelTask();
+                if (cancel_result == async::ResultTaskExecuting) {
+                    m_state.SetBit(State_IsFreeableForMemoryManager);
+                    RESULT_RETURN(ResultFailedToCancelResource);
+                }
 
-                    /* Free archive reference */
-                    m_archive_resource = nullptr;
-                    m_archive_binder.Release();
-
-                    /* Request unload for transience */
-                    if (m_load_task.IsCancelled() == true && m_is_transient_on_load == true) {
-                        m_is_transient_on_load = false;
-                        AsyncResourceManager::GetInstance()->RequestUnloadResourceUnit(this);
-                    }
-                    [[fallthrough]];
-                case Status::InResourceInitialize:
-                case Status::ResourceInitialized:
-                    /* Wait for resource to initialize */
-                    m_status_update_event.Wait();
-                    [[fallthrough]];
-                case Status::ResourcePostInitialized:
-                case Status::FailedToPreFinalizeResource:
-                case Status::FailedToPostInitializeResource:
-                    /* PreFinalize resource */
-                    {                        
-                        const bool is_finalized = this->PreFinalizeResource();
-                        if (is_finalized == false) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                switch (m_status) {
+                    case Status::Loaded:
+                    case Status::Error:
+                        break;
+                    case Status::InResourceInitialize:
+                    case Status::ResourceInitialized:
+                        /* Wait for resource to initialize */
+                        m_status_update_event.Wait();
                         [[fallthrough]];
-                    }
-                case Status::ResourcePreFinalized:
-                case Status::FailedToInitializeResource:
-                    /* Finalize resource */
-                    this->FinalizeResource();
-                    break;
-                default:
-                    uninitialized_guard.Cancel();
-                    break;
-            };
+                    case Status::FailedToPreFinalizeResource:
+                    case Status::ResourcePostInitialized:
+                    case Status::FailedToPostInitializeResource:
+                        /* PreFinalize resource */
+                        {
+                            const bool is_finalized = this->PreFinalizeResource();
+                            if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                            [[fallthrough]];
+                        }
+                    case Status::ResourcePreFinalized:
+                    case Status::FailedToInitializeResource:
+                        /* Finalize resource */
+                        this->FinalizeResource();
+                        break;
+                    default:
+                        uninitialized_guard.Cancel();
+                        break;
+                };
+            }
 
-            m_is_freeable_for_memory_manager = true;
+            m_state.SetBit(State_IsFreeableForMemoryManager);
 
         } else {
 
             /* Advance when cache unloadable */
+            auto invalidate_cache_unload_no_error_guard = SCOPE_GUARD {
+                m_cache_unload_no_error_flags.ClearBit(CacheUnloadNoErrorFlag_IsValid);
+            };
+            auto set_freeable_for_memory_mgr_guard = SCOPE_GUARD {
+                m_state.SetBit(State_IsFreeableForMemoryManager);
+            };
             switch (m_status) {
                 default:
                     break;
                 case Status::Uninitialized:
                 {
-                    if (m_load_task.GetStatus() != async::AsyncTask::Status::Cancelled) { break; }
-                    m_is_cache_unload_for_no_error = false;
-                    m_is_freeable_for_memory_manager = true;
+                    if (!m_load_task.IsCancelled()) { break; }
                     break;
                 }
                 case Status::FailedToPreFinalizeResource:
-                {                        
+                {
+                    invalidate_cache_unload_no_error_guard.Cancel();
+                    set_freeable_for_memory_mgr_guard.Cancel();
                     const bool is_finalized = this->PreFinalizeResource();
-                    if (is_finalized == false) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                    if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                     break;
                 }
                 case Status::Error:
                 {
-                    m_is_cache_unload_for_no_error = false;
-                    m_is_freeable_for_memory_manager = true;
                     break;
                 }
                 case Status::InResourceInitialize:
                 {
                     m_status_update_event.Wait();
                     if (m_status == Status::FailedToPostInitializeResource) {
-                        m_is_cache_unload_for_no_error   = false;
                         
                         const bool is_finalized = this->PreFinalizeResource();
                         if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                         this->FinalizeResource();
                         
-                        m_status                         = Status::Uninitialized;
-                        m_is_freeable_for_memory_manager = true;
+                        m_status = Status::Uninitialized;
                         break;
                     }
                     if (m_status == Status::ResourcePostInitialized) {
+                        invalidate_cache_unload_no_error_guard.Cancel();
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                        if (!is_finalized) {
+                            set_freeable_for_memory_mgr_guard.Cancel();
+                            RESULT_RETURN(ResultFailedToPreFinalizeResource);
+                        }
                         this->FinalizeResource();
                     }
-                    m_is_cache_unload_for_no_error = false;
-                    m_is_freeable_for_memory_manager = true;
                     break;
                 }
                 case Status::FailedToInitializeResource:
                 {
-                    m_is_cache_unload_for_no_error = false;
                     this->FinalizeResource();
                     m_status = Status::Uninitialized;
-                    m_is_freeable_for_memory_manager = true;
                     break;
                 }
                 case Status::ResourceInitialized:
                 {
                     m_status_update_event.Wait();
                     if (m_status == Status::FailedToPostInitializeResource) {
-                        m_is_cache_unload_for_no_error   = false;
 
                         const bool is_finalized = this->PreFinalizeResource();
                         if (is_finalized == false) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
                         this->FinalizeResource();
 
-                        m_status                         = Status::Uninitialized;
-                        m_is_freeable_for_memory_manager = true;
+                        m_status = Status::Uninitialized;
                         break;
                     }
+                    invalidate_cache_unload_no_error_guard.Cancel();
+                    set_freeable_for_memory_mgr_guard.Cancel();
                     if (m_status == Status::ResourcePostInitialized) {
                         const bool is_finalized = this->PreFinalizeResource();
                         if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
@@ -624,18 +797,21 @@ namespace awn::res::impl {
                 }
                 case Status::ResourcePostInitialized:
                 {
+                    invalidate_cache_unload_no_error_guard.Cancel();
+                    set_freeable_for_memory_mgr_guard.Cancel();
                     const bool is_finalized = this->PreFinalizeResource();
                     if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }                        
                     break;
                 }
                 case Status::FailedToPostInitializeResource:
                 {
-                    m_is_cache_unload_for_no_error = false;
                     const bool is_finalized = this->PreFinalizeResource();
-                    if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                    if (!is_finalized) {
+                        set_freeable_for_memory_mgr_guard.Cancel();
+                        RESULT_RETURN(ResultFailedToPreFinalizeResource);
+                    }
                     this->FinalizeResource();
                     m_status = Status::Uninitialized;
-                    m_is_freeable_for_memory_manager = true;
                     break;
                 }
             };
@@ -645,16 +821,19 @@ namespace awn::res::impl {
         if (!m_is_part_of_resource_unit_mgr) {
 
             /* Clear cache sync */
-            m_is_finalized = true;
+            m_state.SetBit(State_IsFinalized);
             this->ClearCache();
 
         } else {
 
             /* Set as freeable */
-            m_is_freeable_for_memory_manager = true;
+            m_state.SetBit(State_IsFreeableForMemoryManager);
 
             /* Add to free cache if cacheable */
-            if (!m_is_cache_unload || !m_is_cache_unload_for_no_ref || !m_is_cache_unload_for_no_error || m_memory_manager == nullptr) { RESULT_RETURN_SUCCESS; }
+            if (!m_state.GetBit(State_IsCacheUnload)) { RESULT_RETURN_SUCCESS; }
+            if (!m_cache_unload_flags.GetBit(CacheUnloadFlag_IsValid)) { RESULT_RETURN_SUCCESS; }
+            if (!m_cache_unload_no_error_flags.GetBit(CacheUnloadNoErrorFlag_IsValid)) { RESULT_RETURN_SUCCESS; }
+            if (m_memory_manager == nullptr) { RESULT_RETURN_SUCCESS; }
             m_memory_manager->AddResourceUnitToFreeCache(this);
         }
 
@@ -663,16 +842,27 @@ namespace awn::res::impl {
 
     Result ResourceUnit::ClearCache() {
 
+        /* Release transient ref */
+        this->ReleaseTransient();
+
         /* Fail if still in reference */
-        RESULT_RETURN_IF(0 < m_reference_count, ResultStillInReference);
+        RESULT_RETURN_IF(0 < this->GetReferenceCount(), ResultStillInReference);
+        /* Fail if already freed */
+        RESULT_RETURN_IF(m_status == Status::Freed, ResultAlreadyFreed);
 
         /* Cancel the resource */
-        this->CancelResource();
+        const bool is_cancel = this->CancelResource();
+        RESULT_RETURN_IF(!is_cancel, ResultFailedToCancelResource);
 
         /* Transition to Freed */
         m_status = Status::Freed;
+        if (m_resource_heap == nullptr) {
+            RESULT_RETURN_SUCCESS;
+        }
 
         /* Free resource and resource heap */
+        AsyncResourceManager::GetInstance()->CancelHeapAdjustRequest(this);
+        this->ReleaseMemoryUsageGlobal();
         this->FreeResource();
         this->FreeResourceHeap();
 
@@ -684,7 +874,7 @@ namespace awn::res::impl {
         /* Setup resource load context */
         ResourceLoadContext load_context = {
             .file_load_context = {                
-                .file_heap = (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device) == true) ? nullptr : m_resource_heap,
+                .file_heap = (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device)) ? nullptr : m_resource_heap,
             },
             .file_device      = m_file_device,
             .resource_factory = m_resource_factory,
@@ -692,7 +882,7 @@ namespace awn::res::impl {
         };
 
         /* Load file with respect to decompression */
-        const CompressionType decompressor_type = static_cast<CompressionType>(m_compression_type);
+        const CompressionType decompressor_type = this->GetCompressionType();
         if (decompressor_type == CompressionType::None) {
             return res::LoadResource(std::addressof(m_resource), file_path, std::addressof(load_context));
         }
@@ -710,7 +900,8 @@ namespace awn::res::impl {
         return result;
     }
 
-    void ResourceUnit::CancelUnloadTask() {
+    void ResourceUnit::CancelUnload(AsyncResourceManager *manager) {
+        manager->CancelUnloadRequest(this);
         m_unload_task.CancelTask();
     }
 
@@ -735,7 +926,7 @@ namespace awn::res::impl {
         };
 
         /* Wait for initialize */
-        m_load_task.Wait();
+        //m_load_task.Wait();
 
         /* Fail if resource is allocated */
         if (m_resource == nullptr) {
@@ -744,39 +935,39 @@ namespace awn::res::impl {
         }
 
         /* Succeed if resource does not require initialization */
-        if (!m_is_resource_initializable) { return true; }
+        if (!m_state.GetBit(State_IsRequireResourceInitialize)) { return true; }
 
         /* Release managed reference and update status on exit */
         Status guard_status = Status::FailedToInitializeResource;
         auto no_resource_exit_guard = SCOPE_GUARD {
 
             /* Release managed reference */
-            this->ReleaseManagedReference();
+            this->ReleasePersistantReference();
 
             /* Set status */
             m_status = guard_status;
         };
 
-        /* Track memory usage changes on exit */
+        /* Request heap adjust on exit */
         ON_SCOPE_EXIT {
-            this->TrackMemoryUsage();
+            this->RequestHeapAdjust();
         };
 
         /* Initialize resource */
         if (m_status == Status::Loaded) {
-            m_status            = Status::InResourceInitialize;
+            m_status = Status::InResourceInitialize;
             const Result result = m_resource->Initialize(m_resource_heap, m_gpu_heap, user_context, m_resource->GetFile(), m_resource->GetFileSize());
-            if (result != ResultSuccess) { return false; }
+            if (RESULT_FAILED(result)) { return false; }
             guard_status = Status::ResourceInitialized;
             if (m_resource == nullptr) { return false; }
         }
         m_status = Status::ResourceInitialized;
 
         /* Post initialize resource */
-        if (m_is_resource_initializable == true) {
+        if (m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) {
             const Result result = m_resource->PostInitialize(m_resource_heap, m_gpu_heap, user_context, m_resource->GetFile(), m_resource->GetFileSize());
-            guard_status        = Status::FailedToPostInitializeResource;
-            if (result != ResultSuccess) { return false; }
+            guard_status = Status::FailedToPostInitializeResource;
+            if (RESULT_FAILED(result)) { return false; }
         }
         m_status = Status::ResourcePostInitialized;
 
@@ -792,10 +983,13 @@ namespace awn::res::impl {
         if ((m_status != Status::ResourcePostInitialized && m_status != Status::FailedToPostInitializeResource && m_status != Status::FailedToPreFinalizeResource) || m_resource == nullptr) { m_status = Status::ResourcePreFinalized; return false; }
 
         /* Prefinalize resource */
-        if (m_is_resource_initializable) {
+        if (m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) {
             m_status = Status::InResourcePreFinalize;
             const Result result = m_resource->PreFinalize();
-            if (result != ResultSuccess) { m_status = Status::FailedToPreFinalizeResource; return false; }
+            if (RESULT_FAILED(result)) { 
+                m_status = Status::FailedToPreFinalizeResource;
+                return false;
+            }
         } 
 
         /* Release guard */
@@ -811,7 +1005,7 @@ namespace awn::res::impl {
     void ResourceUnit::FinalizeResource() {
 
         /* Check unit is pre finalized and has resource */
-        if ((m_status != Status::ResourcePreFinalized && m_status != Status::FailedToInitializeResource) || m_resource == nullptr || !m_is_resource_initializable) { m_status = Status::Loaded; return; }
+        if ((m_status != Status::ResourcePreFinalized && m_status != Status::FailedToInitializeResource) || m_resource == nullptr || !m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) { m_status = Status::Loaded; return; }
 
         /* Set current heap to resource heap */
         mem::ScopedCurrentThreadHeap l(m_resource_heap);
@@ -844,60 +1038,52 @@ namespace awn::res::impl {
         }
         m_resource = nullptr;
 
+        /* Todo; delete user data */
+        //if (m_user_data_status == UserDataStatus::Copy && m_user_data != nullptr) {
+        //    delete m_user_data;
+        //}
+        //m_user_data = nullptr;
+        //m_user_data_status = UserDataStatus::IsSet;
+
         return;
     }
 
     bool ResourceUnit::CancelResource() {
 
-        /* Advance on status */
+        /* Cancel load task */
+        m_load_task.CancelTask();
+
+        /* Release our archive resource */
+        m_archive_resource = nullptr;
+        m_archive_binder.Release();
+
+        /* If the task was sucessfully cancelled we have no resource */
+        if (m_load_task.IsCancelled()) { return true; }
+
+        /* Try cancel compose */
+        const Result cancel_result = m_compose_task.TryCancelTask();
+        if (cancel_result == async::ResultTaskExecuting) {
+            AsyncResourceManager::GetInstance()->AddResourceUnitToFinalizeList(this);
+            return false;
+        }
+
+        /* Finalize resource for not cancelled */
         switch (m_status) {
-            default:
-            case Status::Freed:
-                return false;
             case Status::FailedToPreFinalizeResource:
-            {
-                const bool is_finalized = this->PreFinalizeResource();
-                if (!is_finalized) { return false; }
-                break;
-            }
-            case Status::InLoad:
-            {
-                /* Cancel load task  */
-                m_load_task.CancelTask();
-
-                /* Free archive reference */
-                m_archive_resource = nullptr;
-                m_archive_binder.Release();
-
-                /* Request unload for transience */
-                if (m_load_task.IsCancelled() && m_is_transient_on_load) {
-                    m_is_transient_on_load = false;
-                    AsyncResourceManager::GetInstance()->RequestUnloadResourceUnit(this);
-                }
-                [[fallthrough]];
-            }
-            case Status::InResourceInitialize:
-            case Status::ResourceInitialized:
-            {
-                /* Wait for resource to initialize */
-                m_status_update_event.Wait();
-                [[fallthrough]];
-            }
             case Status::ResourcePostInitialized:
             case Status::FailedToPostInitializeResource:
             {
-                /* PreFinalize resource */
                 const bool is_finalized = this->PreFinalizeResource();
                 if (!is_finalized) { return false; }
-                [[fallthrough]];
             }
+            [[fallthrough]];
             case Status::ResourcePreFinalized:
             case Status::FailedToInitializeResource:
             {
-                /* Finalize resource */
                 this->FinalizeResource();
-                break;
             }
+            default:
+            break;
         };
 
         return true;
@@ -907,12 +1093,12 @@ namespace awn::res::impl {
 
         /* Set defaults */
         AsyncResourceLoadInfo *async_resource_load_info = unit_info->async_resource_info;
-        m_status                    = Status::Uninitialized;
-        m_reference_count           = 0;
+        m_status = Status::Uninitialized;
+        m_reference_count = 0;
         m_deferred_adjust_count[0]  = 0;
         m_deferred_adjust_count[1]  = 0;
         m_resource_initialize_guard = 0;
-        m_state                     = 0;
+        m_state.SetBitMask(0, 0);
 
         /* Set file device, resource factory, and resource user context */
         m_file_device           = async_resource_load_info->file_device;
@@ -929,53 +1115,75 @@ namespace awn::res::impl {
         m_file_path = unit_info->file_path;
 
         /* Setup user resource size */
-        m_is_user_resource_size = async_resource_load_info->resource_size != 0;
-        m_user_resource_size    = async_resource_load_info->resource_size;
+        if (async_resource_load_info->resource_size != 0) {
+            m_state.SetBit(State_IsUserResourceSize);
+        }
+        m_user_resource_size = async_resource_load_info->resource_size;
 
         /* Setup external heap */
         mem::Heap *heap = async_resource_load_info->resource_heap;
         if (heap != nullptr) {
-            m_is_external_heap = true;
-            m_resource_heap    = async_resource_load_info->resource_heap;
+            m_state.SetBit(State_IsExternalHeap);
+            m_resource_heap = heap;
         }
 
         /* Set archive binder */
         if (async_resource_load_info->archive_binder != 0) {
             m_archive_binder.ReferenceBinderSync(async_resource_load_info->archive_binder);
             ArchiveResource *archive_resource = m_archive_binder.GetResource<ArchiveResource>();
-            m_archive_resource                = archive_resource;
+            m_archive_resource = archive_resource;
         }
 
         /* Set key */
-        const u32 hash = vp::util::HashCrc32b(m_file_path.GetString());
-        m_resource_unit_manager_tree_node.SetKey(hash);
+        const vp::util::HashString<u32> hash_string = {
+            .hash = vp::util::HashCrc32b(m_file_path.GetString()),
+            .string = m_file_path.GetString(),
+        };
+        m_resource_unit_manager_tree_node.SetKey(hash_string);
 
         /* Setup cache on unload */
-        if (!async_resource_load_info->is_managed && async_resource_load_info->is_cache_on_unload) {
-            m_is_cache_unload              = true;
-            m_is_cache_unload_for_no_ref   = true;
-            m_is_cache_unload_for_no_error = true;
+        if (!async_resource_load_info->is_persistant && async_resource_load_info->is_cache_on_unload) {
+            m_state.SetBit(State_IsCacheUnload);
+            m_cache_unload_flags.SetBit(CacheUnloadFlag_IsValid);
+            m_cache_unload_no_error_flags.SetBit(CacheUnloadNoErrorFlag_IsValid);
         }
 
-        /* Set is managed */
-        m_is_managed = async_resource_load_info->is_managed;
-
-        /* Set is transient */
-        m_is_transient_on_load = async_resource_load_info->is_transient;
+        /* Set flags */
+        if (unit_info->is_initialize_resource) {
+            m_state.SetBit(State_IsRequireResourceInitialize);
+        }
+        if (unit_info->is_boost_compose) {
+            m_state.SetBit(State_IsBoostCompose);
+        }
+        if (unit_info->is_compose) {
+            m_compression_flags.SetBit(CompressionFlag_IsCompose);
+        }
+        if (async_resource_load_info->is_require_heap_adjust) {
+            m_state.SetBit(State_IsRequireHeapAdjust);
+        }
+        if (async_resource_load_info->is_persistant) {
+            m_state.SetBit(State_IsPersistant);
+        }
+        if (async_resource_load_info->is_transient) {
+            m_state.SetBit(State_IsTransient);
+        }
+        m_compose_reference_count = -async_resource_load_info->is_transient;
 
         /* Set heap type */
-        m_heap_type = async_resource_load_info->resource_heap_type;
+        if (async_resource_load_info->resource_heap_type == 1) {            
+            m_compression_flags.SetBit(CompressionFlag_IsFrameHeap);
+        }
 
         /* Increment reference for binder or transience */
         ResourceBinder *resource_binder = unit_info->resource_binder;
         if (resource_binder != nullptr) {
             this->SetToBinder(resource_binder);
-        } else if (m_is_transient_on_load == true) {
-            this->IncrementReference();
+        } else if (async_resource_load_info->is_transient) {
+            m_cache_unload_flags.SetBit(CacheUnloadFlag_IsTransientRef);
         }
 
         /* Increment reference for managed */
-        if (m_is_managed == true) {
+        if (m_state.GetBit(State_IsPersistant)) {
             this->IncrementReference();
         }
 

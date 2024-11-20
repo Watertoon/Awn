@@ -181,15 +181,15 @@ namespace awn::para::impl {
                     const BlackboardParamVec3i *param = array->GetTypedParamByIndex(index);
                     param_base = param;
                     *out_init_val = *param->GetInitVal();
-                } else if constexpr (std::is_same<T, vp::util::FloatRowMajor3x3>::value) {
+                } else if constexpr (std::is_same<T, vp::util::FloatColumnMajor3x3>::value) {
                     const TypedParamArray<BlackboardParamMtx33f> *array = table->GetBlackboardParamMtx33fArray();
                     param_base = array->GetTypedParamByIndex(index);
-                    *out_init_val = vp::util::FloatRowMajor3x3::cIdentity;
-                } else if constexpr (std::is_same<T, vp::util::FloatRowMajor4x3>::value) {
+                    *out_init_val = vp::util::FloatColumnMajor3x3::cIdentity;
+                } else if constexpr (std::is_same<T, vp::util::FloatColumnMajor4x3>::value) {
                     const TypedParamArray<BlackboardParamMtx34f> *array = table->GetBlackboardParamMtx34fArray();
                     param_base = array->GetTypedParamByIndex(index);
-                    *out_init_val = vp::util::FloatRowMajor4x3::cIdentity;
-                } else if constexpr (std::is_same<T, vp::util::Quaternionf>::value) {
+                    *out_init_val = vp::util::FloatColumnMajor4x3::cIdentity;
+                } else if constexpr (std::is_same<T, vp::util::Float4>::value) {
                     const TypedParamArray<BlackboardParamQuatf> *array = table->GetBlackboardParamQuatfArray();
                     param_base = array->GetTypedParamByIndex(index);
                     *out_init_val = {0.0f, 0.0f, 0.0f, 1.0f };

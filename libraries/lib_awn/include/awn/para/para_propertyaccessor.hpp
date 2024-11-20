@@ -54,19 +54,19 @@ namespace awn::para {
                 const bool result0 = iter.TryGetIteratorByData(std::addressof(sub_iter), data);
                 if (!result0) { return false; }
                 if constexpr (0 < T::cVectorCount) {
-                    const bool result = sub_iter.TryGetValueByKey<typename T::VectorType>(m_value_address->array + 0, "X");
+                    const bool result = sub_iter.TryGetValueByKey<typename T::UnderlyingType>(std::addressof((*m_value_address)[0]), "X");
                     if (!result) { return false; }
                 }
                 if constexpr (1 < T::cVectorCount) {
-                    const bool result = sub_iter.TryGetValueByKey<typename T::VectorType>(m_value_address->array + 1, "Y");
+                    const bool result = sub_iter.TryGetValueByKey<typename T::UnderlyingType>(std::addressof((*m_value_address)[1]), "Y");
                     if (!result) { return false; }
                 }
                 if constexpr (2 < T::cVectorCount) {
-                    const bool result = sub_iter.TryGetValueByKey<typename T::VectorType>(m_value_address->array + 2, "Z");
+                    const bool result = sub_iter.TryGetValueByKey<typename T::UnderlyingType>(std::addressof((*m_value_address)[2]), "Z");
                     if (!result) { return false; }
                 }
                 if constexpr (3 < T::cVectorCount) {
-                    const bool result = sub_iter.TryGetValueByKey<typename T::VectorType>(m_value_address->array + 3, "W");
+                    const bool result = sub_iter.TryGetValueByKey<typename T::UnderlyingType>(std::addressof((*m_value_address)[3]), "W");
                     if (!result) { return false; }
                 }
 

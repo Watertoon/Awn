@@ -22,6 +22,8 @@ namespace vp::util {
     template <typename T>
     class PointerArray {
         public:
+            static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
+        public:
             class Iterator {
                 private:
                     T **m_array;
@@ -94,6 +96,7 @@ namespace vp::util {
 
                 /* Integrity checks */
                 if (pointer_count == 0) { return; }
+                VP_ASSERT(pointer_count < 0xffff'ffff);
                 VP_ASSERT(m_array == nullptr && m_max_count == 0);
 
                 /* Allocate pointer array */
@@ -132,10 +135,12 @@ namespace vp::util {
                 return;
             }
 
-            constexpr void PushPointer(T *pointer) {
+            constexpr u32 PushPointer(T *pointer) {
                 VP_ASSERT(m_used_count < m_max_count);
                 m_array[m_used_count] = pointer;
-                ++m_used_count;
+                const u32 index = m_used_count;
+                m_used_count = index + 1;
+                return index;
             }
 
             constexpr T *PopPointer() {
@@ -159,8 +164,14 @@ namespace vp::util {
                 return;
             }
 
-            void Clear() { m_used_count = 0; }
+            constexpr void Clear() { m_used_count = 0; }
 
+            constexpr u32 FindIndexOf(const T *pointer) const {
+                for (u32 i = 0; i < m_used_count; ++i) {
+                    if (m_array[i] == pointer) { return i; }
+                }
+                return cInvalidEntryIndex;
+            }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return m_max_count; }
             

@@ -17,6 +17,13 @@
 
 namespace awn::async {
 
+    struct AsyncQueueThreadInfo {
+        AsyncQueue *queue;
+        u32 requests_per_yield;
+        u32 thread_set;
+        bool is_boost_thread;
+    };
+
     class AsyncQueueThread : public sys::Thread {
         public:
             friend struct AsyncTaskPushInfo;
@@ -35,16 +42,15 @@ namespace awn::async {
                 Suspended = 2,
                 Active    = 3,
             };
+            enum State : u32 {
+                State_IsSuspended = 3,
+                State_IsRunning = 5,
+                State_IsNotScheduling = 6,
+                State_IsTask = 7,
+            };
         private:
             Status     m_status;
-            union {
-                u32 m_state;
-                struct {                    
-                    u32 m_is_finished  : 1;  
-                    u32 m_is_suspended : 1;  
-                    u32 m_reserve      : 30;
-                };
-            };
+            vp::util::FixedConnection<u32, BITSIZEOF(u32)> m_state;
             u32         m_requests_per_yield;
             AsyncTask  *m_current_task;
             AsyncQueue *m_queue;
@@ -53,7 +59,7 @@ namespace awn::async {
         public:
             VP_RTTI_BASE(AsyncQueueThread);
         public:
-            AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority);
+            AsyncQueueThread(const AsyncQueueThreadInfo *queue_thread_info, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority);
             virtual ~AsyncQueueThread() override;
 
             virtual void ThreadMain(size_t message) override;
@@ -85,8 +91,8 @@ namespace awn::async {
     };
     
     constexpr AsyncQueue *AsyncTaskPushInfo::GetQueue() {
-        VP_ASSERT(queue != nullptr || queue_thread != nullptr);
-        AsyncQueue *out_queue = (queue != nullptr) ? queue : queue_thread->GetQueue();
+        VP_ASSERT(this->queue != nullptr || this->queue_thread != nullptr);
+        AsyncQueue *out_queue = (this->queue != nullptr) ? this->queue : this->queue_thread->GetQueue();
         VP_ASSERT(out_queue != nullptr);
         return out_queue;
     }

@@ -96,7 +96,7 @@ namespace awn::sys {
                 m_message_queue.Finalize();
             }
 
-            virtual void StartThread()                                         {/*...*/}
+            virtual void StartThread() {/*...*/}
             virtual void ExitThread(ExitType exit_type) {
                 if (exit_type == ExitType::Jam) {
                     m_message_queue.JamMessage(m_exit_message);
@@ -105,10 +105,11 @@ namespace awn::sys {
                 }
                 this->WaitForThreadExit();
             }
-            virtual void WaitForThreadExit()                                   {/*...*/}
-            virtual void ResumeThread()                                        {/*...*/}
-            virtual void SuspendThread()                                       {/*...*/}
+            virtual void WaitForThreadExit() {/*...*/}
+            virtual void ResumeThread() {/*...*/}
+            virtual void SuspendThread() {/*...*/}
             virtual void SleepThread([[maybe_unused]] vp::TimeSpan timeout_ns) {/*...*/}
+            virtual void YieldThread() {/*...*/}
 
             virtual void SetPriority([[maybe_unused]] s32 priority)  {/*...*/}
             virtual void SetCoreMask([[maybe_unused]] CoreMask core_mask) {/*...*/}

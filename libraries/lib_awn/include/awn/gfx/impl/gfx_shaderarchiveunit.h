@@ -64,9 +64,8 @@ namespace awn::gfx::impl {
             constexpr u32 DecrementReferenceCount() { return --m_reference_count; }
 
             constexpr bool IsInRegister() const {
-                const async::AsyncTask::Status status = m_transfer_task.GetStatus();
-                if ((async::AsyncTask::Status::Uninitialized == status) || (async::AsyncTask::Status::Complete == status)) { return (m_status == Status::InRegister); }
-                if (async::AsyncTask::Status::Cancelled != status)                                                         { return true; }
+                if (m_transfer_task.IsCancelled()) { return true; }
+                if (m_transfer_task.IsComplete()) { return (m_status == Status::InRegister); }
                 return false;
             }
             constexpr bool IsRegistered() const { return m_status == Status::Registered; }

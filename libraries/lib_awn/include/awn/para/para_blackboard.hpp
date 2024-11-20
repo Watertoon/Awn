@@ -97,11 +97,11 @@ namespace awn::para {
                     return std::addressof(m_state_vector3f);
                 } else if constexpr (std::is_same<T, vp::util::Int3>::value) {
                     return std::addressof(m_state_vector3i);
-                } else if constexpr (std::is_same<T, vp::util::FloatRowMajor3x3>::value) {
+                } else if constexpr (std::is_same<T, vp::util::FloatColumnMajor3x3>::value) {
                     return std::addressof(m_state_matrix33f);
-                } else if constexpr (std::is_same<T, vp::util::FloatRowMajor4x3>::value) {
+                } else if constexpr (std::is_same<T, vp::util::FloatColumnMajor4x3>::value) {
                     return std::addressof(m_state_matrix34f);
-                } else if constexpr (std::is_same<T, vp::util::Quaternionf>::value) {
+                } else if constexpr (std::is_same<T, vp::util::Float4>::value) {
                     return std::addressof(m_state_quaternionf);
                 } else if constexpr (std::is_same<T, vp::util::Color4f>::value) {
                     return std::addressof(m_state_color4f);
@@ -116,26 +116,26 @@ namespace awn::para {
                 return std::addressof(m_state_custom_type);
             }
         private:
-            impl::BlackboardState<const char*>                m_state_string;
-            impl::BlackboardState<s32>                        m_state_s32;
-            impl::BlackboardState<float>                      m_state_float;
-            impl::BlackboardState<bool>                       m_state_bool;
-            impl::BlackboardState<vp::util::Float3>           m_state_vector3f;
-            impl::BlackboardState<void*>                      m_state_pointer;
-            impl::BlackboardState<s8>                         m_state_s8;
-            impl::BlackboardState<s16>                        m_state_s16;
-            impl::BlackboardState<s64>                        m_state_s64;
-            impl::BlackboardState<u8>                         m_state_u8;
-            impl::BlackboardState<u16>                        m_state_u16;
-            impl::BlackboardState<u32>                        m_state_u32;
-            impl::BlackboardState<u64>                        m_state_u64;
-            impl::BlackboardState<double>                     m_state_double;
-            impl::BlackboardState<vp::util::Int3>             m_state_vector3i;
-            impl::BlackboardState<vp::util::Color4f>          m_state_color4f;
-            impl::BlackboardState<vp::util::FloatRowMajor3x3> m_state_matrix33f;
-            impl::BlackboardState<vp::util::FloatRowMajor4x3> m_state_matrix34f;
-            impl::BlackboardState<vp::util::Quaternionf>      m_state_quaternionf;
-            impl::BlackboardState<BlackboardCustomTypeBase*>  m_state_custom_type;
+            impl::BlackboardState<const char*>                   m_state_string;
+            impl::BlackboardState<s32>                           m_state_s32;
+            impl::BlackboardState<float>                         m_state_float;
+            impl::BlackboardState<bool>                          m_state_bool;
+            impl::BlackboardState<vp::util::Float3>              m_state_vector3f;
+            impl::BlackboardState<void*>                         m_state_pointer;
+            impl::BlackboardState<s8>                            m_state_s8;
+            impl::BlackboardState<s16>                           m_state_s16;
+            impl::BlackboardState<s64>                           m_state_s64;
+            impl::BlackboardState<u8>                            m_state_u8;
+            impl::BlackboardState<u16>                           m_state_u16;
+            impl::BlackboardState<u32>                           m_state_u32;
+            impl::BlackboardState<u64>                           m_state_u64;
+            impl::BlackboardState<double>                        m_state_double;
+            impl::BlackboardState<vp::util::Int3>                m_state_vector3i;
+            impl::BlackboardState<vp::util::Color4f>             m_state_color4f;
+            impl::BlackboardState<vp::util::FloatColumnMajor3x3> m_state_matrix33f;
+            impl::BlackboardState<vp::util::FloatColumnMajor4x3> m_state_matrix34f;
+            impl::BlackboardState<vp::util::Float4>              m_state_quaternionf;
+            impl::BlackboardState<BlackboardCustomTypeBase*>     m_state_custom_type;
         public:
             constexpr  Blackboard() : m_state_string(), m_state_s32(), m_state_float(), m_state_bool(), m_state_vector3f(), m_state_pointer(), m_state_s8(), m_state_s16(), m_state_s64(), m_state_u8(), m_state_u16(), m_state_u32(), m_state_u64(), m_state_double(), m_state_vector3i(), m_state_color4f(), m_state_matrix33f(), m_state_matrix34f(), m_state_quaternionf(), m_state_custom_type() {/*...*/}
             constexpr ~Blackboard() {/*...*/}
@@ -522,8 +522,8 @@ namespace awn::para {
             AWN_PARA_DECLARE_BB_ACCESSORS(Double, double);
             AWN_PARA_DECLARE_BB_ACCESSORS(Vector3i, vp::util::Int3);
             AWN_PARA_DECLARE_BB_ACCESSORS(Color4f, vp::util::Color4f);
-            AWN_PARA_DECLARE_BB_ACCESSORS(Matrix33f, vp::util::FloatRowMajor3x3);
-            AWN_PARA_DECLARE_BB_ACCESSORS(Matrix44f, vp::util::FloatRowMajor4x3);
-            AWN_PARA_DECLARE_BB_ACCESSORS(Quaternionf, vp::util::Quaternionf);
+            AWN_PARA_DECLARE_BB_ACCESSORS(Matrix33f, vp::util::FloatColumnMajor3x3);
+            AWN_PARA_DECLARE_BB_ACCESSORS(Matrix44f, vp::util::FloatColumnMajor4x3);
+            AWN_PARA_DECLARE_BB_ACCESSORS(Quaternionf, vp::util::Float4);
     };
 }

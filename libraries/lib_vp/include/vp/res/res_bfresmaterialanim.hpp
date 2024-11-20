@@ -79,7 +79,7 @@ namespace vp::res {
         u32                         bake_size;
         u16                         user_data_count;
         u16                         per_material_anim_count;
-        u16                         total_anim_curves;
+        u16                         total_anim_curve_count;
         u16                         shader_param_anim_count;
         u16                         texture_pattern_anim_count;
         u16                         material_visibility_anim_count;
@@ -91,10 +91,10 @@ namespace vp::res {
 
         void BindTextures(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
             for (u32 i = 0; i < texture_count; ++i) {
-                if (runtime_texture_view_array[i] != nullptr && runtime_texture_descriptor_slot_array[i] != 0xffff'ffff'ffff'ffff) { continue; }
+                if (runtime_texture_view_array[i] != nullptr && runtime_texture_descriptor_slot_array[i] != cInvalidDescriptorSlot) { continue; }
         
                 GfxBindTextureView bind_texture_view  = (bind_callback)(res_bntx, texture_name_array[i] + 2);
-                runtime_texture_view_array[i]            = bind_texture_view.texture_view;
+                runtime_texture_view_array[i] = bind_texture_view.texture_view;
                 runtime_texture_descriptor_slot_array[i] = bind_texture_view.texture_view_decriptor_slot;
             }
         }
@@ -102,7 +102,7 @@ namespace vp::res {
         constexpr void ReleaseTextures() {
             for (u32 i = 0; i < texture_count; ++i) {
                 runtime_texture_descriptor_slot_array[i] = cInvalidDescriptorSlot;
-                runtime_texture_view_array[i]            = nullptr;
+                runtime_texture_view_array[i] = nullptr;
             }
         }
 
@@ -110,10 +110,10 @@ namespace vp::res {
 
             bool had_success = false;
             for (u32 i = 0; i < texture_count; ++i) {
-                if (::strcmp(texture_name_array[i], name) != 0) { continue; }
+                if (!vp::util::StringCompare(texture_name_array[i], name)) { continue; }
 
                 runtime_texture_descriptor_slot_array[i] = bind_texture_view->texture_view_decriptor_slot;
-                runtime_texture_view_array[i]            = bind_texture_view->texture_view;
+                runtime_texture_view_array[i] = bind_texture_view->texture_view;
 
                 had_success = true;
             }

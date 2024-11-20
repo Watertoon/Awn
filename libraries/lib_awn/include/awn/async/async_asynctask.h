@@ -57,6 +57,7 @@ namespace awn::async {
         u32               priority;
         bool              is_sync;
         bool              is_skip_finish_event;
+        bool              is_thread_boost;
 
         constexpr AsyncQueue *GetQueue();
     };
@@ -85,8 +86,9 @@ namespace awn::async {
                 u16 m_state;
                 struct {
                     u16 m_is_signal_finish_event : 1;
-                    u16 m_is_cancelled           : 1;
-                    u16 m_is_free_for_allocator  : 1;
+                    u16 m_is_cancelled : 1;
+                    u16 m_is_free_for_allocator : 1;
+                    u16 m_is_thread_boost : 1;
                     u16 m_reserve0 : 13;
                 };
             };                          
@@ -125,28 +127,44 @@ namespace awn::async {
 
             void CancelWhileActive();
         public:
-            constexpr AsyncTask() : m_priority(), m_state(), m_status(), m_queue(), m_queue_thread(), m_task_function(), m_result_function(), m_cancel_function(), m_user_data(), m_finish_event(sys::SignalState::Cleared, sys::ResetMode::Manual), m_queue_list_node() {/*...*/}
+            constexpr AsyncTask() : m_priority(), m_state(), m_status(), m_queue(), m_queue_thread(), m_task_function(), m_result_function(), m_cancel_function(), m_user_data(), m_finish_event(sys::SignalState::Signaled, sys::ResetMode::Manual), m_queue_list_node() {/*...*/}
             virtual ~AsyncTask() { this->Finalize(); m_finish_event.Finalize(); }
 
-            Result PushTask(AsyncTaskPushInfo *push_info);
             void Finalize();
 
-            void CancelTask();
+            Result PushTask(AsyncTaskPushInfo *push_info);
+            void Wait();
 
-            void ChangePriority(u32 new_priority);
+            void CancelTask();
+            Result TryCancelTask();
+
+            void AdjustPriority(u32 new_priority);
 
             constexpr ALWAYS_INLINE u32 GetPriority() const { return m_priority; }
-
-            void Wait() {
-                m_finish_event.Wait();
-            }
-
             constexpr AsyncQueue *GetQueue() { return m_queue; }
 
-            constexpr Status GetStatus()   const { return static_cast<Status>(m_status); }
-            constexpr bool   IsCancelled() const { return static_cast<Status>(m_status) == Status::Cancelled; }
+            bool IsQueuedOnCurrentThread() const;
 
-            constexpr bool   IsAvailable() const { return static_cast<Status>(m_status) == Status::Complete || m_status < static_cast<u32>(Status::Queued); }
-            constexpr bool   IsBusy()      const { return !this->IsAvailable(); }
+            constexpr bool IsComplete() const {
+                return !this->IsPending();
+            }
+
+            constexpr bool IsPending() const {
+                const Status status = static_cast<Status>(m_status);
+                if (status == Status::Uninitialized || status == Status::Cancelled) { return false; }
+                if (status != Status::Complete) { return true; }
+                vp::util::MemoryBarrierInnerRead();
+                return false;
+            }
+
+            constexpr bool IsUninitialized() const {
+                const Status status = static_cast<Status>(m_status);
+                return status == Status::Uninitialized;
+            }
+
+            constexpr bool IsCancelled() const {
+                const Status status = static_cast<Status>(m_status);
+                return status == Status::Cancelled;
+            }
     };
 }

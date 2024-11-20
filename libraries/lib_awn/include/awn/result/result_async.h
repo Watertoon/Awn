@@ -22,4 +22,9 @@ namespace awn::async {
     DECLARE_RESULT(AlreadyQueued,   2);
     DECLARE_RESULT(InvalidPriority, 3);
     DECLARE_RESULT(Rescheduled,     4);
+    DECLARE_RESULT(NoTask,          5);
+    DECLARE_RESULT(DifferentQueue,  6);
+    DECLARE_RESULT(IsNotPending,    7);
+    DECLARE_RESULT(TaskExecuting,   8);
+    DECLARE_RESULT(TaskExecuted,    9);
 }

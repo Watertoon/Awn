@@ -32,18 +32,18 @@ namespace vp::res {
     VP_ENUM_FLAG_TRAITS(BfresBoneAnimCurveType);
 
     struct ResBfresBoneAnimResultDefault {
-        util::Float3 translate;
-        util::Float4 rotate;
+        util::Float3 translation;
+        util::Float4 rotation;
         util::Float3 scale;
     };
     static_assert(sizeof(ResBfresBoneAnimResultDefault) == sizeof(float) * 10);
-   
+
     struct BfresBoneAnimResult {
-        u32          flags;
-        util::Float3 scale;
-        util::Float3 translate;
-        u32          reserve0;
-        util::Float4 rotate;
+        u32            flags;
+        util::Float3   scale;
+        util::Float3   translation;
+        u32            reserve0;
+        util::Vector4f rotation;
     };
     static_assert(sizeof(BfresBoneAnimResult) == 0x30);
 
@@ -74,20 +74,40 @@ namespace vp::res {
         u16                            user_data_count;
         u16                            reserve6;
 
-        /*void Evaluate(float time, BfresBoneAnimResult *result) {
-            const u32 curve_count = anim_curve_count;
-            for (u32 i = 0; i < curve_count; ++i) {
-                const u8 result_offset = anim_curve_array[i].base_result_offset;
-                const float value = anim_curve_array[i].EvaluateFloat(time);
-                reinterpret_cast<float*>(result)[result_offset] = value;
-            }
-            return;
-        }*/
+        //void Evaluate(float frame, BfresBoneAnimResult *result) {
+        //
+        //    /* Nothing to evaluate if no curves */
+        //    const u32 curve_count = this->anim_curve_count;
+        //    if (curve_count < 1) { return; }
+        //
+        //    /* Evaluate special quat curve */
+        //    u32 i = 0;
+        //    if (this->anim_curve_array[0].IsQuaternion()) {
+        //        i = 1;
+        //        vp::util::Vector4f quat = this->anim_curve_array[0].EvaluateQuaternion(frame);
+        //        vp::util::Store4(std::addressof(reinterpret_cast<float*>(result)[result_offset]), quat);
+        //    }
+        //
+        //    /* Evaluate float curves */
+        //    for (; i < curve_count; ++i) {
+        //        const u8 result_offset = this->anim_curve_array[i].base_result_offset;
+        //        const float value = this->anim_curve_array[i].EvaluateFloat(frame);
+        //        reinterpret_cast<float*>(result)[result_offset] = value;
+        //    }
+        //
+        //    return;
+        //}
 
         constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
+
+            /* Ensure dictionary */
             if (user_data_dictionary == nullptr) { return nullptr; }
+
+            /* Find index */
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
+
+            /* Get data */
             return std::addressof(user_data_array[entry_id]);
         }
     };
@@ -119,9 +139,15 @@ namespace vp::res {
         static constexpr u32 cMagic = util::TCharCode32("FSKA");
 
         constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
+
+            /* Ensure dictionary */
             if (user_data_dictionary == nullptr) { return nullptr; }
+
+            /* Find index */
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
+
+            /* Get data */
             return std::addressof(user_data_array[entry_id]);
         }
     };

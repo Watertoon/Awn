@@ -35,15 +35,15 @@ namespace vp::util {
         string = string + unaligned;
 
         /* Handle aligned string */
-        u32 i    = unaligned;
+        u32 i = unaligned;
         u32 mask = 0;
-        const v32c zero = {};
+        const v32cc zero = {};
         for (;;) {
 
             /* Load 32 characters, compare if equal to zero, and convert result to a mask */
-            const v32c characters = avx2::vmovdqa(string);
-            const v32c result     = avx2::vcmpeqb(zero, characters);
-            mask                  = avx2::vpmovmskb(result);
+            const v32cc characters = Load32Aligned(string);
+            const v32cc result     = CompareEqual32(zero, characters);
+            mask                   = MoveMask256(result);
 
             /* Check if the mask has a bit set, meaning a character is non-zero */
             if (mask != 0) {
@@ -74,18 +74,18 @@ namespace vp::util {
         const u32 iter = 0x20;
         const char *l_iter = lhs;
         const char *r_iter = rhs;
-        const v32c zero = {};
+        const v32cc zero = {};
         for (;;) {
 
             /* Load 32 characters, compare if equal to zero, and convert result to a mask */
-            const v32c lhs_char = avx2::vlddqa(l_iter);
-            const v32c rhs_char = avx2::vlddqa(r_iter);
-            const v32c result0 = avx2::vcmpeqb(lhs_char, zero);
-            const v32c result1 = avx2::vcmpeqb(rhs_char, zero);
-            const v32c result2 = avx2::vcmpeqb(lhs_char, rhs_char);
-            const u32 mask0 = avx2::vpmovmskb(result0);
-            const u32 mask1 = avx2::vpmovmskb(result1);
-            const u32 mask2 = avx2::vpmovmskb(result2);
+            const v32cc lhs_char = Load32(l_iter);
+            const v32cc rhs_char = Load32(r_iter);
+            const v32cc result0 = CompareEqual32(lhs_char, zero);
+            const v32cc result1 = CompareEqual32(rhs_char, zero);
+            const v32cc result2 = CompareEqual32(lhs_char, rhs_char);
+            const u32 mask0 = MoveMask256(result0);
+            const u32 mask1 = MoveMask256(result1);
+            const u32 mask2 = MoveMask256(result2);
 
             /* Check if the mask has a bit set, meaning a character is non-zero */
             if (mask0 != 0 || mask1 != 0 || mask2 != 0) {

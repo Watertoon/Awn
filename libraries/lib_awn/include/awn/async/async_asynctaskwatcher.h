@@ -39,20 +39,24 @@ namespace awn::async {
             constexpr ~AsyncTaskWatcher() {/*...*/}
 
             void Reference();
-
             void ReleaseReference();
 
             void CancelTask();
 
             void WaitForCompletion();
 
-            constexpr ALWAYS_INLINE bool HasTask() const {
+            constexpr bool HasTask() const {
                 return m_async_task != nullptr;
             }
-            constexpr ALWAYS_INLINE bool IsPending() const {
-                return m_async_task != nullptr && m_state == static_cast<u32>(State::Pending);
+            constexpr bool IsComplete() const {
+                return !this->IsPending();
             }
-            constexpr ALWAYS_INLINE bool IsCancelled() const {
+            constexpr bool IsPending() const {
+                if (m_async_task != nullptr && m_state == static_cast<u32>(State::Pending)) { return true; }
+                vp::util::MemoryBarrierInnerRead();
+                return false;
+            }
+            constexpr bool IsCancelled() const {
                 return m_state == static_cast<u32>(State::Cancelled);
             }
     };

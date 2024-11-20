@@ -61,12 +61,14 @@ namespace awn::res {
                 return new (heap, alignment) Resource();
             }
 
-            virtual constexpr u32             GetResourceSize()             const { return cResourceSize; }
-            virtual constexpr u32             GetResourceAlignment()        const { return cResourceAlignment; }
-            virtual constexpr u32             GetFileAlignment()            const { return cFileAlignment; }
-            virtual constexpr CompressionType GetDefaultCompressionType()   const { return cDefaultCompressionType; }
-            virtual constexpr float           GetDefaultFallbackSizeScale() const { return cDefaultFallbackSizeScale; }
-            virtual constexpr u32             GetDefaultExtraResourceSize() const { return cDefaultExtraSize; }
+            virtual constexpr bool            IsInitializeOnCreate()         const { return true; }
+            virtual constexpr bool            IsBoostCompose()               const { return false; }
+            virtual constexpr u32             GetResourceSize()              const { return cResourceSize; }
+            virtual constexpr u32             GetResourceAlignment()         const { return cResourceAlignment; }
+            virtual constexpr u32             GetFileAlignment()             const { return cFileAlignment; }
+            virtual constexpr CompressionType GetDefaultCompressionType()    const { return cDefaultCompressionType; }
+            virtual constexpr float           GetDefaultFallbackSizeScale()  const { return cDefaultFallbackSizeScale; }
+            virtual constexpr u32             GetDefaultExtraResourceSize()  const { return cDefaultExtraSize; }
 
     };
 }

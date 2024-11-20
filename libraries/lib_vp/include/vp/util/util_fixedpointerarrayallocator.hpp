@@ -19,6 +19,8 @@ namespace vp::util {
 
     template <typename T, u32 Count>
     class FixedPointerArrayAllocator {
+        public:
+            static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
         private:
             static constexpr size_t cPaddingSize = (sizeof(T) < sizeof(size_t)) ? sizeof(size_t) : (sizeof(T) - sizeof(void*)) & ~(alignof(T) - 1);
             struct FreeList {
@@ -159,6 +161,12 @@ namespace vp::util {
                 m_used_count = 0;
             }
 
+            constexpr u32 FindIndexOf(const T *pointer) const {
+                for (u32 i = 0; i < m_used_count; ++i) {
+                    if (m_array[i] == pointer) { return i; }
+                }
+                return cInvalidEntryIndex;
+            }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return Count; }
 

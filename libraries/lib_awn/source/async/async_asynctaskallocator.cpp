@@ -125,13 +125,13 @@ namespace awn::async {
         return;
     }
 
-    void AsyncTaskAllocator::ScheduleTask(AsyncTaskScheduleInfo *schedule_info) {
+    Result AsyncTaskAllocator::ScheduleTask(AsyncTaskScheduleInfo *schedule_info) {
 
         /* Acquire task */
-        bool is_acquired_task       = false;
+        bool is_acquired_task = false;
         AsyncTaskForAllocator *task = schedule_info->task_for_allocator;
         if (task == nullptr) {
-            task             = this->AcquireTask();
+            task = this->AcquireTask();
             is_acquired_task = true;
         }
 
@@ -142,11 +142,12 @@ namespace awn::async {
         }
 
         /* Try push task */
-        if (task->PushTask(schedule_info->push_info) != ResultSuccess && AsyncTaskForAllocator::CheckRuntimeTypeInfoStatic(task) == true) {
-            if (is_acquired_task == false) { return; }
+        const Result result = task->PushTask(schedule_info->push_info);
+        if (RESULT_FAILED(result) && AsyncTaskForAllocator::CheckRuntimeTypeInfoStatic(task)) {
+            if (!is_acquired_task) { return result; }
             this->FreeTask(task);
         }
 
-        return;
+        return result;
     }
 }

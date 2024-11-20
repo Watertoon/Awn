@@ -53,7 +53,7 @@ namespace awn::sys {
             void ReleaseReadLockAsWriter();
             void ReleaseWriteLockImpl();
         public:
-            constexpr ReaderWriterLock() : m_state(), m_writer_count(), m_writer_thread_id(), m_read_cv(), m_write_cv()  {/*...*/}
+            constexpr ReaderWriterLock() : m_state(), m_writer_count(), m_writer_read_count(), m_writer_thread_id(), m_read_cv(), m_write_cv()  {/*...*/}
             constexpr ~ReaderWriterLock() {/*...*/}
 
             void AcquireWriteLock();

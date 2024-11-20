@@ -17,26 +17,23 @@
 
 namespace awn::async {
 
-    AsyncQueueThread::AsyncQueueThread(AsyncQueue *async_queue, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority) : Thread(name, thread_heap, sys::ThreadRunMode::WaitForMessage, 0x7fff'ffff, 8, stack_size, priority), m_status(Status::Active), m_is_finished(true), m_requests_per_yield(), m_current_task(), m_queue(async_queue), m_execute_event() { 
-
-        async_queue->m_task_thread_array.PushPointer(this);
-
-        m_execute_event.Initialize(sys::SignalState::Signaled, sys::ResetMode::Manual);
-        m_suspend_event.Initialize(sys::SignalState::Signaled, sys::ResetMode::Manual);
+    AsyncQueueThread::AsyncQueueThread(const AsyncQueueThreadInfo *queue_thread_info, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority) : Thread(name, thread_heap, sys::ThreadRunMode::WaitForMessage, 0x7fff'ffff, 8, stack_size, priority), m_status(Status::Active), m_state(), m_requests_per_yield(), m_current_task(), m_queue(), m_execute_event(sys::SignalState::Signaled, sys::ResetMode::Manual), m_suspend_event(sys::SignalState::Signaled, sys::ResetMode::Manual) {
+        AsyncQueue *queue = queue_thread_info->queue;
+        if (queue != nullptr) {
+            queue->AddThread(this, queue_thread_info->thread_set, queue_thread_info->is_boost_thread);
+        }
+        m_requests_per_yield = queue_thread_info->requests_per_yield;
     }
-    AsyncQueueThread::~AsyncQueueThread() { 
-        m_execute_event.Finalize(); 
-        m_suspend_event.Finalize();
-    }
+    AsyncQueueThread::~AsyncQueueThread() {/*...*/}
 
     void AsyncQueueThread::ThreadMain(size_t message) {
 
         /* Handle suspension */
-        if (m_is_suspended == false) {
+        if (!m_state.GetBit(State_IsSuspended)) {
 
             if (message == static_cast<size_t>(Message::Suspend)) {
 
-                m_is_suspended = true;
+                m_state.SetBit(State_IsSuspended);
                 m_suspend_event.Signal();
                 return;
             }
@@ -44,36 +41,72 @@ namespace awn::async {
         } else {
             if (message != static_cast<size_t>(Message::Resume)) { return; }
 
-            m_is_suspended = false;
+            m_state.ClearBit(State_IsSuspended);
             m_suspend_event.Signal();
         }
 
         /* Task main loop */
         u32 yield_iter = m_requests_per_yield;
-        m_is_finished = false;
-        do {
+        m_state.SetBit(State_IsRunning);
+        m_state.SetBit(State_IsNotScheduling);
+        bool is_change_set = false;
+        u32 boost_id = AsyncQueue::cInvalidThreadLink;
+        for (;;) {
 
-            /* Acquire next task */
+            /* Peek latest message for exit or suspension */
+            const bool result1 = this->TryPeekMessage(std::addressof(message));
+            if (!result1) { message = 0; }
+            if (message == m_exit_message || message == static_cast<size_t>(Message::Suspend)) { break; }
+
+            /* Task scheduler */
             AsyncTask *task = nullptr;
+            u32 current_set;
             {
                 std::scoped_lock l(m_queue->m_queue_mutex);
+                m_state.ClearBit(State_IsNotScheduling);
+                vp::util::MemoryBarrierInnerReadWrite();
 
+                /* Acquire next task */
                 task = m_queue->AcquireNextTask(this);
-                
-                /* Signal finished and update completion if no task */
+
+                /* Schedule thread set */
+                is_change_set = m_queue->UpdateThreadSetForAcquireTask(std::addressof(boost_id), task, this);
+                current_set = m_queue->m_current_thread_set;
+
+                /* If no task update completion and exit */
                 if (task == nullptr) {
-                    m_is_finished = true;
+                    const u32 state = m_state.GetBitMask(0) & ~(State_IsRunning | State_IsNotScheduling);
+                    m_state.SetBitMask(0, state);
                     m_queue->UpdateCompletion();
                     return;
                 }
+
+                /* Set state to we have a task */
+                const u32 state = m_state.GetBitMask(0) | (State_IsTask | State_IsNotScheduling);
+                m_state.SetBitMask(0, state);
+            }
+
+            /* Change or boost thread set, preempting ourselves */
+            if (is_change_set) {
+                is_change_set = false;
+                boost_id = AsyncQueue::cInvalidThreadLink;
+                m_queue->WakeThreadSet(current_set, this);
+            } else if (boost_id != AsyncQueue::cInvalidThreadLink) {
+                m_queue->BoostThread(boost_id, this);
+                boost_id = AsyncQueue::cInvalidThreadLink;
             }
 
             /* Execute task */
             const Result result = task->Invoke();
 
+            u32 task_count;
             {
                 std::scoped_lock l(m_queue->m_queue_mutex);
-                
+
+                /* Update thread for task completion */
+                is_change_set = m_queue->UpdateThreadSetForCompleteTask(task->m_priority, this);
+                current_set = m_queue->m_current_thread_set;
+
                 /* Free if necessary */
                 if (result != ResultRescheduled) {
                     task->InvokeFreeExecute();
@@ -83,14 +116,26 @@ namespace awn::async {
                 m_execute_event.Signal();
 
                 /* Signal finished tasks */
+                m_state.ClearBit(State_IsTask);
                 m_queue->UpdateCompletion();
+                m_state.ClearBit(State_IsNotScheduling);
+                vp::util::MemoryBarrierInnerReadWrite();
 
-                /* Memory barrier */
-                vp::util::MemoryBarrierReadWrite();
-
-                /* Complete if out of tasks */
-                if (m_queue->m_task_count == 0) { break; }
+                /* Update state for task count */
+                task_count = m_queue->m_task_count;
+                const u32 next_state = (task_count < 1) ? m_state.GetBitMask(0) & ~(State_IsNotScheduling | State_IsRunning) : m_state.GetBitMask(0) | State_IsNotScheduling;
+                m_state.SetBitMask(0, next_state);
             }
+
+            /* Change thread set */
+            if (is_change_set) {
+                is_change_set = false;
+                m_queue->WakeThreadSet(current_set, this);
+                current_set = AsyncQueue::cInvalidThreadLink;
+            }
+
+            /* Complete if out of tasks */
+            if (task_count == 0) { break; }
 
             /* Yield thread if request count is reached */
             if (0 < m_requests_per_yield) {
@@ -100,14 +145,11 @@ namespace awn::async {
                     sys::SleepThread(0);
                 }
             }
+        }
 
-            /* Peek next message to ensure we are not force terminating the thread */
-            const bool result1 = this->TryPeekMessage(std::addressof(message));
-            if (result1 == false) { message = 0; }
-
-        } while (message != m_exit_message);
-
-        m_is_finished = true;
+        /* Update state for not running */
+        const u32 state = m_state.GetBitMask(0) & ~(State_IsRunning | State_IsNotScheduling);
+        m_state.SetBitMask(0, state);
 
         return;
     }
@@ -118,7 +160,7 @@ namespace awn::async {
         if (this == sys::GetCurrentThread()) { return; }
 
         /* Change status */
-        Status     last_status;
+        Status last_status;
         const bool result = vp::util::InterlockedCompareExchange(std::addressof(last_status), std::addressof(m_status), Status::Suspended, Status::Active);
         if (result == false) { return; }
 
@@ -137,7 +179,7 @@ namespace awn::async {
         if (this == sys::GetCurrentThread()) { return; }
 
         /* Change status */
-        Status     last_status;
+        Status last_status;
         const bool result = vp::util::InterlockedCompareExchange(std::addressof(last_status), std::addressof(m_status), Status::Active, Status::Suspended);
         if (result == false) { return; }
 

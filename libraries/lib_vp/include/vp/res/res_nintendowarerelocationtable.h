@@ -51,14 +51,14 @@ namespace vp::res {
 
         constexpr ALWAYS_INLINE u64 CalculateSize() {
             u32 entry_count = 0;
-            for (u32 i = 0; i < section_count; ++i) {
+            for (u32 i = 0; i < this->section_count; ++i) {
                 entry_count += section_array[i].entry_count;
             }
-            return section_count * sizeof(ResSection) + entry_count * sizeof(ResEntry) + sizeof(ResNintendoWareRelocationTable); 
+            return this->section_count * sizeof(ResSection) + entry_count * sizeof(ResEntry) + sizeof(ResNintendoWareRelocationTable); 
         }
 
         ALWAYS_INLINE u64 GetEntryTableOffset() {
-            return sizeof(ResNintendoWareRelocationTable) + section_count * sizeof(ResSection);
+            return sizeof(ResNintendoWareRelocationTable) + this->section_count * sizeof(ResSection);
         }
 
         ResNintendoWareFileHeader *GetFileHeader();

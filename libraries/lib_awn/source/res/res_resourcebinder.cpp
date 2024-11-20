@@ -22,7 +22,9 @@ namespace awn::res {
         /* Convert resource unit error to status */
         if (m_resource_unit != nullptr) { m_resource_unit->SetBinderStatusFromError(this); }
 
-        this->HandleMemoryAllocationError();
+        if (!this->IsReferenceBinder()) {            
+            this->HandleMemoryAllocationError();
+        }
         this->Release();
 
         return;
@@ -35,16 +37,18 @@ namespace awn::res {
             this->Release();
         };
         ON_SCOPE_EXIT {
-            this->HandleMemoryAllocationError();
+            if (!this->IsReferenceBinder()) {            
+                this->HandleMemoryAllocationError();
+            }
         };
 
         /* Nothing to do if no resource unit */
         if (m_resource_unit == nullptr) { finalize_on_error_guard.Cancel(); return; }
 
         /* Try initialize resource */
-        if (m_resource_unit->IsResourceInitialized() == false) {
+        if (!m_resource_unit->IsResourceInitialized()) {
             const bool result = m_resource_unit->InitializeResource(resource_user_context);
-            if (result == false) { m_status = Status::FailedToInitializeResource; return; }
+            if (!result) { m_status = Status::FailedToInitializeResource; return; }
         }
         finalize_on_error_guard.Cancel();
 
@@ -59,13 +63,13 @@ namespace awn::res {
     void ResourceBinder::Release() {
 
         /* Nothing to do if no load */
-        if (m_load_guard == false) { return; }
+        if (!m_load_guard) { return; }
 
         /* Set finalize flag and clear init and load guard */
         m_state_mask = (m_state_mask & 0xf8) | 0x4;
 
         /* Cancel watcher */
-        if (m_watcher.HasTask() == true) {
+        if (m_watcher.HasTask()) {
             m_watcher.CancelTask();
         }
 
@@ -84,7 +88,7 @@ namespace awn::res {
         /* Enforce load guard */
         RESULT_RETURN_IF(m_load_guard, ResultLoadGuardSet);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
-        m_status     = Status::Uninitialized;
+        m_status = Status::Uninitialized;
 
         impl::AsyncResourceManager *manager = impl::AsyncResourceManager::GetInstance();
         return manager->TryLoadSync(file_path, this, bind_info);
@@ -95,7 +99,7 @@ namespace awn::res {
         /* Enforce load guard */
         RESULT_RETURN_IF(m_load_guard, ResultLoadGuardSet);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
-        m_status     = Status::Uninitialized;
+        m_status = Status::Uninitialized;
 
         impl::AsyncResourceManager *manager = impl::AsyncResourceManager::GetInstance();
         return manager->TryLoadAsync(file_path, this, bind_info);
@@ -138,27 +142,30 @@ namespace awn::res {
 
     void ResourceBinder::WaitForLoad() {
 
-        /* Wait for async task */
-        m_watcher.WaitForCompletion();
+        /* Wait for control task */
+        if (m_watcher.IsPending()) {
+            m_watcher.WaitForCompletion();
+        }
 
-        /* Wait for resource unit to initialize */
-        if (m_resource_unit != nullptr) { m_resource_unit->WaitForLoad(); }
+        /* Ensure resource unit */
+        if (m_resource_unit == nullptr) { return; }
+
+        /* Wait for load */
+        m_resource_unit->WaitForLoad();
 
         return;
     }
 
     bool ResourceBinder::Complete(ResourceUserContext *resource_user_context) {
 
-        /* Check if already complete */
-        if (m_complete_guard == true)      { return true; }
-        /* Check if not finalized or complete, but in load */
-        if ((m_state_mask & 0xe) != 2)       { return false; }
-        /* Check if the watcher is still pending */
-        if (m_watcher.IsPending() == true) { return false; }
-        /* Check if resource unit is in load */
-        if (m_resource_unit != nullptr && m_resource_unit->IsInLoad() == true) { return false; }
+        /* Succeed if we previously completed */
+        if (m_complete_guard) { return true; }
+        /* Fail if we were finalized */
+        if (m_is_finalize) { return false; }
+        /* Fail if we are not loaded */
+        if (!this->IsLoaded()) { return false; }
 
-        /* Finalize on exit guard */
+        /* Finalize for error on exit guard */
         Status exit_status = Status::Uninitialized;
         auto finalize_error_guard = SCOPE_GUARD {
             m_status = exit_status;
@@ -170,14 +177,20 @@ namespace awn::res {
             m_complete_guard = true;
         };
 
-        /* Check if the watcher got cancelled */
-        if (m_resource_unit == nullptr && m_watcher.IsCancelled() == true) { exit_status = Status::NoResourceUnitOnFinalize; return true; }
-        /* Check if the binder had an error */
-        if (this->IsErrorStatus() == true) { exit_status = m_status; return true; }
-        /* Check if the binder is uninitialized */
+        /* Succeed if we don't have a resource unit as a result of the watcher getting cancelled */
+        if (m_resource_unit == nullptr && m_watcher.IsCancelled()) { exit_status = Status::NoResourceUnitOnFinalize; return true; }
+        /* Succeed if the binder had an error */
+        if (this->IsErrorStatus()) { exit_status = m_status; return true; }
+        /* Fail if the binder is uninitialized */
         if (m_resource_unit == nullptr || m_status == Status::Uninitialized) { return false; }
 
-        /* Switch for 4 cases, uninitialized, requires initialize, handle error, complete */
+        /* Switch for 5 cases of resource unit status:
+         * Fail if uninitialized
+         * Succeed with initialize resource
+         * Succeed with an error status
+         * Fail for resource initialization failure
+         * Succeed for the resource having already been initialized
+         */
         switch (m_resource_unit->m_status) {
             case impl::ResourceUnit::Status::Uninitialized:
             case impl::ResourceUnit::Status::InLoad:
@@ -202,12 +215,59 @@ namespace awn::res {
                 if (m_status == Status::InLoad) {
                     m_status = Status::ResourceInitialized;
                 }
-                this->HandleMemoryAllocationError();
+                if (!this->IsReferenceBinder()) {            
+                    this->HandleMemoryAllocationError();
+                }
                 break;
         }
 
         finalize_error_guard.Cancel();
 
         return true;
+    }
+
+    Resource *ResourceBinder::GetResourceDirect() const {
+        /* Fail if the resource is not initialized */
+        if (!this->IsResourceInitialized()) { return nullptr; }
+        /* Get resource */
+        Resource *resource = m_resource_unit->m_resource;
+        return resource;
+    }
+
+    bool ResourceBinder::IsInLoad() const {
+        /* Fail if we have not scheduled a load */
+        if (!m_load_guard) { return false; }
+        /* Succeed if the watcher is pending */
+        if (m_watcher.IsPending()) { return true; }
+        /* Fail if we do not have a resource unit, as the control task is pending or it failed */
+        if (m_resource_unit == nullptr) { return false; }
+        /* Defer to the resource unit */
+        return m_resource_unit->IsInLoad();
+    }
+
+    bool ResourceBinder::IsLoaded() const {
+        /* Fail if we are complete */
+        if (m_complete_guard) { return false; }
+        /* Fail if we are in load */
+        return !this->IsInLoad();
+    }
+
+    bool ResourceBinder::IsResourceInitialized() const {
+        /* Fail if we are still in load */
+        if (this->IsInLoad()) { return false; }
+        /* Fail if we are not complete */
+        if (!m_complete_guard) { return false; }
+        /* Fail if no resource unit */
+        if (m_resource_unit == nullptr) { return false; }
+        /* Defer to the resource unit */
+        return m_resource_unit->IsResourceInitialized();
+    }
+
+    bool ResourceBinder::IsFailed() const {
+        /* We haven't failed if we are still loading */
+        if (this->IsInLoad()) { return false; }
+        /* If we or our resource unit has an error status, we failed */
+        const bool is_res_unit_failed = (m_load_guard && m_resource_unit != nullptr) ? m_resource_unit->IsErrorStatus() : false;
+        return this->IsErrorStatus() | is_res_unit_failed;
     }
 }

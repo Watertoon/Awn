@@ -91,22 +91,26 @@
     #include <vp/util/util_guid.win32.hpp>
 #endif
 
-#include <vp/util/math/util_vectortypes.hpp>
-#ifdef VP_TARGET_ARCHITECTURE_x86
-    #include <vp/util/math/util_int128.avx2.hpp>
-    #include <vp/util/math/util_int256.avx2.hpp>
-    #include <vp/util/math/util_float128.avx2.hpp>
-    #include <vp/util/math/util_float256.avx2.hpp>
-    #include <vp/util/math/util_double256.avx2.hpp>
-#elif VP_TARGET_ARCHITECTURE_aarch64
-    //#include <vp/util/math/util_int128.neon.hpp>
-    //#include <vp/util/math/util_float128.neon.hpp>
-#endif
+#include <vp/util/math/util_vectorizedtypes.hpp>
+#include <vp/util/math/util_tvectorizedtypes.h>
+#include <vp/util/math/util_vectorizedload.hpp>
+#include <vp/util/math/util_vectorizedstore.hpp>
+#include <vp/util/math/util_vectorizedmaskload.hpp>
+#include <vp/util/math/util_vectorizedmaskstore.hpp>
+#include <vp/util/math/util_vectorizedshuffle.hpp>
+#include <vp/util/math/util_vectorizedmovemask.hpp>
+#include <vp/util/math/util_vectorizedconditional.hpp>
+#include <vp/util/math/util_vectorizedcarrylessmultiply.hpp>
 #include <vp/util/math/util_floattypes.hpp>
 #include <vp/util/math/util_doubletypes.hpp>
 #include <vp/util/math/util_inttypes.hpp>
 #include <vp/util/math/util_tmathtypes.h>
 #include <vp/util/math/util_constants.hpp>
+#include <vp/util/math/util_trigonometry.hpp>
+#include <vp/util/math/util_vectorarithmetic.hpp>
+#include <vp/util/math/util_matrixarithmetic.hpp>
+#include <vp/util/math/util_rotation.hpp>
+#include <vp/util/math/util_rotation.hpp>
 #include <vp/util/math/util_floatcalc.hpp>
 #include <vp/util/math/util_doublecalc.hpp>
 #include <vp/util/math/util_intcalc.hpp>
