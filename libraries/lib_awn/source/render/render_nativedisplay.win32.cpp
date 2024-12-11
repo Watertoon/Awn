@@ -30,8 +30,13 @@ namespace awn::render {
                 ::PostQuitMessage(0);
                 break;
             }
+            case WM_ERASEBKGND:
+            {
+                return 1;
+            }
             case WM_NCCALCSIZE:
             {
+                /* TODO; investigate moving resize to reduce jitter */
                 RECT *client_rect = reinterpret_cast<RECT*>(lparam);
                 NativeDisplay *native_display = reinterpret_cast<NativeDisplay*>(::GetWindowLongPtrA(hwnd, GWLP_USERDATA));
                 if (native_display == nullptr) { break; }
@@ -237,7 +242,8 @@ namespace awn::render {
 
     void NativeDisplay::FinishResize() {
         std::scoped_lock l(m_settings_cs);
-        if (m_is_resize != 1) { return; }
+        if (m_is_resize == 0) { return; }
+        if (m_is_resize == 1) { m_is_resize = 2; return; }
         m_is_resize = 0;
         m_window_event.Signal();
     }

@@ -31,3 +31,4 @@
 #elif VP_TARGET_PLATFORM_nx
 
 #endif
+#include <awn/render/render_nativevideoapi.h>

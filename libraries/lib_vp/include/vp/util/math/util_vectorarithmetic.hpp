@@ -166,12 +166,22 @@ namespace vp::util {
     template <typename T>
         requires (T::cIsVectorType)
     constexpr typename T::UnderlyingType Dot(const T &left, const T &right) {
-        const T temp = left - right;
+        const T temp = left * right;
         typename T::UnderlyingType dot = {};
         for (u32 i = 0; i < T::cVectorCount; ++i) {
             dot += temp[i];
         }
         return dot;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorType)
+    constexpr T Reciprocal(const T &vec) {
+        T result;
+        for (u32 i = 0; i < T::cVectorCount; ++i) {
+            result[i] = static_cast<typename T::UnderlyingType>(1.0) / vec[i];
+        }
+        return result;
     }
 
     namespace {

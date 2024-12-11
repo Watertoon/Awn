@@ -19,40 +19,45 @@ namespace awn::gfx::impl {
 
     struct DescriptorMemoryManagerInfo {
         u32 max_command_buffer_count;
-        size_t per_stage_memory_size;
-        bool is_enable_separate_texture_sampler;
+        u32 per_stage_memory_size;
     };
 
     class DescriptorMemoryManager {
-        public:
-            struct Staging {
-                char descriptor_memory_ts_i_st_ss[8][Context::cTargetMaxPerStageMemorySizeTextureSamplerImageSeparate];
-                char descriptor_memory_ubo_ssbo[8][Context::cTargetMaxPerStageMemorySizeUniformBufferStorageBuffer];
-            };
         private:
-            mem::SeparateHeap *m_descriptor_heap;
-            mem::UnitHeap     *m_staging_heap;
-            void              *m_memory;
+            mem::SeparateHeap *m_per_stage_heap;
+            mem::UnitHeap     *m_per_stage_staging_heap;
+            void              *m_memory_bindless;
+            void              *m_memory_per_stage;
             VkBuffer           m_descriptor_vk_buffer;
             GpuBufferAddress   m_descriptor_buffer_address;
-            bool               m_is_enable_separate_texture_sampler;
+            size_t             m_ts_i_size;
+            size_t             m_ub_sb_size;
         public:
             AWN_SINGLETON_TRAITS(DescriptorMemoryManager);
         public:
-            constexpr DescriptorMemoryManager() : m_descriptor_heap(), m_staging_heap(), m_memory(), m_descriptor_vk_buffer(), m_descriptor_buffer_address(), m_is_enable_separate_texture_sampler() {/*...*/}
+            constexpr DescriptorMemoryManager() : m_per_stage_heap(), m_per_stage_staging_heap(), m_memory_bindless(), m_memory_per_stage(), m_descriptor_vk_buffer(), m_descriptor_buffer_address(), m_ts_i_size(), m_ub_sb_size() {/*...*/}
             constexpr ~DescriptorMemoryManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, const DescriptorMemoryManagerInfo *mgr_info);
             void Finalize();
 
+        public:
             void *AllocateCommandMemory(size_t *out_offset, size_t size);
             void FreeCommandMemory(void *address);
 
-            Staging *AllocateStagingMemory();
-            void FreeStagingMemory(Staging *address);
+            void *AllocateStagingMemory();
+            void FreeStagingMemory(void *address);
 
             constexpr GpuBufferAddress GetDescriptorBufferAddress() const {
                 return m_descriptor_buffer_address;
+            }
+
+            constexpr void *GetBindlessDescriptorMemory() const {
+                return m_memory_bindless;
+            }
+
+            constexpr void *GetPerStageDescriptorMemory() const {
+                return m_memory_per_stage;
             }
     };
 }

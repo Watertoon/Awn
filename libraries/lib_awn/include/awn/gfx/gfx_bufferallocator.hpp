@@ -38,7 +38,7 @@ namespace awn::gfx {
             }
 
             u32 Allocate(u32 memory_size) {
-                return vp::util::InterlockedFetchAdd(std::addressof(m_memory_iter), memory_size);
+                return vp::util::InterlockedFetchAddAcquire(std::addressof(m_memory_iter), memory_size);
             }
 
             template <typename T>

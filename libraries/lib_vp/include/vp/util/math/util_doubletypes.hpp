@@ -392,7 +392,7 @@ namespace vp::util {
         return Vector4d{ .v = in_vector.v, };
     }
 
-    constexpr MatrixRowMajor4x3d ConvertToMatrix43(MatrixRowMajor4x3d *out_matrix, const DoubleRowMajor3x3 *in_matrix) {
+    constexpr MatrixRowMajor4x3d ConvertToMatrix43(const DoubleRowMajor3x3 *in_matrix) {
 
         const v4sll mask = GetLoad4Mask256(true, true, true, false);
         const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
@@ -402,7 +402,7 @@ namespace vp::util {
         return MatrixRowMajor4x3d { a, b, c, Vector4d::cZero.v, };
     }
 
-    constexpr MatrixRowMajor4x3d ConvertToMatrix43(MatrixRowMajor4x3d *out_matrix, const DoubleRowMajor4x3 *in_matrix) {
+    constexpr MatrixRowMajor4x3d ConvertToMatrix43(const DoubleRowMajor4x3 *in_matrix) {
 
         const v4sll mask = GetLoad4Mask256(true, true, true, false);
         const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
@@ -413,7 +413,7 @@ namespace vp::util {
         return MatrixRowMajor4x3d { a, b, c, d, };
     }
 
-    constexpr MatrixRowMajor4x4d ConvertToMatrix44(MatrixRowMajor4x4d *out_matrix, const DoubleRowMajor3x3 *in_matrix) {
+    constexpr MatrixRowMajor4x4d ConvertToMatrix44(const DoubleRowMajor3x3 *in_matrix) {
 
         const v4sll mask = GetLoad4Mask256(true, true, true, false);
         const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
@@ -423,7 +423,7 @@ namespace vp::util {
         return MatrixRowMajor4x4d { a, b, c, Vector4d::cZero.v, };
     }
 
-    constexpr MatrixRowMajor4x4d ConvertToMatrix44(MatrixRowMajor4x4d *out_matrix, const DoubleRowMajor4x3 *in_matrix) {
+    constexpr MatrixRowMajor4x4d ConvertToMatrix44(const DoubleRowMajor4x3 *in_matrix) {
 
         const v4sll mask = GetLoad4Mask256(true, true, true, false);
         const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);

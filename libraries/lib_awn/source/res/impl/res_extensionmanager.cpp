@@ -40,6 +40,14 @@ namespace awn::res::impl {
         m_extension_array.Finalize();
     }
 
+    bool ExtensionManager::LoopResourceUnitManagers(const ResourceUnitLoopFunction *loop_function) {
+        for (ResourceUnitManager &manager : m_resource_unit_manager_array) {
+            const bool is_continue = manager.LoopResourceUnits(loop_function);
+            if (!is_continue) { return false; }
+        }
+        return true;
+    }
+
     CompressionType ExtensionManager::GetCompressionExtension([[maybe_unused]] const char *group_extension, const char *extension) {
         const u32 index = this->GetExtensionIndex(extension);
         return (index != cInvalidEntryIndex) ? m_extension_array[index].compression_type : CompressionType::Auto;

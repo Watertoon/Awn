@@ -232,9 +232,8 @@ namespace vp::res {
     }
 
     constexpr inline VkImageUsageFlags GfxGpuAccessFlagsToVkImageUsageFlags(GfxGpuAccessFlags access_flags) {
-        
+
         u32 flags = 0;
-        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::TransferDestination)) != 0) { flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT; }
         if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::Texture)) != 0)             { flags |= VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE; }
         if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::RenderTargetColor)) != 0)   { flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; }
         if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::RenderTargetDepth)) != 0)   { flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; }
@@ -245,10 +244,10 @@ namespace vp::res {
     constexpr inline VkBufferUsageFlags GfxGpuAccessFlagsToVkBufferUsageFlags(GfxGpuAccessFlags access_flags) {
 
         u32 flags = 0;
-        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::VertexBuffer)) != 0)        { flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; }
-        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::IndexBuffer)) != 0)         { flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; }
-        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::UniformBuffer)) != 0)       { flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; }
-        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::TransferDestination)) != 0) { flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT; }
+        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::VertexBuffer)) != 0)  { flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; }
+        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::IndexBuffer)) != 0)   { flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; }
+        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::UniformBuffer)) != 0) { flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; }
+        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::StorageBuffer)) != 0) { flags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
         return flags;
     }
 

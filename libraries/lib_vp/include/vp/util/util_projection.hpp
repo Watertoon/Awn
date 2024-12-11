@@ -27,15 +27,14 @@ namespace vp::util {
             constexpr Projection() : m_is_require_update(true) {/*...*/}
             constexpr virtual ~Projection() {/*...*/}
 
-            constexpr void UpdateProjectionMatrixSelf() {
-                this->UpdateMatrix(std::addressof(m_projection_matrix));
+            constexpr void UpdateMatrix() {
+                if (m_is_require_update) {        
+                    this->CalculateProjectionMatrix(std::addressof(m_projection_matrix));
+                }
                 m_is_require_update = false;
             }
 
             constexpr MatrixRowMajor4x4f *GetProjectionMatrix() {
-                if (m_is_require_update) {
-                    this->UpdateProjectionMatrixSelf();
-                }
                 return std::addressof(m_projection_matrix);
             }
 
@@ -43,7 +42,7 @@ namespace vp::util {
                 return std::addressof(m_projection_matrix);
             }
 
-            constexpr virtual void UpdateMatrix(MatrixRowMajor4x4f *out_proj_matrix) const = 0;
+            constexpr virtual void CalculateProjectionMatrix(MatrixRowMajor4x4f *out_proj_matrix) const = 0;
     };
     
     class FrustumProjection : public Projection {
@@ -64,7 +63,7 @@ namespace vp::util {
             constexpr FrustumProjection(float near, float far, float top, float bottom, float left, float right) : Projection(), m_near(near), m_far(far), m_top(top), m_bottom(bottom), m_left(left), m_right(right) {/*...*/}
             constexpr virtual ~FrustumProjection() override {/*...*/}
 
-            constexpr virtual void UpdateMatrix(MatrixRowMajor4x4f *out_proj_matrix) const override {
+            constexpr virtual void CalculateProjectionMatrix(MatrixRowMajor4x4f *out_proj_matrix) const override {
 
                 const float reciprocal_a = 1.0f / (m_right + m_left);
                 const float reciprocal_b = 1.0f / (m_top - m_bottom);
@@ -88,11 +87,11 @@ namespace vp::util {
         public:
             VP_RTTI_DERIVED(PerspectiveProjection, FrustumProjection);
         public:
-            constexpr PerspectiveProjection() : FrustumProjection(1.0f, 10000.0f, TRadians<float, 45.0f>, ::sinf(TRadians<float, 45.0f> / 2), ::cosf(TRadians<float, 45.0f> / 2), ::tanf(TRadians<float, 45.0f> / 2)), m_fov_x(4.0 / 3.0f) {/*...*/}
-            constexpr PerspectiveProjection(float near, float far, float fovy, float aspect) : FrustumProjection(near, far, fovy, ::sinf(fovy / 2), ::cosf(fovy / 2), ::tanf(fovy / 2)), m_fov_x(aspect) {/*...*/}
+            constexpr PerspectiveProjection() : FrustumProjection(1.0f, 10000.0f, TRadians<float, 45.0f>, vp::util::Sin(TRadians<float, 45.0f> / 2), vp::util::Cos(TRadians<float, 45.0f> / 2), vp::util::Tan(TRadians<float, 45.0f> / 2)), m_fov_x(4.0 / 3.0f) {/*...*/}
+            constexpr PerspectiveProjection(float near, float far, float fovy, float aspect) : FrustumProjection(near, far, fovy, vp::util::Sin(fovy / 2), vp::util::Cos(fovy / 2), vp::util::Tan(fovy / 2)), m_fov_x(aspect) {/*...*/}
             constexpr virtual ~PerspectiveProjection() override {/*...*/}
 
-            constexpr virtual void UpdateMatrix(MatrixRowMajor4x4f *out_proj_matrix) const override {
+            constexpr virtual void CalculateProjectionMatrix(MatrixRowMajor4x4f *out_proj_matrix) const override {
 
                 const float reciprocal_c = 1.0f / (m_far - m_near);
                 const v4f row0 = { 1.0f / (m_right * m_fov_x), 0.0f,           0.0f,                               0.0f, };

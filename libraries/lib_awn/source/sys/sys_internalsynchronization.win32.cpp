@@ -20,12 +20,12 @@ namespace awn::sys::impl {
     void ArbitrateLockImpl(u32 *address, u32 tag) {
 
         /* Wait until we acquire the tag */
-        u32 last = *address;
+        u32 last;
         for (;;) {
-            const bool wait_result = ::WaitOnAddress(address, std::addressof(last), sizeof(u32), INFINITE);
-            VP_ASSERT(wait_result);
             const bool cmp_result = vp::util::InterlockedCompareExchangeAcquire(std::addressof(last), address, tag, 0u);
             if (cmp_result) { return; }
+            const bool wait_result = ::WaitOnAddress(address, std::addressof(last), sizeof(u32), INFINITE);
+            VP_ASSERT(wait_result);
         }
     }
 
@@ -33,7 +33,7 @@ namespace awn::sys::impl {
 
         /* Release the tag and wake a waiter if necessary */
         const u32 prev = vp::util::InterlockedExchangeRelease(address, 0u);
-        if ((prev >> cTagLockBitOffset) & 1) {                
+        if ((prev >> cTagLockBitOffset) & 1) {
             ::WakeByAddressSingle(address);
         }
 

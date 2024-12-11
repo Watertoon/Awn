@@ -17,20 +17,9 @@
 
 namespace awn::gfx {
 
-    static constexpr inline u32 cTargetMaxSimultaneousShaderStageCount = 5;
+    static constexpr inline u32 cMaxShaderStageCount = impl::Context::cTargetMaxShaderStageCount;
 
     struct PrimitiveShaderInfo {
-        union {
-            u32 code_size_array[5];
-            struct {
-                u32   code_size_vertex;
-                u32   code_size_tessellation_control;
-                u32   code_size_tessellation_evaluation;
-                u32   code_size_geometry;
-                u32   code_size_fragment;
-                
-            };
-        };
         union {
             void *code_array[5];
             struct {
@@ -41,8 +30,26 @@ namespace awn::gfx {
                 void *code_fragment;
             };
         };
+        union {
+            u32 code_size_array[5];
+            struct {
+                u32   code_size_vertex;
+                u32   code_size_tessellation_control;
+                u32   code_size_tessellation_evaluation;
+                u32   code_size_geometry;
+                u32   code_size_fragment;
+            };
+        };
     };
     struct MeshShaderInfo {
+        union {
+            void *code_array[3];
+            struct {
+                void *code_task;
+                void *code_mesh;
+                void *code_fragment;
+            };
+        };
         union {
             u32 code_size_array[3];
             struct {
@@ -52,18 +59,10 @@ namespace awn::gfx {
                 
             };
         };
-        union {
-            void *code_array[3];
-            struct {
-                void *code_task;
-                void *code_mesh;
-                void *code_fragment;
-            };
-        };
     };
     struct ComputeShaderInfo {
-        u32   code_size_compute;
         void *code_compute;
+        u32   code_size_compute;
     };
 
     class Shader {
@@ -72,26 +71,25 @@ namespace awn::gfx {
         public:
             friend class CommandBuffer;
         private:
-            u32                            m_shader_count;
-            VkShaderStageFlagBits          m_vk_shader_stage_flag_array[cTargetMaxSimultaneousShaderStageCount];
-            VkShaderEXT                    m_vk_shader_array[cTargetMaxSimultaneousShaderStageCount];
+            sys::Event m_init_event;
+            VkShaderEXT m_vk_shader_array[cMaxShaderStageCount];
             vp::res::ResBnshShaderProgram *m_res_program;
         private:
-            void InitializeImpl(void **code_array, u32 *code_size_array, const ShaderStage *stage_array, u32 stage_count, ShaderCodeType code_type, VkShaderCreateFlagsEXT create_flags);
+            Result InitializeImpl(void **code_array, u32 *code_size_array, const ShaderStage *stage_array, u32 stage_count, ShaderCodeType code_type, VkShaderCreateFlagsEXT create_flags);
         public:
-            constexpr ALWAYS_INLINE Shader() : m_shader_count(0), m_vk_shader_stage_flag_array{}, m_vk_shader_array{}, m_res_program() {/*...*/}
+            constexpr Shader() : m_init_event(sys::SignalState::Cleared, sys::ResetMode::Manual), m_vk_shader_array{}, m_res_program() {/*...*/}
             constexpr ~Shader() {/*...*/}
 
-            void Initialize(MeshShaderInfo *shader_info, ShaderCodeType code_type);
-            void Initialize(PrimitiveShaderInfo *shader_info, ShaderCodeType code_type);
-            void Initialize(ComputeShaderInfo *shader_info, ShaderCodeType code_type);
+            Result Initialize(MeshShaderInfo *shader_info, ShaderCodeType code_type);
+            Result Initialize(PrimitiveShaderInfo *shader_info, ShaderCodeType code_type);
+            Result Initialize(ComputeShaderInfo *shader_info, ShaderCodeType code_type);
 
-            bool Initialize(vp::res::ResBnshShaderProgram *res_program);
+            Result Initialize(vp::res::ResBnshShaderProgram *res_program);
             void Finalize();
 
             u32 GetInterfaceSlot(ShaderStage shader_stage, ShaderInterfaceType interface_type, const char *key);
         public:
-            u32 SetupForCommandList(VkShaderEXT **out_shader_array, VkShaderStageFlagBits **out_shader_stage_array);
+            constexpr VkShaderEXT *GetVkShaderArray() { return m_vk_shader_array; }
     };
     static_assert(sizeof(Shader) <= cMaxGfxShaderSize);
 }

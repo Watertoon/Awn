@@ -91,9 +91,13 @@ namespace awn::async {
     };
     
     constexpr AsyncQueue *AsyncTaskPushInfo::GetQueue() {
-        VP_ASSERT(this->queue != nullptr || this->queue_thread != nullptr);
-        AsyncQueue *out_queue = (this->queue != nullptr) ? this->queue : this->queue_thread->GetQueue();
-        VP_ASSERT(out_queue != nullptr);
-        return out_queue;
+        if (this->queue != nullptr) {
+            VP_ASSERT(this->queue_thread == nullptr || this->queue == this->queue_thread->GetQueue());
+            return this->queue;
+        }
+        if (this->queue_thread != nullptr) {
+            return this->queue_thread->GetQueue();
+        }
+        return nullptr;
     }
 }

@@ -17,6 +17,43 @@
 
 namespace awn::gfx {
 
+    void *CommandBuffer::GetDescriptorMemoryTextureSampler(ShaderStage shader_stage) {
+        return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
+    }
+
+    void *CommandBuffer::GetDescriptorMemoryImage(ShaderStage shader_stage) {
+        return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
+    }
+
+    void *CommandBuffer::GetDescriptorMemoryUniformBuffer(ShaderStage shader_stage) {
+        return this->GetDescriptorMemoryUniformBufferStorageBuffer(shader_stage);
+    }
+
+    void *CommandBuffer::GetDescriptorMemoryStorageBuffer(ShaderStage shader_stage) {
+        return this->GetDescriptorMemoryUniformBufferStorageBuffer(shader_stage);
+    }
+
+    void *CommandBuffer::GetDescriptorMemorySeparateTexture(ShaderStage shader_stage) {
+        return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
+    }
+
+    void *CommandBuffer::GetDescriptorMemorySeparateSampler(ShaderStage shader_stage) {
+        return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
+    }
+
+    void *CommandBuffer::GetDescriptorMemoryTextureSamplerImageSeparate(ShaderStage shader_stage) {
+        const size_t per_stage_size = impl::Context::GetInstance()->GetCombinedTextureSamplerDescriptorLayoutSize();
+        const size_t base_offset = (per_stage_size * (static_cast<u32>(shader_stage) + 1));
+        return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_staging_memory) + base_offset);
+    }
+
+    void *CommandBuffer::GetDescriptorMemoryUniformBufferStorageBuffer(ShaderStage shader_stage) {
+        const size_t ts_i_size = vp::res::cMaxBnshShaderStageCount * impl::Context::GetInstance()->GetCombinedTextureSamplerDescriptorLayoutSize();
+        const size_t per_stage_size = impl::Context::GetInstance()->GetCombinedBufferDescriptorLayoutSize();
+        const size_t base_offset = ts_i_size + (per_stage_size * (static_cast<u32>(shader_stage) + 1));
+        return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_staging_memory) + base_offset);
+    }
+
     void CommandBuffer::TransitionRenderTargetsImpl(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target, SyncScopeInfo *sync_scope, VkImageLayout image_layout) {
 
         VkImageMemoryBarrier2 barrier_array[cTargetMaxBoundRenderTargetColorCount + 1] = {};
@@ -77,12 +114,22 @@ namespace awn::gfx {
         /* Copy descriptors to gpu */
         ::memcpy(memory, desc_memory, memory_size);
 
-        /* Set descriptor set offset */
+        /* Set per stage offset */
         const size_t gpu_offset = m_command_memory_base_offset + memory_offset;
+        const bool is_per_stage = gfx::IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets);
+        VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
+        if (!is_per_stage) {
+            if (m_queue_type == QueueType::Graphics) {
+                vk_pipeline_layout = impl::Context::GetInstance()->GetVkPipelineLayoutGraphics();
+            } else if (m_queue_type == QueueType::Compute) {
+                vk_pipeline_layout = impl::Context::GetInstance()->GetVkPipelineLayoutCompute();
+            }
+        }
         const VkSetDescriptorBufferOffsetsInfoEXT offsets_info = {
-            .sType = VK_STRUCTURE_TYPE_SET_DESCRIPTOR_BUFFER_OFFSETS_INFO_EXT,\
-            .pNext = std::addressof(impl::Context::GetInstance()->GetPerStageDescriptorLayout(stage)->vk_pipeline_layout_create_info),
+            .sType = VK_STRUCTURE_TYPE_SET_DESCRIPTOR_BUFFER_OFFSETS_INFO_EXT,
+            .pNext = (is_per_stage) ? std::addressof(impl::Context::GetInstance()->GetPerStageDescriptorLayout(stage)->vk_pipeline_layout_create_info) : nullptr,
             .stageFlags = vp::res::GfxShaderStageToVkShaderStageFlags(stage),
+            .layout = (!is_per_stage) ? vk_pipeline_layout : VK_NULL_HANDLE,
             .firstSet = base_set,
             .setCount = 1,
             .pBufferIndices = std::addressof(impl::Context::cTargetDescriptorBufferIndexPerStage),
@@ -95,14 +142,16 @@ namespace awn::gfx {
 
     void CommandBuffer::CommitDescriptors() {
 
-        const auto commit_desc_lambda = [this]<size_t BaseSetIndex>() {
+        const auto commit_desc_lambda = [this](bool is_texture) {
 
             /* Allocate descriptor buffer space, copy descriptor memory to buffer, and update binding offsets for each changed stage */
-            const s16 *size_array = (BaseSetIndex == impl::Context::cTargetTextureSamplerImageSeparateLayoutSet) ? m_ts_i_st_ss_commit_size_array : m_ubo_ssbo_commit_size_array;
-            const auto memory_desc_lambda = [this](ShaderStage stage, s16 size) {                
+            impl::Context *context = impl::Context::GetInstance();
+            s32 *size_array = (is_texture) ? m_ts_i_st_ss_commit_size_array : m_ubo_ssbo_commit_size_array;
+            const auto memory_desc_lambda = [this, context, is_texture](ShaderStage stage, s32 size) {                
                 if (-1 < size) {
-                    void *desc_memory = (BaseSetIndex == impl::Context::cTargetTextureSamplerImageSeparateLayoutSet) ? this->GetDescriptorMemoryTextureSamplerImageSeparate(stage) : this->GetDescriptorMemoryUniformBufferStorageBuffer(stage);
-                    this->CommitDescriptorMemory(stage, BaseSetIndex, desc_memory, size);
+                    void *desc_memory = (is_texture) ? this->GetDescriptorMemoryTextureSamplerImageSeparate(stage) : this->GetDescriptorMemoryUniformBufferStorageBuffer(stage);
+                    const u32 set_index = (is_texture) ? context->GetPerStageSetCombinedTextureSampler(stage) : context->GetPerStageSetCombinedBuffer(stage);
+                    this->CommitDescriptorMemory(stage, set_index, desc_memory, size);
                 }
             };
             memory_desc_lambda(ShaderStage::Vertex, size_array[static_cast<u32>(ShaderStage::Vertex)]);
@@ -114,16 +163,23 @@ namespace awn::gfx {
             memory_desc_lambda(ShaderStage::Task, size_array[static_cast<u32>(ShaderStage::Task)]);
             memory_desc_lambda(ShaderStage::Mesh, size_array[static_cast<u32>(ShaderStage::Mesh)]);
 
+            /* Reset descriptor memory commit sizes */
+            if (!m_is_preserve_descriptors_between_commit) {                
+                for (u32 i = 0; i < vp::res::cMaxBnshShaderStageCount; ++i) {
+                    size_array[i] = -1;
+                }   
+            }
+
             return;
         };
         /* Commit uniform buffer and storage image descriptors */
         if (m_is_dirty_ts_i_st_ss) {
-            commit_desc_lambda.template operator()<impl::Context::cTargetTextureSamplerImageSeparateLayoutSet>();
+            commit_desc_lambda(true);
             m_is_dirty_ts_i_st_ss = false;
         }
         /* Commit separate texture and separate sampler descriptors */
         if (m_is_dirty_ubo_ssbo) {
-            commit_desc_lambda.template operator()<impl::Context::cTargetUniformBufferStorageBufferLayoutSet>();
+            commit_desc_lambda(false);
             m_is_dirty_ubo_ssbo = false;
         }
 
@@ -221,7 +277,7 @@ namespace awn::gfx {
             .colorAttachmentCount = m_color_target_count,
             .pColorAttachmentLocations = color_attachment_index_array,
         };
-        ::pfn_vkCmdSetRenderingAttachmentLocationsKHR(m_command_list.vk_command_buffer, std::addressof(attachment_location_info));
+        ::pfn_vkCmdSetRenderingAttachmentLocations(m_command_list.vk_command_buffer, std::addressof(attachment_location_info));
 
         return;
     }
@@ -233,6 +289,123 @@ namespace awn::gfx {
 
         ::pfn_vkCmdEndRendering(m_command_list.vk_command_buffer);
 
+        return;
+    }
+
+    void CommandBuffer::SetSystemDescriptorBuffers() {
+
+        /* Set bindless and per stage descriptor buffer */
+        impl::DescriptorMemoryManager *desc_memory_mgr = impl::DescriptorMemoryManager::GetInstance();
+        const VkDescriptorBufferBindingInfoEXT binding_info = {
+            .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT,
+            .address = desc_memory_mgr->GetDescriptorBufferAddress().vk_device_address,
+            .usage   = VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT,
+        };
+        ::pfn_vkCmdBindDescriptorBuffersEXT(m_command_list.vk_command_buffer, 1, std::addressof(binding_info));
+
+        return;
+    }
+
+    void CommandBuffer::Initialize(const CommandBufferInfo *command_buffer_info) {
+        this->Finalize();
+
+        m_queue_type = command_buffer_info->queue_type;
+        m_is_primary = command_buffer_info->is_primary;
+        impl::Context *context = impl::Context::GetInstance();
+        const size_t desc_size = command_buffer_info->max_descriptor_count * context->GetMaxDescriptorSize();
+        const size_t call_desc_size = command_buffer_info->max_stage_draw_dispatch_count * context->GetDescriptorOffsetAlignment();
+        const size_t command_memory_size = vp::util::Max(desc_size, call_desc_size);
+        if (command_memory_size == 0) { return; }
+        m_staging_memory = impl::DescriptorMemoryManager::GetInstance()->AllocateStagingMemory();
+        void *memory = impl::DescriptorMemoryManager::GetInstance()->AllocateCommandMemory(std::addressof(m_command_memory_base_offset), command_memory_size);
+        VP_ASSERT(memory != nullptr);
+        m_command_memory_base = memory;
+        m_command_memory_iter = 0;
+        m_command_memory_size = command_memory_size;
+
+        return;
+    }
+
+    void CommandBuffer::Finalize() {
+        if (m_command_list.IsValid()) {
+            impl::CommandPoolManager::GetInstance()->FinalizeCommandList(m_command_list);
+            m_command_list = cInvalidCommandList;
+        }
+        if (m_command_memory_base != nullptr) {
+            impl::DescriptorMemoryManager::GetInstance()->FreeCommandMemory(m_command_memory_base);
+            m_command_memory_base = nullptr;
+            m_command_memory_base_offset = 0;
+        }
+        if (m_staging_memory != nullptr) {
+            impl::DescriptorMemoryManager::GetInstance()->FreeStagingMemory(m_staging_memory);
+            m_staging_memory = nullptr;
+        }
+    }
+
+    void CommandBuffer::Begin() {
+        //this->ResetDescriptorMemory();
+
+        /* Reset descriptor memory commit sizes */
+        for (u32 i = 0; i < vp::res::cMaxBnshShaderStageCount; ++i) {
+            m_ts_i_st_ss_commit_size_array[i] = -1;
+            m_ubo_ssbo_commit_size_array[i] = -1;
+        }
+
+        /* Allocate a command buffer */
+        m_command_list = impl::CommandPoolManager::GetInstance()->CreateCommandList(m_queue_type, m_command_list.pool_id, m_is_primary);
+
+        /* Begin command buffer */
+        const VkCommandBufferInheritanceInfo inheritance_info = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
+        };
+        const VkCommandBufferBeginInfo begin_info = {
+            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            .flags            = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+            .pInheritanceInfo = (m_is_primary) ? nullptr : std::addressof(inheritance_info),
+        };
+        const u32 result = ::pfn_vkBeginCommandBuffer(m_command_list.vk_command_buffer, std::addressof(begin_info));
+        VP_ASSERT(result == VK_SUCCESS);
+
+        return;
+    }
+
+    CommandList CommandBuffer::End() {
+
+        /* End rendering if necessary */
+        this->EndRenderingIfRendering();
+
+        /* End command buffer */
+        const u32 result = ::pfn_vkEndCommandBuffer(m_command_list.vk_command_buffer);
+        VP_ASSERT(result == VK_SUCCESS);
+        const CommandList out_list = m_command_list;
+        m_command_list = gfx::cInvalidCommandList;
+
+        return out_list;
+    }
+
+    void CommandBuffer::TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
+
+        SyncScopeInfo scope_info = {
+            .vk_src_stage_mask  = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+            .vk_src_access_mask = VK_ACCESS_2_NONE,
+            .vk_dst_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            .vk_dst_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        };
+        TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_GENERAL);
+        return;
+    }
+
+    void CommandBuffer::TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
+
+        this->EndRenderingIfRendering();
+
+        SyncScopeInfo scope_info = {
+            .vk_src_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            .vk_src_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            .vk_dst_stage_mask  = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
+            .vk_dst_access_mask = VK_ACCESS_2_NONE,
+        };
+        TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
         return;
     }
 
@@ -330,35 +503,6 @@ namespace awn::gfx {
         ::pfn_vkCmdClearAttachments(m_command_list.vk_command_buffer, 1, std::addressof(attachment), 1, std::addressof(rect));
     }
 
-    void CommandBuffer::SetSystemDescriptorBuffers() {
-
-        /* Set bindless and per stage descriptor buffer */
-        VkDeviceAddress descriptor_buffer_address_array[2] = {};
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        if (tex_samp_manager != nullptr) {
-            descriptor_buffer_address_array[0] = tex_samp_manager->GetBindlessDescriptorBufferAddress().vk_device_address;
-        }
-        impl::DescriptorMemoryManager *desc_memory_mgr = impl::DescriptorMemoryManager::GetInstance();
-        if (desc_memory_mgr != nullptr) {
-            descriptor_buffer_address_array[1] = desc_memory_mgr->GetDescriptorBufferAddress().vk_device_address;
-        }
-        const VkDescriptorBufferBindingInfoEXT binding_info[2] = {
-            {
-                .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT,
-                .address = descriptor_buffer_address_array[0],
-                .usage   = VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT,
-            },
-            {
-                .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT,
-                .address = descriptor_buffer_address_array[1],
-                .usage   = VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT,
-            },
-        };
-        ::pfn_vkCmdBindDescriptorBuffersEXT(m_command_list.vk_command_buffer, sizeof(binding_info) / sizeof(VkDescriptorBufferBindingInfoEXT),binding_info);
-
-        return;
-    }
-
     void CommandBuffer::Draw(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count) {
         this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
@@ -408,32 +552,6 @@ namespace awn::gfx {
         ::pfn_vkCmdBindVertexBuffers2(m_command_list.vk_command_buffer, binding, 1, std::addressof(vk_buffer), std::addressof(device_offset), std::addressof(device_size), std::addressof(device_stride));
     }
 
-    void CommandBuffer::TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
-
-        SyncScopeInfo scope_info = {
-            .vk_src_stage_mask  = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
-            .vk_src_access_mask = VK_ACCESS_2_NONE,
-            .vk_dst_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-            .vk_dst_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        };
-        TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_GENERAL);
-        return;
-    }
-
-    void CommandBuffer::TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
-
-        this->EndRenderingIfRendering();
-
-        SyncScopeInfo scope_info = {
-            .vk_src_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-            .vk_src_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT,
-            .vk_dst_stage_mask  = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
-            .vk_dst_access_mask = VK_ACCESS_2_NONE,
-        };
-        TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-        return;
-    }
-
     void CommandBuffer::SetRenderTargets(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
 
         /* Set deferred render targets */
@@ -447,12 +565,27 @@ namespace awn::gfx {
         return;
     }
 
-    void CommandBuffer::SetTextureAndSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot) {
+    void CommandBuffer::SetShader(Shader *shader) {
+        static constexpr VkShaderStageFlagBits cShaderStageFlagBitsArray[impl::Context::cTargetMaxShaderStageCount] = {
+            VK_SHADER_STAGE_VERTEX_BIT,
+            VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+            VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+            VK_SHADER_STAGE_GEOMETRY_BIT,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            VK_SHADER_STAGE_COMPUTE_BIT,
+            VK_SHADER_STAGE_TASK_BIT_EXT,
+            VK_SHADER_STAGE_MESH_BIT_EXT,
+        };
+        const u32 cShaderStageFlagBitsCount = impl::Context::cTargetMaxShaderStageCount - ((!gfx::IsOptionalFeature(OptionalFeature::SupportsMeshShaders)) * 2);
+        ::pfn_vkCmdBindShadersEXT(m_command_list.vk_command_buffer, cShaderStageFlagBitsCount, cShaderStageFlagBitsArray, shader->GetVkShaderArray());
+    }
+
+    void CommandBuffer::SetTextureSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot) {
 
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(shader_stage);
         const u32              desc_size     = context->GetTextureSamplerDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseTextureSampler(shader_stage);
         const u32              binding       = base_binding + location;
@@ -482,8 +615,8 @@ namespace awn::gfx {
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
         
         /* Set max binding */
-        const s16 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
-        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        const s32 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
         m_is_dirty_ts_i_st_ss = true;
 
         return;
@@ -494,7 +627,7 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(shader_stage);
         const u32              desc_size     = context->GetImageDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseImage(shader_stage);
         const u32              binding       = base_binding + location;
@@ -522,8 +655,8 @@ namespace awn::gfx {
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
 
         /* Set max binding */
-        const s16 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
-        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        const s32 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
         m_is_dirty_ts_i_st_ss = true;
 
         return;
@@ -534,7 +667,7 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutUniformBufferStorageBuffer(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedBuffer(shader_stage);
         const u32              desc_size     = context->GetUniformBufferDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseUniformBuffer(shader_stage);
         const u32              binding       = base_binding + location;
@@ -561,8 +694,8 @@ namespace awn::gfx {
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
 
         /* Set max binding */
-        const s16 prev = m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)];
-        m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        const s32 prev = m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
         m_is_dirty_ubo_ssbo = true;
 
         return;
@@ -573,7 +706,7 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutUniformBufferStorageBuffer(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedBuffer(shader_stage);
         const u32              desc_size     = context->GetStorageBufferDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseStorageBuffer(shader_stage);
         const u32              binding       = base_binding + location;
@@ -600,8 +733,8 @@ namespace awn::gfx {
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
         
         /* Set max binding */
-        const s16 prev = m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)];
-        m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        const s32 prev = m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ubo_ssbo_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
         m_is_dirty_ubo_ssbo = true;
 
         return;
@@ -612,36 +745,26 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(shader_stage);
         const u32              desc_size     = context->GetSeparateTextureDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseSeparateTexture(shader_stage);
         const u32              binding       = base_binding + location;
         VkDeviceSize           desc_offset   = 0;
         ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
 
-        /* Get memory offset */
+        /* Get staging memory offset */
         void *desc_memory   = this->GetDescriptorMemorySeparateTexture(shader_stage);
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
 
-        /* Cache descriptor */
+        /* Cache descriptor to staging */
         impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        const VkImageView image_view = tex_samp_manager->GetVkImageView(texture_slot);
-        const VkDescriptorImageInfo image_info = {
-            .imageView   = image_view,
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-            .data = {
-                .pSampledImage  = std::addressof(image_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
+        VP_ASSERT(tex_samp_manager->IsTextureViewSlotValid(texture_slot));
+        const impl::TextureViewSamplerManager::TextureViewUnit *unit = tex_samp_manager->GetTextureViewUnit(texture_slot.index);
+        ::memcpy(memory_offset, unit->descriptor_memory, desc_size);
 
         /* Set max binding */
-        const s16 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
-        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        const s32 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
         m_is_dirty_ts_i_st_ss = true;
 
         return;
@@ -652,42 +775,29 @@ namespace awn::gfx {
         /* Get descriptor memory offset */
         impl::Context         *context       = impl::Context::GetInstance();
         VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(shader_stage);
+        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(shader_stage);
         const u32              desc_size     = context->GetSeparateSamplerDescriptorSize();
         const u32              base_binding  = impl::Context::GetPerStageBindingBaseSeparateSampler(shader_stage);
         const u32              binding       = base_binding + location;
         VkDeviceSize           desc_offset   = 0;
         ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
 
-        /* Get memory offset */
+        /* Get staging memory offset */
         void *desc_memory   = this->GetDescriptorMemorySeparateSampler(shader_stage);
         void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
 
-        /* Cache descriptor */
+        /* Cache descriptor to staging */
         impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        const VkSampler sampler = tex_samp_manager->GetVkSampler(sampler_slot);
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_SAMPLER,
-            .data = {
-                .pSampler  = std::addressof(sampler),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
+        VP_ASSERT(tex_samp_manager->IsSamplerSlotValid(sampler_slot));
+        const impl::TextureViewSamplerManager::SamplerUnit *unit = tex_samp_manager->GetSamplerUnit(sampler_slot.index);
+        ::memcpy(memory_offset, unit->descriptor_memory, desc_size);
 
         /* Set max binding */
-        const s16 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
-        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s16>(desc_offset + desc_size));
+        const s32 prev = m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)];
+        m_ts_i_st_ss_commit_size_array[static_cast<u32>(shader_stage)] = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
         m_is_dirty_ts_i_st_ss = true;
 
         return;
-    }
-
-    void CommandBuffer::SetShader(Shader *shader) {
-        VkShaderStageFlagBits **flag_bit_array = nullptr;
-        VkShaderEXT           **shader_array   = nullptr;
-        const u32               stage_count    = shader->SetupForCommandList(shader_array, flag_bit_array);
-        ::pfn_vkCmdBindShadersEXT(m_command_list.vk_command_buffer, stage_count, *flag_bit_array, *shader_array);
     }
 
     void CommandBuffer::SetBlendState(BlendState *blend_state) {
@@ -724,12 +834,7 @@ namespace awn::gfx {
 
         ::pfn_vkCmdSetDepthCompareOp(m_command_list.vk_command_buffer, static_cast<VkCompareOp>(depth_stencil_state->depth_comparison_function));
 
-        if (!depth_stencil_state->is_enable_depth_bounds) {
-            ::pfn_vkCmdSetDepthBoundsTestEnable(m_command_list.vk_command_buffer, false);
-        } else {
-            ::pfn_vkCmdSetDepthBoundsTestEnable(m_command_list.vk_command_buffer, true);
-            ::pfn_vkCmdSetDepthBounds(m_command_list.vk_command_buffer, 0.0f, 1.0f);
-        }
+        ::pfn_vkCmdSetDepthBoundsTestEnable(m_command_list.vk_command_buffer, false);
 
         ::pfn_vkCmdSetStencilTestEnable(m_command_list.vk_command_buffer, depth_stencil_state->is_enable_stencil_test);
         ::pfn_vkCmdSetStencilCompareMask(m_command_list.vk_command_buffer, VK_STENCIL_FACE_FRONT_AND_BACK, depth_stencil_state->stencil_value_mask);
@@ -804,46 +909,5 @@ namespace awn::gfx {
 
     void CommandBuffer::SetLineWidth(float line_width) {
         ::pfn_vkCmdSetLineWidth(m_command_list.vk_command_buffer, line_width);
-    }
-
-    void CommandBuffer::Begin() {
-        //this->ResetDescriptorMemory();
-
-        /* Reset descriptor memory commit sizes */
-        for (u32 i = 0; i < vp::res::cMaxBnshShaderStageCount; ++i) {
-            m_ts_i_st_ss_commit_size_array[i] = -1;
-            m_ubo_ssbo_commit_size_array[i] = -1;
-        }
-
-        /* Allocate a command buffer */
-        m_command_list = impl::CommandPoolManager::GetInstance()->CreateCommandList(m_queue_type, m_command_list.pool_id, m_is_primary);
-
-        /* Begin command buffer */
-        const VkCommandBufferInheritanceInfo inheritance_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
-        };
-        const VkCommandBufferBeginInfo begin_info = {
-            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .flags            = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
-            .pInheritanceInfo = (m_is_primary) ? nullptr : std::addressof(inheritance_info),
-        };
-        const u32 result = ::pfn_vkBeginCommandBuffer(m_command_list.vk_command_buffer, std::addressof(begin_info));
-        VP_ASSERT(result == VK_SUCCESS);
-
-        return;
-    }
-
-    CommandList CommandBuffer::End() {
-
-        /* End rendering if necessary */
-        this->EndRenderingIfRendering();
-
-        /* End command buffer */
-        const u32 result = ::pfn_vkEndCommandBuffer(m_command_list.vk_command_buffer);
-        VP_ASSERT(result == VK_SUCCESS);
-        const CommandList out_list = m_command_list;
-        m_command_list = gfx::cInvalidCommandList;
-
-        return out_list;
     }
 }

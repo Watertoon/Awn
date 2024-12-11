@@ -53,8 +53,8 @@ namespace vp::res {
         void                      *reserve0;
         u16                        bone_index;
         u16                        bone_parent_index;
-        u16                        smooth_bone_index;
-        u16                        rigid_bone_index;
+        u16                        bone_index_smooth;
+        u16                        bone_index_rigid;
         u16                        billboard_bone_index;
         u16                        user_data_count;
         union {
@@ -130,7 +130,15 @@ namespace vp::res {
         static constexpr u32 cMagic = util::TCharCode32("FSKL");
         static constexpr u32 cInvalidBoneIndex = 0xffff'ffff;
 
-        constexpr u32 FindBoneIndexAtEndOfBranch(u32 bone_index) {
+        constexpr const u16 *GetSmoothBoneIndexArray() const {
+            return this->bone_index_array;
+        }
+
+        constexpr const u16 *GetRigidBoneIndexArray() const {
+            return std::addressof(this->bone_index_array[this->bone_count_smooth]);
+        }
+
+        constexpr u32 FindBoneIndexAtEndOfBranch(u32 bone_index) const {
             const u32 count = static_cast<u32>(this->bone_count);
             u32 parent_bone = (bone_index == 0) ? cInvalidBoneIndex : static_cast<u32>(this->bone_array[bone_index].bone_parent_index);
             u32 end_bone = (count < bone_index + 1) ? bone_index + 1 : count;
@@ -141,11 +149,12 @@ namespace vp::res {
             return end_bone;
         }
 
-        constexpr u32 TryGetBoneIndex(const char *bone_name) {
+        constexpr u32 TryGetBoneIndex(const char *bone_name) const {
             if (bone_dictionary == nullptr) { return cInvalidBoneIndex; }
             const u32 entry_id = bone_dictionary->TryGetEntryIndexByKey(bone_name);
             return entry_id;
         }
+
         constexpr ResBfresBone *TryGetBone(const char *bone_name) {
             if (bone_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = bone_dictionary->TryGetEntryIndexByKey(bone_name);

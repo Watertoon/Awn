@@ -17,6 +17,8 @@
 
 namespace awn::hid {
 
+    enum class KeyboardAttribute : u32 {};
+
     /* From: https://switchbrew.org/wiki/HID_services#KeyboardModifierSet */
     enum class KeyboardModifier : u32 {
         Invalid    = 0,

@@ -61,7 +61,8 @@ namespace awn::gfx {
 
     struct CommandBufferInfo {
         QueueType queue_type = QueueType::Graphics;
-        u32 per_stage_memory_size = impl::Context::cTargetMaxPerStageMemorySizeTotal * 2;
+        u32 max_stage_draw_dispatch_count = 0x4;
+        u32 max_descriptor_count = 0x10;
         bool is_primary = false;
     };
 
@@ -79,11 +80,12 @@ namespace awn::gfx {
             u32 m_color_target_count;
             RenderTargetColor *m_color_target_array[cTargetMaxBoundRenderTargetColorCount];
             RenderTargetDepthStencil *m_depth_stencil_target;
+            bool m_is_preserve_descriptors_between_commit;
             bool m_is_dirty_ts_i_st_ss;
             bool m_is_dirty_ubo_ssbo;
-            s16 m_ts_i_st_ss_commit_size_array[vp::res::cMaxBnshShaderStageCount];
-            s16 m_ubo_ssbo_commit_size_array[vp::res::cMaxBnshShaderStageCount];
-            impl::DescriptorMemoryManager::Staging *m_staging_memory;
+            s32 m_ts_i_st_ss_commit_size_array[vp::res::cMaxBnshShaderStageCount];
+            s32 m_ubo_ssbo_commit_size_array[vp::res::cMaxBnshShaderStageCount];
+            void *m_staging_memory;
         protected:
             struct SyncScopeInfo {
                 u32 vk_src_stage_mask;
@@ -92,32 +94,14 @@ namespace awn::gfx {
                 u32 vk_dst_access_mask;
             };
         protected:
-            constexpr void *GetDescriptorMemoryTextureSampler(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
-            }
-            constexpr void *GetDescriptorMemoryImage(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
-            }
-            constexpr void *GetDescriptorMemoryUniformBuffer(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryUniformBufferStorageBuffer(shader_stage);
-            }
-            constexpr void *GetDescriptorMemoryStorageBuffer(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryUniformBufferStorageBuffer(shader_stage);
-            }
-            constexpr void *GetDescriptorMemorySeparateTexture(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
-            }
-            constexpr void *GetDescriptorMemorySeparateSampler(ShaderStage shader_stage) {
-                return this->GetDescriptorMemoryTextureSamplerImageSeparate(shader_stage);
-            }
-            constexpr void *GetDescriptorMemoryTextureSamplerImageSeparate(ShaderStage shader_stage) {
-                const u32 stage_index = static_cast<u32>(shader_stage);
-                return m_staging_memory->descriptor_memory_ts_i_st_ss[stage_index];
-            }
-            constexpr void *GetDescriptorMemoryUniformBufferStorageBuffer(ShaderStage shader_stage) {
-                const u32 stage_index = static_cast<u32>(shader_stage);
-                return m_staging_memory->descriptor_memory_ubo_ssbo[stage_index];
-            }
+            void *GetDescriptorMemoryTextureSampler(ShaderStage shader_stage);
+            void *GetDescriptorMemoryImage(ShaderStage shader_stage);
+            void *GetDescriptorMemoryUniformBuffer(ShaderStage shader_stage);
+            void *GetDescriptorMemoryStorageBuffer(ShaderStage shader_stage);
+            void *GetDescriptorMemorySeparateTexture(ShaderStage shader_stage);
+            void *GetDescriptorMemorySeparateSampler(ShaderStage shader_stage);
+            void *GetDescriptorMemoryTextureSamplerImageSeparate(ShaderStage shader_stage);
+            void *GetDescriptorMemoryUniformBufferStorageBuffer(ShaderStage shader_stage);
 
             constexpr void ResetDescriptorMemory() {
                 m_command_memory_iter = 0;
@@ -133,40 +117,14 @@ namespace awn::gfx {
 
             void SetSystemDescriptorBuffers();
         public:
-            constexpr CommandBuffer() : m_command_list(), m_queue_type(), m_is_primary(), m_is_rendering(), m_is_render_target_dirty(), m_command_memory_base(), m_command_memory_base_offset(), m_command_memory_iter(), m_command_memory_size(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_staging_memory() {/*...*/}
+            constexpr CommandBuffer() : m_command_list(), m_queue_type(), m_is_primary(), m_is_rendering(), m_is_render_target_dirty(), m_command_memory_base(), m_command_memory_base_offset(), m_command_memory_iter(), m_command_memory_size(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_is_preserve_descriptors_between_commit(), m_staging_memory() {/*...*/}
             constexpr ~CommandBuffer() {/*...*/}
 
-            void Initialize(const CommandBufferInfo *command_buffer_info) {
-                this->Finalize();
+            void Initialize(const CommandBufferInfo *command_buffer_info);
+            void Finalize() ;
 
-                m_queue_type = command_buffer_info->queue_type;
-                m_is_primary = command_buffer_info->is_primary;
-                const size_t command_memory_size = command_buffer_info->per_stage_memory_size;
-                if (command_memory_size == 0) { return; }
-                m_staging_memory = impl::DescriptorMemoryManager::GetInstance()->AllocateStagingMemory();
-                void *memory = impl::DescriptorMemoryManager::GetInstance()->AllocateCommandMemory(std::addressof(m_command_memory_base_offset), command_memory_size);
-                VP_ASSERT(memory != nullptr);
-                m_command_memory_base = memory;
-                m_command_memory_iter = 0;
-                m_command_memory_size = command_memory_size;
-
-                return ;
-            }
-
-            void Finalize() {
-                if (m_command_list.IsValid()) {
-                    impl::CommandPoolManager::GetInstance()->FinalizeCommandList(m_command_list);
-                    m_command_list = cInvalidCommandList;
-                }
-                if (m_command_memory_base != nullptr) {                    
-                    impl::DescriptorMemoryManager::GetInstance()->FreeCommandMemory(m_command_memory_base);
-                    m_command_memory_base = nullptr;
-                    m_command_memory_base_offset = 0;
-                }
-                if (m_staging_memory != nullptr) {                    
-                    impl::DescriptorMemoryManager::GetInstance()->FreeStagingMemory(m_staging_memory);
-                    m_staging_memory = nullptr;
-                }
+            constexpr void SetPreserveDescriptors(bool is_preserve) {
+                m_is_preserve_descriptors_between_commit = is_preserve;
             }
         public:
             void Begin();
@@ -193,7 +151,7 @@ namespace awn::gfx {
 
             void SetShader(Shader *shader);
 
-            void SetTextureAndSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot);
+            void SetTextureSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot);
             void SetImage(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
             void SetUniformBuffer(u32 location, gfx::ShaderStage shader_stage, GpuBufferAddress constant_buffer_address, size_t size);
             void SetStorageBuffer(u32 location, gfx::ShaderStage shader_stage, GpuBufferAddress storage_buffer_address, size_t size);
@@ -209,5 +167,17 @@ namespace awn::gfx {
             void SetLineWidth(float line_width);
         public:
             constexpr ALWAYS_INLINE VkCommandBuffer GetVkCommandBuffer() const { return m_command_list.vk_command_buffer; }
+    };
+
+    class ScopedCommandBufferPreserveDescriptors {
+        private:
+            CommandBuffer *m_cmd_buf;
+        public:
+            constexpr ScopedCommandBufferPreserveDescriptors(CommandBuffer *command_buffer) : m_cmd_buf(command_buffer) {
+                command_buffer->SetPreserveDescriptors(true);
+            }
+            constexpr ~ScopedCommandBufferPreserveDescriptors() {
+                m_cmd_buf->SetPreserveDescriptors(false);
+            }
     };
 }

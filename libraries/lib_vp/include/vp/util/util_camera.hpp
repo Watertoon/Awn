@@ -26,7 +26,7 @@ namespace vp::util {
             constexpr Camera() : m_camera_mtx() {/*...*/}
             constexpr virtual ~Camera() {/*...*/}
 
-            void UpdateCameraMatrix() {
+            void UpdateMatrix() {
                 this->CalculateCameraMatrix(std::addressof(m_camera_mtx));
             }
 
@@ -115,7 +115,7 @@ namespace vp::util {
                 return Vector3f { (*camera_mtx)[1,0], (*camera_mtx)[2,0], (*camera_mtx)[3,0], };
             }
 
-            constexpr Vector3f GetDirectionByMatrix() const {
+            constexpr Vector3f GetAtByMatrix() const {
                 const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
                 return Vector3f { (*camera_mtx)[1,1], (*camera_mtx)[2,1], (*camera_mtx)[3,1], };
             }

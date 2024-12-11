@@ -129,6 +129,18 @@ namespace awn::res::impl {
         return;
     }
 
+    void AsyncResourceManager::ClearAllCaches() {
+        const auto loop_lambda = [](ResourceUnitManager *manager, ResourceUnit *resource_unit) {
+            VP_UNUSED(manager);
+            if (!resource_unit->m_state.GetBit(ResourceUnit::State_IsFreeableForMemoryManager)) { return true; }
+            resource_unit->UnregisterFromResourceUnitManager();
+            resource_unit->FinalizeForClearCache();
+            return true;
+        };
+        const auto loop_function = vp::util::MakeLambdaFunction<bool(ResourceUnitManager*,ResourceUnit*)>(loop_lambda);
+        m_extension_manager.LoopResourceUnitManagers(std::addressof(loop_function));
+    }
+
     void AsyncResourceManager::ProcessAdjustReference() {
 
         /* Ensure back ring has elements */
@@ -204,6 +216,32 @@ namespace awn::res::impl {
         return;
     }
 
+    void AsyncResourceManager::ProcessHeapAdjust() {
+
+        /* Ensure back ring has elements */
+        const u32 frame_index = m_heap_adjust_frame_buffer.GetCurrentFrameIndex();
+        vp::util::FrameArray<u16> *frame = m_heap_adjust_frame_buffer.GetFrameArray(frame_index);
+        const u32 used_count = frame->GetUsedCount();
+        if (used_count == 0) { return; }
+
+        /* Advance frame */
+        {
+            std::scoped_lock l(m_heap_adjust_frame_cs);
+            m_heap_adjust_frame_buffer.AdvanceFrameArray();
+        }
+
+        /* Heap adjust */
+        for (const u16 &index : *frame) {
+
+            /* Heap adjust resource unit */
+            ResourceUnit *unit = m_resource_unit_allocator.GetResourceUnitByIndex(index);
+            if (unit == nullptr) { continue; }
+            unit->HeapAdjust();
+        }
+
+        return;
+    }
+
     void AsyncResourceManager::FinalizeResourceUnitSync(ResourceUnit *resource_unit) {
 
         /* Ensure freeable */
@@ -220,14 +258,17 @@ namespace awn::res::impl {
         resource_unit->UnregisterFromResourceUnitManager();
         resource_unit->ClearCache();
 
-        /* Release archive binder */
-        if (resource_unit->m_archive_resource != nullptr) {
-            resource_unit->m_archive_resource = nullptr;
-            resource_unit->m_archive_binder.Release();
-        }
+        if (resource_unit->m_status == ResourceUnit::Status::Freed) {
 
-        /* Free to resource unit allocator */
-        this->FreeResourceUnit(resource_unit);
+            /* Release archive binder */
+            if (resource_unit->m_archive_resource != nullptr) {
+                resource_unit->m_archive_resource = nullptr;
+                resource_unit->m_archive_binder.Release();
+            }
+
+            /* Free to resource unit allocator */
+            this->FreeResourceUnit(resource_unit);
+        }
 
         return;
     }
@@ -410,16 +451,6 @@ namespace awn::res::impl {
         return resource_unit->LoadMemoryResult(result_info);
     }
 
-    void AsyncResourceManager::ReserveUnloadExe([[maybe_unused]] void *arg) {
-        /* Adjust reference counts and schedule pending unloads */
-        this->ProcessAdjustReference();
-        this->ProcessUnload();
-    }
-
-    void AsyncResourceManager::HeapAdjustExe(void *resource_unit) {
-        reinterpret_cast<ResourceUnit*>(resource_unit)->HeapAdjust();
-    }
-
     void AsyncResourceManager::LoadFileExe(void *resource_unit) {
         reinterpret_cast<ResourceUnit*>(resource_unit)->LoadFile();
     }
@@ -432,6 +463,21 @@ namespace awn::res::impl {
 
     void AsyncResourceManager::ComposeExe(void *resource_unit) {
         reinterpret_cast<ResourceUnit*>(resource_unit)->Compose();
+    }
+
+    void AsyncResourceManager::ReserveUnloadExe([[maybe_unused]] void *arg) {
+        /* Adjust reference counts and schedule pending unloads */
+        this->ProcessAdjustReference();
+        this->ProcessUnload();
+    }
+
+    void AsyncResourceManager::ClearCacheForAllocateExe(void *count) {
+        this->ProcessHeapAdjust();
+        m_memory_manager.ClearCacheForAllocate(static_cast<u32>(reinterpret_cast<uintptr_t>(count)));
+    }
+
+    void AsyncResourceManager::HeapAdjustExe(void *resource_unit) {
+        reinterpret_cast<ResourceUnit*>(resource_unit)->HeapAdjust();
     }
 
     void AsyncResourceManager::UnloadForSyncExe(void *resource_unit) {
@@ -487,6 +533,24 @@ namespace awn::res::impl {
         RESULT_RETURN_SUCCESS;
     }
 
+    void AsyncResourceManager::DeferClearCacheExe(void *resource_unit) {
+        ResourceUnit *unit = reinterpret_cast<ResourceUnit*>(resource_unit);
+        if (0 < unit->GetReferenceCount()) { return; }
+        unit->UnregisterFromResourceUnitManager();
+    }
+
+    Result AsyncResourceManager::DeferClearCacheResult(async::TaskResultInvokeInfo *result_info) {
+        async::AsyncTaskPushInfo push_info = {
+            .queue_thread = m_thread_memory,
+            .task_function = std::addressof(m_clear_cache_exe),
+            .result_function = std::addressof(m_clear_cache_result),
+            .user_data = result_info->user_data,
+            .priority = 0xd,
+        };
+        RESULT_ABORT_UNLESS(result_info->task->PushTask(std::addressof(push_info)));
+        RESULT_RETURN(async::ResultRescheduled);
+    }
+
     void AsyncResourceManager::ClearCacheExe(void *resource_unit) {
         reinterpret_cast<ResourceUnit*>(resource_unit)->ClearCache();
     }
@@ -502,20 +566,57 @@ namespace awn::res::impl {
         this->ProcessAdjustReference();
         this->ProcessUnload();
         
-        /* TODO; Process trigger clear all caches */
+        /* Process trigger clear all caches */
         if (m_is_trigger_clear_all_caches) {
             m_is_trigger_clear_all_caches = false;
             this->SuspendMemoryThread();
-            //this->ClearAllCaches();
+            this->ClearAllCaches();
             this->ResumeMemoryThread();
         }
 
-        /* TODO; schedule clear cache for finalize list */
-        
-        /* TODO; clear cache for keep alloc size */
-        
+        /* Schedule clear cache for finalize list */
+        {
+            std::scoped_lock l(m_finalize_list_cs);
+            auto iter = m_resource_unit_finalize_list.begin();
+            auto end = m_resource_unit_finalize_list.end();
+            while (iter != end) {
+                ResourceUnit *unit = std::addressof(*iter);
+                ++iter;
+                const bool is_schedulable = unit->m_unload_task.IsSchedulable();
+                if (!is_schedulable) {
+                    unit->m_finalize_async_res_mgr_list_node.Unlink();
+                    unit->FinalizeForClearCache();
+                }
+            }
+        }
 
-        /* TODO; schedule heap adjust on memory */
+        /* High priority clear cache for keep alloc size */
+        {            
+            ++m_clear_cache_tick_counter;
+            if (m_clear_cache_tick_count <= m_clear_cache_tick_counter && m_task_for_clear_cache_for_allocate->IsSchedulable()) {
+                m_clear_cache_tick_counter = 0;
+                async::AsyncTaskPushInfo push_info = {
+                    .queue_thread = m_thread_memory,
+                    .task_function = std::addressof(m_clear_cache_for_allocate_exe),
+                    .user_data = reinterpret_cast<void*>(0xffff'ffff),
+                    .priority = 0x3,
+                };
+                RESULT_ABORT_UNLESS(m_task_for_clear_cache_for_allocate->PushTask(std::addressof(push_info)));
+            }
+        }
+
+        /* Schedule low-priority heap adjust on memory */
+        {
+            const bool is_schedulable = m_task_for_heap_adjust->IsSchedulable();
+            if (!is_schedulable) {
+                async::AsyncTaskPushInfo push_info = {
+                    .queue_thread = m_thread_memory,
+                    .task_function = std::addressof(m_process_heap_adjust_exe),
+                    .priority = 0xe,
+                };
+                RESULT_ABORT_UNLESS(m_task_for_heap_adjust->PushTask(std::addressof(push_info)));
+            }
+        }
 
         /* Calculate thread local archive manager */
         m_thread_local_archive_manager.Calculate();
@@ -600,7 +701,7 @@ namespace awn::res::impl {
         }
 
         /* Ensure managed thread for managed reference */
-        const bool is_persistant = this->IsManagedThread() & (push_load_info->is_persistant != 0);
+        const bool is_persistant = this->IsPersistantThread() & (push_load_info->is_persistant != 0);
         push_load_info->is_persistant = is_persistant;
 
         /* Boost priority by 1 if the thread local archive exists */
@@ -649,7 +750,7 @@ namespace awn::res::impl {
         }
 
         /* Ensure managed thread for managed reference */
-        const bool is_persistant = this->IsManagedThread() & (push_load_info->is_persistant != 0);
+        const bool is_persistant = this->IsPersistantThread() & (push_load_info->is_persistant != 0);
         push_load_info->is_persistant = is_persistant;
 
         /* Check if thread local archive is active */
@@ -850,6 +951,7 @@ namespace awn::res::impl {
         m_task_for_clear_cache_for_allocate = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
         m_task_for_force_reserve_unload     = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
         m_task_for_force_clear_all_caches   = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
+        m_task_for_heap_adjust              = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
 
         /* Initialize decompressor manager with a decompressor set for each load thread */
         m_decompressor_manager.Initialize(system_heap, manager_info->load_thread_count);
@@ -925,6 +1027,11 @@ namespace awn::res::impl {
             delete m_task_for_force_clear_all_caches;
             m_task_for_force_clear_all_caches = nullptr;
         }
+        if (m_task_for_heap_adjust != nullptr) {
+            m_task_for_heap_adjust->Finalize();
+            delete m_task_for_heap_adjust;
+            m_task_for_heap_adjust = nullptr;
+        }
 
         /* Finalize resource unit allocator */
         m_resource_unit_allocator.Finalize();
@@ -994,7 +1101,7 @@ namespace awn::res::impl {
         m_queue_control.WaitForPriorityLevel(5);
 
         /* Force reserve unload */
-        if (!m_task_for_force_reserve_unload->IsPending()) {
+        if (m_task_for_force_reserve_unload->IsSchedulable()) {
             async::AsyncTaskPushInfo push_info = {
                 .queue_thread  = m_thread_control,
                 .task_function = std::addressof(m_reserve_unload_exe),
@@ -1015,6 +1122,18 @@ namespace awn::res::impl {
         RESULT_ABORT_UNLESS(m_task_for_force_clear_all_caches->PushTask(std::addressof(push_info)));
 
         return;
+    }
+
+    u32 AsyncResourceManager::AllocateDecompressor() {
+        return m_decompressor_manager.AllocateDecompressorHandle();
+    }
+
+    void AsyncResourceManager::FreeDecompressor(u32 handle) {
+        m_decompressor_manager.FreeDecompressorHandle(handle);
+    }
+
+    IDecompressor *AsyncResourceManager::GetDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask) {
+        return m_decompressor_manager.GetDecompressor(handle, decompressor_type, priority, core_mask);
     }
 
     /* Thread api */
@@ -1102,6 +1221,27 @@ namespace awn::res::impl {
         const sys::ThreadBase *current_thread = sys::GetCurrentThread();
         for (async::AsyncQueueThread *&thread : m_compose_thread_array) {
             if (current_thread == thread) { return true; }
+        }
+        return false;
+    }
+
+    void AsyncResourceManager::SetPersistantThreadArray(PersistantThreadArray *array) {
+        std::scoped_lock l(m_persistant_thread_array_cs);
+        m_persistant_thread_array = array;
+        m_is_enable_persistant = true;
+    }
+
+    void AsyncResourceManager::ReleasePersistantThreadArray() {
+        std::scoped_lock l(m_persistant_thread_array_cs);
+        m_persistant_thread_array = nullptr;
+        m_is_enable_persistant = false;
+    }
+
+    bool AsyncResourceManager::IsPersistantThread() {
+        std::scoped_lock l(m_persistant_thread_array_cs);
+        if (m_is_enable_persistant) { return false; }
+        for (async::AsyncQueueThread *&thread : m_load_thread_array) {
+            if (thread->IsSuspended()) { return true; }
         }
         return false;
     }

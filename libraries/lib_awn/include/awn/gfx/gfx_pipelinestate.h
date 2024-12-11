@@ -32,7 +32,7 @@ namespace awn::gfx {
                 u8 is_channel_g : 1;
                 u8 is_channel_b : 1;
                 u8 is_channel_a : 1;
-                u8 reserve0       : 4;
+                u8 reserve0 : 4;
             };
         };
         
@@ -68,11 +68,10 @@ namespace awn::gfx {
         union {
             u8 enable_mask;
             struct {
-                u8 is_enable_depth_test   : 1;
-                u8 is_enable_depth_write  : 1;
+                u8 is_enable_depth_test : 1;
+                u8 is_enable_depth_write : 1;
                 u8 is_enable_stencil_test : 1;
-                u8 is_enable_depth_bounds : 1;
-                u8 reserve0            : 4;
+                u8 reserve0 : 5;
             };
         };
         u8 depth_comparison_function;
@@ -106,7 +105,6 @@ namespace awn::gfx {
             back_face_stencil_reference            = 0;
         }
     };
-
     
     struct RasterizerState {
         union {

@@ -2,7 +2,10 @@
 
 namespace awn::res::impl {
 
+    class ResourceUnit;
     class ResourceUnitManager;
+
+    using ResourceUnitLoopFunction = vp::util::IFunction<bool(ResourceUnitManager*,ResourceUnit*)>;
 
     struct ExtensionManagerInfo {
         u32            extension_count;
@@ -22,6 +25,8 @@ namespace awn::res::impl {
 
             void Initialize(mem::Heap *heap, const ExtensionManagerInfo *ext_mgr_info);
             void Finalize();
+
+            bool LoopResourceUnitManagers(const ResourceUnitLoopFunction *loop_function);
 
             CompressionType      GetCompressionExtension([[maybe_unused]] const char *group_extension, const char *extension);
             ResourceUnitManager *GetResourceUnitManager([[maybe_unused]] const char *group_extension, const char *extension);

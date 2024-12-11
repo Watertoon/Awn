@@ -19,6 +19,11 @@ namespace awn::para {
 
     static constexpr inline u32 cDefaultFramesPerSecond = 60;
 
+    class VariableFramerateManager;
+
+    VariableFramerateManager *GetVariableFramerateManager();
+    void SetVariableFramerateManager(VariableFramerateManager *vfr_mgr);
+
     u32 GetTargetFramesPerSecond();
     void SetTargetFramesPerSecond(u32 target_fps);
 
@@ -102,7 +107,4 @@ namespace awn::para {
                 return m_counter_array[core_number].total_time_step;
             }
 	};
-
-    VariableFramerateManager *GetGlobalVariableFramerateManager();
-    void SetGlobalVariableFramerateManager(VariableFramerateManager *vfr_mgr);
 }

@@ -28,7 +28,7 @@ namespace awn::gfx::impl {
         const VkBufferCreateInfo vk_buffer_info = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .size  = size,
-            .usage = static_cast<u32>(usage_flags) | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+            .usage = static_cast<u32>(usage_flags) | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
         };
         const u32 result0 = ::pfn_vkCreateBuffer(Context::GetInstance()->GetVkDevice(), std::addressof(vk_buffer_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(buffer));
         if (result0 != VK_SUCCESS) { return VK_NULL_HANDLE; }
@@ -72,7 +72,7 @@ namespace awn::gfx::impl {
         const VkBufferCreateInfo vk_buffer_info = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .size  = size,
-            .usage = static_cast<u32>(usage_flags) | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+            .usage = static_cast<u32>(usage_flags) | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
         };
         const u32 result0 = ::pfn_vkCreateBuffer(Context::GetInstance()->GetVkDevice(), std::addressof(vk_buffer_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(buffer));
         if (result0 != VK_SUCCESS) { return VK_NULL_HANDLE; }
@@ -118,7 +118,7 @@ namespace awn::gfx::impl {
             .arrayLayers           = texture_info->array_layer_count,
             .samples               = static_cast<VkSampleCountFlagBits>(texture_info->sample_count),
             .tiling                = vp::res::GfxTileModeToVkImageTiling(static_cast<gfx::TileMode>(texture_info->tile_mode)),
-            .usage                 = image_usage_flags,
+            .usage                 = image_usage_flags | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
             .sharingMode           = (0 < Context::GetInstance()->GetQueueFamilyCount()) ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = Context::GetInstance()->GetQueueFamilyCount(),
             .pQueueFamilyIndices   = Context::GetInstance()->GetQueueFamilyIndiceArray(),
@@ -234,7 +234,7 @@ namespace awn::gfx::impl {
         };
         ::pfn_vkGetImageMemoryRequirements2(Context::GetInstance()->GetVkDevice(), std::addressof(memory_requirement_info), std::addressof(memory_requirements_2));
 
-        return { memory_requirements_2.memoryRequirements.size, memory_requirements_2.memoryRequirements.alignment };
+        return { memory_requirements_2.memoryRequirements.size, static_cast<s32>(memory_requirements_2.memoryRequirements.alignment), };
     }
 
     VkImageView CreateVkImageView(const TextureViewInfo *texture_view_info) {

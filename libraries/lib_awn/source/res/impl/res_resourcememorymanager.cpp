@@ -68,7 +68,7 @@ namespace awn::res::impl {
 
         std::scoped_lock l(m_memory_mgr_mutex);
 
-        while (0 < count && m_resource_unit_free_cache_list.IsEmpty() == false) {
+        while (0 < count && !m_resource_unit_free_cache_list.IsEmpty()) {
             --count;
             ResourceUnit *resource_unit = std::addressof(m_resource_unit_free_cache_list.PopBack());
             if (!resource_unit->m_state.GetBit(ResourceUnit::State_IsFreeableForMemoryManager)) { continue; }

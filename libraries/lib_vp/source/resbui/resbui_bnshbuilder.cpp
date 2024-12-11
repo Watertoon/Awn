@@ -247,7 +247,6 @@ namespace vp::resbui {
                         void *dict_memory = reinterpret_cast<void*>(program_iter);
                         dict_builder.Serialize(std::addressof(dict_memory_info), std::addressof(relocation_stream), reinterpret_cast<vp::res::ResNintendoWareStringPool*>(string_pool), dict_memory, dict_memory_info.total_size);
                         program_iter += dict_memory_info.total_size;
-                        dict_builder.Finalize();
                         return reinterpret_cast<vp::res::ResNintendoWareDictionary*>(dict_memory);
                     };
                     interface_info->input_attribute_dictionary  = interface_build_lambda(vp::res::GfxShaderInterfaceType::InputAttribute);
@@ -280,8 +279,8 @@ namespace vp::resbui {
                     u32 *interface_slot_array = reinterpret_cast<u32*>(program_iter);
                     program_iter += vp::util::AlignUp(total_slot_count * sizeof(u32), alignof(size_t));
                     u32 slot_i = 0;
-                    for (u32 i = 0; i < cInterfaceTypeCount ; ++i) {
-                        vp::res::GfxShaderInterfaceType type = cInterfaceTypeArray[i];
+                    for (u32 k = 0; k < cInterfaceTypeCount ; ++k) {
+                        vp::res::GfxShaderInterfaceType type = cInterfaceTypeArray[k];
                         for (BnshShaderInterfaceNode *&interface_node : shader_node->m_interface_array) {
                             /* Ensure current interface type */
                             if (type != interface_node->interface_type) { continue; }
@@ -308,9 +307,11 @@ namespace vp::resbui {
 
     Result BnshBuilder::CalculateMemoryInfo(BnshBuilderMemoryInfo *out_memory_info) {
 
+        /* ResBnsh */
         out_memory_info->location_header.offset = 0;
         out_memory_info->location_header.size = sizeof(res::ResBnsh);
 
+        /* ResBnshShaderContainer */
         u32 relocation_count = 0;
         out_memory_info->location_container.offset = out_memory_info->location_header.offset + out_memory_info->location_header.size;
         out_memory_info->location_container.size = sizeof(res::ResBnshShaderContainer);
@@ -361,6 +362,7 @@ namespace vp::resbui {
                             dict_builder.AddNode(std::addressof(interface_node->name));
                             m_string_builder.AddString(std::addressof(interface_node->name));
                         }
+                        /* Post Image is ext */
                         if (type == vp::res::GfxShaderInterfaceType::Image) {
                             slot_base_ext = total_slot_count;
                         }
@@ -368,7 +370,6 @@ namespace vp::resbui {
                         dict_builder.CalculateMemoryInfo(std::addressof(memory_info));
                         program_iter += memory_info.total_size;
                         program_relocation_count += memory_info.total_relocation_count;
-                        dict_builder.Finalize();
                     }
                     const u32 slot_count_ext = total_slot_count - slot_base_ext;
                     const u32 slot_count = (slot_base_ext - slot_base) + slot_count_ext;
@@ -391,18 +392,27 @@ namespace vp::resbui {
         }
         RESULT_RETURN_UNLESS(0 < variation_i && variation_i <= 0xffff, ResultOutOfBoundsVariation);
 
+        /* ResBnshShaderVariation array */
         out_memory_info->location_variation_array.offset = out_memory_info->location_container.offset + out_memory_info->location_container.size;
         out_memory_info->location_variation_array.size = variation_i * sizeof(vp::res::ResBnshShaderVariation);
         out_memory_info->location_variation_array.relocation_count = 1;
         relocation_count += 1;
 
+        /* Program array */
+        /*   ResBnshShaderProgram */
+        /*   ResBnshCodeInfo array */
+        /*   ResBnshShaderInterfaceInfoTable */
+        /*   ResBnshExtendedInterfaceInfoTable */
+        /*   ResDics */
+        /*   binding array */
         out_memory_info->location_program_array.offset = out_memory_info->location_variation_array.offset + out_memory_info->location_variation_array.size;
         out_memory_info->location_program_array.size = program_iter;
         out_memory_info->location_program_array.relocation_count = program_relocation_count;
         relocation_count += program_relocation_count;
 
+        /* ResBnshShaderContainerData */
         out_memory_info->location_container_data.offset = out_memory_info->location_program_array.offset + out_memory_info->location_program_array.size;
-        out_memory_info->location_container_data.size = sizeof(res::ResBnshShaderContainer) + vp::res::cDefaultBnshRuntimeMemoryPoolSize + vp::res::cDefaultBnshRuntimeShaderSize * program_i;
+        out_memory_info->location_container_data.size = sizeof(res::ResBnshShaderContainerData) + vp::res::cDefaultBnshRuntimeMemoryPoolSize + vp::res::cDefaultBnshRuntimeShaderSize * program_i;
         out_memory_info->location_container_data.relocation_count = 1;
         relocation_count += 1;
 

@@ -21,60 +21,72 @@ namespace awn::gfx::impl {
 
     void DescriptorMemoryManager::Initialize(mem::Heap *heap, mem::Heap *gpu_heap, const DescriptorMemoryManagerInfo *mgr_info) {
 
+        /* Get bindless texture view and sampler count */
+        Context *context = Context::GetInstance();
+        size_t bindless_descriptor_memory_size = context->GetBindlessDescriptorLayoutSize();     
+
         /* Allocate descriptor buffer */
-        m_memory = ::operator new(mgr_info->per_stage_memory_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
-        m_descriptor_vk_buffer = gfx::impl::CreateVkBuffer(m_memory, VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, mgr_info->per_stage_memory_size);
+        const size_t buffer_size = bindless_descriptor_memory_size + mgr_info->per_stage_memory_size;
+        m_memory_bindless = ::operator new(buffer_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
+        VP_ASSERT(m_memory_bindless != nullptr);
+        m_memory_per_stage = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory_bindless) + bindless_descriptor_memory_size);
+        m_descriptor_vk_buffer = gfx::impl::CreateVkBuffer(m_memory_bindless, VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, buffer_size);
         m_descriptor_buffer_address = gfx::impl::GetGpuBufferAddress(m_descriptor_vk_buffer);
 
         /* Create descriptor heap */
         const size_t management_size = sizeof(mem::SeparateHeap) + mem::SeparateHeap::CalculateManagementAreaSize(mgr_info->max_command_buffer_count);
         void *management_memory = ::operator new(management_size, heap, alignof(mem::SeparateHeap));
-        m_descriptor_heap = mem::SeparateHeap::Create("awn::gfx::DescriptorHeap", management_memory, management_size, mgr_info->per_stage_memory_size, true);
+        VP_ASSERT(management_memory != nullptr);
+        m_per_stage_heap = mem::SeparateHeap::Create("awn::gfx::PerStageDescriptorHeap", management_memory, management_size, mgr_info->per_stage_memory_size, true);
+
+        /* Calculate staging block sizes */
+        m_ts_i_size = context->GetCombinedTextureSamplerDescriptorLayoutSize();
+        m_ub_sb_size = context->GetCombinedBufferDescriptorLayoutSize();
 
         /* Create staging heap */
-        m_is_enable_separate_texture_sampler = mgr_info->is_enable_separate_texture_sampler;
-        const size_t block_size = sizeof(Staging);
-        m_staging_heap = mem::UnitHeap::TryCreate("awn::gfx::DescriptorStagingHeap", heap, block_size, mgr_info->max_command_buffer_count, alignof(size_t));
+        const size_t block_size = m_ts_i_size + m_ub_sb_size;
+        m_per_stage_staging_heap = mem::UnitHeap::TryCreate("awn::gfx::DescriptorStagingHeap", heap, block_size, mgr_info->max_command_buffer_count, alignof(size_t));
 
         return;
     }
 
     void DescriptorMemoryManager::Finalize() {
-        if (m_memory != nullptr) {
+        if (m_memory_bindless != nullptr) {
             gfx::impl::DestroyVkBuffer(m_descriptor_vk_buffer);
-            ::operator delete(m_memory);
-            m_memory = nullptr;
+            ::operator delete(m_memory_bindless);
+            m_memory_bindless = nullptr;
+            m_memory_per_stage = nullptr;
             m_descriptor_buffer_address = cInvalidGpuBufferAddress;
         }
-        if (m_descriptor_heap != nullptr) {
-            ::operator delete(m_descriptor_heap);
-            m_descriptor_heap = nullptr;
+        if (m_per_stage_heap != nullptr) {
+            ::operator delete(m_per_stage_heap);
+            m_per_stage_heap = nullptr;
         }
-        if (m_staging_heap != nullptr) {
-            ::operator delete(m_staging_heap);
-            m_staging_heap = nullptr;
+        if (m_per_stage_staging_heap != nullptr) {
+            ::operator delete(m_per_stage_staging_heap);
+            m_per_stage_staging_heap = nullptr;
         }
     }
 
     void *DescriptorMemoryManager::AllocateCommandMemory(size_t *out_offset, size_t size) {
-        void *base_address = m_descriptor_heap->TryAllocate(size, Context::cTargetDescriptorBufferAlignment);
+        void *base_address = m_per_stage_heap->TryAllocate(size, Context::cTargetDescriptorBufferAlignment);
         const size_t offset = reinterpret_cast<uintptr_t>(base_address) - mem::SeparateHeap::cOffsetBase;
         *out_offset = offset;
-        return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory) + offset);
+        return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory_per_stage) + offset);
     }
 
     void DescriptorMemoryManager::FreeCommandMemory(void *address) {
-        void *base_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(m_memory) + mem::SeparateHeap::cOffsetBase);
-        m_descriptor_heap->Free(base_address);
+        void *base_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(m_memory_per_stage) + mem::SeparateHeap::cOffsetBase);
+        m_per_stage_heap->Free(base_address);
     }
 
-    DescriptorMemoryManager::Staging *DescriptorMemoryManager::AllocateStagingMemory() {
-        const size_t block_size = sizeof(Staging);
-        void *memory = m_staging_heap->TryAllocate(block_size, alignof(size_t));
-        return reinterpret_cast<Staging*>(memory);
+    void *DescriptorMemoryManager::AllocateStagingMemory() {
+        const size_t block_size = m_ts_i_size + m_ub_sb_size;
+        void *memory = m_per_stage_staging_heap->TryAllocate(block_size, alignof(size_t));
+        return memory;
     }
 
-    void DescriptorMemoryManager::FreeStagingMemory(Staging *address) {
-        m_staging_heap->Free(address);
+    void DescriptorMemoryManager::FreeStagingMemory(void *address) {
+        m_per_stage_staging_heap->Free(address);
     }
 }

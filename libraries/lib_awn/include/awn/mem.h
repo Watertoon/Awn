@@ -30,7 +30,7 @@
 #include <awn/mem/mem_expheap.hpp>
 #include <awn/mem/mem_separateheap.hpp>
 #include <awn/mem/mem_unitheap.hpp>
-#include <awn/mem/mem_virtualmemory.h>
+#include <awn/mem/mem_virtualmemoryapi.h>
 #include <awn/mem/mem_virtualaddressheap.h>
 
 #include <awn/mem/mem_singleton.h>

@@ -86,9 +86,12 @@ namespace awn::render::impl {
             PresentThreadFunc       m_present_thread_function;
             sys::Event              m_present_event;
             sys::Mutex              m_present_cs;
+            HANDLE                  m_fence_handle;
             HANDLE                  m_wait_handle;
             u8                      m_present_stage;
+            bool                    m_is_enable_framebuffer_alpha;
             bool                    m_is_drop_request_for_resize;
+            bool                    m_trigger_post_resize;
             u32                     m_current_index;
             u32                     m_last_index;
             u32                     m_present_interval;
@@ -116,7 +119,7 @@ namespace awn::render::impl {
         public:
             constexpr Swapchain() : m_window_handle(), m_dxgi_swapchain(), m_d3d12_resource_array(), m_d3d12_fence(), m_vk_device_memory_array(), m_vk_image_array(), m_render_target_color_array(), m_image_handle_array(), m_sync_handle(), m_submit_sync(), m_command_list(), 
                 m_present_thread(), m_present_thread_function(this, PresentThreadMain), m_present_event(), m_present_cs(), 
-                m_wait_handle(), m_present_stage(), m_is_drop_request_for_resize(), m_current_index(), m_last_index(),
+                m_fence_handle(), m_wait_handle(), m_present_stage(), m_is_enable_framebuffer_alpha(), m_is_drop_request_for_resize(), m_trigger_post_resize(), m_current_index(), m_last_index(),
                 m_present_interval(), m_request_flags(), m_settings_cs(), m_settings(), m_update_settings() {/*...*/}
             constexpr ~Swapchain() {/*...*/}
 

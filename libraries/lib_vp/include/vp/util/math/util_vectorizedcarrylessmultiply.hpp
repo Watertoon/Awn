@@ -35,8 +35,8 @@ namespace vp::util {
 #endif
         }
 
-        const u64 sel1 = ((selection_mask & 1) == 0) ? a[0] : a[1];
-        const u64 sel2 = (((selection_mask >> 4) & 1) == 0) ? b[0] : b[1];
+        const s64 sel1 = ((selection_mask & 1) == 0) ? a[0] : a[1];
+        const s64 sel2 = (((selection_mask >> 4) & 1) == 0) ? b[0] : b[1];
 
         _BitwiseHelper t1[64] = {};
         _BitwiseHelper t2[64] = {};
@@ -48,8 +48,8 @@ namespace vp::util {
 
         _BitwiseHelper temp[128] = {};
 
-        u64 out1 = 0;
-        u64 out2 = 0;
+        s64 out1 = 0;
+        s64 out2 = 0;
         for (int i = 0; i < 64; ++i) {
             temp[i].bit = t1[0].bit & t2[i].bit;
             for (int j = 1; j <= i; ++j) {

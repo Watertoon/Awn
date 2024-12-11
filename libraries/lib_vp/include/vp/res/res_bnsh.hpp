@@ -27,14 +27,7 @@ namespace vp::res {
         u32   scratch_memory_size_recommended;
         u32   scratch_memory_size_per_warp;
         void *shader_ext_data;
-        union {
-        u64 reserve0;
-            /* Vp extensions */
-            struct {
-                u32 runtime_ref_count;
-                u32 runtime_guard;
-            }; 
-        };
+        u64   reserve0;
     };
     static_assert(sizeof(ResBnshShaderCodeInfo) == 0x40);
 
@@ -112,21 +105,26 @@ namespace vp::res {
         u8                               code_type;
         u16                              reserve2;
         u32                              reserve3;
-        ResBnshShaderCodeInfo           *code_info_vertex;
-        ResBnshShaderCodeInfo           *code_info_tessellation_control;
-        ResBnshShaderCodeInfo           *code_info_tessellation_evaluation;
-        ResBnshShaderCodeInfo           *code_info_geometry;
-        ResBnshShaderCodeInfo           *code_info_fragment;
-        ResBnshShaderCodeInfo           *code_info_compute;
         union {
-            u64                          reserve4[5];
-            struct {
-                /* Vp extensions */
-                ResBnshShaderCodeInfo  *code_info_task;
-                ResBnshShaderCodeInfo  *code_info_mesh;
-                u64                     reserve5[3];
+            ResBnshShaderCodeInfo *code_info_array[8];
+            struct {                
+                ResBnshShaderCodeInfo *code_info_vertex;
+                ResBnshShaderCodeInfo *code_info_tessellation_control;
+                ResBnshShaderCodeInfo *code_info_tessellation_evaluation;
+                ResBnshShaderCodeInfo *code_info_geometry;
+                ResBnshShaderCodeInfo *code_info_fragment;
+                ResBnshShaderCodeInfo *code_info_compute;
+                union {
+                    u64 reserve4[2];
+                    /* Vp extensions */
+                    struct {                        
+                        ResBnshShaderCodeInfo  *code_info_task;
+                        ResBnshShaderCodeInfo  *code_info_mesh;
+                    };
+                };
             };
         };
+        u64                              reserve5[3];
         u32                              size_of_runtime_shader;
         u32                              reserve6;
         void                            *runtime_shader;
@@ -139,7 +137,7 @@ namespace vp::res {
     static constexpr u32 cDefaultBnshRuntimeShaderSize = 0x100;
 
     struct ResBnshShaderContainer;
-    
+
     struct ResBnshShaderVariation {
         ResBnshShaderProgram   *program_source;
         ResBnshShaderProgram   *program_intermediate;

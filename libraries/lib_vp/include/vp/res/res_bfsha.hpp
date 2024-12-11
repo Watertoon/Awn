@@ -20,16 +20,27 @@ namespace vp::res {
     struct ResBfshaShaderOption {
         const char                *name;
         ResNintendoWareDictionary *choice_dictionary;
-        u32                       *choice_array;
+        s32                       *choice_array;
         u16                        choice_count;
         u16                        default_value;
-        u16                        reserve0;
-        u8                         is_use_default_dynamic_key;
-        u8                         dynamic_base_index;
+        u16                        base_index;
+        union {
+            u8                     flags;
+            struct {
+                u8 is_applied : 1;
+                u8 is_static_option : 1;
+                u8 reserve0 : 6;
+            };
+        };
+        u8                         base_key_index_dynamic;
         u32                        key_mask;
         u8                         key_index;
         u8                         key_bit_offset;
         u16                        reserve1;
+
+        static constexpr u16 cInvalidBaseIndex = 0;
+
+        u32 ReadStaticKey(const void *static_key) const;
     };
     static_assert(sizeof(ResBfshaShaderOption) == 0x28);
 
@@ -56,12 +67,20 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfshaBufferParam) == 0x10);
 
+    enum class BfshaBufferType : u8 {
+        User = 0,
+        Material = 1,
+        Shape = 2,
+        Skeleton = 3,
+        Option = 4,
+    };
+
     struct ResBfshaBuffer{
         ResBfshaBufferParam       *buffer_param_array;
         ResNintendoWareDictionary *buffer_param_dictionary;
         void                      *default_value_array;
         u8                         location;
-        u8                         reserve0;
+        u8                         buffer_type;
         u16                        size;
         u32                        buffer_param_count;
     };
@@ -91,7 +110,7 @@ namespace vp::res {
         u16                     static_key_size;
         u16                     reserve2;
         u16                     dynamic_key_size;
-        u16                     reserve3;
+        u16                     shader_stage_count;
         u16                     reserve4;
     };
     static_assert(sizeof(ResBfshaShaderProgram) == 0x40);
@@ -106,12 +125,17 @@ namespace vp::res {
 
     struct ResBfshaShaderArchive;
 
+    struct BfshaShaderRange {
+        void *start_key;
+        void *end_key;
+    };
+
     struct ResBfshaShadingModel {
         const char                *name;
-        ResBfshaShaderOption      *static_shader_option_array;
-        ResNintendoWareDictionary *static_shader_option_dictionary;
-        ResBfshaShaderOption      *dynamic_shader_option_array;
-        ResNintendoWareDictionary *dynamic_shader_option_dictionary;
+        ResBfshaShaderOption      *static_option_array;
+        ResNintendoWareDictionary *static_option_dictionary;
+        ResBfshaShaderOption      *dynamic_option_array;
+        ResNintendoWareDictionary *dynamic_option_dictionary;
         ResBfshaInputAttribute    *input_attribute_array;
         ResNintendoWareDictionary *input_attribute_dictionary;
         ResBfshaTextureSampler    *texture_sampler_array;
@@ -124,21 +148,21 @@ namespace vp::res {
         ResBfshaBuffer            *storage_buffer_array;
         ResNintendoWareDictionary *storage_buffer_dictionary;
         ResBfshaBufferParam       *storage_array;
-        ResBfshaShaderProgram     *shader_program_array;
-        u32                       *key_array;
+        ResBfshaShaderProgram     *program_array;
+        u32                       *option_key_array;
         ResBfshaShaderArchive     *parent_archive;
         ResBfshaResourceNameTable *resource_name_table;
         ResBnsh                   *bnsh;
         void                      *runtime_mutex;
-        u64                        reserve0;
-        u64                        reserve1;
+        u8                        *reserve0; /* byte array? */
+        u64                        reserve1; /* size of byte array? */
         void                      *runtime_user_pointer;
         u64                        reserve2;
         u64                        reserve3;
         u32                        default_key_index;
         u16                        static_option_count;
         u16                        dynamic_option_count;
-        u16                        shader_program_count;
+        u16                        program_count;
         u8                         static_key_size;
         u8                         dynamic_key_size;
         u8                         input_attribute_count;
@@ -146,13 +170,13 @@ namespace vp::res {
         u8                         image_count;
         u8                         uniform_buffer_count;
         u8                         material_uniform_buffer_index;
-        u8                         reserve4;
-        u8                         reserve5;
+        u8                         shape_uniform_buffer_index;
+        u8                         skeleton_uniform_buffer_index;
         u8                         option_uniform_buffer_index;
         u8                         storage_buffer_count;
+        u8                         reserve4;
+        u8                         reserve5;
         u8                         reserve6;
-        u8                         reserve7;
-        u8                         reserve8;
         u8                         option_storage_buffer_index;
         u8                         base_location_vertex;
         u8                         base_location_geometry;
@@ -162,7 +186,41 @@ namespace vp::res {
         u8                         base_location_tessellation_evaluation;
         u8                         shader_stage_count;
 
+        static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
+        static_assert(cInvalidEntryIndex == ResNintendoWareDictionary::cInvalidEntryIndex);
+        static constexpr u32 cInvalidDefaultKeyIndex = 0xffff'ffff;
         static constexpr u8 cInvalidBaseLocation = 0xff;
+
+        constexpr bool IsAppliedStaticOption() const {
+            for (u32 i = 0; i < this->static_option_count; ++i) {
+                if (this->static_option_array[i].is_applied) { return true; }
+            }
+            return false;
+        }
+
+        constexpr u32 GetAppliedStaticOptionCount() const {
+            u32 count = 0;
+            for (u32 i = 0; i < this->static_option_count; ++i) {
+                if (!this->static_option_array[i].is_applied) { continue; }
+                ++count;
+            }
+            return count;
+        }
+
+        u32 FindStaticShaderOptionIndex(const char *option_name) const;
+        u32 FindDynamicShaderOptionIndex(const char *option_name) const;
+        u32 FindInputAttributeIndex(const char *attribute_name) const;
+        u32 FindTextureSamplerIndex(const char *texture_sampler_name) const;
+        u32 FindImageIndex(const char *image_name) const;
+        u32 FindUniformBufferIndex(const char *uniform_buffer_name) const;
+        u32 FindStorageBufferIndex(const char *storage_buffer_name) const;
+
+        bool FindProgramRange(BfshaShaderRange *out_range, const void *static_key) const;
+        u32 FindProgramIndex(const BfshaShaderRange *range, const void *dynamic_key) const;
+
+        void GetDefaultStaticKey(void *out_default_static_key) const;
+        void GetDefaultDynamicKey(void *out_default_dynamic_key) const;
+        void GetInvalidDynamicKey(void *out_invalid_dynamic_key) const;
     };                     
     static_assert(sizeof(ResBfshaShadingModel) == 0x100);
 

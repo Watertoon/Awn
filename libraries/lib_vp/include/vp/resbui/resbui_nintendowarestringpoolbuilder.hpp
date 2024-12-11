@@ -57,7 +57,7 @@ namespace vp::resbui {
             void ResolveCollisions();
         public:
             constexpr NintendoWareStringPoolBuilder() : m_string_list(), m_collision_list() {/*...*/}
-            constexpr ~NintendoWareStringPoolBuilder() {/*...*/}
+            ~NintendoWareStringPoolBuilder() { this->Finalize(); }
 
             void Finalize();
 
@@ -65,20 +65,6 @@ namespace vp::resbui {
 
             void Serialize(const NintendoWareStringPoolBuilderMemoryInfo *memory_info, void *output_buffer, size_t buffer_size);
 
-            constexpr void CalculateMemoryInfo(NintendoWareStringPoolBuilderMemoryInfo *memory_info) {
-
-                /* Calculate locations */
-                size_t size = 0;
-                this->CalculateHeaderLocation(std::addressof(memory_info->location_header), 0);
-                size = vp::util::AlignUp(size + memory_info->location_header.size, alignof(u32));
-
-                const u32 count = this->CalculateStringPoolLocation(std::addressof(memory_info->location_string_pool), size);
-                size = vp::util::AlignUp(size + memory_info->location_string_pool.size, alignof(size_t));
-
-                /* Set output */
-                memory_info->total_size    = size;
-                memory_info->max_alignment = alignof(size_t);
-                memory_info->string_count  = count;
-            }
+            void CalculateMemoryInfo(NintendoWareStringPoolBuilderMemoryInfo *memory_info);
     };
 }

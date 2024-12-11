@@ -9,16 +9,16 @@ namespace awn::res {
             u32 options;
             struct {
                 u32 priority                   : 4;
-                u32 is_allow_loose_files       : 1;
-                u32 is_allow_archive_reference : 1;
-                u32 is_allow_compression       : 1;
+                u32 is_allow_loose_files       : 1 = true;
+                u32 is_allow_archive_reference : 1 = true;
+                u32 is_allow_compression       : 1 = true;
                 u32 is_require_heap_adjust     : 1;
                 u32 is_transient               : 1;
                 u32 is_persistant              : 1;
-                u32 is_cache_on_unload         : 1;
+                u32 is_cache_on_unload         : 1 = true;
                 u32 is_compose                 : 1;
                 u32 compression_type           : 3;
-                u32 resource_heap_type         : 2;
+                u32 resource_heap_type         : 2 = 1;
                 u32 reserve0                   : 15;
             };
         };

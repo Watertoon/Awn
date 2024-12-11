@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include <awn/sys/sys_systemmanager.h>
+#include <awn/sys/sys_systemapi.h>
 
 #ifdef VP_TARGET_PLATFORM_win32
     #include <awn/sys/sys_internalsynchronization.win32.h>

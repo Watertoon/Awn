@@ -24,7 +24,7 @@ namespace vp::resbui {
 
             StringPoolStringBase *no_longer_colliding_string = std::addressof(collided_string);
             for (StringPoolStringBase &string : m_string_list) {
-                if (::strcmp(collided_string.GetString(), string.GetString()) != 0) { continue; }
+                if (!vp::util::StringCompare(collided_string.GetString(), string.GetString())) { continue; }
                 no_longer_colliding_string = nullptr;
                 break;
             }
@@ -51,10 +51,10 @@ namespace vp::resbui {
         RESULT_RETURN_IF(pool_string->m_pool_builder_node.IsLinked(), ResultAlreadyLinked);
 
         /* Check against unique strings */
-        u32 new_length         = pool_string->GetLength();
+        u32 new_length = pool_string->GetLength();
         const char *new_string = pool_string->GetString();
         for (StringPoolStringBase &string : m_string_list) {
-            if (new_length == string.GetLength() && ::strcmp(string.GetString(), new_string) == 0) {
+            if (new_length == string.GetLength() && vp::util::StringCompare(string.GetString(), new_string)) {
                 /* Add to duplicate list */
                 m_collision_list.PushBack(*pool_string);
                 RESULT_RETURN_SUCCESS;
@@ -90,5 +90,22 @@ namespace vp::resbui {
         }
 
         return;
+    }
+
+    void NintendoWareStringPoolBuilder::CalculateMemoryInfo(NintendoWareStringPoolBuilderMemoryInfo *memory_info) {
+
+        /* Calculate locations */
+        size_t size = 0;
+        this->CalculateHeaderLocation(std::addressof(memory_info->location_header), 0);
+        size = vp::util::AlignUp(size + memory_info->location_header.size, alignof(u32));
+
+        this->ResolveCollisions();
+        const u32 count = this->CalculateStringPoolLocation(std::addressof(memory_info->location_string_pool), size);
+        size = vp::util::AlignUp(size + memory_info->location_string_pool.size, alignof(size_t));
+
+        /* Set output */
+        memory_info->total_size    = size;
+        memory_info->max_alignment = alignof(size_t);
+        memory_info->string_count  = count;
     }
 }

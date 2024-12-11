@@ -25,7 +25,7 @@ namespace awn::mem {
         void *memory;
 
         constexpr bool IsValid() const {
-            return vk_device_memory != VK_NULL_HANDLE;
+            return this->vk_device_memory != VK_NULL_HANDLE;
         }
     };
 
@@ -36,7 +36,7 @@ namespace awn::mem {
         NVNmemoryPool *nvn_memory_pool = nullptr;
 
         constexpr bool IsValid() const {
-            return nvn_memory_pool != nullptr;
+            return this->nvn_memory_pool != nullptr;
         }
     };
 

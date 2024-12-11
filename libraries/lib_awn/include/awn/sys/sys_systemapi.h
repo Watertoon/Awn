@@ -69,15 +69,15 @@ namespace awn::sys {
     using CoreMask = u64;
 
 #ifdef VP_TARGET_PLATFORM_win32
-    using ServiceHandle = HANDLE;
+    using NativeHandle = HANDLE;
 #elif VP_TARGET_PLATFORM_nx
-    using ServiceHandle = nn::os::Handle;
+    using NativeHandle = nn::os::Handle;
 #endif
 
-    void InitializeSystemManager();
-    bool IsSystemManagerInitialized();
+    void InitializeSystem();
+    bool IsSystemInitialized();
 
-    ServiceHandle GetProcessHandle();
+    NativeHandle GetProcessHandle();
 
     u32 GetProcessCoreCount();
     u32 GetSystemCoreCount();

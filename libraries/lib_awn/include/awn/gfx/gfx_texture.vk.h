@@ -29,8 +29,6 @@ namespace awn::gfx {
             bool Initialize(mem::GpuMemoryHandle gpu_memory_handle, const TextureInfo *texture_info);
             void Finalize();
 
-            static GpuMemoryRequirements GetMemoryRequirements(const TextureInfo *texture_info);
-
             constexpr ALWAYS_INLINE u32 GetWidth() const {
                 return m_texture_info.width;
             }
@@ -50,6 +48,9 @@ namespace awn::gfx {
                 return static_cast<gfx::ImageFormat>(m_texture_info.image_format);
             }
 
+        public:
+            static GpuMemoryRequirements GetMemoryRequirements(const TextureInfo *texture_info);
+        public:
             constexpr ALWAYS_INLINE VkImage GetVkImage() const {
                 return m_vk_image;
             }

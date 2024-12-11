@@ -14,6 +14,7 @@
  *  if not, see <https://www.gnu.org/licenses/>.
  */
 #include <awn.hpp>
+#include <dwmapi.h>
 
 namespace awn::render::impl {
 
@@ -32,13 +33,27 @@ namespace awn::render::impl {
         gfx::impl::Context::GetInstance()->SubmitCommandList(m_command_list, nullptr, 0, std::addressof(submit_sync), 1);
 
         /* Present */
-        const u32 options = 0;
+        u32 options = 0;
+        u32 present_interval = m_present_interval;
+        const bool is_post_resize = m_trigger_post_resize;
+        if (is_post_resize) {
+            m_trigger_post_resize = false;
+            //DXGI_PRESENT_PARAMETERS present_params = {};
+            //const HRESULT result0 = m_dxgi_swapchain->Present1(0, DXGI_PRESENT_RESTART, std::addressof(present_params));
+            //VP_ASSERT(result0 == DXGI_STATUS_OCCLUDED || result0 == DXGI_STATUS_MODE_CHANGED || result0 == S_OK);
+            //options = DXGI_PRESENT_DO_NOT_SEQUENCE;
+        }
         DXGI_PRESENT_PARAMETERS present_params = {};
-        const HRESULT result0 = m_dxgi_swapchain->Present1(m_present_interval, options, std::addressof(present_params));
+        const HRESULT result0 = m_dxgi_swapchain->Present1(present_interval, options, std::addressof(present_params));
         VP_ASSERT(result0 == DXGI_STATUS_OCCLUDED || result0 == DXGI_STATUS_MODE_CHANGED || result0 == S_OK);
         m_current_index = m_dxgi_swapchain->GetCurrentBackBufferIndex();
+
+        /* Present sync */
         ID3D12CommandQueue *command_queue = impl::ContextDxgi::GetInstance()->GetD3d12CommandQueue();
-        command_queue->Signal(m_d3d12_fence, submit_sync->GetExpectedValue());
+        const size_t value = submit_sync->GetExpectedValue();
+        command_queue->Signal(m_d3d12_fence, value);
+        const HRESULT result1 = m_d3d12_fence->SetEventOnCompletion(value, m_fence_handle);
+        VP_ASSERT(result1 == S_OK);
 
         /* Signal request completion */
         m_present_stage = 2;
@@ -55,10 +70,11 @@ namespace awn::render::impl {
             this->CreateSwapchain();
             m_is_request_recreate = false;
             m_is_request_resize = false;
+            m_trigger_post_resize = true;
             return true;
         }
         if (m_is_request_resize) {
-            this->IdlePresent();
+            //this->IdlePresent();
             impl::ContextDxgi::GetInstance()->ReportDebug();
             this->DestroyImages();
             const u32 tearing_option = (impl::ContextDxgi::GetInstance()->IsTearing()) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
@@ -71,6 +87,7 @@ namespace awn::render::impl {
             m_settings.image_format = m_update_settings.image_format;
             m_settings.image_count = m_update_settings.image_count;
             m_is_request_resize = false;
+            m_trigger_post_resize = true;
             return true;
         }
 
@@ -101,12 +118,10 @@ namespace awn::render::impl {
 			.BufferCount = m_update_settings.image_count,
 			.Scaling = DXGI_SCALING_STRETCH,
 			.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-			.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
+			.AlphaMode = (m_is_enable_framebuffer_alpha) ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE,
 			.Flags = swapchain_options,
 		};
 		IDXGISwapChain1 *swapchain_1 = nullptr;
-		//const HRESULT hresult0 = factory_7->CreateSwapChainForHwnd(command_queue, m_window_handle, std::addressof(swapchain_desc), nullptr, nullptr, std::addressof(swapchain_1));
-		//VP_ASSERT(hresult0 == S_OK);
 		const HRESULT hresult0 = factory_7->CreateSwapChainForComposition(command_queue, std::addressof(swapchain_desc), nullptr, std::addressof(swapchain_1));
 		VP_ASSERT(hresult0 == S_OK);
 		IDXGISwapChain4 *swapchain_4 = nullptr;
@@ -162,7 +177,7 @@ namespace awn::render::impl {
 			.mip_level_count = 1,
 			.sample_count = 1,
 			.image_format = static_cast<u32>(m_update_settings.image_format),
-			.gpu_access_flags = static_cast<u32>(gfx::GpuAccessFlags::TransferDestination | gfx::GpuAccessFlags::RenderTargetColor),
+			.gpu_access_flags = static_cast<u32>(gfx::GpuAccessFlags::RenderTargetColor),
 			.width = out_swapchain_desc.Width,
 			.height = out_swapchain_desc.Height,
 			.depth = 1,
@@ -260,6 +275,7 @@ namespace awn::render::impl {
         m_update_settings.view_count = swapchain_info->view_count;
         m_present_interval = swapchain_info->present_interval;
         m_window_handle = handle;
+        m_is_enable_framebuffer_alpha = true;
 
 		/* Create swapchain */
         this->CreateSwapchain();
@@ -284,6 +300,8 @@ namespace awn::render::impl {
         };
         const VkResult result = ::pfn_vkImportSemaphoreWin32HandleKHR(context->GetVkDevice(), std::addressof(import_info));
         VP_ASSERT(result == VK_SUCCESS);
+        m_fence_handle = ::CreateEventA(nullptr, false, false, nullptr);
+        VP_ASSERT(m_fence_handle != nullptr);
 
 		return;
 	}
@@ -300,6 +318,10 @@ namespace awn::render::impl {
         if (m_sync_handle != nullptr) {
             ::CloseHandle(m_sync_handle);
             m_sync_handle = nullptr;
+        }
+        if (m_fence_handle != nullptr) {
+            ::CloseHandle(m_fence_handle);
+            m_fence_handle = nullptr;
         }
 	}
 
@@ -323,16 +345,18 @@ namespace awn::render::impl {
         }
         if (last_stage == 0) { return; }
 
-        /* Wait for present */
         std::scoped_lock l(m_present_cs);
 
-        /* Wait next vblank */
-        const u32 result1 = ::WaitForSingleObjectEx(m_wait_handle, INFINITE, false);
-        VP_ASSERT(result1 == WAIT_OBJECT_0);
+        /* Wait for queue and present */
+        const HANDLE handle_array[2] = {
+            m_fence_handle,
+            m_wait_handle,
+        };
+        const u32 result1 = ::WaitForMultipleObjectsEx(2, handle_array, true, INFINITE, false);
+        VP_ASSERT(result1 != WAIT_FAILED);
 
-        /* Wait for vk queue that hopefully completed before the vblank period */
+        /* Setup next sync value */
         gfx::Sync *submit_sync = std::addressof(m_submit_sync);
-        submit_sync->Wait();
         submit_sync->IncrementExpectedValue();
 
         m_present_stage = 0;

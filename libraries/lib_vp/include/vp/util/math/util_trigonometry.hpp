@@ -149,9 +149,9 @@ namespace vp::util {
         const float t1 = MultiplyAdd(t0, value, coef2);
         const float t2 = NegateMultiplySub(t1, value, coef3);
         const float t3 = MultiplyAdd(t2, value, coef4);
-        const float t4 = NegateMultiplySub(t2, value, coef5);
-        const float t5 = MultiplyAdd(t2, value, coef6);
-        const float t6 = NegateMultiplySub(t2, value, coef7);
+        const float t4 = NegateMultiplySub(t3, value, coef5);
+        const float t5 = MultiplyAdd(t4, value, coef6);
+        const float t6 = NegateMultiplySub(t5, value, coef7);
         const float result = MultiplyAdd(t6, value, 1.0f);
         return result;
     }

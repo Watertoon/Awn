@@ -19,10 +19,10 @@ namespace awn::gfx::impl {
 
     struct ContextInfo {
         const char *app_name = "AwnDefault";
-        const char *engine_name = "AwnDefault";
+        const char *engine_name = "Awn";
         OptionalFeatureMask preferred_optional_feature_mask;
         OptionalFeatureMask required_optional_feature_mask;
-        size_t texture_descriptor_count;
+        size_t texture_view_descriptor_count;
         size_t sampler_descriptor_count;
     };
 
@@ -32,12 +32,12 @@ namespace awn::gfx::impl {
         VkDevice vk_device;
     };
 
-#define AWN_VK_DEBUG
+//#define AWN_VK_DEBUG
 
     class Context {
         public:
             /* Support Vulkan 1.3 */
-            static constexpr u32 cTargetMinimumApiVersion = VK_MAKE_API_VERSION(0, 1, 3, 0);
+            static constexpr u32 cTargetMinimumApiVersion = VK_MAKE_API_VERSION(0, 1, 4, 0);
 
             /* Max simulataneous queues (1 for each QueueType) */
             static constexpr size_t cTargetMaxQueueCount = 0x6;
@@ -76,47 +76,90 @@ namespace awn::gfx::impl {
             static constexpr size_t cTargetUniformBufferAlignment    = 0x40;
             static constexpr size_t cTargetStorageBufferAlignment    = 0x40;
             static constexpr size_t cTargetTexelBufferAlignment      = 0x40;
-            static constexpr size_t cTargetDescriptorBufferAlignment = 0x40;
+            static constexpr size_t cTargetDescriptorBufferAlignment = 0x100;
 
             /* Max resource sizes */
-            static constexpr size_t cTargetMaxUniformBufferSize             = vp::util::c64KB;
-            static constexpr size_t cTargetMaxTextureDescriptorSize         = 0x4;
-            static constexpr size_t cTargetMaxSamplerDescriptorSize         = 0x4;
-
-            static constexpr size_t cTargetMaxTextureSamplerDescriptorSize  = 0x4;
-            static constexpr size_t cTargetMaxImageDescriptorSize           = 0x4;
-            static constexpr size_t cTargetMaxUniformBufferDescriptorSize   = 0x8;
-            static constexpr size_t cTargetMaxStorageBufferDescriptorSize   = 0x10;
-            static constexpr size_t cTargetMaxSeparateTextureDescriptorSize = 0x4;
-            static constexpr size_t cTargetMaxSeparateSamplerDescriptorSize = 0x4;
+            static constexpr size_t cTargetMaxUniformBufferSize = vp::util::c64KB;
 
             /* Global descriptor resource limits */
-            static constexpr size_t cTargetMaxTextureDescriptorCount = 0x1'0000;
-            static constexpr size_t cTargetMaxSamplerDescriptorCount = 0x1000;
+            static constexpr size_t cTargetMaxTextureViewCount = 0xffff;
+            static constexpr size_t cTargetMaxSamplerCount = 0xfa0;
+
+            static constexpr size_t cTargetMaxTextureSamplerDescriptorSize  = 0x80;
+            static constexpr size_t cTargetMaxUniformBufferDescriptorSize   = 0x40;
+            static constexpr size_t cTargetMaxStorageBufferDescriptorSize   = 0x40;
+            static constexpr size_t cTargetMaxImageDescriptorSize           = 0x40;
+            static constexpr size_t cTargetMaxSeparateTextureDescriptorSize = 0x40;
+            static constexpr size_t cTargetMaxSeparateSamplerDescriptorSize = 0x40;
 
             /* Descriptor buffer index */
             static constexpr u32 cTargetDescriptorBufferIndexBindless = 0;
-            static constexpr u32 cTargetDescriptorBufferIndexPerStage = 1;
+            static constexpr u32 cTargetDescriptorBufferIndexPerStage = 0;
 
             /* Base descriptor set layout bindings */
             static constexpr size_t cBindlessBindingBaseTexture = 0;
             static constexpr size_t cBindlessBindingBaseSampler = 1;
 
-            /* Layout sets */
-            static constexpr size_t cTargetBindlessLayoutSet = 0;
-            static constexpr size_t cTargetTextureSamplerImageSeparateLayoutSet = 1;
-            static constexpr size_t cTargetUniformBufferStorageBufferLayoutSet = 2;
-
-            static constexpr size_t cTargetPerStageSetCount = 3;
-            static constexpr size_t cTargetPerStagePushConstantRangeCount = 1;
-
             /* Per Shader stage resource limits */
             static constexpr size_t cTargetMaxShaderStageCount = 8;
             static constexpr size_t cTargetMaxSimultaneousShaderStageCount = 5;
+
             static constexpr size_t cTargetMaxMeshShaderStageCount         = 3;
             static constexpr size_t cTargetMaxPrimitiveShaderStageCount    = 5;
             static constexpr size_t cTargetMaxComputeShaderStageCount      = 1;
+        private:
+            static constexpr size_t cTargetBindlessLayoutSet = 0;
 
+            /* NV Per Stage layout sets */
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSet = 1;
+            static constexpr size_t cTargetPerStageBufferLayoutSet = 2;
+
+            static constexpr size_t cMaxPerStageSetCount = 3;
+
+            /* Global pipeline layout */
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetFragment = 1;
+            static constexpr size_t cTargetPerStageBufferLayoutSetFragment = 2;
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetVertex = 3;
+            static constexpr size_t cTargetPerStageBufferLayoutSetVertex = 4;
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetGeometry = 5;
+            static constexpr size_t cTargetPerStageBufferLayoutSetGeometry = 6;
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetTessellationControl = 7;
+            static constexpr size_t cTargetPerStageBufferLayoutSetTessellationControl = 8;
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetTessellationEvaluation = 9;
+            static constexpr size_t cTargetPerStageBufferLayoutSetTessellationEvaluation = 10;
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetTask = 11;
+            static constexpr size_t cTargetPerStageBufferLayoutSetTask = 12;
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetMesh = 13;
+            static constexpr size_t cTargetPerStageBufferLayoutSetMesh = 14;
+
+            static constexpr size_t cMaxCombinedSetCountGraphics = 15;
+
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetCompute = 1;
+            static constexpr size_t cTargetPerStageBufferLayoutSetCompute = 2;
+
+            static constexpr size_t cMaxCombinedSetCountCompute = 3;
+
+            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetArray[cTargetMaxShaderStageCount] = {
+                cTargetPerStageTextureSamplerLayoutSetVertex,
+                cTargetPerStageTextureSamplerLayoutSetTessellationControl,
+                cTargetPerStageTextureSamplerLayoutSetTessellationEvaluation,
+                cTargetPerStageTextureSamplerLayoutSetGeometry,
+                cTargetPerStageTextureSamplerLayoutSetFragment,
+                cTargetPerStageTextureSamplerLayoutSetCompute,
+                cTargetPerStageTextureSamplerLayoutSetTask,
+                cTargetPerStageTextureSamplerLayoutSetMesh,
+            };
+            static constexpr size_t cTargetPerStageBufferLayoutSetArray[cTargetMaxShaderStageCount] = {
+                cTargetPerStageBufferLayoutSetVertex,
+                cTargetPerStageBufferLayoutSetTessellationControl,
+                cTargetPerStageBufferLayoutSetTessellationEvaluation,
+                cTargetPerStageBufferLayoutSetGeometry,
+                cTargetPerStageBufferLayoutSetFragment,
+                cTargetPerStageBufferLayoutSetCompute,
+                cTargetPerStageBufferLayoutSetTask,
+                cTargetPerStageBufferLayoutSetMesh,
+            };
+        public:
             static constexpr size_t cTargetMaxPerStageInputCount                  = 32;
             static constexpr size_t cTargetMaxPerStageOutputCount                 = 32;
             static constexpr size_t cTargetMaxPerStageTextureSamplerCount         = 32;
@@ -127,24 +170,19 @@ namespace awn::gfx::impl {
             static constexpr size_t cTargetMaxPerStageSeparateSamplerCount        = 32;
             static constexpr size_t cTargetMaxPerStageCombinedCount               = cTargetMaxPerStageTextureSamplerCount + cTargetMaxPerStageImageCount + cTargetMaxPerStageUniformBufferCount + cTargetMaxPerStageStorageBufferCount;
             static constexpr size_t cTargetMaxPerStageSeparateTextureSamplerCount = cTargetMaxPerStageSeparateTextureCount + cTargetMaxPerStageSeparateSamplerCount;
-
-            static constexpr size_t cTargetMaxPerStageMemorySizeTextureSamplerImageSeparate = 0xc0 + 0x280;
-            static constexpr size_t cTargetMaxPerStageMemorySizeUniformBufferStorageBuffer = 0x200;
-
-            static constexpr size_t cTargetMaxPerStageMemorySizeTotal = cTargetMaxPerStageMemorySizeTextureSamplerImageSeparate + cTargetMaxPerStageMemorySizeUniformBufferStorageBuffer;
         private:
             void InitializeInstance(const ContextInfo *context_info);
             void FinalizeInstance();
-            void SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device);
-            void InitializeLogicalDevice();
+            void SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, const ContextInfo *context_info);
+            void InitializeLogicalDevice(const ContextInfo *context_info);
             void FinalizeLogicalDevice();
             void InitializePipelineLayout(const ContextInfo *context_info);
             void FinalizePipelineLayout();
         public:
             struct PerStageDescriptorLayout {
                 VkPipelineLayoutCreateInfo vk_pipeline_layout_create_info;
-                VkDescriptorSetLayout vk_descriptor_set_layout_array[cTargetPerStageSetCount];
-                VkPushConstantRange vk_push_constant_range;
+                VkDescriptorSetLayout vk_descriptor_set_layout_array[cMaxPerStageSetCount];
+                //VkPushConstantRange vk_push_constant_range;
             };
         private:
             /* Vulkan current physical device objects */
@@ -169,50 +207,27 @@ namespace awn::gfx::impl {
                     PerStageDescriptorLayout m_per_stage_descriptor_layout_mesh;
                 };
             };
+            VkDescriptorSetLayout m_vk_combined_descriptor_set_layout_graphics[cMaxCombinedSetCountGraphics];
+            VkDescriptorSetLayout m_vk_combined_descriptor_set_layout_compute[cMaxCombinedSetCountCompute];
+            VkPipelineLayout m_vk_combined_pipeline_layout_graphics;
+            VkPipelineLayout m_vk_combined_pipeline_layout_compute;
 
             /* Vulkan physical device properties */
             VkPhysicalDeviceProperties2                        m_vk_physical_device_properties;
             VkPhysicalDeviceVulkan11Properties                 m_vk_physical_device_properties_11;
             VkPhysicalDeviceVulkan12Properties                 m_vk_physical_device_properties_12;
             VkPhysicalDeviceVulkan13Properties                 m_vk_physical_device_properties_13;
-            VkPhysicalDeviceExtendedDynamicState3PropertiesEXT m_vk_physical_device_extended_dynamic_state_3_properties;
-            VkPhysicalDeviceDescriptorBufferPropertiesEXT      m_vk_physical_device_descriptor_buffer_properties;
-            VkPhysicalDeviceMeshShaderPropertiesEXT            m_vk_physical_device_mesh_shader_properties;
+            VkPhysicalDeviceVulkan14Properties                 m_vk_physical_device_properties_14;
             VkPhysicalDeviceShaderObjectPropertiesEXT          m_vk_physical_device_shader_object_properties;
-            VkPhysicalDeviceHostImageCopyPropertiesEXT         m_vk_physical_device_host_image_copy_properties;
-            VkPhysicalDeviceMaintenance5PropertiesKHR          m_vk_physical_device_maintenance_5_properties;
+            VkPhysicalDeviceDescriptorBufferPropertiesEXT      m_vk_physical_device_descriptor_buffer_properties;
             VkPhysicalDeviceNestedCommandBufferPropertiesEXT   m_vk_physical_device_nested_command_buffer_properties;
-            VkPhysicalDeviceCooperativeMatrixPropertiesKHR     m_vk_physical_device_cooperative_matrix_properties;
+            VkPhysicalDeviceRobustness2PropertiesEXT           m_vk_physical_device_robustness_2_properties;
+            VkPhysicalDeviceMeshShaderPropertiesEXT            m_vk_physical_device_mesh_shader_properties;
 
             /* Vulkan physical device features */
-            VkPhysicalDeviceFeatures2                                    m_vk_physical_device_supported_features;
-            VkPhysicalDeviceVulkan11Features                             m_vk_physical_device_supported_features_11;
-            VkPhysicalDeviceVulkan12Features                             m_vk_physical_device_supported_features_12;
-            VkPhysicalDeviceVulkan13Features                             m_vk_physical_device_supported_features_13;
-            VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT           m_vk_physical_device_vertex_input_dynamic_state_features;
-            VkPhysicalDeviceExtendedDynamicState2FeaturesEXT             m_vk_physical_device_extended_dynamic_state2_features;
-            VkPhysicalDeviceExtendedDynamicState3FeaturesEXT             m_vk_physical_device_extended_dynamic_state3_features;
-            VkPhysicalDeviceDescriptorBufferFeaturesEXT                  m_vk_physical_device_descriptor_buffer_features;
-            VkPhysicalDeviceMeshShaderFeaturesEXT                        m_vk_physical_device_mesh_shader_features;
-            VkPhysicalDeviceShaderObjectFeaturesEXT                      m_vk_physical_device_shader_object_features;
-            VkPhysicalDeviceHostImageCopyFeaturesEXT                     m_vk_physical_device_host_image_copy_features;
-            VkPhysicalDeviceMaintenance5FeaturesKHR                      m_vk_physical_device_maintenance_5_features;
-            VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT m_vk_physical_device_dynamic_rendering_unused_attachments_features;
-            VkPhysicalDeviceNestedCommandBufferFeaturesEXT               m_vk_physical_device_nested_command_buffer_features;
-            VkPhysicalDeviceMaintenance6FeaturesKHR                      m_vk_physical_device_maintenance_6_features;
-            VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR         m_vk_physical_device_dynamic_rendering_local_read_features;
-            VkPhysicalDeviceIndexTypeUint8FeaturesKHR                    m_vk_physical_device_index_type_u8_features;
-            VkPhysicalDeviceShaderClockFeaturesKHR                       m_vk_physical_device_shader_clock_features;
-            VkPhysicalDeviceShaderExpectAssumeFeaturesKHR                m_vk_physical_device_shader_expect_assume_features;
-            VkPhysicalDeviceShaderFloatControls2FeaturesKHR              m_vk_physical_device_shader_float_controls_2_features;
-            VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR        m_vk_physical_device_shader_maximal_reconvergence_features;
-            VkPhysicalDeviceShaderQuadControlFeaturesKHR                 m_vk_physical_device_shader_quad_control_features;
-            VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR              m_vk_physical_device_shader_subgroup_rotate_features;
-            VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR  m_vk_physical_device_shader_subgroup_uniform_control_flow_features;
-            VkPhysicalDeviceCooperativeMatrixFeaturesKHR                 m_vk_physical_device_cooperative_matrix_features;
-            VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT             m_vk_physical_device_mutable_descriptor_features;
-            VkPhysicalDevicePerStageDescriptorSetFeaturesNV              m_vk_physical_device_per_stage_descriptor_set_features;
-            VkPhysicalDeviceCommandBufferInheritanceFeaturesNV           m_vk_physical_device_command_buffer_inheritance_features;
+            MissingFeatures     m_missing_features;
+            OptionalFeatureMask m_optional_features;
+            bool                m_is_ext_bindless_nv;
 
             VkPhysicalDeviceMemoryProperties m_vk_physical_device_memory_properties;
 
@@ -268,152 +283,34 @@ namespace awn::gfx::impl {
             },
             m_vk_physical_device_properties_13 {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
-                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state_3_properties),
+                .pNext = std::addressof(m_vk_physical_device_properties_14),
             },
-            m_vk_physical_device_extended_dynamic_state_3_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_descriptor_buffer_properties),
-            },
-            m_vk_physical_device_descriptor_buffer_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_mesh_shader_properties),
-            },
-            m_vk_physical_device_mesh_shader_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
+            m_vk_physical_device_properties_14 {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
                 .pNext = std::addressof(m_vk_physical_device_shader_object_properties),
             },
             m_vk_physical_device_shader_object_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_host_image_copy_properties),
+                .pNext = std::addressof(m_vk_physical_device_descriptor_buffer_properties),
             },
-            m_vk_physical_device_host_image_copy_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_maintenance_5_properties),
-            },
-            m_vk_physical_device_maintenance_5_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES_KHR,
+            m_vk_physical_device_descriptor_buffer_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
                 .pNext = std::addressof(m_vk_physical_device_nested_command_buffer_properties),
             },
             m_vk_physical_device_nested_command_buffer_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_cooperative_matrix_properties),
+                .pNext = std::addressof(m_vk_physical_device_robustness_2_properties),
             },
-            m_vk_physical_device_cooperative_matrix_properties {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_KHR,
+            m_vk_physical_device_robustness_2_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_mesh_shader_properties),
+            },
+            m_vk_physical_device_mesh_shader_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
                 .pNext = nullptr,
             },
-            m_vk_physical_device_supported_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-                .pNext = std::addressof(m_vk_physical_device_supported_features_11),
-            },
-            m_vk_physical_device_supported_features_11 {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-                .pNext = std::addressof(m_vk_physical_device_supported_features_12),
-            },
-            m_vk_physical_device_supported_features_12 {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-                .pNext = std::addressof(m_vk_physical_device_supported_features_13),
-            },
-            m_vk_physical_device_supported_features_13 {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-                .pNext = std::addressof(m_vk_physical_device_vertex_input_dynamic_state_features),
-            },
-            m_vk_physical_device_vertex_input_dynamic_state_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state2_features),
-            },
-            m_vk_physical_device_extended_dynamic_state2_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_extended_dynamic_state3_features),
-            },
-            m_vk_physical_device_extended_dynamic_state3_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_descriptor_buffer_features),
-            },
-            m_vk_physical_device_descriptor_buffer_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_mesh_shader_features),
-            },
-            m_vk_physical_device_mesh_shader_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_shader_object_features),
-            },
-            m_vk_physical_device_shader_object_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_host_image_copy_features),
-            },
-            m_vk_physical_device_host_image_copy_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_maintenance_5_features),
-            },
-            m_vk_physical_device_maintenance_5_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_dynamic_rendering_unused_attachments_features),
-            },
-            m_vk_physical_device_dynamic_rendering_unused_attachments_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_nested_command_buffer_features),
-            },
-            m_vk_physical_device_nested_command_buffer_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_maintenance_6_features),
-            },
-            m_vk_physical_device_maintenance_6_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_dynamic_rendering_local_read_features),
-            },
-            m_vk_physical_device_dynamic_rendering_local_read_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_index_type_u8_features),
-            },
-            m_vk_physical_device_index_type_u8_features{
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_shader_clock_features),
-            },
-            m_vk_physical_device_shader_clock_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_shader_expect_assume_features),
-            },
-            m_vk_physical_device_shader_expect_assume_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_shader_float_controls_2_features),
-            },
-            m_vk_physical_device_shader_float_controls_2_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_shader_maximal_reconvergence_features),
-            },
-            m_vk_physical_device_shader_maximal_reconvergence_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_shader_quad_control_features),
-            },
-            m_vk_physical_device_shader_quad_control_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_shader_subgroup_rotate_features),
-            },
-            m_vk_physical_device_shader_subgroup_rotate_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_shader_subgroup_uniform_control_flow_features),
-            },
-            m_vk_physical_device_shader_subgroup_uniform_control_flow_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_cooperative_matrix_features),
-            },
-            m_vk_physical_device_cooperative_matrix_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
-                .pNext = std::addressof(m_vk_physical_device_mutable_descriptor_features),
-            },
-            m_vk_physical_device_mutable_descriptor_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
-                .pNext = std::addressof(m_vk_physical_device_per_stage_descriptor_set_features),
-            },
-            m_vk_physical_device_per_stage_descriptor_set_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
-                .pNext = std::addressof(m_vk_physical_device_command_buffer_inheritance_features),
-            },
-            m_vk_physical_device_command_buffer_inheritance_features {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
-                .pNext = nullptr,
-            }
+            m_missing_features(),
+            m_optional_features()
             //m_debug_callbacks {
             //    .pUserData = this,
             //    .pfnAllocation = DebugAllocCallback,
@@ -469,9 +366,9 @@ namespace awn::gfx::impl {
                 return closest_type;
             }
 
-            constexpr ALWAYS_INLINE VkInstance             GetVkInstance()            const { return m_vk_instance; }
-            constexpr ALWAYS_INLINE VkPhysicalDevice       GetVkPhysicalDevice()      const { return m_vk_physical_device; }
-            constexpr ALWAYS_INLINE VkDevice               GetVkDevice()              const { return m_vk_device; }
+            constexpr ALWAYS_INLINE VkInstance GetVkInstance() const { return m_vk_instance; }
+            constexpr ALWAYS_INLINE VkPhysicalDevice GetVkPhysicalDevice() const { return m_vk_physical_device; }
+            constexpr ALWAYS_INLINE VkDevice GetVkDevice() const { return m_vk_device; }
             constexpr ALWAYS_INLINE const VkAllocationCallbacks *GetVkAllocationCallbacks() const { return nullptr; } //std::addressof(m_debug_callbacks); }
 
             constexpr ALWAYS_INLINE VkQueue GetVkQueue(QueueType queue_type) const { return m_vk_queue_array_enum[static_cast<u32>(queue_type)]; }
@@ -494,9 +391,26 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE u32 GetOpticalFlowQueueFamilyIndex() const { return m_queue_family_index_array_enum[static_cast<u32>(QueueType::OpticalFlow)]; }
 
             constexpr ALWAYS_INLINE VkDescriptorSetLayout GetBindlessVkDescriptorSetLayout() const { return m_vk_bindless_descriptor_set_layout; }
-            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutTextureSamplerImageSeparate(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetTextureSamplerImageSeparateLayoutSet]; }
-            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutUniformBufferStorageBuffer(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetUniformBufferStorageBufferLayoutSet]; }
-           constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayout(ShaderStage shader_stage) const { return std::addressof(m_per_stage_descriptor_layout_array[static_cast<u32>(shader_stage)]); }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet - this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)]; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedBuffer(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet - this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)]; }
+            constexpr ALWAYS_INLINE const VkDescriptorSetLayout *GetPerStageDescriptorLayoutArray(u32 *out_count, ShaderStage shader_stage) const {
+                const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
+                const bool is_per_stage = this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets);
+                const VkDescriptorSetLayout *array;
+                if (is_per_stage) {
+                    array = m_per_stage_descriptor_layout_array[static_cast<u32>(shader_stage)].vk_descriptor_set_layout_array;
+                    *out_count = cMaxPerStageSetCount - is_nv_bindless;
+                } else if (shader_stage == ShaderStage::Compute) {
+                    array = m_vk_combined_descriptor_set_layout_compute;
+                    *out_count = cMaxCombinedSetCountCompute - is_nv_bindless;
+                } else {
+                    const bool is_mesh_shaders = this->IsOptionalFeature(OptionalFeature::SupportsMeshShaders);
+                    array = m_vk_combined_descriptor_set_layout_graphics;
+                    *out_count = cMaxCombinedSetCountGraphics - (is_mesh_shaders * 4) - is_nv_bindless;
+                }
+                return array;
+            }
+            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayout(ShaderStage shader_stage) const { return std::addressof(m_per_stage_descriptor_layout_array[static_cast<u32>(shader_stage)]); }
             constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutVertex()                   const { return std::addressof(m_per_stage_descriptor_layout_vertex); }
             constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutTessellationEvaluation()   const { return std::addressof(m_per_stage_descriptor_layout_tessellation_evaluation); }
             constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutTessellationControl()      const { return std::addressof(m_per_stage_descriptor_layout_tessellation_control); }
@@ -506,29 +420,36 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutTask()                     const { return std::addressof(m_per_stage_descriptor_layout_task); }
             constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutMesh()                     const { return std::addressof(m_per_stage_descriptor_layout_mesh); }
 
-            static constexpr ALWAYS_INLINE u32 GetPerStageSetTextureSampler(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
-                return cTargetTextureSamplerImageSeparateLayoutSet;
+            constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutGraphics() const { return m_vk_combined_pipeline_layout_graphics; }
+            constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutCompute() const { return m_vk_combined_pipeline_layout_compute; }
+
+            constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedTextureSampler(ShaderStage shader_stage) {
+                const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
+                const u32 base_set = (this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? cTargetPerStageTextureSamplerLayoutSet : cTargetPerStageTextureSamplerLayoutSetArray[static_cast<u32>(shader_stage)];
+                return base_set - is_nv_bindless;
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageSetImage(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
-                return cTargetTextureSamplerImageSeparateLayoutSet;
+            constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedBuffer(ShaderStage shader_stage) {
+                const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
+                const u32 base_set = (this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? cTargetPerStageBufferLayoutSet : cTargetPerStageBufferLayoutSetArray[static_cast<u32>(shader_stage)];
+                return base_set - is_nv_bindless;
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageSetUniformBuffer(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
-                return cTargetUniformBufferStorageBufferLayoutSet;
+            constexpr ALWAYS_INLINE u32 GetPerStageSetTextureSampler(ShaderStage shader_stage) {
+                return this->GetPerStageSetCombinedTextureSampler(shader_stage);
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageSetStorageBuffer(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
-                return cTargetUniformBufferStorageBufferLayoutSet;
+            constexpr ALWAYS_INLINE u32 GetPerStageSetImage(ShaderStage shader_stage) {
+                return this->GetPerStageSetCombinedTextureSampler(shader_stage);
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateTexture(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
-                return cTargetTextureSamplerImageSeparateLayoutSet;
+            constexpr ALWAYS_INLINE u32 GetPerStageSetUniformBuffer(ShaderStage shader_stage) {
+                return this->GetPerStageSetCombinedBuffer(shader_stage);
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateSampler(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
-                return cTargetTextureSamplerImageSeparateLayoutSet;
+            constexpr ALWAYS_INLINE u32 GetPerStageSetStorageBuffer(ShaderStage shader_stage) {
+                return this->GetPerStageSetCombinedBuffer(shader_stage);
+            }
+            constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateTexture(ShaderStage shader_stage) {
+                return this->GetPerStageSetCombinedTextureSampler(shader_stage);
+            }
+            constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateSampler(ShaderStage shader_stage) {
+                return this->GetPerStageSetCombinedTextureSampler(shader_stage);
             }
 
             static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseTextureSampler(ShaderStage shader_stage) {
@@ -559,12 +480,55 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE const VkPhysicalDeviceProperties2 *GetPhysicalDeviceProperties() const { return std::addressof(m_vk_physical_device_properties); }
             constexpr ALWAYS_INLINE const void *GetPhysicalDeviceLuid() const { return m_vk_physical_device_properties_11.deviceLUID; }
 
-            constexpr ALWAYS_INLINE size_t GetSeparateTextureDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.sampledImageDescriptorSize; }
-            constexpr ALWAYS_INLINE size_t GetSeparateSamplerDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.samplerDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetBindlessDescriptorLayoutSize()  const {
+                if (!this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) { return 0; }
+                size_t layout_size = 0;
+                ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetBindlessVkDescriptorSetLayout(), std::addressof(layout_size));
+                return vp::util::AlignUp(layout_size, this->GetDescriptorOffsetAlignment());
+            }
+
+            constexpr ALWAYS_INLINE size_t GetCombinedTextureSamplerDescriptorLayoutSize()  const {
+                size_t layout_size = 0;
+                ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(ShaderStage::Vertex), std::addressof(layout_size));
+                return vp::util::AlignUp(layout_size, this->GetDescriptorOffsetAlignment());
+            }
+
+            constexpr ALWAYS_INLINE size_t GetCombinedBufferDescriptorLayoutSize()  const {
+                size_t layout_size = 0;
+                ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetPerStageVkDescriptorSetLayoutCombinedBuffer(ShaderStage::Vertex), std::addressof(layout_size));
+                return vp::util::AlignUp(layout_size, this->GetDescriptorOffsetAlignment());
+            }
+
+            constexpr ALWAYS_INLINE size_t GetMaxDescriptorSize()  const {
+                const size_t max0 = vp::util::Max(this->GetTextureSamplerDescriptorSize(), this->GetUniformBufferDescriptorSize());
+                const size_t max1 = vp::util::Max(max0, this->GetStorageBufferDescriptorSize());
+                const size_t max2 = vp::util::Max(max1, this->GetImageDescriptorSize());
+                const size_t max3 = vp::util::Max(max2, this->GetSeparateTextureDescriptorSize());
+                const size_t max4 = vp::util::Max(max3, this->GetSeparateSamplerDescriptorSize());
+                return max4;
+            }
             constexpr ALWAYS_INLINE size_t GetTextureSamplerDescriptorSize()  const { return m_vk_physical_device_descriptor_buffer_properties.combinedImageSamplerDescriptorSize; }
-            constexpr ALWAYS_INLINE size_t GetImageDescriptorSize()           const { return m_vk_physical_device_descriptor_buffer_properties.storageImageDescriptorSize; }
             constexpr ALWAYS_INLINE size_t GetUniformBufferDescriptorSize()   const { return m_vk_physical_device_descriptor_buffer_properties.uniformBufferDescriptorSize; }
             constexpr ALWAYS_INLINE size_t GetStorageBufferDescriptorSize()   const { return m_vk_physical_device_descriptor_buffer_properties.storageBufferDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetImageDescriptorSize()           const { return m_vk_physical_device_descriptor_buffer_properties.storageImageDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetSeparateTextureDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.sampledImageDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetSeparateSamplerDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.samplerDescriptorSize; }
             constexpr ALWAYS_INLINE size_t GetDescriptorOffsetAlignment()     const { return m_vk_physical_device_descriptor_buffer_properties.descriptorBufferOffsetAlignment; }
+
+            constexpr bool IsOptionalFeature(OptionalFeature optional_feature) const {
+                return m_optional_features.GetBit(static_cast<u32>(optional_feature));
+            }
+            constexpr bool IsExtBindless() const {
+                return m_is_ext_bindless_nv;
+            }
     };
+}
+
+namespace awn::gfx {
+
+    constexpr bool IsOptionalFeature(OptionalFeature optional_feature) {
+        impl::Context *context = impl::Context::GetInstance();
+        VP_ASSERT(context != nullptr);
+        return context->IsOptionalFeature(optional_feature);
+    }
 }

@@ -42,7 +42,7 @@ namespace vp::resbui {
             }
 
             constexpr virtual u32 GetLength() const override {
-                return ::strlen(m_string);
+                return vp::util::StringLength(m_string);
             }
     
             constexpr void SetString(const char *string) {

@@ -70,7 +70,7 @@ namespace vp::util {
             T         *m_memory_pointer[Count];
             FreeList   m_memory_object[Count];
         public:
-            constexpr FixedPointerArrayAllocator() {
+            constexpr FixedPointerArrayAllocator() : m_used_count() {
 
                 /* Split memory */
                 m_array = m_memory_pointer;

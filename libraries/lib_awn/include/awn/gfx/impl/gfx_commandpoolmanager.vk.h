@@ -38,12 +38,13 @@ namespace awn::gfx::impl {
             using HandleAllocator = vp::util::IndexAllocator<CommandPoolId>;
             using CommandPoolUnitArray = vp::util::HeapArray<CommandPoolUnit>;
         private:
+            sys::Mutex m_command_pool_cs;
             HandleAllocator m_handle_allocator;
             CommandPoolUnitArray m_unit_array;
         public:
             AWN_SINGLETON_TRAITS(CommandPoolManager);
         public:
-            constexpr ALWAYS_INLINE  CommandPoolManager() : m_handle_allocator(), m_unit_array() {/*...*/}
+            constexpr ALWAYS_INLINE  CommandPoolManager() : m_command_pool_cs(), m_handle_allocator(), m_unit_array() {/*...*/}
             constexpr ALWAYS_INLINE ~CommandPoolManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, u32 pool_count);

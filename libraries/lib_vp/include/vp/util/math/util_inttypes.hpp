@@ -513,11 +513,8 @@ namespace vp::util {
     }
 
     constexpr MatrixColumnMajor4x4i ConvertToMatrix44(const IntColumnMajor4x4 *in_matrix) {
-
-        const IntColumnMajor4x4 &ref = *in_matrix;
         const v8si a = Load8Aligned(std::addressof((*in_matrix)[0,0]));
         const v8si b = Load8Aligned(std::addressof((*in_matrix)[2,0]));
-
         const MatrixColumnMajor4x4i ret = { a, b, };
         return ret;
     }

@@ -34,8 +34,8 @@ namespace vp::res {
     };
 
     enum class BwavChannelPan : u16 {
-        FrontLeft = 0,
-        FrontRight = 1,
+        Left = 0,
+        Right = 1,
         Center = 2,
         LowFrequencyEffects = 3,
         LeftSurround = 4,

@@ -48,6 +48,19 @@ namespace awn::res::impl {
         return;
     }
 
+    bool ResourceUnitManager::LoopResourceUnits(const ResourceUnitLoopFunction *loop_function) {
+        std::scoped_lock l(m_map_cs);
+        auto iter = m_resource_unit_map.begin();
+        auto end = m_resource_unit_map.end();
+        while (iter != end) {
+            ResourceUnit *resource_unit = std::addressof(*iter);
+            ++iter;
+            const bool is_continue = loop_function->Invoke(this, resource_unit);
+            if (!is_continue) { return false; }
+        }
+        return true;
+    }
+
     ResourceUnit *ResourceUnitManager::FindResourceUnit(const char *path) {
         const vp::util::HashString<u32> hash_string = {
             .hash = vp::util::HashCrc32b(path),

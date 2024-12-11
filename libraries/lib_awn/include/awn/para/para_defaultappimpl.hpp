@@ -62,6 +62,7 @@ namespace awn::para {
                     load_info.file_device = std::addressof(m_dummy_file_device);
                     document_res = this->LoadSyncImpl(path.GetString(), std::addressof(load_info));
                 }
+                VP_ASSERT(document_res != nullptr);
 
                 return document_res->GetDocument();
             }

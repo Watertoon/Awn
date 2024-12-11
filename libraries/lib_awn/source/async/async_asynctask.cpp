@@ -17,6 +17,19 @@
 
 namespace awn::async {
 
+    void AsyncTask::FormatPushInfo(AsyncTaskPushInfo *push_info) { VP_UNUSED(push_info); }
+
+    void AsyncTask::Execute() {
+        if (m_task_function == nullptr) { return; }
+        m_task_function->Invoke(m_user_data);
+    }
+
+    void AsyncTask::PostExecute() {/*...*/}
+
+    void AsyncTask::FreeExecute() {/*...*/}
+
+    void AsyncTask::FreeCancel() {/*...*/}
+
     bool AsyncTask::TryInvokeSync() {
 
         /* Find exe queue thread */
@@ -40,7 +53,7 @@ namespace awn::async {
         {
             std::scoped_lock l(m_queue->m_queue_mutex);
             m_queue_thread = thread;
-            m_status       = static_cast<u32>(Status::Queued); 
+            m_status = static_cast<u32>(Status::Queued); 
         }
 
         /* Execute */
@@ -199,7 +212,7 @@ namespace awn::async {
         AsyncQueue *queue = push_info->GetQueue();
         VP_ASSERT(queue != nullptr);
         /* Ensure we aren't already scheduled */
-        RESULT_RETURN_IF(this->IsPending() && !this->IsQueuedOnCurrentThread(), ResultAlreadyQueued);
+        RESULT_RETURN_IF(this->IsPending() && !this->IsExecutingOnCurrentThread(), ResultAlreadyQueued);
 
         /* Setup event flags */
         const bool is_signal_event = (push_info->is_sync) | (!push_info->is_skip_finish_event);
@@ -255,10 +268,16 @@ namespace awn::async {
         m_finish_event.Wait();
     }
 
-    bool AsyncTask::IsQueuedOnCurrentThread() const {
+    bool AsyncTask::IsExecutingOnCurrentThread() const {
         if (m_queue_thread == nullptr) { return false; }
         const Status status = static_cast<Status>(m_status);
         if (status != Status::PostExecute) { return false; }
         return reinterpret_cast<sys::ThreadBase*>(m_queue_thread) == sys::GetCurrentThread();
+    }
+
+    bool AsyncTask::IsSchedulable() const {
+        const bool is_pending = this->IsPending();
+        if (!is_pending) { return true; }
+        return this->IsExecutingOnCurrentThread();
     }
 }

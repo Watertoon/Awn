@@ -47,7 +47,7 @@ namespace awn::res::impl {
         AsyncResourceThreadCreateAnyFunction  load_thread_create_function;
     };
 
-    using ManagedThreadArray = vp::util::PointerArray<sys::ThreadBase>;
+    using PersistantThreadArray = vp::util::PointerArray<sys::ThreadBase>;
 
     struct ResourceSizePrepareResult {
         size_t          resource_size;
@@ -124,16 +124,21 @@ namespace awn::res::impl {
             mem::Heap                     *m_zsdic_heap;
             DecompressorManager            m_decompressor_manager;
 
-            sys::Mutex                     m_managed_thread_array_cs;
-            ManagedThreadArray            *m_managed_thread_array;
-            bool                           m_enable_managed;
+            sys::Mutex                     m_persistant_thread_array_cs;
+            PersistantThreadArray         *m_persistant_thread_array;
+            bool                           m_is_enable_persistant;
+
+            u32                            m_clear_cache_tick_count;
+            u32                            m_clear_cache_tick_counter;
 
             LoadTask                      *m_task_for_calculate;
             LoadTask                      *m_task_for_load_sync;
             async::AsyncTask              *m_task_for_clear_cache_for_allocate;
             async::AsyncTask              *m_task_for_force_reserve_unload;
             async::AsyncTask              *m_task_for_force_clear_all_caches;
+            async::AsyncTask              *m_task_for_heap_adjust;
             MemberTaskFunction             m_calc_exe;
+            MemberTaskFunction             m_process_heap_adjust_exe;
             MemberTaskFunction             m_load_control_exe;
             async::StaticTaskFunction      m_load_memory_exe;
             async::StaticResultFunction    m_load_memory_result;
@@ -143,6 +148,8 @@ namespace awn::res::impl {
             MemberTaskFunction             m_reserve_unload_exe;
             MemberTaskFunction             m_clear_cache_for_allocate_exe;
             async::StaticTaskFunction      m_heap_adjust_exe;
+            async::StaticTaskFunction      m_defer_clear_cache_exe;
+            MemberResultFunction           m_defer_clear_cache_result;
             async::StaticTaskFunction      m_clear_cache_exe;
             async::StaticResultFunction    m_clear_cache_result;
             async::StaticTaskFunction      m_unload_exe;
@@ -167,6 +174,8 @@ namespace awn::res::impl {
             void RequestHeapAdjust(ResourceUnit *resource_unit);
             void CancelHeapAdjustRequest(ResourceUnit *resource_unit);
 
+            void ClearAllCaches();
+
             void ProcessAdjustReference();
             void ProcessUnload();
             void ProcessHeapAdjust();
@@ -190,9 +199,7 @@ namespace awn::res::impl {
 
             void ReserveUnloadExe(void *arg);
 
-            void ClearCacheForAllocateExe(void *count) {
-                m_memory_manager.ClearCacheForAllocate(static_cast<u32>(reinterpret_cast<uintptr_t>(count)));
-            }
+            void ClearCacheForAllocateExe(void *count);
 
             static void HeapAdjustExe(void *resource_unit);
 
@@ -202,10 +209,17 @@ namespace awn::res::impl {
             static void UnloadExe(void *resource_unit);
             static Result UnloadResult(async::TaskResultInvokeInfo *result_info);
 
+            static void DeferClearCacheExe(void *resource_unit);
+            Result DeferClearCacheResult(async::TaskResultInvokeInfo *result_info);
+    
             static void ClearCacheExe(void *resource_unit);
             static Result ClearCacheResult(async::TaskResultInvokeInfo *result_info);
 
             void CalculateExe(void *arg);
+            void ProcessHeapAdjustExe(void *arg) {
+                VP_UNUSED(arg);
+                this->ProcessHeapAdjust();
+            }
         public:
             void FinalizeBinder(ResourceBinder *binder);
             void FinalizeBinderSync(ResourceBinder *binder);
@@ -218,13 +232,13 @@ namespace awn::res::impl {
             void CancelLoadTasks();
         public:
             constexpr AsyncResourceManager() : m_system_heap(), m_app_impl(), m_extension_manager(), m_memory_manager(), m_is_trigger_clear_all_caches(), m_resource_unit_allocator(), m_resource_unit_finalize_list(), m_finalize_list_cs(),
-            m_thread_control(), m_thread_memory(), m_queue_control(), m_queue_memory(), m_queue_load(), m_queue_compose(), m_load_thread_array(), m_compose_thread_array(), m_async_task_allocator_load(),
+            m_queue_control(), m_queue_memory(), m_queue_load(), m_queue_compose(),m_thread_control(), m_thread_memory(), m_load_thread_array(), m_compose_thread_array(), m_async_task_allocator_load(),
             m_unload_frame_cs(), m_unload_frame_buffer(), m_adjust_ref_frame_cs(), m_adjust_ref_frame_buffer(), m_heap_adjust_frame_cs(), m_heap_adjust_frame_buffer(),
             m_default_archive_file_device(), m_default_archive_file_device_for_size_prepare(), m_default_archive_binder(), m_default_archive_reference_count(), m_thread_local_archive_manager(), m_resource_size_table_manager(),
-            m_zsdic_heap(), m_decompressor_manager(), m_managed_thread_array_cs(), m_managed_thread_array(), m_enable_managed(),
-            m_task_for_calculate(), m_task_for_load_sync(), m_task_for_clear_cache_for_allocate(), m_task_for_force_reserve_unload(), m_task_for_force_clear_all_caches(),
-            m_calc_exe(this, &AsyncResourceManager::CalculateExe), m_load_control_exe(this, &AsyncResourceManager::LoadControlExe), m_load_memory_exe(LoadMemoryExe), m_load_memory_result(LoadMemoryResult), m_load_file_exe(LoadFileExe), m_load_file_result(LoadFileResult), m_compose_exe(ComposeExe),
-            m_reserve_unload_exe(this, &AsyncResourceManager::ReserveUnloadExe), m_clear_cache_for_allocate_exe(this, &AsyncResourceManager::ClearCacheForAllocateExe), m_heap_adjust_exe(HeapAdjustExe), m_clear_cache_exe(ClearCacheExe), m_clear_cache_result(ClearCacheResult),
+            m_zsdic_heap(), m_decompressor_manager(), m_persistant_thread_array_cs(), m_persistant_thread_array(), m_is_enable_persistant(), m_clear_cache_tick_count(1), m_clear_cache_tick_counter(),
+            m_task_for_calculate(), m_task_for_load_sync(), m_task_for_clear_cache_for_allocate(), m_task_for_force_reserve_unload(), m_task_for_force_clear_all_caches(), m_task_for_heap_adjust(),
+            m_calc_exe(this, &AsyncResourceManager::CalculateExe), m_process_heap_adjust_exe(this, &AsyncResourceManager::ProcessHeapAdjustExe), m_load_control_exe(this, &AsyncResourceManager::LoadControlExe), m_load_memory_exe(LoadMemoryExe), m_load_memory_result(LoadMemoryResult), m_load_file_exe(LoadFileExe), m_load_file_result(LoadFileResult), m_compose_exe(ComposeExe),
+            m_reserve_unload_exe(this, &AsyncResourceManager::ReserveUnloadExe), m_clear_cache_for_allocate_exe(this, &AsyncResourceManager::ClearCacheForAllocateExe), m_heap_adjust_exe(HeapAdjustExe), m_defer_clear_cache_exe(DeferClearCacheExe), m_defer_clear_cache_result(this, &AsyncResourceManager::DeferClearCacheResult), m_clear_cache_exe(ClearCacheExe), m_clear_cache_result(ClearCacheResult),
             m_unload_exe(UnloadExe), m_unload_result(UnloadResult), m_unload_for_sync_exe(UnloadForSyncExe), m_unload_for_sync_result(UnloadForSyncResult) {/*...*/}
 
             ~AsyncResourceManager() {/*...*/}
@@ -235,15 +249,10 @@ namespace awn::res::impl {
             void Calculate();
             void ForceClearAllCaches();
         public:
-            u32 AllocateDecompressor() {
-                return m_decompressor_manager.AllocateDecompressorHandle();
-            }
-            void FreeDecompressor(u32 handle) {
-                m_decompressor_manager.FreeDecompressorHandle(handle);
-            }
-            IDecompressor *GetDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask) {
-                return m_decompressor_manager.GetDecompressor(handle, decompressor_type, priority, core_mask);
-            }
+            u32 AllocateDecompressor();
+            void FreeDecompressor(u32 handle);
+
+            IDecompressor *GetDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask);
         public:
             bool IsComposeEnabled() { return false; }
 
@@ -270,25 +279,10 @@ namespace awn::res::impl {
             bool IsCurrentThreadLoadThread();
             bool IsCurrentThreadComposeThread();
         public:
-            void SetManagedThreadArray(ManagedThreadArray *array) {
-                std::scoped_lock l(m_managed_thread_array_cs);
-                m_managed_thread_array = array;
-                m_enable_managed = true;
-            }
-            void ReleaseManagedThreadArray() {
-                std::scoped_lock l(m_managed_thread_array_cs);
-                m_managed_thread_array = nullptr;
-                m_enable_managed = false;
-            }
+            void SetPersistantThreadArray(PersistantThreadArray *array);
+            void ReleasePersistantThreadArray();
 
-            bool IsManagedThread() {
-                std::scoped_lock l(m_managed_thread_array_cs);
-                if (m_enable_managed) { return false; }
-                for (async::AsyncQueueThread *&thread : m_load_thread_array) {
-                    if (thread->IsSuspended()) { return true; }
-                }
-                return false;
-            }
+            bool IsPersistantThread();
         public:
             ResourceMemoryManager *GetMemoryManager(MaxPathString *path);
             CompressionType GetCompressionTypeByExtension(MaxExtensionString *extension);

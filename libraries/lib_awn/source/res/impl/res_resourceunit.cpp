@@ -123,6 +123,7 @@ namespace awn::res::impl {
             .queue_thread    = manager->m_thread_memory,
             .task_function   = std::addressof(manager->m_clear_cache_exe),
             .result_function = std::addressof(manager->m_clear_cache_result),
+            .user_data       = this,
             .priority        = 0xd,
         };
         RESULT_ABORT_UNLESS(m_unload_task.PushTask(std::addressof(push_info)));
@@ -131,7 +132,7 @@ namespace awn::res::impl {
     void ResourceUnit::FinalizeIfOutOfReference() {
 
         /* Fail if not out of reference */
-        if (0 < m_reference_count) { return; }
+        if (0 < this->GetReferenceCount()) { return; }
 
         m_unload_task.Wait();
         AsyncResourceManager::GetInstance()->RemoveResourceUnitFromFinalizeList(this);
@@ -208,7 +209,7 @@ namespace awn::res::impl {
         /* We are unload safe if not in compose */
         if (!m_compose_task.IsPending()) { return true; }
         /* We are unload safe if we are the compose thread and in post execute */
-        if (m_compose_task.IsQueuedOnCurrentThread()) { return true; }
+        if (m_compose_task.IsExecutingOnCurrentThread()) { return true; }
         return false;
     }
 
@@ -908,6 +909,20 @@ namespace awn::res::impl {
     void ResourceUnit::UnregisterFromResourceUnitManager() {
         if (m_resource_unit_manager == nullptr) { return; }
         m_resource_unit_manager->UnregisterResourceUnit(this);
+    }
+
+    void ResourceUnit::FinalizeForClearCache() {
+        if (!m_state.GetBit(State_IsFreeableForMemoryManager) || 0 < this->GetReferenceCount() || m_status == Status::Freed) { return; }
+        m_state.SetBit(State_IsFinalized);
+        AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
+        async::AsyncTaskPushInfo push_info = {
+            .queue_thread = manager->m_thread_control,
+            .task_function = std::addressof(manager->m_defer_clear_cache_exe),
+            .result_function = std::addressof(manager->m_defer_clear_cache_result),
+            .user_data = this,
+            .priority = 6,
+        };
+        RESULT_ABORT_UNLESS(m_unload_task.PushTask(std::addressof(push_info)));
     }
 
     bool ResourceUnit::InitializeResource(ResourceUserContext *user_context) {

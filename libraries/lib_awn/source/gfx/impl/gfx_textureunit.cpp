@@ -193,7 +193,7 @@ namespace awn::gfx::impl {
             .regionCount    = mip_count,
             .pRegions       = memory_to_image_regions,
         };
-        const VkResult result = ::pfn_vkCopyMemoryToImageEXT(Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
+        const VkResult result = ::pfn_vkCopyMemoryToImage(Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
         if (result != VK_SUCCESS) {
             this->Finalize();
             m_is_fail_memory_copy = true;

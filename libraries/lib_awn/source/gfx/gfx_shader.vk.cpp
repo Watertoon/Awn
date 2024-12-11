@@ -17,19 +17,20 @@
 
 namespace awn::gfx {
 
-    void Shader::InitializeImpl(void **code_array, u32 *code_size_array, const ShaderStage *stage_array, u32 stage_count, ShaderCodeType code_type, VkShaderCreateFlagsEXT create_flags) {
+    Result Shader::InitializeImpl(void **code_array, u32 *code_size_array, const ShaderStage *stage_array, u32 stage_count, ShaderCodeType code_type, VkShaderCreateFlagsEXT create_flags) {
+
+        /* Build create info from provided stages */
         impl::Context *context = impl::Context::GetInstance();
         const VkShaderCodeTypeEXT vk_code_type = vp::res::GfxShaderCodeTypeToVkShaderCodeType(code_type);
         VkShaderCreateInfoEXT vk_shader_create_info_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
         u32 info_i = 0;
         for (u32 i = 0; i < stage_count; ++i) {
             if (code_array[i] == nullptr) { continue; }
+
             const ShaderStage stage = stage_array[i];
             const VkShaderStageFlags vk_stage_flags = vp::res::GfxShaderStageToVkShaderStageFlags(stage);
-            m_vk_shader_stage_flag_array[info_i] = static_cast<VkShaderStageFlagBits>(vk_stage_flags);
-            const impl::Context::PerStageDescriptorLayout *desc_layout = context->GetPerStageDescriptorLayout(stage);
-
-            /* Set shader create info */
+            u32 desc_count = 0;
+            const VkDescriptorSetLayout *desc_layout = context->GetPerStageDescriptorLayoutArray(std::addressof(desc_count), stage);
             vk_shader_create_info_array[info_i].sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
             vk_shader_create_info_array[info_i].flags                  = create_flags;
             vk_shader_create_info_array[info_i].stage                  = static_cast<VkShaderStageFlagBits>(vk_stage_flags);
@@ -37,10 +38,10 @@ namespace awn::gfx {
             vk_shader_create_info_array[info_i].codeSize               = code_size_array[i];
             vk_shader_create_info_array[info_i].pCode                  = code_array[i];
             vk_shader_create_info_array[info_i].pName                  = "main";
-            vk_shader_create_info_array[info_i].setLayoutCount         = impl::Context::cTargetPerStageSetCount;
-            vk_shader_create_info_array[info_i].pSetLayouts            = desc_layout->vk_descriptor_set_layout_array;
-            vk_shader_create_info_array[info_i].pushConstantRangeCount = impl::Context::cTargetPerStagePushConstantRangeCount;
-            vk_shader_create_info_array[info_i].pPushConstantRanges    = std::addressof(desc_layout->vk_push_constant_range);
+            vk_shader_create_info_array[info_i].setLayoutCount         = desc_count;
+            vk_shader_create_info_array[info_i].pSetLayouts            = desc_layout;
+            vk_shader_create_info_array[info_i].pushConstantRangeCount = 0;
+            vk_shader_create_info_array[info_i].pPushConstantRanges    = nullptr;
             vk_shader_create_info_array[info_i].pSpecializationInfo    = nullptr;
 
             /* Set last info's next stage */
@@ -53,15 +54,20 @@ namespace awn::gfx {
         vk_shader_create_info_array[info_i].nextStage = 0;
 
         /* Create shaders */
-        const u32 vk_result = ::pfn_vkCreateShadersEXT(context->GetVkDevice(), info_i, vk_shader_create_info_array, context->GetVkAllocationCallbacks(), m_vk_shader_array);
-        VP_ASSERT(vk_result == VK_SUCCESS);
+        VkShaderEXT vk_shader_array[cMaxShaderStageCount];
+        const u32 vk_result = ::pfn_vkCreateShadersEXT(context->GetVkDevice(), info_i, vk_shader_create_info_array, context->GetVkAllocationCallbacks(), vk_shader_array);
+        RESULT_RETURN_UNLESS(vk_result == VK_SUCCESS, ResultFailedToCreateShaders);
 
-        m_shader_count = info_i;
+        /* Set shaders */
+        for (u32 i = 0; i < stage_count; ++i) {
+            const ShaderStage stage = stage_array[i];
+            m_vk_shader_array[static_cast<u32>(stage)] = vk_shader_array[i];
+        }
 
-        return;
+        RESULT_RETURN_SUCCESS;
     }
 
-    void Shader::Initialize(MeshShaderInfo *shader_info, ShaderCodeType code_type) {
+    Result Shader::Initialize(MeshShaderInfo *shader_info, ShaderCodeType code_type) {
 
         /* Integrity checks */
         VP_ASSERT((shader_info->code_mesh != nullptr) && (shader_info->code_fragment != nullptr));
@@ -73,17 +79,16 @@ namespace awn::gfx {
             ShaderStage::Mesh,
             ShaderStage::Fragment,
         };
-        this->InitializeImpl(shader_info->code_array, shader_info->code_size_array, cStageArray, sizeof(cStageArray) / sizeof(ShaderStage), code_type, create_flags);
-
-        return;
+        static constexpr u32 cStageCount = sizeof(cStageArray) / sizeof(ShaderStage);
+        return this->InitializeImpl(shader_info->code_array, shader_info->code_size_array, cStageArray, cStageCount, code_type, create_flags);
     }
 
-    void Shader::Initialize(PrimitiveShaderInfo *shader_info, ShaderCodeType code_type) {
+    Result Shader::Initialize(PrimitiveShaderInfo *shader_info, ShaderCodeType code_type) {
 
         /* Integrity checks */
         VP_ASSERT((shader_info->code_vertex != nullptr) && (shader_info->code_fragment != nullptr));
 
-        /* Setup primitive shaders */
+        /* Setup vertex and fragment shaders, and optional geometry, and tessellation */
         constexpr VkShaderCreateFlagsEXT create_flags = static_cast<VkShaderCreateFlagsEXT>(VK_SHADER_CREATE_LINK_STAGE_BIT_EXT);
         static constexpr const ShaderStage cStageArray[] = {
             ShaderStage::Vertex,
@@ -92,163 +97,133 @@ namespace awn::gfx {
             ShaderStage::Geometry,
             ShaderStage::Fragment,
         };
-        this->InitializeImpl(shader_info->code_array, shader_info->code_size_array, cStageArray, sizeof(cStageArray) / sizeof(ShaderStage), code_type, create_flags);
-
-        return;
+        static constexpr u32 cStageCount = sizeof(cStageArray) / sizeof(ShaderStage);
+        return this->InitializeImpl(shader_info->code_array, shader_info->code_size_array, cStageArray, cStageCount, code_type, create_flags);
     }
 
-    void Shader::Initialize(ComputeShaderInfo *shader_info, ShaderCodeType code_type) {
+    Result Shader::Initialize(ComputeShaderInfo *shader_info, ShaderCodeType code_type) {
 
         /* Integrity checks */
         VP_ASSERT(shader_info->code_compute != nullptr);
 
-        /* Setup primitive shaders */
+        /* Setup compute shader */
         constexpr VkShaderCreateFlagsEXT create_flags = static_cast<VkShaderCreateFlagsEXT>(VK_SHADER_CREATE_LINK_STAGE_BIT_EXT);
         static constexpr const ShaderStage cStageArray[] = {
             ShaderStage::Compute,
         };
-        this->InitializeImpl(std::addressof(shader_info->code_compute), std::addressof(shader_info->code_size_compute), cStageArray, sizeof(cStageArray) / sizeof(ShaderStage), code_type, create_flags);
-
-        return;
+        static constexpr u32 cStageCount = sizeof(cStageArray) / sizeof(ShaderStage);
+        return this->InitializeImpl(std::addressof(shader_info->code_compute), std::addressof(shader_info->code_size_compute), cStageArray, cStageCount, code_type, create_flags);
     }
 
-    bool Shader::Initialize(vp::res::ResBnshShaderProgram *res_program) {
+    Result Shader::Initialize(vp::res::ResBnshShaderProgram *res_program) {
+
+        /* Set the shader program atomically, handle someone else getting here first */
+        vp::res::ResBnshShaderProgram *prev_program;
+        const bool is_set_program = vp::util::InterlockedCompareExchange(std::addressof(prev_program), std::addressof(m_res_program), res_program, static_cast<vp::res::ResBnshShaderProgram*>(nullptr));
+        if (!is_set_program) {
+            if (res_program == prev_program) {
+                m_init_event.Wait();
+                prev_program = m_res_program;
+            }
+            RESULT_RETURN_IF(res_program != prev_program, ResultInitializedByDifferentProgram);
+            RESULT_RETURN_SUCCESS;
+        }
 
         /* Ensure the program is either binary or spirv */
-        if (res_program->code_type != static_cast<u8>(vp::res::GfxShaderCodeType::Binary) && res_program->code_type != static_cast<u8>(vp::res::GfxShaderCodeType::Intermediate)) { return false; }
-        const VkShaderCodeTypeEXT code_type = (res_program->code_type == static_cast<u8>(vp::res::GfxShaderCodeType::Binary)) ? VK_SHADER_CODE_TYPE_BINARY_EXT : VK_SHADER_CODE_TYPE_SPIRV_EXT;
-
-        /* Get code info */
-        vp::res::ResBnshShaderCodeInfo *vertex_code_info                  = res_program->code_info_vertex;
-        vp::res::ResBnshShaderCodeInfo *tessellation_control_code_info    = res_program->code_info_tessellation_control;
-        vp::res::ResBnshShaderCodeInfo *tessellation_evaluation_code_info = res_program->code_info_tessellation_evaluation;
-        vp::res::ResBnshShaderCodeInfo *geometry_code_info                = res_program->code_info_geometry;
-        vp::res::ResBnshShaderCodeInfo *fragment_code_info                = res_program->code_info_fragment;
-        vp::res::ResBnshShaderCodeInfo *compute_code_info                 = res_program->code_info_compute;
-        vp::res::ResBnshShaderCodeInfo *task_code_info                    = res_program->code_info_task;
-        vp::res::ResBnshShaderCodeInfo *mesh_code_info                    = res_program->code_info_mesh;
-
-        /* Calculate shader stages */
-        VkShaderStageFlags next_stage_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
-        u32 shader_map[impl::Context::cTargetMaxPrimitiveShaderStageCount];
-        u32 code_size_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
-        void *code_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
-        vp::res::ResBnshShaderCodeInfo *code_info_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
-        VkShaderEXT vk_shader_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
-        const impl::Context::PerStageDescriptorLayout *desc_layout_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
-
-        u32 last_stage        = 0xffff'ffff;
-        u32 shader_count      = 0;
-        u32 compile_count     = 0;
-
-        /* Primitive pipeline */
-        impl::Context *context = impl::Context::GetInstance();
-        const auto set_code_info_lambda = [&](vp::res::ResBnshShaderCodeInfo *code_info, gfx::ShaderStage shader_stage, VkShaderStageFlagBits vk_stage_flags) {
-            if (code_info == nullptr) { return; }
-
-            /* Set last stage */
-            if (last_stage != 0xffff'ffff) { next_stage_array[shader_count - 1] = last_stage; }
-            m_vk_shader_stage_flag_array[shader_count] = vk_stage_flags;
-            last_stage = vk_stage_flags;
-
-            if (vp::util::InterlockedIncrement(std::addressof(code_info->runtime_ref_count)) == 1) {
-                /* Set compile state */
-                code_info_array[compile_count] = code_info;
-                code_array[compile_count] = code_info->code;
-                code_size_array[compile_count] = code_info->code_size;
-                shader_map[compile_count] = shader_count;
-                desc_layout_array[compile_count] = context->GetPerStageDescriptorLayout(shader_stage);
-                ++compile_count;
-            } else {
-                m_vk_shader_array[shader_count] = reinterpret_cast<VkShaderEXT>(code_info->runtime_user_shader_code_buffer_address);
-            }
-            ++shader_count;
-        };
-        set_code_info_lambda(vertex_code_info, ShaderStage::Vertex, VK_SHADER_STAGE_VERTEX_BIT);
-        set_code_info_lambda(tessellation_control_code_info, ShaderStage::TessellationControl, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
-        set_code_info_lambda(tessellation_evaluation_code_info, ShaderStage::TessellationEvaluation, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
-        set_code_info_lambda(geometry_code_info, ShaderStage::Geometry, VK_SHADER_STAGE_GEOMETRY_BIT);
-        set_code_info_lambda(fragment_code_info, ShaderStage::Fragment, VK_SHADER_STAGE_FRAGMENT_BIT);
-        set_code_info_lambda(compute_code_info, ShaderStage::Compute, VK_SHADER_STAGE_COMPUTE_BIT);
-        set_code_info_lambda(task_code_info, ShaderStage::Task, VK_SHADER_STAGE_TASK_BIT_EXT);
-        set_code_info_lambda(mesh_code_info, ShaderStage::Mesh, VK_SHADER_STAGE_MESH_BIT_EXT);
+        const vp::res::GfxShaderCodeType code_type = static_cast<vp::res::GfxShaderCodeType>(res_program->code_type);
+        RESULT_RETURN_IF(code_type != vp::res::GfxShaderCodeType::Binary && code_type != vp::res::GfxShaderCodeType::Intermediate, ResultInvalidShaderCodeType);
+        const VkShaderCodeTypeEXT vk_code_type = (code_type == vp::res::GfxShaderCodeType::Binary) ? VK_SHADER_CODE_TYPE_BINARY_EXT : VK_SHADER_CODE_TYPE_SPIRV_EXT;
 
         /* Setup mesh, fragment, and the optional task shader info */
-        VkShaderCreateInfoEXT vk_shader_create_info_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
-        for (u32 i = 0; i < compile_count; ++i) {
+        vp::res::ResBnshShaderCodeInfo **code_info_array = res_program->code_info_array;
+        u32 compile_count = 0;
+        gfx::ShaderStage stage_array[cMaxShaderStageCount];
+        VkShaderCreateInfoEXT vk_shader_create_info_array[cMaxShaderStageCount];
+        const u32 max_shader_count = cMaxShaderStageCount - (2 * (!gfx::IsOptionalFeature(OptionalFeature::SupportsMeshShaders)));
+        for (u32 i = 0; i < max_shader_count; ++i) {
+
+            /* Increment reference  */
+            vp::res::ResBnshShaderCodeInfo *code_info = code_info_array[i];
+            if (code_info == nullptr) { continue; }
+            
+            /* Resolve stage and next stage */
+            const ShaderStage shader_stage = static_cast<ShaderStage>(i);
+            stage_array[compile_count] = shader_stage;
+            const VkShaderStageFlags vk_shader_stage = vp::res::GfxShaderStageToVkShaderStageFlags(shader_stage);
+            VkShaderStageFlags vk_next_shader_stage = 0;
+            u32 flags = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT;
+            if (i < 4) {
+                for (u32 j = i; j < 5; ++j) {
+                    if (code_info_array[j] == nullptr) { continue; }
+                    const ShaderStage next_shader_stage = static_cast<ShaderStage>(j);
+                    vk_next_shader_stage = vp::res::GfxShaderStageToVkShaderStageFlags(next_shader_stage);
+                    break;
+                }
+            } else if (i == 6) {
+                vk_next_shader_stage = VK_SHADER_STAGE_MESH_BIT_EXT;
+            } else if (i == 7) {
+                if (compile_count < 1 || stage_array[compile_count - 1] != ShaderStage::Task) {
+                    flags |= VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT;
+                }
+                vk_next_shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+            }
+
+            u32 desc_count = 0;
+            const VkDescriptorSetLayout *desc_layout = impl::Context::GetInstance()->GetPerStageDescriptorLayoutArray(std::addressof(desc_count), shader_stage);
+
             vk_shader_create_info_array[i].sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
             vk_shader_create_info_array[i].pNext                  = nullptr;
-            vk_shader_create_info_array[i].flags                  = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT;
-            vk_shader_create_info_array[i].stage                  = static_cast<VkShaderStageFlagBits>(m_vk_shader_stage_flag_array[i]);
-            vk_shader_create_info_array[i].nextStage              = next_stage_array[i];
-            vk_shader_create_info_array[i].codeType               = code_type;
-            vk_shader_create_info_array[i].codeSize               = code_size_array[i];
-            vk_shader_create_info_array[i].pCode                  = code_array[i];
+            vk_shader_create_info_array[i].flags                  = flags;
+            vk_shader_create_info_array[i].stage                  = static_cast<VkShaderStageFlagBits>(vk_shader_stage);
+            vk_shader_create_info_array[i].nextStage              = vk_next_shader_stage;
+            vk_shader_create_info_array[i].codeType               = vk_code_type;
+            vk_shader_create_info_array[i].codeSize               = code_info->code_size;
+            vk_shader_create_info_array[i].pCode                  = code_info->code;
             vk_shader_create_info_array[i].pName                  = "main";
-            vk_shader_create_info_array[i].setLayoutCount         = impl::Context::cTargetPerStageSetCount;
-            vk_shader_create_info_array[i].pSetLayouts            = desc_layout_array[i]->vk_descriptor_set_layout_array;
-            vk_shader_create_info_array[i].pushConstantRangeCount = impl::Context::cTargetPerStagePushConstantRangeCount;
-            vk_shader_create_info_array[i].pPushConstantRanges    = std::addressof(desc_layout_array[i]->vk_push_constant_range);
+            vk_shader_create_info_array[i].setLayoutCount         = desc_count;
+            vk_shader_create_info_array[i].pSetLayouts            = desc_layout;
+            vk_shader_create_info_array[i].pushConstantRangeCount = 0;
+            vk_shader_create_info_array[i].pPushConstantRanges    = nullptr;
             vk_shader_create_info_array[i].pSpecializationInfo    = nullptr;
+
+            ++compile_count;
         }
 
         /* Create shaders */
-        const u32 vk_result = ::pfn_vkCreateShadersEXT(impl::Context::GetInstance()->GetVkDevice(), shader_count, vk_shader_create_info_array, impl::Context::GetInstance()->GetVkAllocationCallbacks(), vk_shader_array);
-        if (vk_result != VK_SUCCESS) { return false; }
+        VkShaderEXT vk_shader_array[cMaxShaderStageCount] = {};
+        const u32 vk_result = ::pfn_vkCreateShadersEXT(impl::Context::GetInstance()->GetVkDevice(), compile_count, vk_shader_create_info_array, impl::Context::GetInstance()->GetVkAllocationCallbacks(), vk_shader_array);
+        RESULT_RETURN_UNLESS(vk_result == VK_SUCCESS, ResultFailedToCreateShaders);
 
         /* Write back shader handles */
         for (u32 i = 0; i < compile_count; ++i) {
-            if (code_info_array[i]->runtime_user_shader_code_buffer_address != nullptr) { continue; }
-            code_info_array[i]->runtime_user_shader_code_buffer_address = vk_shader_array[i];
-            m_vk_shader_array[shader_map[i]] = vk_shader_array[i];
+            m_vk_shader_array[static_cast<u32>(stage_array[i])] = vk_shader_array[i];
         }
 
         /* Set state */
-        m_res_program = res_program;
+        m_init_event.Signal();
 
-        return true;
+        RESULT_RETURN_SUCCESS;
     }
 
     void Shader::Finalize() {
 
-        /* Delete shaders */
+        /* Reset program */
         if (m_res_program != nullptr) {
-            const auto finalize_code_info_lambda = [](vp::res::ResBnshShaderCodeInfo *code_info) {                
-                if (code_info == nullptr) { return; }
-                const u32 ref_count = vp::util::InterlockedDecrement(std::addressof(code_info->runtime_ref_count));
-                if (0 < ref_count) { return; }
-                VkShaderEXT vk_shader = reinterpret_cast<VkShaderEXT>(code_info->runtime_user_shader_code_buffer_address);
-                ::pfn_vkDestroyShaderEXT(impl::Context::GetInstance()->GetVkDevice(), vk_shader, impl::Context::GetInstance()->GetVkAllocationCallbacks());
-                code_info->runtime_user_shader_code_buffer_address = nullptr;
-            };
-            finalize_code_info_lambda(m_res_program->code_info_vertex);
-            finalize_code_info_lambda(m_res_program->code_info_tessellation_control);
-            finalize_code_info_lambda(m_res_program->code_info_tessellation_evaluation);
-            finalize_code_info_lambda(m_res_program->code_info_geometry);
-            finalize_code_info_lambda(m_res_program->code_info_fragment);
-            finalize_code_info_lambda(m_res_program->code_info_compute);
-            finalize_code_info_lambda(m_res_program->code_info_task);
-            finalize_code_info_lambda(m_res_program->code_info_mesh);
+            m_init_event.Clear();
             m_res_program = nullptr;
-        } else {
-            for (u32 i = 0; i < m_shader_count; ++i) {
-                ::pfn_vkDestroyShaderEXT(impl::Context::GetInstance()->GetVkDevice(), m_vk_shader_array[i], impl::Context::GetInstance()->GetVkAllocationCallbacks());
-            }
+        }
+        
+        /* Delete shaders */
+        for (u32 i = 0; i < cMaxShaderStageCount; ++i) {
+            if (m_vk_shader_array[i] == VK_NULL_HANDLE) { continue; }
+            ::pfn_vkDestroyShaderEXT(impl::Context::GetInstance()->GetVkDevice(), m_vk_shader_array[i], impl::Context::GetInstance()->GetVkAllocationCallbacks());
         }
 
-        /* Reset state */
-        m_vk_shader_array[0] = VK_NULL_HANDLE;
-        m_vk_shader_array[1] = VK_NULL_HANDLE;
-        m_vk_shader_array[2] = VK_NULL_HANDLE;
-        m_vk_shader_array[3] = VK_NULL_HANDLE;
-        m_vk_shader_array[4] = VK_NULL_HANDLE;
-        m_shader_count       = 0;
-    }
+        /* Reset shader array */
+        static_assert(VK_NULL_HANDLE == 0);
+        ::memset(m_vk_shader_array, 0, cMaxShaderStageCount * sizeof(VkShaderEXT));
 
-    u32 Shader::SetupForCommandList(VkShaderEXT **out_shader_array, VkShaderStageFlagBits **out_shader_stage_array) {
-        *out_shader_array       = m_vk_shader_array;
-        *out_shader_stage_array = m_vk_shader_stage_flag_array;
-        return m_shader_count;
+        return;
     }
 
     u32 Shader::GetInterfaceSlot(ShaderStage shader_stage, ShaderInterfaceType interface_type, const char *key) {
@@ -265,9 +240,9 @@ namespace awn::gfx {
         if (interface_info == nullptr) { return cInvalidInterfaceSlot; }
 
         /* Select base index and dictionary for interface type */
-        vp::res::ResNintendoWareDictionary *dictionary           = nullptr;
-        u32                                 base_index           = 0;
-        const u32                           interface_type_index = static_cast<u32>(interface_type);
+        vp::res::ResNintendoWareDictionary *dictionary = nullptr;
+        u32 base_index = 0;
+        const u32 interface_type_index = static_cast<u32>(interface_type);
         if (interface_type_index < static_cast<u32>(ShaderInterfaceType::Image)) {
             dictionary = std::addressof(interface_info->input_attribute_dictionary)[interface_type_index];
             base_index = (interface_type_index == 0) ? 0 : std::addressof(interface_info->base_index_output_attribute)[interface_type_index - 1];

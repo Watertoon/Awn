@@ -31,8 +31,12 @@ namespace vp::resbui {
         }
     };
 
+    class BnshShaderNode;
     class BnshShaderProgramNode;
+    class BnshShaderVariationNode;
     class BnshBuilder;
+
+    using BnshBuilderLoopFunction = vp::util::IFunction<bool(BnshBuilder*,BnshShaderVariationNode*,BnshShaderProgramNode*,BnshShaderNode*)>;
 
     class BnshShaderNode {
         public:
@@ -59,11 +63,11 @@ namespace vp::resbui {
             constexpr BnshShaderNode() : m_code(), m_control(), m_code_size(), m_control_size(), m_code_offset(), m_control_offset(), m_workgroup_x(), m_workgroup_y(), m_workgroup_z(), m_interface_array() {/*...*/}
             constexpr ~BnshShaderNode() {/*...*/}
 
-            constexpr void SetShaderCode(const void *code, u32 code_size) {
+            constexpr void SetCode(const void *code, u32 code_size) {
                 m_code = code;
                 m_code_size = code_size;
             }
-            constexpr void SetShaderControl(const void *control, u32 control_size) {
+            constexpr void SetControl(const void *control, u32 control_size) {
                 m_control = control;
                 m_control_size = control_size;
             }
@@ -87,8 +91,19 @@ namespace vp::resbui {
     class BnshShaderProgramNode {
         public:
             friend class BnshBuilder;
+            friend class BnshShaderVariationNode;
         private:
             BnshShaderNode *m_shader_array[res::cMaxBnshShaderStageCount];
+        private:
+            bool LoopShaders(BnshBuilderLoopFunction *loop_function, BnshBuilder *builder, BnshShaderVariationNode *variation) {
+                for (u32 i = 0; i < res::cMaxBnshShaderStageCount; ++i) {
+                    if (m_shader_array[i] != nullptr) {
+                        const bool result = loop_function->Invoke(builder, variation, this, m_shader_array[i]);
+                        if (!result) { return false; }
+                    }
+                }
+                return true;
+            }
         public:
             constexpr BnshShaderProgramNode() : m_shader_array() {/*...*/}
             constexpr ~BnshShaderProgramNode() {/*...*/}
@@ -107,6 +122,16 @@ namespace vp::resbui {
         private:
             vp::util::IntrusiveListNode m_builder_node;
             BnshShaderProgramNode *m_program_array[res::cMaxBnshShaderCodeTypeCount];
+        protected:
+            bool LoopPrograms(BnshBuilderLoopFunction *loop_function, BnshBuilder *builder) {
+                for (u32 i = 0; i < res::cMaxBnshShaderCodeTypeCount; ++i) {
+                    if (m_program_array[i] != nullptr) {
+                        const bool result = m_program_array[i]->LoopShaders(loop_function, builder, this);
+                        if (!result) { return false; }
+                    }
+                }
+                return true;
+            }
         public:
             constexpr BnshShaderVariationNode() : m_builder_node(), m_program_array() {/*...*/}
             constexpr ~BnshShaderVariationNode() {/*...*/}
@@ -164,8 +189,16 @@ namespace vp::resbui {
                 m_file_name.SetString(name);
             }
 
-            void AddShaderVariation(BnshShaderVariationNode *variation_node) {
+            void AddVariation(BnshShaderVariationNode *variation_node) {
                 m_variation_list.PushBack(*variation_node);
+            }
+
+            bool LoopVariations(BnshBuilderLoopFunction *loop_function) {
+                for (BnshShaderVariationNode variation_node : m_variation_list) {
+                    const bool result = variation_node.LoopPrograms(loop_function, this);
+                    if (!result) { return false; }
+                }
+                return true;
             }
 
             void Serialize(void *out_bnsh, size_t output_size, const BnshBuilderMemoryInfo *memory_info);

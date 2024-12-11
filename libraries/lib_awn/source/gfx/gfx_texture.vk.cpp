@@ -85,6 +85,6 @@ namespace awn::gfx {
         };
         ::pfn_vkGetDeviceImageMemoryRequirements(impl::Context::GetInstance()->GetVkDevice(), std::addressof(memory_requirement_info), std::addressof(memory_requirements_2));
 
-        return { memory_requirements_2.memoryRequirements.size, memory_requirements_2.memoryRequirements.alignment };
+        return { memory_requirements_2.memoryRequirements.size, static_cast<s32>(memory_requirements_2.memoryRequirements.alignment), };
     }
 }

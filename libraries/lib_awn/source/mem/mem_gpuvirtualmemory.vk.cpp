@@ -35,7 +35,7 @@ namespace awn::mem {
             .memory = vk_device_memory,
             .size = VK_WHOLE_SIZE,
         };
-        const VkResult result1 = ::pfn_vkMapMemory2KHR(context->GetVkDevice(), std::addressof(map_info), std::addressof(memory));
+        const VkResult result1 = ::pfn_vkMapMemory2(context->GetVkDevice(), std::addressof(map_info), std::addressof(memory));
         if (result1 != VK_SUCCESS) { FreeGpuMemoryHandle({ vk_device_memory, nullptr }); return {}; }
 
         return { vk_device_memory, memory, };

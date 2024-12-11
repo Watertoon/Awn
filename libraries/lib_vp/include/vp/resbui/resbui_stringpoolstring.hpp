@@ -32,7 +32,7 @@ namespace vp::resbui {
         public:
             const char *m_string;
         public:
-            constexpr StringPoolString()                   : StringPoolStringBase(), m_string("") {/*...*/}
+            constexpr StringPoolString() : StringPoolStringBase(), m_string("") {/*...*/}
             constexpr StringPoolString(const char *string) : StringPoolStringBase(), m_string(string) {/*...*/}
             constexpr virtual ~StringPoolString() {/*...*/}
 
@@ -41,8 +41,7 @@ namespace vp::resbui {
             }
 
             constexpr virtual u32 GetLength() const override {
-                if (std::is_constant_evaluated()) { return vp::util::TStringLength(m_string, 0xffff'ffff); }
-                return (m_string != nullptr) ? ::strlen(m_string) : 0;
+                return (m_string != nullptr) ? vp::util::StringLength(m_string) : 0;
             }
             
             constexpr void SetString(const char *string) { m_string = string; }

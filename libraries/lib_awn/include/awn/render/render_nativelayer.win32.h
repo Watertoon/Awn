@@ -100,6 +100,13 @@ namespace awn::render {
             Result Initialize(const NativeLayerInfo *layer_info);
             void Finalize();
 
+            void PresentAsync(gfx::CommandList command_list) {
+                m_swapchain.RequestPresent(command_list);
+            }
+            void WaitForPresent() {
+                m_swapchain.WaitForPresent();
+            }
+
             gfx::RenderTargetColor *GetRenderTargetColor() {
                 return m_swapchain.GetRenderTargetColor();
             }

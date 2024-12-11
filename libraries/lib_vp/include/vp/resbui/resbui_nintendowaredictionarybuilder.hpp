@@ -45,9 +45,9 @@ namespace vp::resbui {
             }
         public:
             constexpr  NintendoWareDictionaryBuilder() : m_node_list() {/*...*/}
-            constexpr ~NintendoWareDictionaryBuilder() {/*...*/}
+            constexpr ~NintendoWareDictionaryBuilder() { this->Finalize(); }
 
-            void Finalize() {
+            constexpr void Finalize() {
                 m_node_list.Clear();
             }
 

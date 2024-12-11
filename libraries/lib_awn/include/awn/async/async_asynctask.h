@@ -104,18 +104,14 @@ namespace awn::async {
         public:
             VP_RTTI_BASE(AsyncTask);
         protected:
-            virtual void Execute() {
-                if (m_task_function == nullptr) { return; }
-                m_task_function->Invoke(m_user_data);
-            }
+            virtual void FormatPushInfo(AsyncTaskPushInfo *push_info);
 
-            virtual void PostExecute() {/*...*/}
+            virtual void Execute();
 
-            virtual void FreeExecute() {/*...*/}
+            virtual void PostExecute();
+            virtual void FreeExecute();
 
-            virtual void FormatPushInfo([[maybe_unused]] AsyncTaskPushInfo *push_info) {/*...*/}
-
-            virtual void FreeCancel() {/*...*/}
+            virtual void FreeCancel();
         protected:
             bool TryInvokeSync();
             void InvokeSync(AsyncQueueThread *thread);
@@ -128,7 +124,7 @@ namespace awn::async {
             void CancelWhileActive();
         public:
             constexpr AsyncTask() : m_priority(), m_state(), m_status(), m_queue(), m_queue_thread(), m_task_function(), m_result_function(), m_cancel_function(), m_user_data(), m_finish_event(sys::SignalState::Signaled, sys::ResetMode::Manual), m_queue_list_node() {/*...*/}
-            virtual ~AsyncTask() { this->Finalize(); m_finish_event.Finalize(); }
+            virtual ~AsyncTask() { this->Finalize(); }
 
             void Finalize();
 
@@ -140,10 +136,11 @@ namespace awn::async {
 
             void AdjustPriority(u32 new_priority);
 
-            constexpr ALWAYS_INLINE u32 GetPriority() const { return m_priority; }
+            constexpr u32 GetPriority() const { return m_priority; }
             constexpr AsyncQueue *GetQueue() { return m_queue; }
-
-            bool IsQueuedOnCurrentThread() const;
+        public:
+            bool IsExecutingOnCurrentThread() const;
+            bool IsSchedulable() const;
 
             constexpr bool IsComplete() const {
                 return !this->IsPending();

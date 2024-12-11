@@ -57,7 +57,7 @@ namespace awn::para {
     };
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveLinear(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
@@ -79,7 +79,7 @@ namespace awn::para {
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveHermit(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
@@ -108,7 +108,7 @@ namespace awn::para {
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveStep(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
@@ -124,49 +124,52 @@ namespace awn::para {
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveSin(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
         VP_ASSERT(0 < curve_info.data_count);
 
         /* Get sin */
-        const T sin_x  = (std::is_same<T, float>::value) ? ::sinf(curve_data[0] * x * vp::util::cFloat2Pi) : ::sin(curve_data[0] * x * vp::util::cDouble2Pi);
+        const T pi2 = (std::is_same_v<T, float>) ? vp::util::cFloat2Pi : vp::util::cDouble2Pi;
+        const T sin_x  = vp::util::Sin(curve_data[0] * x * pi2);
         const T result = sin_x * curve_data[1];
 
         return result;
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveCos(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
         VP_ASSERT(0 < curve_info.data_count);
 
         /* Get sin */
-        const T cos_x  = (std::is_same<T, float>::value) ? ::cosf(curve_data[0] * x * vp::util::cFloat2Pi) : ::cos(curve_data[0] * x * vp::util::cDouble2Pi);
+        const T pi2 = (std::is_same_v<T, float>) ? vp::util::cFloat2Pi : vp::util::cDouble2Pi;
+        const T cos_x  = vp::util::Cos(curve_data[0] * x * pi2);
         const T result = cos_x * curve_data[1];
 
         return result;
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveSinPow2(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
         VP_ASSERT(0 < curve_info.data_count);
 
         /* Get sin */
-        const T sin_x  = (std::is_same<T, float>::value) ? ::sinf(curve_data[0] * x * vp::util::cFloat2Pi) : ::sin(curve_data[0] * x * vp::util::cDouble2Pi);
+        const T pi2 = (std::is_same_v<T, float>) ? vp::util::cFloat2Pi : vp::util::cDouble2Pi;
+        const T sin_x  = vp::util::Sin(curve_data[0] * x * pi2);
         const T result = sin_x * sin_x * curve_data[1];
 
         return result;
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveLinear2D(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
@@ -201,7 +204,7 @@ namespace awn::para {
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveHermit2D(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
@@ -241,7 +244,7 @@ namespace awn::para {
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveStep2D(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
@@ -274,7 +277,7 @@ namespace awn::para {
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveHermit2DSmooth(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */
@@ -315,7 +318,7 @@ namespace awn::para {
     }
 
     template <typename T>
-        requires std::is_same<T, float>::value || std::is_same<T, double>::value
+        requires std::is_same_v<T, float> || std::is_same_v<T, double>
     constexpr T EvaluateCurveHermit2DSplit(T x, const CurveInfo curve_info, const T *curve_data) {
 
         /* No data */

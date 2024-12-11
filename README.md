@@ -2,18 +2,21 @@
 Awn is a personal C++ library designed to power low-latency multi-threaded real-time applications.
 
 # Awn Features
-* An asynchronous file resource manager for real-time file streaming
-* A parameter system to autogenerate and manage parameter classes for binary data using the byaml file format
-* A platform agnositic threading api implementing synchronization primitives using modern techniques (atomics, WaitOnAddress)
-* A CPU and GPU heap tree memory manager for real-time allocations and memory monitoring
-* A graphics api based around supporting file formats reversed from nn::gfx
-* Basic mouse and keyboard support
+* awn::mem; Provides virtual and heap-based CPU and GPU memory management
+* awn::sys; Provides thread and system environment management (managing Win32 or Horizon)
+* awn::async; Provides thread and system environment management (managing Win32 or Horizon)
+* awn::res; Provides synchronous and asynchronous file resource management
+* awn::gfx; Provides a high-level graphics api (managing Vulkan or NVN), designed to interoperate with NintendoWare gfx formats
+* awn::render; Provides display and layer management (managing Win32 windows, DXGI, DirectComposition, and DirectX12, or nn::vi)
+* awn::para; Provides serializable parameter class autogen, databases, blackboards, pausing, variable framerates, etc
+* awn::hid; Provides host input device management for keyboards and mice
+* awn::frm; Provides a bootstrap for libraries
 
 # Vp
 Vp is a personal C++ library designed to portably carry common utilities and file format definitions.
 
 # Vp Features
-* Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
+* vp::res, Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
   * Ainb (AI Node Binary)
   * Bea (Bezel Engine Archive)
   * Bffnt (Binary Cafe Font)
@@ -27,17 +30,20 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
   * Exb (Expression Binary)
   * Rsizetable (Resource Size Table)
   * Sarc (sead Archive?)
-* Zstd streaming decompression and Yaz0 decompressor for Nintendo szs files
-* Hash algorithms, crc32b, murmur3, and murmur64
-* Avx2 SIMD linear algebra algorithms for fast 3d transformations and projections
-* Utilities
+* vp::resbui, serializers for select file formats
+  * Bnsh (Binary Nintendo Shader)
+  * Byaml (Binary Yet Another Markup Language)
+  * Rsizetable (Resource Size Table)
+  * Sarc (sead Archive?)
+* vp::util, Data structures, algorithms, traits
+   * Hash algorithms, crc32b, murmur3, and murmur64
+   * x86_64 avx2 SIMD linear algebra
   * Scope Guard
   * Result-based Structured Error Handling
   * Custom Runtime Type Info
   * Utf8, Utf16, and Utf32 string encoding conversion
   * File Path Parsing
   * Enum Reflection
-* Data Structures
   * Red Black Trees
   * Ring Buffers
   * Handle Tables 
@@ -68,8 +74,8 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
 
 # System Requirements
 * The user's Vulkan implementation must conform to all the limits and features enforced by awn::gfx::Context which include but are not limited to:
-  * Device Addresses
   * Descriptor Buffers
+  * Mutable Descriptors
   * Shader Objects
   * Resizable-Bar
 * Requires an x86_64 CPU with AVX2 and PCLMUL

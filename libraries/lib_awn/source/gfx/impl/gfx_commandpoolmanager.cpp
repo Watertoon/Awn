@@ -16,30 +16,34 @@ namespace awn::gfx::impl {
 
     CommandList CommandPoolManager::CreateCommandList(QueueType queue_type, CommandPoolId pool_id, bool is_primary) {
 
-        /* Allocate new command pool holder if one doesn't exist */
+        /* Allocate new command pool unit if one doesn't exist */
         Context *context = Context::GetInstance();
-        if (pool_id == cInvalidHandle) {
-            const u32 handle = m_handle_allocator.Allocate();
-            CommandPoolUnit *unit = std::addressof(m_unit_array[handle]);
-            unit->queue_type = queue_type;
-            unit->ref_count = 1;
-            const VkCommandPoolCreateInfo command_pool_create_info = {
-                .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                .queueFamilyIndex = context->GetQueueFamilyIndex(queue_type),
-            };
-            const u32 result = ::pfn_vkCreateCommandPool(context->GetVkDevice(), std::addressof(command_pool_create_info), context->GetVkAllocationCallbacks(), std::addressof(unit->vk_command_pool));
-            VP_ASSERT(result == VK_SUCCESS);
-            pool_id = handle;
-        } else {
-            VP_ASSERT(m_unit_array[pool_id].vk_command_pool != VK_NULL_HANDLE);
-            VP_ASSERT(m_unit_array[pool_id].queue_type == queue_type);
-            m_unit_array[pool_id].ref_count += 1;
+        {
+            std::scoped_lock l(m_command_pool_cs);
+            if (pool_id == cInvalidHandle) {
+                const u32 handle = m_handle_allocator.Allocate();
+                VP_ASSERT(handle != HandleAllocator::cInvalidEntryIndex);
+                CommandPoolUnit *unit = std::addressof(m_unit_array[handle]);
+                unit->queue_type = queue_type;
+                unit->ref_count = 1;
+                const VkCommandPoolCreateInfo command_pool_create_info = {
+                    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                    .queueFamilyIndex = context->GetQueueFamilyIndex(queue_type),
+                };
+                const u32 result = ::pfn_vkCreateCommandPool(context->GetVkDevice(), std::addressof(command_pool_create_info), context->GetVkAllocationCallbacks(), std::addressof(unit->vk_command_pool));
+                VP_ASSERT(result == VK_SUCCESS);
+                pool_id = handle;
+            } else {
+                VP_ASSERT(m_unit_array[pool_id].vk_command_pool != VK_NULL_HANDLE);
+                VP_ASSERT(m_unit_array[pool_id].queue_type == queue_type);
+                m_unit_array[pool_id].ref_count += 1;
+            }
         }
 
         /* Get command pool */
         VkCommandPool vk_command_pool = m_unit_array[pool_id].vk_command_pool;
 
-        /* Allocate secondary command buffer */
+        /* Allocate command buffer */
         const VkCommandBufferAllocateInfo allocate_info {
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .commandPool        = vk_command_pool,
@@ -63,12 +67,16 @@ namespace awn::gfx::impl {
         CommandPoolUnit *unit = std::addressof(m_unit_array[command_list.pool_id]);
         ::pfn_vkFreeCommandBuffers(context->GetVkDevice(), unit->vk_command_pool, 1, std::addressof(command_list.vk_command_buffer));
 
-        const u32 next_ref = unit->ref_count - 1;
-        unit->ref_count = next_ref;
-        if (next_ref == 0) {
-            ::pfn_vkDestroyCommandPool(context->GetVkDevice(), unit->vk_command_pool, context->GetVkAllocationCallbacks());
-            unit->vk_command_pool = VK_NULL_HANDLE;
-            m_handle_allocator.Free(command_list.pool_id);
+        /* Free pool */
+        {            
+            std::scoped_lock l(m_command_pool_cs);
+            const u32 next_ref = unit->ref_count - 1;
+            unit->ref_count = next_ref;
+            if (next_ref == 0) {
+                ::pfn_vkDestroyCommandPool(context->GetVkDevice(), unit->vk_command_pool, context->GetVkAllocationCallbacks());
+                unit->vk_command_pool = VK_NULL_HANDLE;
+                m_handle_allocator.Free(command_list.pool_id);
+            }
         }
 
         return;

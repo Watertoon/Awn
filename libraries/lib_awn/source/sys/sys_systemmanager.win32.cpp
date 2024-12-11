@@ -65,7 +65,7 @@ namespace awn::sys {
         }
     }
 
-    void InitializeSystemManager() {
+    void InitializeSystem() {
 
         /* Check init guard */
         if (sSystemManagerInitGuard) { return; }
@@ -108,7 +108,7 @@ namespace awn::sys {
 
     SystemManager *GetSystemManager() { return vp::util::GetPointer(sSystemManagerStorage); }
 
-    ServiceHandle GetProcessHandle() {
+    NativeHandle GetProcessHandle() {
         return GetSystemManager()->process_handle;
     }
 

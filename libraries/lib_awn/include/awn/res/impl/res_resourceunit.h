@@ -245,6 +245,7 @@ namespace awn::res::impl {
             void CancelUnload(AsyncResourceManager *manager);
 
             void UnregisterFromResourceUnitManager();
+            void FinalizeForClearCache();
 
             constexpr void UpdateStatusForReference() {
                 const Status status   = m_status;

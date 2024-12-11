@@ -33,10 +33,11 @@ namespace awn::frm {
         size_t cpu_uncached_memory_size         = vp::util::c16MB;
         size_t cpu_cached_memory_size           = vp::util::c16MB;
         size_t gpu_uncached_memory_size         = vp::util::c32MB;
-        size_t per_stage_descriptor_memory_size = vp::util::c8MB;
+        u32    per_stage_descriptor_memory_size = vp::util::c8MB;
         u32    max_texture_view_count           = 0x100;
         u32    max_sampler_count                = 0x40;
         u32    max_command_buffer_count         = 0x4;
+        u32    max_command_list_count           = 0x20;
     };
 
     void InitializeGraphics(const GraphicsInfo *graphics_info);

@@ -84,6 +84,7 @@ namespace awn::mem {
             explicit ALWAYS_INLINE ScopedCurrentThreadHeap(mem::Heap *current_heap) : m_last_heap(GetCurrentThreadHeap()) { VP_ASSERT(current_heap != nullptr); SetCurrentThreadHeap(current_heap); }
             ALWAYS_INLINE ~ScopedCurrentThreadHeap() { SetCurrentThreadHeap(m_last_heap); }
     };
+
     class ScopedRootHeap {
         private:
             u32 m_index;

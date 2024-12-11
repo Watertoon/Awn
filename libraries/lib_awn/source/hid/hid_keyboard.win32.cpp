@@ -53,7 +53,7 @@ namespace awn::hid {
                         /* Discard input if we only want input while the process is in focus */
                         if (m_is_ignore_input_on_unfocus && is_sink) { return; }
 
-                        /* Advance sampling */
+                        /* Remove oldest sampling, advance from previous sampling */
                         KeyboardState *last_keyboard_state = m_keyboard_ring.PeekBack();
                         KeyboardState *keyboard_state = m_keyboard_ring.RemoveFront();
                         const s64 next_iter = m_sampling_iter + 1;
@@ -70,7 +70,7 @@ namespace awn::hid {
                         if (key_location == KeyboardKey::Invalid) { return; }
 
                         const KeyboardModifier key_modifier_location = ConvertKeyboardKeyToKeyboardModifier(key_location);
-                        const bool                is_modifier_toggle    = IsToggleModifier(key_modifier_location);
+                        const bool is_modifier_toggle = IsToggleModifier(key_modifier_location);
                         if ((raw_keyboard->Flags & RI_KEY_BREAK) == RI_KEY_MAKE) {
                             keyboard_state->key_set.SetBit(static_cast<u32>(key_location));
                             if (key_modifier_location != KeyboardModifier::Invalid) {
@@ -80,7 +80,7 @@ namespace awn::hid {
                                     keyboard_state->modifier_set.XorBit(static_cast<u32>(key_modifier_location));
                                 }
                             }
-                        } else {
+                        } else if ((raw_keyboard->Flags & RI_KEY_BREAK) == RI_KEY_BREAK) {
                             keyboard_state->key_set.ClearBit(static_cast<u32>(key_location));
                             if (key_modifier_location != KeyboardModifier::Invalid && !is_modifier_toggle) {
                                 keyboard_state->modifier_set.ClearBit(static_cast<u32>(key_modifier_location));

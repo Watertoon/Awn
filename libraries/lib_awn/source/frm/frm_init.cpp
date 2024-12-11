@@ -9,7 +9,7 @@ namespace awn::frm {
         vp::util::InitializeTimeStamp();
 
         /* Initialize system manager */
-        sys::InitializeSystemManager();
+        sys::InitializeSystem();
         const sys::CoreMask core_mask = (lib_info->process_core_mask == cAllCores) ? ~((~0ull) << (sys::GetProcessCoreCount() & (BITSIZEOF(sys::CoreMask) - 1))) : lib_info->process_core_mask;
         RESULT_ABORT_UNLESS(sys::SetProcessCoreMask(core_mask));
 
@@ -147,7 +147,7 @@ namespace awn::frm {
 #ifdef VP_TARGET_GRAPHICS_API_vk
         /* Initialize command pool manager */
         gfx::impl::CommandPoolManager *cmd_pool_mgr = gfx::impl::CommandPoolManager::CreateInstance(awn_graphics_heap);
-        cmd_pool_mgr->Initialize(awn_graphics_heap, graphics_info->max_command_buffer_count);
+        cmd_pool_mgr->Initialize(awn_graphics_heap, graphics_info->max_command_list_count);
 
         /* Initialize descriptor memory manager */
         const gfx::impl::DescriptorMemoryManagerInfo desc_mgr_info = {

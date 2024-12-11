@@ -30,12 +30,46 @@ namespace awn::gfx::impl {
         public:
             friend class CommandBuffer;
         public:
+            struct SamplerKey {
+                union {
+                    u32 packed_state;
+                    struct {
+                        u32 wrap_mode_u : 3;
+                        u32 wrap_mode_v : 3;
+                        u32 wrap_mode_w : 3;
+                        u32 compare_op : 3;
+                        u32 border_color : 2;
+                        u32 mip_map_filter : 2;
+                        u32 mag_filter : 2;
+                        u32 min_filter : 2;
+                        u32 is_enable_anisotropy : 1;
+                        u32 is_compare_r_to_texture : 1;
+                        u32 reduction_filter : 2;
+                        u32 max_anisotropy : 8;
+                    };
+                };
+                float lod_clamp_min;
+                float lod_clamp_max;
+                float lod_bias;
+            };
+            static constexpr ALWAYS_INLINE std::strong_ordering SamplerKeyCompare(const SamplerKey &rhs, const SamplerKey &lhs) {
+                if (lhs.packed_state > rhs.packed_state) { return std::strong_ordering::greater; }
+                if (lhs.packed_state < rhs.packed_state) { return std::strong_ordering::less; }
+                if (lhs.lod_clamp_min > rhs.lod_clamp_min) { return std::strong_ordering::greater; }
+                if (lhs.lod_clamp_min < rhs.lod_clamp_min) { return std::strong_ordering::less; }
+                if (lhs.lod_clamp_max > rhs.lod_clamp_max) { return std::strong_ordering::greater; }
+                if (lhs.lod_clamp_max < rhs.lod_clamp_max) { return std::strong_ordering::less; }
+                if (lhs.lod_bias > rhs.lod_bias) { return std::strong_ordering::greater; }
+                if (lhs.lod_bias < rhs.lod_bias) { return std::strong_ordering::less; }
+                return std::strong_ordering::equal;
+            }
+        public:
             struct SamplerUnit {
-                vp::util::IntrusiveRedBlackTreeNode<u64> rb_node;
-                u32                                      reference_count;
-                u16                                      free_count;
-                VkSampler                                vk_sampler;
-                char                                     descriptor_memory[Context::cTargetMaxSamplerDescriptorSize];
+                vp::util::IntrusiveRedBlackTreeNode<SamplerKey> rb_node;
+                u32 reference_count;
+                u16 free_count;
+                VkSampler vk_sampler;
+                char descriptor_memory[Context::cTargetMaxSeparateSamplerDescriptorSize];
 
                 constexpr  SamplerUnit() : rb_node(), reference_count(), free_count(), vk_sampler() {/*...*/}
                 constexpr ~SamplerUnit() {/*...*/}
@@ -67,11 +101,11 @@ namespace awn::gfx::impl {
             };
 
             struct TextureViewUnit {
-                u32           reference_count;
-                u16           free_count;
-                VkImageView   vk_image_view;
+                u32 reference_count;
+                u16 free_count;
+                VkImageView vk_image_view;
                 TextureBinder reference_texture_binder;
-                char          descriptor_memory[Context::cTargetMaxTextureDescriptorSize];
+                char descriptor_memory[Context::cTargetMaxSeparateTextureDescriptorSize];
 
                 static constexpr inline size_t cInvalidMemoryOffset = 0xffff'ffff'ffff'ffff;
 
@@ -104,17 +138,14 @@ namespace awn::gfx::impl {
                 }
             };
         public:
-            using TextureSlotType      = vp::util::MinUIntType<Context::cTargetMaxTextureDescriptorCount - 1>;
-            using SamplerSlotType      = vp::util::MinUIntType<Context::cTargetMaxSamplerDescriptorCount - 1>;
+            using TextureSlotType      = vp::util::MinUIntType<Context::cTargetMaxTextureViewCount - 1>;
+            using SamplerSlotType      = vp::util::MinUIntType<Context::cTargetMaxSamplerCount - 1>;
             using TextureViewUnitArray = vp::util::HeapArray<TextureViewUnit>;
             using SamplerUnitArray     = vp::util::HeapArray<SamplerUnit>;
             using TextureSlotAllocator = vp::util::AtomicIndexAllocator<TextureSlotType>;
             using SamplerSlotAllocator = vp::util::AtomicIndexAllocator<SamplerSlotType>;
-            using SamplerMap           = vp::util::IntrusiveRedBlackTreeTraits<SamplerUnit, &SamplerUnit::rb_node>::Tree;
+            using SamplerMap           = vp::util::IntrusiveRedBlackTreeTraits<SamplerUnit, &SamplerUnit::rb_node, SamplerKeyCompare>::Tree;
         private:
-            VkBuffer              m_bindless_descriptor_vk_buffer;
-            GpuBufferAddress      m_bindless_buffer_address;
-            void                 *m_bindless_descriptor_gpu_address;
             size_t                m_texture_base_offset;
             size_t                m_sampler_base_offset;
             TextureSlotAllocator  m_texture_slot_allocator;
@@ -126,7 +157,7 @@ namespace awn::gfx::impl {
         public:
             AWN_SINGLETON_TRAITS(TextureViewSamplerManager);
         public:
-            constexpr TextureViewSamplerManager() : m_bindless_descriptor_vk_buffer(), m_bindless_buffer_address(), m_bindless_descriptor_gpu_address(), m_texture_slot_allocator(), m_texture_view_unit_array(), m_sampler_map(), m_sampler_slot_allocator(), m_sampler_unit_array(), m_sampler_cs() {/*...*/}
+            constexpr TextureViewSamplerManager() : m_texture_slot_allocator(), m_texture_view_unit_array(), m_sampler_map(), m_sampler_slot_allocator(), m_sampler_unit_array(), m_sampler_cs() {/*...*/}
             constexpr ~TextureViewSamplerManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, const TextureViewSamplerManagerInfo *manager_info);
@@ -141,8 +172,6 @@ namespace awn::gfx::impl {
             Result ReferenceSampler(DescriptorSlot *out_sampler_slot, DescriptorSlot reference_sampler_slot);
 
             void ReleaseSampler(DescriptorSlot sampler_slot);
-
-            constexpr GpuBufferAddress GetBindlessDescriptorBufferAddress() const { return m_bindless_buffer_address; }
 
             constexpr bool IsTextureViewSlotValid(DescriptorSlot texture_view_slot) const {
 
@@ -177,5 +206,8 @@ namespace awn::gfx::impl {
             }
             constexpr VkSampler GetVkSampler(DescriptorSlot sampler_slot) const { return (this->IsSamplerSlotValid(sampler_slot)) ? m_sampler_unit_array[sampler_slot.index].vk_sampler : VK_NULL_HANDLE; }
             constexpr const void *GetSeparateSamplerDescriptor(DescriptorSlot sampler_slot) const { return (this->IsSamplerSlotValid(sampler_slot)) ? m_sampler_unit_array[sampler_slot.index].descriptor_memory : nullptr; }
+        public:
+            constexpr const TextureViewUnit *GetTextureViewUnit(u32 index) const { return std::addressof(m_texture_view_unit_array[index]); }
+            constexpr const SamplerUnit *GetSamplerUnit(u32 index) const { return std::addressof(m_sampler_unit_array[index]); }
     };
 }

@@ -36,6 +36,8 @@ namespace awn::render::impl {
 
     void NativeVideoManager::Finalize() {
 
+        std::scoped_lock l(m_list_cs);
+
         /* Force finalize native objects */
         auto layer_iter = m_layer_list.begin();
         while (layer_iter != m_layer_list.end()) {
@@ -59,11 +61,10 @@ namespace awn::render::impl {
 
     void NativeVideoManager::Calculate() {
 
+        std::scoped_lock l(m_list_cs);
+
         /* Apply direct composition updates */
         IDCompositionDesktopDevice *dcmp_device = ContextDxgi::GetInstance()->GetDcmpDevice();
-        const HRESULT hresult0 = dcmp_device->WaitForCommitCompletion();
-        VP_ASSERT(hresult0 == S_OK);
-
         for (NativeDisplay &native_display : m_display_list) {
             native_display.FinishResize();
         }
@@ -73,15 +74,17 @@ namespace awn::render::impl {
             native_layer.ApplyUpdates();
         }
 
+        const HRESULT hresult0 = dcmp_device->WaitForCommitCompletion();
+        VP_ASSERT(hresult0 == S_OK);
+        const HRESULT hresult1 = dcmp_device->Commit();
+        VP_ASSERT(hresult1 == S_OK);
+
         /* Update displays */
         HDWP hdwp = ::BeginDeferWindowPos(m_display_count);
         for (NativeDisplay &native_display : m_display_list) {
             native_display.ApplyTransform(hdwp);
         }
         ::EndDeferWindowPos(hdwp);
-
-        const HRESULT hresult1 = dcmp_device->Commit();
-        VP_ASSERT(hresult1 == S_OK);
 
         return;
     }

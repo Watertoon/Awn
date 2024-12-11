@@ -182,5 +182,30 @@ namespace vp::util {
                 }
                 return count;
             }
+        public:
+            constexpr void And(const FixedConnection &rhs) {
+                for (u32 i = 0; i < cArrayCount; ++i) {
+                    m_mask_array[i] &= rhs.m_mask_array[i];
+                }
+                return;
+            }
+            constexpr void Or(const FixedConnection &rhs) {
+                for (u32 i = 0; i < cArrayCount; ++i) {
+                    m_mask_array[i] |= rhs.m_mask_array[i];
+                }
+                return;
+            }
+            constexpr void Xor(const FixedConnection &rhs) {
+                for (u32 i = 0; i < cArrayCount; ++i) {
+                    m_mask_array[i] ^= rhs.m_mask_array[i];
+                }
+                return;
+            }
+            constexpr void Not(const FixedConnection &rhs) {
+                for (u32 i = 0; i < cArrayCount; ++i) {
+                    m_mask_array[i] = ~rhs.m_mask_array[i];
+                }
+                return;
+            }
     };
 }

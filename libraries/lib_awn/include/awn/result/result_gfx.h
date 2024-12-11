@@ -36,4 +36,7 @@ namespace awn::gfx {
     DECLARE_RESULT(InvalidDescriptorSlot,                   16);
     DECLARE_RESULT(OutOfDate,                               17);
     DECLARE_RESULT(SubOptimal,                              18);
+    DECLARE_RESULT(FailedToCreateShaders,                   19);
+    DECLARE_RESULT(InvalidShaderCodeType,                   20);
+    DECLARE_RESULT(InitializedByDifferentProgram,           21);
 }

@@ -192,7 +192,7 @@ namespace vp::res {
         u16                          is_force_calculate_material;
         u16                          user_data_count;
         u16                          unknown_size;
-        u16                          runtime_option_uniform_buffer_size;
+        u16                          runtime_material_buffer_size;
         u32                          reserve2;
 
         static constexpr u32    cMagic = util::TCharCode32("FMAT");
