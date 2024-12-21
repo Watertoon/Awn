@@ -124,7 +124,7 @@ namespace vp::util {
 #endif
 
     template <size_t Size>
-        requires (Size < 0x40'0000) && (0 < Size)
+        requires (Size < vp::util::c8MB) && (0 < Size)
     class FixedString {
         public:
             static constexpr u32 cInvalidIndex = 0xffff'ffff;
@@ -132,107 +132,92 @@ namespace vp::util {
             u32  m_length;
             char m_string_array[Size];
         public:
-            explicit constexpr ALWAYS_INLINE FixedString() : m_length(0) {
+            explicit constexpr ALWAYS_INLINE FixedString() : m_length() {
                 this->AssureTermination();
             }
             explicit constexpr ALWAYS_INLINE FixedString(const char *string) : m_length() { 
                 if (string == nullptr) { return; }
-
-                if (std::is_constant_evaluated()) {
-                    m_length = TStringCopy(m_string_array, string, TStringLength(string, Size - 1));
-                } else {
-                    const size_t len = ::strlen(string);
-                    ::memcpy(m_string_array, string, len);
-                    m_length = len; 
-                }
-
+                const u32 len = StringLength(string);
+                const size_t clamp_len = vp::util::Min(len, static_cast<u32>(Size) - 1);
+                ::memcpy(m_string_array, string, clamp_len);
+                m_length = clamp_len; 
                 this->AssureTermination();
             }
-            explicit constexpr FixedString(const FixedString<Size> &rhs) : m_length() { 
-                if (std::is_constant_evaluated()) {
-                    m_length = TStringCopy(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
-                } else {
-                    const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
-                    ::memcpy(m_string_array, rhs.m_string_array, len);
-                    m_length = len;
-                }
+            template <size_t RhsSize>
+            explicit constexpr FixedString(const FixedString<RhsSize> &rhs) : m_length() {
+                const size_t clamp_len = vp::util::Min(rhs.m_length, static_cast<u32>(Size) - 1);
+                ::memcpy(m_string_array, rhs.m_string_array, clamp_len);
+                m_length = clamp_len;
                 this->AssureTermination();
             }
 
             constexpr ALWAYS_INLINE ~FixedString() {/*...*/}
 
-            constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) {
-                if (std::is_constant_evaluated()) {
-                    return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
-                }
-
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE bool operator==(const FixedString<RhsSize>& rhs) {
                 if (m_length != rhs.m_length) { return false; }
                 return ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
-            constexpr ALWAYS_INLINE bool operator==(const FixedString& rhs) const {
-                if (std::is_constant_evaluated()) {
-                    return TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
-                }
 
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE bool operator==(const FixedString<RhsSize>& rhs) const {
                 if (m_length != rhs.m_length) { return false; }
                 return ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
+
             constexpr ALWAYS_INLINE bool operator==(const char *rhs) {
-                if (std::is_constant_evaluated()) {
-                    return TStringCompare(m_string_array, rhs, TStringLength(rhs, Size - 1));
-                }
-
                 const u32 length =  StringLength(rhs);
                 if (m_length != length) { return false; }
                 return ::memcmp(m_string_array, rhs, length) == 0;
             }
+
             constexpr ALWAYS_INLINE bool operator==(const char *rhs) const {
-                if (std::is_constant_evaluated()) {
-                    return TStringCompare(m_string_array, rhs, TStringLength(rhs, Size - 1));
-                }
-
                 const u32 length =  StringLength(rhs);
                 if (m_length != length) { return false; }
                 return ::memcmp(m_string_array, rhs, length) == 0;
             }
-            constexpr ALWAYS_INLINE bool operator!=(const FixedString& rhs) {
-                if (std::is_constant_evaluated()) {
-                    return (TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1)) != 0);
-                }
 
-                return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
-            }
-            constexpr ALWAYS_INLINE bool operator!=(const FixedString& rhs) const {
-                if (std::is_constant_evaluated()) {
-                    return (TStringCompare(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1)) != 0);
-                }
-
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE bool operator!=(const FixedString<RhsSize>& rhs) {
                 return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
             }
 
-            constexpr ALWAYS_INLINE bool operator>(const FixedString& rhs) {
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE bool operator!=(const FixedString<RhsSize>& rhs) const {
+                return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
+            }
+
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE bool operator>(const FixedString<RhsSize>& rhs) {
                 if (m_length != rhs.m_length) { return false; }
                 return ::memcmp(m_string_array, rhs.m_string_array, m_length) < 0;
             }
-            constexpr ALWAYS_INLINE bool operator>(const FixedString& rhs) const {
+    
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE bool operator>(const FixedString<RhsSize>& rhs) const {
                 if (m_length != rhs.m_length) { return false; }
                 return ::memcmp(m_string_array, rhs.m_string_array, m_length) < 0;
             }
-            constexpr ALWAYS_INLINE bool operator<(const FixedString& rhs) {
+
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE bool operator<(const FixedString<RhsSize>& rhs) {
                 if (m_length != rhs.m_length) { return false; }
                 return ::memcmp(m_string_array, rhs.m_string_array, m_length) > 0;
             }
-            constexpr ALWAYS_INLINE bool operator<(const FixedString& rhs) const {
+
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE bool operator<(const FixedString<RhsSize>& rhs) const {
                 if (m_length != rhs.m_length) { return false; }
                 return ::memcmp(m_string_array, rhs.m_string_array, m_length) > 0;
             }
 
             constexpr void RecomputeLength() {
-                m_length = StringLength(m_string_array);
+                m_length = vp::util::Min(StringLength(m_string_array), Size - 1);
+                this->AssureTermination();
             }
 
             constexpr ALWAYS_INLINE bool IsSame(const char *string) const {
-                return ::strncmp(m_string_array, string, m_length) == 0;
+                return StringCompare(m_string_array, string);
             }
 
             constexpr ALWAYS_INLINE void Clear() {
@@ -241,37 +226,27 @@ namespace vp::util {
                 return;
             }
 
-            constexpr ALWAYS_INLINE FixedString &operator=(const FixedString& rhs) {
-                if (std::is_constant_evaluated() == true) {
-                    m_length = TStringCopy(m_string_array, rhs.m_string_array, TStringLength(rhs.m_string_array, Size - 1));
-                } else {
-                    const size_t len = (rhs.m_length < Size - 1) ? rhs.m_length : Size - 1;
-                    ::memcpy(m_string_array, rhs.m_string_array, len);
-                    m_string_array[len] = '\0';
-                    m_length = len;
-                }
+            template <size_t RhsSize>
+            constexpr ALWAYS_INLINE FixedString &operator=(const FixedString<RhsSize>& rhs) {
+                const size_t len = vp::util::Min(rhs.m_length, static_cast<u32>(Size) - 1);
+                ::memcpy(m_string_array, rhs.m_string_array, len);
+                m_length = len;
                 this->AssureTermination();
 
                 return *this;
             }
 
-            constexpr ALWAYS_INLINE FixedString &operator=(const char* rhs) {
+            constexpr ALWAYS_INLINE FixedString &operator=(const char *rhs) {
                 if (rhs == nullptr) { 
                     m_string_array[0] = '\0';
                     m_length          = 0;
                     return *this; 
                 }
 
-                if (std::is_constant_evaluated()) {
-                    m_length = TStringCopy(m_string_array, rhs, TStringLength(rhs, Size - 1));
-                } else {
-                    const size_t len = ::strlen(rhs);
-                    VP_ASSERT(len < Size);
-                    ::memcpy(m_string_array, rhs, len);
-                    m_string_array[len] = '\0';
-                    m_length = len;
-                    this->AssureTermination();
-                }
+                const size_t len = vp::util::Min(StringLength(rhs), static_cast<u32>(Size) - 1);
+                ::memcpy(m_string_array, rhs, len);
+                m_length = len;
+                this->AssureTermination();
                 return *this;
             }
 
@@ -336,15 +311,9 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE size_t Append(const char *append) {
-                if (std::is_constant_evaluated() == true) {
-                    size_t append_length = TStringLength(append, Size - m_length - 1);
-                    TStringCopy(m_string_array + m_length, append, append_length);
-                    m_length += append_length;
-                } else {
-                    size_t append_length = ::strnlen(append, Size - m_length - 1);
-                    ::strncpy(m_string_array + m_length, append, append_length);
-                    m_length += append_length;
-                }
+                size_t append_length = vp::util::Min(StringLength(append), static_cast<u32>(Size) - m_length - 1);
+                ::memcpy(m_string_array + m_length, append, append_length);
+                m_length += append_length;
                 this->AssureTermination();
 
                 return m_length;
@@ -392,8 +361,8 @@ namespace vp::util {
                 return m_string_array[0] == '\0';
             }
 
-            constexpr ALWAYS_INLINE size_t      GetLength() const { return m_length; }
-            constexpr ALWAYS_INLINE char       *GetString()       { return m_string_array; }
+            constexpr ALWAYS_INLINE size_t GetLength() const { return m_length; }
+            constexpr ALWAYS_INLINE char *GetString() { return m_string_array; }
             constexpr ALWAYS_INLINE const char *GetString() const { return m_string_array; }
     };
 
@@ -402,14 +371,10 @@ namespace vp::util {
             char *m_string;
         public:
             explicit ALWAYS_INLINE HeapString(imem::IHeap *heap, const char *string, s32 alignment = 8) {
-                const u32 length = ::strlen(string);
-
+                const u32 length = StringLength(string);
                 m_string = new (heap, alignment) char [length + 1];
-
-                ::strncpy(m_string, string, length);
-
+                ::memcpy(m_string, string, length);
                 m_string[length] = '\0';
-
                 return;
             }
 

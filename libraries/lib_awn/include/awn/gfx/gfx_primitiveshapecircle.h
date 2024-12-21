@@ -20,7 +20,7 @@ namespace awn::gfx {
     constexpr void CalculatePrimitiveShapeInfoCircle(PrimitiveShapeInfo *out_primitive_shape_info, ShapeFormat shape_format, u32 segment_count) {
 
         /* Get stride */
-        const u32 stride = GetPrimitiveShapeStride(shape_format);
+        const u32 stride = GetPrimitiveShapeVertexStride(shape_format);
 
         /* Calculate shape info */
         out_primitive_shape_info->vertex_count       = segment_count + 1;

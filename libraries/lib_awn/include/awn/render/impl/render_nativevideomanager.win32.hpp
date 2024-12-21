@@ -17,7 +17,7 @@
 
 namespace awn::render::impl {
 
-    static constexpr const char *cNativeDisplayWindowClassName = "awn::render::NativeDisplay";
+    static constexpr const wchar_t *cNativeDisplayWindowClassName = L"awn::render::NativeDisplay";
 
     class NativeVideoManager {
         public:

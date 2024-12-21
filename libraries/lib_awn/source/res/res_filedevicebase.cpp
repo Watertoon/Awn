@@ -20,7 +20,7 @@ namespace awn::res {
     Result FileDeviceBase::LoadFileImpl(const char *path, FileLoadContext *file_load_context) {
 
         /* Integrity checks */
-        RESULT_RETURN_IF(file_load_context->file_buffer != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
+        RESULT_RETURN_IF(file_load_context->file != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
         RESULT_RETURN_IF((file_load_context->read_div & 0x1f) != 0, ResultInvalidReadDivAlignment);
 
         /* Declare a file handle closed on exit */
@@ -42,11 +42,11 @@ namespace awn::res {
         size_t output_alignment = (file_load_context->file_alignment < cMinimumFileAlignment) ? cMinimumFileAlignment : file_load_context->file_alignment;
 
         /* Check whether the otuput memory needs to be allocated */
-        if (file_load_context->file_buffer == nullptr) {
+        if (file_load_context->file == nullptr) {
 
             /* Allocate file memory */
-            file_load_context->file_buffer = ::operator new(file_size, file_load_context->file_heap, output_alignment);
-            RESULT_RETURN_IF(file_load_context->file_buffer == nullptr, ResultFailedToAllocateFileMemory);
+            file_load_context->file = ::operator new(file_size, file_load_context->heap, output_alignment);
+            RESULT_RETURN_IF(file_load_context->file == nullptr, ResultFailedToAllocateFileMemory);
 
             /* Set output file sizes */
             file_load_context->file_size                    = file_size;
@@ -56,9 +56,9 @@ namespace awn::res {
 
         /* Handle file allocation error */
         auto error_after_alloc_guard = SCOPE_GUARD {
-            if (file_load_context->out_is_file_memory_allocated == true) {
-                ::operator delete(file_load_context->file_buffer);
-                file_load_context->file_buffer = nullptr;
+            if (file_load_context->out_is_file_memory_allocated) {
+                ::operator delete(file_load_context->file);
+                file_load_context->file = nullptr;
             }
         };
 
@@ -70,7 +70,7 @@ namespace awn::res {
 
         /* First read */
         size_t file_offset = 0;
-        const Result read_result = this->ReadFile(file_load_context->file_buffer, std::addressof(file_offset), std::addressof(handle), read_clamp, file_offset);
+        const Result read_result = this->ReadFile(file_load_context->file, std::addressof(file_offset), std::addressof(handle), read_clamp, file_offset);
         RESULT_RETURN_UNLESS(read_result == ResultSuccess, read_result);
 
         /* Stream read */
@@ -78,7 +78,7 @@ namespace awn::res {
 
             /* Read next chunk */
             size_t size_read = 0;
-            const Result read_loop_result = this->ReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_load_context->file_buffer) + file_offset), std::addressof(size_read), std::addressof(handle), read_clamp, file_offset);
+            const Result read_loop_result = this->ReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_load_context->file) + file_offset), std::addressof(size_read), std::addressof(handle), read_clamp, file_offset);
             file_offset += size_read;
             RESULT_RETURN_UNLESS(read_loop_result == ResultSuccess, read_loop_result);
         }

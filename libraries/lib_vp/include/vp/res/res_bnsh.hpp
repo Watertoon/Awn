@@ -74,18 +74,23 @@ namespace vp::res {
     static constexpr u32 cMaxBnshSeparateSamplerCount = 0x20;
 
     struct ResBnshShaderInterfaceInfoTable {
-        ResBnshShaderInterfaceInfo *interface_info_vertex;
-        ResBnshShaderInterfaceInfo *interface_info_tessellation_control;
-        ResBnshShaderInterfaceInfo *interface_info_tessellation_evaluation;
-        ResBnshShaderInterfaceInfo *interface_info_geometry;
-        ResBnshShaderInterfaceInfo *interface_info_fragment;
-        ResBnshShaderInterfaceInfo *interface_info_compute;
         union {
-            u64 reserve0[2];
+            ResBnshShaderInterfaceInfo *interface_info_array[8];
             struct {
-                /* Vp extensions */
-                ResBnshShaderInterfaceInfo *interface_info_task;
-                ResBnshShaderInterfaceInfo *interface_info_mesh;
+                ResBnshShaderInterfaceInfo *interface_info_vertex;
+                ResBnshShaderInterfaceInfo *interface_info_tessellation_control;
+                ResBnshShaderInterfaceInfo *interface_info_tessellation_evaluation;
+                ResBnshShaderInterfaceInfo *interface_info_geometry;
+                ResBnshShaderInterfaceInfo *interface_info_fragment;
+                ResBnshShaderInterfaceInfo *interface_info_compute;
+                union {
+                    u64 reserve0[2];
+                    struct {
+                        /* Vp extensions */
+                        ResBnshShaderInterfaceInfo *interface_info_task;
+                        ResBnshShaderInterfaceInfo *interface_info_mesh;
+                    };
+                };
             };
         };
     };
@@ -175,9 +180,9 @@ namespace vp::res {
         u8                          reserve0;
         u16                         reserve1;
         u32                         compiler_version;
-        u32                         shader_variation_count;
-        ResBnshShaderVariation     *shader_variation_array;
-        ResBnshShaderContainerData *shader_container_data;
+        u32                         variation_count;
+        ResBnshShaderVariation     *variation_array;
+        ResBnshShaderContainerData *container_data;
         u16                         reserve2[4];
         u64                         reserve3[5];
 

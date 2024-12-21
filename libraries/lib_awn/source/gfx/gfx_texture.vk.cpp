@@ -53,7 +53,112 @@ namespace awn::gfx {
         return;
     }
 
-    GpuMemoryRequirements Texture::GetMemoryRequirements(const TextureInfo *texture_info) {
+    void Texture::CopyMemoryToTexture(const void * const*memory_array, const TextureCopyRegion *copy_region_array, u32 copy_region_count, bool is_no_conversion) {
+        VkMemoryToImageCopy memory_to_image_array[0x10];
+        for (u32 i = 0; i < copy_region_count; ++i) {
+            memory_to_image_array[i].sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY;
+            memory_to_image_array[i].pNext = nullptr;
+            memory_to_image_array[i].pHostPointer = memory_array[i];
+            memory_to_image_array[i].memoryRowLength = 0;
+            memory_to_image_array[i].memoryImageHeight = 0;
+            memory_to_image_array[i].imageSubresource.aspectMask = this->GetVkAspectMask();
+            memory_to_image_array[i].imageSubresource.mipLevel = copy_region_array[i].base_mip_level;
+            memory_to_image_array[i].imageSubresource.baseArrayLayer = copy_region_array[i].base_array_layer;
+            memory_to_image_array[i].imageSubresource.layerCount = copy_region_array[i].layer_count;
+            memory_to_image_array[i].imageOffset.x = copy_region_array[i].base_x;
+            memory_to_image_array[i].imageOffset.y = copy_region_array[i].base_y;
+            memory_to_image_array[i].imageOffset.z = copy_region_array[i].base_z;
+            memory_to_image_array[i].imageExtent.width = copy_region_array[i].width;
+            memory_to_image_array[i].imageExtent.height = copy_region_array[i].height;
+            memory_to_image_array[i].imageExtent.depth = copy_region_array[i].depth;
+            
+        }
+        const VkCopyMemoryToImageInfo copy_info = {
+            .sType = VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO,
+            .flags = (is_no_conversion) ? static_cast<u32>(VK_HOST_IMAGE_COPY_MEMCPY) : 0,
+            .dstImage = m_vk_image,
+            .dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .regionCount = copy_region_count,
+            .pRegions = memory_to_image_array,
+        };
+        const VkResult result = ::pfn_vkCopyMemoryToImage(impl::Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
+        VP_ASSERT(result == VK_SUCCESS);
+        return;
+    }
+
+    void Texture::CopyTextureToMemory(void **out_memory_array, const TextureCopyRegion *copy_region_array, u32 copy_region_count, bool is_no_conversion) {
+        VkImageToMemoryCopy image_to_memory_array[0x10];
+        for (u32 i = 0; i < copy_region_count; ++i) {
+            image_to_memory_array[i].sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY;
+            image_to_memory_array[i].pNext = nullptr;
+            image_to_memory_array[i].pHostPointer = out_memory_array[i];
+            image_to_memory_array[i].memoryRowLength = 0;
+            image_to_memory_array[i].memoryImageHeight = 0;
+            image_to_memory_array[i].imageSubresource.aspectMask = this->GetVkAspectMask();
+            image_to_memory_array[i].imageSubresource.mipLevel = copy_region_array[i].base_mip_level;
+            image_to_memory_array[i].imageSubresource.baseArrayLayer = copy_region_array[i].base_array_layer;
+            image_to_memory_array[i].imageSubresource.layerCount = copy_region_array[i].layer_count;
+            image_to_memory_array[i].imageOffset.x = copy_region_array[i].base_x;
+            image_to_memory_array[i].imageOffset.y = copy_region_array[i].base_y;
+            image_to_memory_array[i].imageOffset.z = copy_region_array[i].base_z;
+            image_to_memory_array[i].imageExtent.width = copy_region_array[i].width;
+            image_to_memory_array[i].imageExtent.height = copy_region_array[i].height;
+            image_to_memory_array[i].imageExtent.depth = copy_region_array[i].depth;
+            
+        }
+        const VkCopyImageToMemoryInfo copy_info = {
+            .sType = VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO,
+            .flags = (is_no_conversion) ? static_cast<u32>(VK_HOST_IMAGE_COPY_MEMCPY) : 0,
+            .srcImage = m_vk_image,
+            .srcImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .regionCount = copy_region_count,
+            .pRegions = image_to_memory_array,
+        };
+        const VkResult result = ::pfn_vkCopyImageToMemory(impl::Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
+        VP_ASSERT(result == VK_SUCCESS);
+        return;
+    }
+
+    //void Texture::CopyTextureToTexture(Texture *out_texture, const TextureCopyRegion *dest_copy_region_array, const TextureCopyRegion *source_copy_region_array, u32 copy_region_count, bool is_no_conversion = false) {
+    //    const VkImageCopy2 image_copy_array[0x10];
+    //    for (u32 i = 0; i < copy_region_count; ++i) {
+    //        image_copy_array[i].sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY;
+    //        image_copy_array[i].pNext = nullptr;
+    //        image_copy_array[i].pHostPointer = out_memory_array[i];
+    //        image_copy_array[i].srcSubresource.aspectMask = this->GetVkAspectMask();
+    //        image_copy_array[i].srcSubresource.mipLevel = source_copy_region_array[i].base_mip_level;
+    //        image_copy_array[i].srcSubresource.baseArrayLayer = source_copy_region_array[i].base_array_layer;
+    //        image_copy_array[i].srcSubresource.layerCount = source_copy_region_array[i].layer_count;
+    //        image_copy_array[i].srcOffset.x = source_copy_region_array[i].base_x;
+    //        image_copy_array[i].srcOffset.y = source_copy_region_array[i].base_y;
+    //        image_copy_array[i].srcOffset.z = source_copy_region_array[i].base_z;
+    //        image_copy_array[i].dstSubresource.aspectMask = texture->GetVkAspectMask();
+    //        image_copy_array[i].dstSubresource.mipLevel = dest_copy_region_array[i].base_mip_level;
+    //        image_copy_array[i].dstSubresource.baseArrayLayer = dest_copy_region_array[i].base_array_layer;
+    //        image_copy_array[i].dstSubresource.layerCount = dest_copy_region_array[i].layer_count;
+    //        image_copy_array[i].dstOffset.x = dest_copy_region_array[i].base_x;
+    //        image_copy_array[i].dstOffset.y = dest_copy_region_array[i].base_y;
+    //        image_copy_array[i].dstOffset.z = dest_copy_region_array[i].base_z;
+    //        image_copy_array[i].extent.width = vp::util::Min(dest_copy_region_array[i].width, source_copy_region_array[i].width);
+    //        image_copy_array[i].extent.height = vp::util::Min(dest_copy_region_array[i].height, source_copy_region_array[i].height);
+    //        image_copy_array[i].extent.depth = vp::util::Min(dest_copy_region_array[i].depth, source_copy_region_array[i].depth);
+    //    }
+    //    const VkCopyImageToMemoryInfo copy_info = {
+    //        .sType = VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO,
+    //        .flags = (is_no_conversion) ? VK_HOST_IMAGE_COPY_MEMCPY : 0,
+    //        .srcImage = m_vk_image,
+    //        .srcImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+    //        .dstImage = texture->GetVkImage(),
+    //        .dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+    //        .regionCount = copy_region_count,
+    //        .pRegions = image_copy_array,
+    //    };
+    //    const VkResult result = ::pfn_vkCopyImageToImage(impl::Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
+    //    VP_ASSERT(result == VK_SUCCESS);
+    //    return;
+    //}
+
+    GpuMemoryRequirements Texture::GetGpuMemoryRequirements(const TextureInfo *texture_info) {
 
         /* Get memory requirements */
         const VkImageCreateInfo image_info = {

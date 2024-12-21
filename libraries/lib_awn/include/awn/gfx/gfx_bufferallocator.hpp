@@ -21,7 +21,7 @@ namespace awn::gfx {
                     .size             = per_buffer_size,
                     .gpu_access_flags = static_cast<u32>(access_flags),
                 };
-                u32 buffer_alignment = Buffer::GetMemoryRequirements(std::addressof(buffer_info)).alignment;
+                u32 buffer_alignment = Buffer::GetGpuMemoryRequirements(std::addressof(buffer_info)).alignment;
 
                 /* Allocate gpu memory */
                 const u32 aligned_size = vp::util::AlignUp(per_buffer_size, buffer_alignment);

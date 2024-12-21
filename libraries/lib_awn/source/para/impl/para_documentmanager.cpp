@@ -40,7 +40,7 @@ namespace awn::para::impl {
         }
 
         /* Resolve parent document */
-        if (document->m_is_parent_resolved == false) {
+        if (!document->m_is_parent_resolved) {
             document->m_typed_param->ResolveParent(document, nullptr, "");
             document->m_is_parent_resolved = true;
         }
@@ -52,7 +52,7 @@ namespace awn::para::impl {
 
         /* Release callback */
         const bool is_release = m_app_impl->OnReleaseDocument(document);
-        if (is_release == false) { return; }
+        if (!is_release) { return; }
 
         /* Push remove request */
         const u64 hash = vp::util::DualHashMurmur64(document->m_file_path.GetString(), document->m_typed_param->GetClassName());
@@ -102,10 +102,10 @@ namespace awn::para::impl {
 
         /* Attempt to lock manager */
         const bool result0 = m_bind_cs.TryEnter();
-        if (result0 == false) { return; }
+        if (!result0) { return; }
         ON_SCOPE_EXIT { m_bind_cs.Leave(); };
         const bool result1 = m_load_cs.TryEnter();
-        if (result1 == false) { return; }
+        if (!result1) { return; }
         ON_SCOPE_EXIT {m_load_cs.Leave(); };
 
         /* Process garbage */
@@ -120,7 +120,7 @@ namespace awn::para::impl {
             if (document == nullptr || 0 < document->m_reference_count) { continue; }
 
             /* Remove document from tree */
-            m_document_tree.Remove(document);
+            this->RemoveDocumentFromTree(document);
 
             /* Release composites */
             document->UnresolveReleaseParent();

@@ -4,11 +4,11 @@ Awn is a personal C++ library designed to power low-latency multi-threaded real-
 # Awn Features
 * awn::mem; Provides virtual and heap-based CPU and GPU memory management
 * awn::sys; Provides thread and system environment management (managing Win32 or Horizon)
-* awn::async; Provides thread and system environment management (managing Win32 or Horizon)
+* awn::async; Provides asynchronous task management and dependency-based job graphs
 * awn::res; Provides synchronous and asynchronous file resource management
-* awn::gfx; Provides a high-level graphics api (managing Vulkan or NVN), designed to interoperate with NintendoWare gfx formats
+* awn::gfx; Provides a high-level graphics api (managing Vulkan or NVN), designed to interoperate with reverse-engineered NintendoWare gfx formats
 * awn::render; Provides display and layer management (managing Win32 windows, DXGI, DirectComposition, and DirectX12, or nn::vi)
-* awn::para; Provides serializable parameter class autogen, databases, blackboards, pausing, variable framerates, etc
+* awn::para; Provides serializable parameter class autogen, databases, blackboards, pause management, variable framerate management, etc
 * awn::hid; Provides host input device management for keyboards and mice
 * awn::frm; Provides a bootstrap for libraries
 
@@ -16,7 +16,9 @@ Awn is a personal C++ library designed to power low-latency multi-threaded real-
 Vp is a personal C++ library designed to portably carry common utilities and file format definitions.
 
 # Vp Features
-* vp::res, Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
+* vp::codec; compression (zstd), encryption (nisasyst, aes128cbc)
+* vp::imem; a base heap interface for memory allocators
+* vp::res; Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
   * Ainb (AI Node Binary)
   * Bea (Bezel Engine Archive)
   * Bffnt (Binary Cafe Font)
@@ -36,8 +38,8 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
   * Rsizetable (Resource Size Table)
   * Sarc (sead Archive?)
 * vp::util, Data structures, algorithms, traits
-   * Hash algorithms, crc32b, murmur3, and murmur64
-   * x86_64 avx2 SIMD linear algebra
+  * Hash algorithms, crc32b, murmur3, and murmur64
+  * x86_64 avx2 SIMD linear algebra
   * Scope Guard
   * Result-based Structured Error Handling
   * Custom Runtime Type Info

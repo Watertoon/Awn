@@ -101,10 +101,10 @@ namespace awn::res {
     };
 
     struct FileLoadContext {
-        mem::Heap  *file_heap;
+        mem::Heap  *heap;
         u32         read_div;
         bool        out_is_file_memory_allocated;
-        void       *file_buffer;
+        void       *file;
         size_t      file_size;
         s32         file_alignment;
     };

@@ -30,8 +30,8 @@ namespace awn::res::impl {
         /* Load file */
         FileDeviceBase *file_device = (m_user_file_device == nullptr) ? m_save_file_device : m_user_file_device;
         FileLoadContext load_context = {
-            .file_buffer = m_output,
-            .file_size   = m_output_size,
+            .file = m_output,
+            .file_size = m_output_size,
         };
         RESULT_ABORT_UNLESS(file_device->LoadFile(m_save_path.GetString(), std::addressof(load_context)));
 

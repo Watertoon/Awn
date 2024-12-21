@@ -72,17 +72,17 @@ namespace vp::resbui {
         bnsh->file_size               = static_cast<u32>(memory_info->total_size);
 
         /* Write container */
-        container->magic                  = res::ResBnshShaderContainer::cMagic;
-        const u32 next_offset             = static_cast<u32>(memory_info->location_string_pool.offset - memory_info->location_container.offset);
-        container->next_block_offset      = next_offset;
-        container->block_size             = next_offset;
-        container->target_api_type        = m_api_type;
-        container->target_api_version     = m_api_version;
-        container->target_code_type       = m_code_type;
-        container->compiler_version       = m_compiler_version;
-        container->shader_variation_array = variation_array;
-        container->shader_container_data  = container_data;
-        relocation_stream.AddEntry(std::addressof(container->shader_variation_array), 1, 2, 0);
+        container->magic              = res::ResBnshShaderContainer::cMagic;
+        const u32 next_offset         = static_cast<u32>(memory_info->location_string_pool.offset - memory_info->location_container.offset);
+        container->next_block_offset  = next_offset;
+        container->block_size         = next_offset;
+        container->target_api_type    = m_api_type;
+        container->target_api_version = m_api_version;
+        container->target_code_type   = m_code_type;
+        container->compiler_version   = m_compiler_version;
+        container->variation_array    = variation_array;
+        container->container_data     = container_data;
+        relocation_stream.AddEntry(std::addressof(container->variation_array), 1, 2, 0);
 
         /* Write container data */
         container_data->memory_pool_info.memory_pool_flags  = static_cast<u32>(res::GfxMemoryPoolFlags::ShaderCode | res::GfxMemoryPoolFlags::GpuCached | res::GfxMemoryPoolFlags::CpuNoAccess);
@@ -135,16 +135,7 @@ namespace vp::resbui {
                 for (u32 j = 0; j < res::cMaxBnshShaderStageCount; ++j) {
                     BnshShaderNode *shader_node = program_node->m_shader_array[j];
                     if (shader_node == nullptr) { continue; }
-
-                    if (!is_slot_variation) {
-                        for (BnshShaderInterfaceNode *&node : shader_node->m_interface_array) {
-                            const char *name_string = node->name.GetString();
-                            if (name_string == nullptr || *name_string == '\0') { continue; }
-
-                            is_slot_variation = true;
-                            break;
-                        }
-                    }
+                    is_slot_variation = (shader_node->m_interface_array.GetUsedCount() != 0);
                     if (is_slot_variation) { break; }
                 }
 
@@ -187,27 +178,27 @@ namespace vp::resbui {
                     BnshShaderNode *shader_node = program_node->m_shader_array[j];
                     if (shader_node == nullptr) { continue; }
 
+                    /* Determine whether ResBnshShaderInterfaceInfo and ResBnshExtendedInterfaceInfo exist */
                     bool is_slot_program = false;
                     bool is_slot_ext_program = false;
                     for (BnshShaderInterfaceNode *&node : shader_node->m_interface_array) {
                         if (!node->IsValid()) { continue; }
-                        if (node->interface_type == vp::res::GfxShaderInterfaceType::SeparateTexture || node->interface_type == vp::res::GfxShaderInterfaceType::SeparateSampler) { continue; }
-
-                        is_slot_program = true;
-                        break;
-                    }
-                    for (BnshShaderInterfaceNode *&node : shader_node->m_interface_array) {
-                        if (!node->IsValid()) { continue; }
-                        if (node->interface_type != vp::res::GfxShaderInterfaceType::SeparateTexture && node->interface_type != vp::res::GfxShaderInterfaceType::SeparateSampler) { continue; }
-
-                        is_slot_ext_program = true;
-                        break;
+                        if (node->interface_type == vp::res::GfxShaderInterfaceType::SeparateTexture || node->interface_type == vp::res::GfxShaderInterfaceType::SeparateSampler) {
+                            is_slot_ext_program = true;
+                            if (is_slot_program) { break; }
+                            continue;
+                        }
+                        if (node->interface_type != vp::res::GfxShaderInterfaceType::SeparateTexture && node->interface_type != vp::res::GfxShaderInterfaceType::SeparateSampler) {                            
+                            is_slot_program = true;
+                            if (is_slot_ext_program) { break; }
+                            continue;
+                        }
                     }
 
                     if (is_slot_program || is_slot_ext_program) {                        
                         vp::res::ResBnshShaderInterfaceInfo *interface_info = reinterpret_cast<vp::res::ResBnshShaderInterfaceInfo*>(program_iter);
                         program_iter += sizeof(vp::res::ResBnshShaderInterfaceInfo);
-                        std::addressof(interface_info_table->interface_info_vertex)[j] = interface_info;
+                        interface_info_table->interface_info_array[j] = interface_info;
                         relocation_stream.AddEntry(std::addressof(interface_info->input_attribute_dictionary), 1, 5, 0);
                         relocation_stream.AddEntry(std::addressof(interface_info->interface_slot_array), 1, 1, 0);
                         if (is_slot_ext_program) {
@@ -224,29 +215,30 @@ namespace vp::resbui {
                 /* Write interface infos */
                 for (u32 j = 0; j < res::cMaxBnshShaderStageCount; ++j) {
                     BnshShaderNode *shader_node = program_node->m_shader_array[j];
-                    vp::res::ResBnshShaderInterfaceInfo *interface_info = std::addressof(interface_info_table->interface_info_vertex)[j];
+                    vp::res::ResBnshShaderInterfaceInfo *interface_info = interface_info_table->interface_info_array[j];
                     if (shader_node == nullptr || interface_info == nullptr) { continue; }
 
                     /* Write interface dictionaries */
                     u32 total_slot_count = 0;
                     const auto interface_build_lambda = [&](vp::res::GfxShaderInterfaceType type) -> vp::res::ResNintendoWareDictionary* {
                         NintendoWareDictionaryBuilder dict_builder;
-                        const u32 slot_count = 0;
+                        u32 slot_count = 0;
                         for (BnshShaderInterfaceNode *&interface_node : shader_node->m_interface_array) {
                             /* Ensure current interface type */
                             if (type != interface_node->interface_type) { continue; }
                             if (!interface_node->IsValid()) { continue; }
                             
                             /* Add to dictionary */
-                            ++total_slot_count;
+                            ++slot_count;
                             dict_builder.AddNode(std::addressof(interface_node->name));
                         }
                         if (slot_count == 0) { return nullptr; }
+                        total_slot_count += slot_count;
                         NintendoWareDictionaryBuilderMemoryInfo dict_memory_info = {};
                         dict_builder.CalculateMemoryInfo(std::addressof(dict_memory_info));
                         void *dict_memory = reinterpret_cast<void*>(program_iter);
                         dict_builder.Serialize(std::addressof(dict_memory_info), std::addressof(relocation_stream), reinterpret_cast<vp::res::ResNintendoWareStringPool*>(string_pool), dict_memory, dict_memory_info.total_size);
-                        program_iter += dict_memory_info.total_size;
+                        program_iter = vp::util::AlignUp(program_iter, dict_memory_info.max_alignment) + dict_memory_info.total_size;
                         return reinterpret_cast<vp::res::ResNintendoWareDictionary*>(dict_memory);
                     };
                     interface_info->input_attribute_dictionary  = interface_build_lambda(vp::res::GfxShaderInterfaceType::InputAttribute);
@@ -290,12 +282,13 @@ namespace vp::resbui {
                             ++slot_i;
                         }
                     }
+                    interface_info->interface_slot_array = interface_slot_array;
                 }
             }
 
             ++variation_i;
         }
-        container->shader_variation_count = variation_i;
+        container->variation_count = variation_i;
         relocation_stream.AddEntry(variation_array, variation_i, 4, 4);
 
         /* End relocation stream and unrelocate file*/
@@ -352,34 +345,38 @@ namespace vp::resbui {
                     for (u32 i = 0; i < cInterfaceTypeCount; ++i) {
                         NintendoWareDictionaryBuilder dict_builder;
                         vp::res::GfxShaderInterfaceType type = cInterfaceTypeArray[i];
+                        /* Post Image is ext */
+                        if (type == vp::res::GfxShaderInterfaceType::SeparateTexture) {
+                            slot_base_ext = total_slot_count;
+                        }
+                        u32 type_count = 0;
                         for (BnshShaderInterfaceNode *&interface_node : shader_node->m_interface_array) {
                             /* Ensure current interface type */
                             if (type != interface_node->interface_type) { continue; }
                             if (!interface_node->IsValid()) { continue; }
                             
                             /* Add to dictionary */
-                            ++total_slot_count;
+                            ++type_count;
                             dict_builder.AddNode(std::addressof(interface_node->name));
                             m_string_builder.AddString(std::addressof(interface_node->name));
                         }
-                        /* Post Image is ext */
-                        if (type == vp::res::GfxShaderInterfaceType::Image) {
-                            slot_base_ext = total_slot_count;
-                        }
+                        if (type_count == 0) { continue; }
+                        total_slot_count += type_count;
                         NintendoWareDictionaryBuilderMemoryInfo memory_info = {};
                         dict_builder.CalculateMemoryInfo(std::addressof(memory_info));
-                        program_iter += memory_info.total_size;
+                        program_iter = vp::util::AlignUp(program_iter, memory_info.max_alignment) + memory_info.total_size;
                         program_relocation_count += memory_info.total_relocation_count;
                     }
                     const u32 slot_count_ext = total_slot_count - slot_base_ext;
-                    const u32 slot_count = (slot_base_ext - slot_base) + slot_count_ext;
+                    const u32 slot_count = (slot_base_ext - slot_base);
 
                     if (0 < slot_count) {
-                        program_iter += sizeof(vp::res::ResBnshShaderInterfaceInfo) + vp::util::AlignUp(slot_count * sizeof(u32), alignof(size_t));
+                        program_iter += sizeof(vp::res::ResBnshShaderInterfaceInfo);
                         program_relocation_count += 3;
                         if (0 < slot_count_ext) {
                             program_iter += sizeof(vp::res::ResBnshExtendedInterfaceInfo);
                         }
+                        program_iter += vp::util::AlignUp((slot_count + slot_count_ext) * sizeof(u32), alignof(size_t));
                     }
                 }
 

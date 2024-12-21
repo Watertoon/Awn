@@ -135,13 +135,13 @@ namespace vp::util {
     /* All underlying types must be identical */
     template <typename Ret, typename T0, typename T1>
         requires (
-            Ret::cIsMatrixType && T0::cRowCount <= Ret::cColumnCount && T1::cColumnCount <= Ret::cRowCount
+            Ret::cIsMatrixType && ((T0::cRowCount <= Ret::cColumnCount && T1::cColumnCount <= Ret::cRowCount) || (T0::cIsVectorized))
             && std::is_same_v<typename Ret::UnderlyingType, typename T0::UnderlyingType> && std::is_same_v<typename T0::UnderlyingType, typename T1::UnderlyingType>
         )
     constexpr Ret MatrixMultiply(const T0 &lhs_matrix, const T1 &rhs_matrix) {
 
 #ifdef VP_TARGET_ARCHITECTURE_x86
-        if constexpr (T0::cIsRowMajor && (T0::cRowCount == 4 || T0::RowCount == 3) && T0::cColumnCount == 4 
+        if constexpr (T0::cIsRowMajor && (T0::cRowCount == 4 || T0::cRowCount == 3) && T0::cColumnCount == 4 
         && T1::cIsRowMajor && ((T1::cRowCount == 3  || T1::cRowCount == 4) && T1::cColumnCount == 4)) {
 
             /* Load all rows */
@@ -184,18 +184,18 @@ namespace vp::util {
             }
             return ret;
         }
-        if constexpr (T0::cIsColumnMajor && (T0::cRowCount == 4 || T0::RowCount == 3) && T0::cColumnCount == 4 
+        if constexpr (T0::cIsColumnMajor && (T0::cRowCount == 4 || T0::cRowCount == 3) && T0::cColumnCount == 4 
         && T1::cIsColumnMajor && ((T1::cRowCount == 3  || T1::cRowCount == 4) && T1::cColumnCount == 4)) {
 
             /* Load all columns */
             using Type = typename T0::UnderlyingType;
             using v4t = TVectorType<Type, 4>;
-            v4t l_col_array[T0::cColCount];
-            for (u32 i = 0; i < T0::cColCount; ++i) {
+            v4t l_col_array[T0::cColumnCount];
+            for (u32 i = 0; i < T0::cColumnCount; ++i) {
                 l_col_array[i] = LoadColumn(lhs_matrix, i);
             }
-            v4t r_col_array[T1::cColCount];
-            for (u32 i = 0; i < T1::cColCount; ++i) {
+            v4t r_col_array[T1::cColumnCount];
+            for (u32 i = 0; i < T1::cColumnCount; ++i) {
                 r_col_array[i] = LoadColumn(rhs_matrix, i);
             }
 

@@ -88,8 +88,8 @@ namespace awn::res {
     Result ZstdDecompressor::LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) {
 
         /* Integrity checks */
-        RESULT_RETURN_IF(file_load_context->file_buffer != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
-        RESULT_RETURN_IF(file_load_context->read_div != 0,                                               ResultInvalidReadDivAlignment);
+        RESULT_RETURN_IF(file_load_context->file != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
+        RESULT_RETURN_IF(file_load_context->read_div != 0,                                        ResultInvalidReadDivAlignment);
 
         /* Declare a file handle closed on exit */
         FileHandle handle = {};
@@ -148,11 +148,11 @@ namespace awn::res {
         RESULT_RETURN_IF(decomp_size == ZSTD_CONTENTSIZE_UNKNOWN || decomp_size == 0, ResultInvalidZstdFrameContentSize);
 
         /* Check whether the otuput memory needs to be allocated */
-        if (file_load_context->file_buffer == nullptr) {
+        if (file_load_context->file == nullptr) {
 
             /* Allocate file memory */
-            file_load_context->file_buffer = ::operator new(decomp_size, file_load_context->file_heap, output_alignment);
-            RESULT_RETURN_IF(file_load_context->file_buffer == nullptr, ResultFailedToAllocateFileMemory);
+            file_load_context->file = ::operator new(decomp_size, file_load_context->heap, output_alignment);
+            RESULT_RETURN_IF(file_load_context->file == nullptr, ResultFailedToAllocateFileMemory);
 
             /* Set output file sizes */
             file_load_context->file_size                    = decomp_size;
@@ -164,9 +164,9 @@ namespace awn::res {
 
         /* Handle file allocation error */
         auto error_after_alloc_guard = SCOPE_GUARD {
-            if (file_load_context->out_is_file_memory_allocated == true) {
-                ::operator delete(file_load_context->file_buffer);
-                file_load_context->file_buffer = nullptr;
+            if (file_load_context->out_is_file_memory_allocated) {
+                ::operator delete(file_load_context->file);
+                file_load_context->file = nullptr;
             }
         };
 
@@ -184,7 +184,7 @@ namespace awn::res {
 
             /* Decompress */
             size_t size_decomped = 0;
-            RESULT_RETURN_UNLESS(vp::codec::DecompressZstdWithContext(std::addressof(size_decomped), dctx, file_load_context->file_buffer, decomp_size, stream, file_offset, dictionary) == ResultSuccess, ResultZstdDecompressionFailed);
+            RESULT_RETURN_UNLESS(vp::codec::DecompressZstdWithContext(std::addressof(size_decomped), dctx, file_load_context->file, decomp_size, stream, file_offset, dictionary) == ResultSuccess, ResultZstdDecompressionFailed);
             RESULT_RETURN_UNLESS(size_decomped == decomp_size, ResultZstdDecompressionFailed);
 
             error_after_alloc_guard.Cancel();
@@ -202,7 +202,7 @@ namespace awn::res {
         /* Setup stream context */
         vp::codec::ZstdStreamContext stream_context = {
             .state           = vp::codec::ZstdStreamContext::State::Begin,
-            .output          = file_load_context->file_buffer,
+            .output          = file_load_context->file,
             .output_size     = decomp_size,
             .leftover_stream = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(work_memory) + dctx_size),
             .leftover_size   = cLeftoverSize,

@@ -35,7 +35,7 @@ namespace awn::gfx {
                 u8 reserve0 : 4;
             };
         };
-        
+
         constexpr void SetDefaults() {
             is_enable                      = 0;
             blend_factor_source_color      = static_cast<u8>(BlendFactor::One);
@@ -47,6 +47,7 @@ namespace awn::gfx {
             channel_mask                   = 0xf;
         }
     };
+
     struct BlendState {
         u8                 blend_target_state_count;
         u8                 logic_op;
@@ -126,7 +127,7 @@ namespace awn::gfx {
         float polygon_offset_clamp;
         float polygon_offset_constant_factor;
         float polygon_offset_slope_factor;
-        
+
         constexpr void SetDefaults() {
             fill_mode                       = static_cast<u8>(FillMode::Line);
             front_face                      = static_cast<u8>(FrontFace::CounterClockwise);
@@ -144,6 +145,7 @@ namespace awn::gfx {
         u32 stride;
         u32 divisor;
     };
+
     struct VertexAttributeState {
         static constexpr u32 cInvalidInterfaceSlot = 0xffff'ffff;
 
@@ -153,6 +155,7 @@ namespace awn::gfx {
         u32         attribute_format;
         const char *name;
     };
+
     struct VertexState {
         u32                   vertex_attribute_state_count;
         u32                   vertex_buffer_state_count;
@@ -180,8 +183,8 @@ namespace awn::gfx {
     };
 
     struct ViewportScissorState {
-        u16            is_enable_scissor;
-        u16            viewport_scissor_count;
+        bool           is_enable_scissor;
+        u16            state_count;
         ViewportState *viewport_state_array;
         ScissorState  *scissor_state_array;
     };

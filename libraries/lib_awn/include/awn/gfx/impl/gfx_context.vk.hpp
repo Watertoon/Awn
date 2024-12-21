@@ -32,7 +32,7 @@ namespace awn::gfx::impl {
         VkDevice vk_device;
     };
 
-//#define AWN_VK_DEBUG
+#define AWN_VK_DEBUG
 
     class Context {
         public:

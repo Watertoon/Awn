@@ -24,7 +24,7 @@ namespace awn::para {
 		FormatNoWorkExtension(std::addressof(path_no_work), format_path);
 		const char *file_name  = "";
 		const char *class_name = "";
-		const bool  is_split   = FormatSplitNameAndClass(std::addressof(file_name), std::addressof(class_name), std::addressof(path_no_work));
+		const bool  is_split = FormatSplitNameAndClass(std::addressof(file_name), std::addressof(class_name), std::addressof(path_no_work));
         if (is_split == false) { return; }
 
 		/* Unset document */
@@ -35,6 +35,7 @@ namespace awn::para {
 
 		/* Lock bind cs */
 		impl::DocumentManager *manager = impl::DocumentManager::GetInstance();
+        if (manager == nullptr) { return; }
 		std::scoped_lock l(manager->m_bind_cs);
 
 		/* Load document impl */

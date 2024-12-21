@@ -347,17 +347,14 @@ namespace awn::render::impl {
 
         std::scoped_lock l(m_present_cs);
 
-        /* Wait for queue and present */
-        const HANDLE handle_array[2] = {
-            m_fence_handle,
-            m_wait_handle,
-        };
-        const u32 result1 = ::WaitForMultipleObjectsEx(2, handle_array, true, INFINITE, false);
-        VP_ASSERT(result1 != WAIT_FAILED);
-
-        /* Setup next sync value */
+        /* Wait for queue */
         gfx::Sync *submit_sync = std::addressof(m_submit_sync);
+        submit_sync->Wait();
         submit_sync->IncrementExpectedValue();
+
+        /* Wait for present */
+        const u32 result1 = ::WaitForSingleObjectEx(m_wait_handle, INFINITE, false);
+        VP_ASSERT(result1 != WAIT_FAILED);
 
         m_present_stage = 0;
 

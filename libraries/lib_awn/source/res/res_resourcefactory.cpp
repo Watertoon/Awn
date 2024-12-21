@@ -35,11 +35,11 @@ namespace awn::res {
 		}
 
 		/* Setup resource */
-		resource->m_file      = resource_load_context->file_load_context.file_buffer;
+		resource->m_file      = resource_load_context->file_load_context.file;
 		resource->m_file_size = resource_load_context->file_load_context.file_size;
 
 		/* Resource pre-prepare */
-		resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_load_context.file_buffer, resource_load_context->file_load_context.file_size);
+		resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_load_context.file, resource_load_context->file_load_context.file_size);
 
 		/* Set output */
 		*out_resource = resource;
@@ -69,11 +69,11 @@ namespace awn::res {
 		}
 
 		/* Setup resource */
-		resource->m_file      = resource_load_context->file_load_context.file_buffer;
+		resource->m_file      = resource_load_context->file_load_context.file;
 		resource->m_file_size = resource_load_context->file_load_context.file_size;
 
 		/* Resource load callback */
-		resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_load_context.file_buffer, resource_load_context->file_load_context.file_size);
+		resource->OnFileLoad(resource_load_context->resource_heap, resource_load_context->gpu_heap, resource_load_context->file_load_context.file, resource_load_context->file_load_context.file_size);
 
 		/* Set output */
 		*out_resource = resource;

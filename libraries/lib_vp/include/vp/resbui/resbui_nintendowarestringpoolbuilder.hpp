@@ -44,7 +44,7 @@ namespace vp::resbui {
                 size_t size = 0;
                 u32 count = 0;
                 for (StringPoolStringBase &string : m_string_list) {
-                    size += vp::util::AlignUp(size + string.GetLength() + 2, sizeof(u16));
+                    size += vp::util::AlignUp(string.GetLength() + sizeof(u16) + 1, sizeof(u16));
                     ++count;
                 }
 

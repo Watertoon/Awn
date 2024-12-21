@@ -80,7 +80,7 @@ namespace awn::gfx::impl {
 
         /* Get memory requirements */
         const TextureInfo     *texture_info        = reinterpret_cast<const TextureInfo*>(user_data->gfx_info);
-        GpuMemoryRequirements  memory_requirements = Texture::GetMemoryRequirements(texture_info);
+        GpuMemoryRequirements  memory_requirements = Texture::GetGpuMemoryRequirements(texture_info);
 
         /* Allocate TextureUnit */
         TextureUnit *texture_unit = this->AllocateTextureUnit();
@@ -119,7 +119,7 @@ namespace awn::gfx::impl {
 
         /* Get memory requirements */
         const BufferInfo      *buffer_info         = reinterpret_cast<const BufferInfo*>(user_data->gfx_info);
-        GpuMemoryRequirements  memory_requirements = Buffer::GetMemoryRequirements(buffer_info);
+        GpuMemoryRequirements  memory_requirements = Buffer::GetGpuMemoryRequirements(buffer_info);
 
         /* Allocate BufferUnit and set to binder */
         BufferUnit   *buffer_unit = this->AllocateBufferUnit();

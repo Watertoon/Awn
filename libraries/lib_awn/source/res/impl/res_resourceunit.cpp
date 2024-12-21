@@ -874,8 +874,8 @@ namespace awn::res::impl {
 
         /* Setup resource load context */
         ResourceLoadContext load_context = {
-            .file_load_context = {                
-                .file_heap = (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device)) ? nullptr : m_resource_heap,
+            .file_load_context = {
+                .heap = (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device)) ? nullptr : m_resource_heap,
             },
             .file_device      = m_file_device,
             .resource_factory = m_resource_factory,

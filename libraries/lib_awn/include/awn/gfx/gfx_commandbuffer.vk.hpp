@@ -27,19 +27,6 @@ namespace awn::gfx {
         u32 layer_count;
     };
 
-    struct TextureCopyRegion {
-        u32 base_x;
-        u32 base_y;
-        u32 base_z;
-        u32 width;
-        u32 height;
-        u32 depth;
-        u16 base_mip_level;
-        u16 reserve0;
-        u32 base_array_layer;
-        u32 layer_count;
-    };
-
     struct CommandList {
         VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
         impl::CommandPoolId pool_id = impl::CommandPoolManager::cInvalidHandle;
@@ -130,11 +117,14 @@ namespace awn::gfx {
             void Begin();
             CommandList End();
 
+            void CallCommands(CommandList secondary_command_list);
+
             void TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
             void TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
 
             void BlitImage(Texture *dest_texture, const TextureCopyRegion *dest_copy_region, Texture *source_texture, const TextureCopyRegion *source_copy_region, CopyFilter copy_filter);
             void ClearColor(RenderTargetColor *target_color, const TextureArrayRegion *array_region, vp::util::Color4f color);
+            void ClearDepthStencil(RenderTargetDepthStencil *target_depth_stencil, const TextureArrayRegion *array_region, float depth, u32 stencil);
 
             void SetRenderTargets(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
 

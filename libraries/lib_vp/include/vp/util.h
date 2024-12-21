@@ -119,6 +119,7 @@
 #include <vp/util/util_charencodingutil.hpp>
 #include <vp/util/util_charactercode.hpp>
 #include <vp/util/util_bufferstring.hpp>
+#include <vp/util/util_bufferstring16.hpp>
 #include <vp/util/util_pathutil.hpp>
 
 #ifdef VP_TARGET_ARCHITECTURE_x86

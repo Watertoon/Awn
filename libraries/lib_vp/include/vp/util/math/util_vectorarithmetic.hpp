@@ -106,6 +106,22 @@ namespace vp::util {
 
     template <typename T>
         requires (T::cIsVectorType)
+    constexpr bool operator==(const T &left, const T &right) {
+        bool result = true;
+        for (u32 i = 0; i < T::cVectorCount; ++i) {
+            result &= (left[i] == right[i]);
+        }
+        return result;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorType)
+    constexpr bool operator!=(const T &left, const T &right) {
+        return !(left == right);
+    }
+
+    template <typename T>
+        requires (T::cIsVectorType)
     constexpr T::UnderlyingType Magnitude(const T &vector) {
         typename T::UnderlyingType squared_summation = {};
         for (u32 i = 0; i < T::cVectorCount; ++i) {
@@ -258,6 +274,69 @@ namespace vp::util {
         requires (T::cIsVectorType)
 	constexpr Vector4i CastVector4i(const T &vector) {
         const Vector4i ret = CastVectorImpl<Vector4i>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Float2 CastFloat2(const T &vector) {
+        const Float2 ret = CastVectorImpl<Float2>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Float3 CastFloat3(const T &vector) {
+        const Float3 ret = CastVectorImpl<Float3>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Float4 CastFloat4(const T &vector) {
+        const Float4 ret = CastVectorImpl<Float4>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Double2 CastDouble2(const T &vector) {
+        const Double2 ret = CastVectorImpl<Double2>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Double3 CastDouble3(const T &vector) {
+        const Double3 ret = CastVectorImpl<Double3>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Double4 CastDouble4(const T &vector) {
+        const Double4 ret = CastVectorImpl<Double4>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Int2 CastInt2(const T &vector) {
+        const Int2 ret = CastVectorImpl<Int2>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Int3 CastInt3(const T &vector) {
+        const Int3 ret = CastVectorImpl<Int3>(vector);
+        return ret;
+	}
+
+    template <typename T>
+        requires (T::cIsVectorType)
+	constexpr Int4 CastInt4(const T &vector) {
+        const Int4 ret = CastVectorImpl<Int4>(vector);
         return ret;
 	}
 

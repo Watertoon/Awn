@@ -26,29 +26,4 @@ namespace awn::res {
     Result LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor) {
 		return impl::ResourceFactoryManager::GetInstance()->LoadResourceWithDecompressor(out_resource, path, resource_load_context, decompressor);
 	}
-
-    void *LoadFileFull(mem::Heap *heap, const char *path) {
-
-        /* Load file */
-        FileLoadContext file_load_context = {
-            .file_heap = heap,
-        };
-        const Result result0 = LoadFile(path, std::addressof(file_load_context));
-        if (RESULT_FAILED(result0)) { return nullptr; }
-
-        /* Decompress zstd */
-        void *file = file_load_context.file_buffer;
-        size_t decomp_size = 0;
-        const Result result1 = vp::codec::GetDecompressedSizeZstd(std::addressof(decomp_size), file_load_context.file_buffer, file_load_context.file_size);
-        if (RESULT_SUCCEEDED(result1)) {
-            ON_SCOPE_EXIT { ::operator delete(file_load_context.file_buffer); };
-            void *decomp_memory = ::operator new(decomp_size, heap, alignof(u32));
-            if (decomp_memory != nullptr) { return nullptr; }
-            const Result result2 = vp::codec::DecompressZstd(nullptr, decomp_memory, decomp_size, file_load_context.file_buffer, file_load_context.file_size);
-            if (RESULT_FAILED(result2)) { ::operator delete(decomp_memory); return nullptr; }
-            file = decomp_memory;
-        }
-
-        return file;
-    }
 }

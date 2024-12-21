@@ -41,7 +41,7 @@ namespace vp::resbui {
                 out_location->offset           = offset;
                 out_location->size             = sizeof(vp::res::ResNintendoWareDictionary::ResDicNode) * m_node_list.GetCount();
                 out_location->alignment        = alignof(size_t);
-                out_location->relocation_count = 0;
+                out_location->relocation_count = 1;
             }
         public:
             constexpr  NintendoWareDictionaryBuilder() : m_node_list() {/*...*/}

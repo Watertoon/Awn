@@ -209,7 +209,7 @@ namespace awn::para {
 
         /* Check if any parent name */
         bool result = true;
-        if (::strcmp(m_parent_name, "*") != 0) {
+        if (!vp::util::StringCompare(m_parent_name, "*")) {
 
             /* Release parent */
             this->ReleaseParent();
@@ -220,14 +220,14 @@ namespace awn::para {
         }
 
         /* Ensure we are a derivitive of the parent type */
-        VP_ASSERT(result == false || this->VerifyParent() == true);
+        VP_ASSERT(!result || this->VerifyParent());
 
         /* Ensure document reference is not cyclic */
         VP_ASSERT(document == nullptr || doc_ref_count == document->m_reference_count);
 
         /* Stub parent tp and rec fields */
         parent_typed_param = nullptr;
-        field_name_rec     = "";
+        field_name_rec = "";
 
         return;
     }
@@ -235,7 +235,7 @@ namespace awn::para {
     void TypedParam::InitializeBgyml(mem::Heap *heap, Document *document, vp::res::ByamlIterator byaml_iterator) {
 
         /* Integrity checks */
-        VP_ASSERT(vp::res::IsDictionaryType(static_cast<vp::res::ByamlDataType>(byaml_iterator.GetDataType())) == true);
+        VP_ASSERT(vp::res::IsDictionaryType(static_cast<vp::res::ByamlDataType>(byaml_iterator.GetDataType())));
 
         /* Load properties */
         const auto prop_loop_lambda = [=](PropertyLoopInfo *prop_info) {
@@ -245,7 +245,7 @@ namespace awn::para {
             const bool has_data = byaml_iterator.TryGetByamlDataByKey(std::addressof(prop_data), prop_info->name);
 
             /* Set default if no data */
-            if (has_data == false) {
+            if (!has_data) {
                 *prop_info->is_non_default &= 0xfe;
                 prop_info->property_accessor->SetValue(prop_info->default_value);
                 RESULT_RETURN_SUCCESS;
@@ -253,7 +253,7 @@ namespace awn::para {
 
             /* Set from prop accessor */
             const bool is_set = prop_info->property_accessor->LoadByamlData(byaml_iterator, prop_data);
-            VP_ASSERT(is_set == true);
+            VP_ASSERT(is_set);
 
             /* Set as non default */
             *prop_info->is_non_default |= 1;
@@ -272,7 +272,7 @@ namespace awn::para {
 
             /* Get class name */
             const char *type_name = embed_info->embedded_class_name;
-            if (has_data == true) {
+            if (has_data) {
                 embed_iter.TryGetStringByKey(std::addressof(type_name), "$type");
             }
 
@@ -287,7 +287,7 @@ namespace awn::para {
             }
 
             /* Replace with default if incompatible rtti */
-            if (vp::util::CheckRuntimeTypeInfo(embed_info->embedded_rtti, typed_param->GetRuntimeTypeInfo()) == false) {
+            if (!vp::util::CheckRuntimeTypeInfo(embed_info->embedded_rtti, typed_param->GetRuntimeTypeInfo())) {
                 typed_param->Finalize();
                 delete typed_param;
                 typed_param = CreateTypedParam(heap, vp::util::HashMurmur64(embed_info->embedded_class_name));
@@ -308,7 +308,7 @@ namespace awn::para {
             const bool has_data   = byaml_iterator.TryGetIteratorByKey(std::addressof(comp_iter), comp_info->name);
 
             /* Initialize defaults if no data */
-            if (has_data == false) {
+            if (!has_data) {
 
                 comp_info->composite->InitializeDefaults(heap, true);
 
@@ -439,8 +439,8 @@ namespace awn::para {
 
             /* Advance composite search string */
             const char *next_search_string = "";
-            const bool  is_next            = AdvanceCompositeSearchString(std::addressof(next_search_string), search_string, comp_info->name);
-            if (is_next == false) { RESULT_RETURN_SUCCESS; }
+            const bool is_next = AdvanceCompositeSearchString(std::addressof(next_search_string), search_string, comp_info->name);
+            if (!is_next) { RESULT_RETURN_SUCCESS; }
 
             /* Search for composite */
             const Result result = comp_info->composite->FindComposite(out_find_info, next_search_string);

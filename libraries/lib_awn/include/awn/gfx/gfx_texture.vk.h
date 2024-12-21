@@ -17,6 +17,19 @@
 
 namespace awn::gfx {
 
+    struct TextureCopyRegion {
+        u32 base_x;
+        u32 base_y;
+        u32 base_z;
+        u32 width = 1;
+        u32 height = 1;
+        u32 depth = 1;
+        u16 base_mip_level;
+        u16 reserve0;
+        u32 base_array_layer;
+        u32 layer_count = 1;
+    };
+
 	class Texture {
         private:
             VkImage          m_vk_image;
@@ -28,6 +41,9 @@ namespace awn::gfx {
             bool Initialize(void *gpu_memory_address, const TextureInfo *texture_info);
             bool Initialize(mem::GpuMemoryHandle gpu_memory_handle, const TextureInfo *texture_info);
             void Finalize();
+
+            void CopyMemoryToTexture(const void * const*memory_array, const TextureCopyRegion *copy_region_array, u32 copy_region_count, bool is_no_conversion = false);
+            void CopyTextureToMemory(void **memory_array, const TextureCopyRegion *copy_region_array, u32 copy_region_count, bool is_no_conversion = false);
 
             constexpr ALWAYS_INLINE u32 GetWidth() const {
                 return m_texture_info.width;
@@ -49,7 +65,7 @@ namespace awn::gfx {
             }
 
         public:
-            static GpuMemoryRequirements GetMemoryRequirements(const TextureInfo *texture_info);
+            static GpuMemoryRequirements GetGpuMemoryRequirements(const TextureInfo *texture_info);
         public:
             constexpr ALWAYS_INLINE VkImage GetVkImage() const {
                 return m_vk_image;

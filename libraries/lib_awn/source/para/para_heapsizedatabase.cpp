@@ -50,8 +50,12 @@ namespace awn::para {
 	bool HeapSizeDatabase::Initialize(mem::Heap *heap, const char *file_path) {
 
 		/* Load heap size database */
-        m_file = awn::res::LoadFileFull(heap, file_path);
-        if (m_file == nullptr) { return false; }
+        res::FileLoadContext load_context = {
+            .heap = heap,
+        };
+		const Result result = awn::res::LoadFile(file_path, std::addressof(load_context));
+		if (RESULT_FAILED(result)) { return false; }
+        m_file = load_context.file;
 
 		/* Get heap iterator */
 		vp::res::ByamlIterator iter(m_file);

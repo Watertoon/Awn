@@ -31,6 +31,7 @@ namespace awn::gfx {
             void Wait();
             void TimedWait(TimeSpan timeout);
 
+        public:
             void Signal();
 
             constexpr ALWAYS_INLINE void IncrementExpectedValue() { ++m_expected_value; }

@@ -23,8 +23,9 @@ namespace vp::resbui {
         for (StringPoolStringBase &collided_string : m_collision_list) {
 
             StringPoolStringBase *no_longer_colliding_string = std::addressof(collided_string);
+            const u32 col_length = collided_string.GetLength();
             for (StringPoolStringBase &string : m_string_list) {
-                if (!vp::util::StringCompare(collided_string.GetString(), string.GetString())) { continue; }
+                if (col_length != string.GetLength() || !vp::util::StringCompare(collided_string.GetString(), string.GetString())) { continue; }
                 no_longer_colliding_string = nullptr;
                 break;
             }
@@ -51,7 +52,7 @@ namespace vp::resbui {
         RESULT_RETURN_IF(pool_string->m_pool_builder_node.IsLinked(), ResultAlreadyLinked);
 
         /* Check against unique strings */
-        u32 new_length = pool_string->GetLength();
+        const u32 new_length = pool_string->GetLength();
         const char *new_string = pool_string->GetString();
         for (StringPoolStringBase &string : m_string_list) {
             if (new_length == string.GetLength() && vp::util::StringCompare(string.GetString(), new_string)) {
@@ -86,7 +87,7 @@ namespace vp::resbui {
             *reinterpret_cast<u16*>(pool_iter) = length;
             ::strcpy(pool_iter + sizeof(u16), string.GetString());
             *(pool_iter + length + sizeof(u16)) = '\0';
-            pool_iter = vp::util::AlignUp(pool_iter + sizeof(u16) + length, alignof(u16));
+            pool_iter = vp::util::AlignUp(pool_iter + sizeof(u16) + length + 1, alignof(u16));
         }
 
         return;

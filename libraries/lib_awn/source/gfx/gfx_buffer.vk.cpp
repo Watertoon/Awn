@@ -55,7 +55,7 @@ namespace awn::gfx {
         }
     }
 
-    GpuMemoryRequirements Buffer::GetMemoryRequirements(const BufferInfo *buffer_info) {
+    GpuMemoryRequirements Buffer::GetGpuMemoryRequirements(const BufferInfo *buffer_info) {
 
         /* Get memory requirements */
         VkMemoryRequirements2 memory_requirements_2 = {

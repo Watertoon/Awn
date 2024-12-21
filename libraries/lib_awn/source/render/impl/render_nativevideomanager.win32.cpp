@@ -22,13 +22,13 @@ namespace awn::render::impl {
     void NativeVideoManager::Initialize() {
 
         /* Register window classes */
-        const WNDCLASSEXA wnd_class_display = {
-            .cbSize = sizeof(WNDCLASSEXA),
+        const WNDCLASSEXW wnd_class_display = {
+            .cbSize = sizeof(WNDCLASSEXW),
             .lpfnWndProc = NativeDisplay::WindowProcedure,
             .hInstance = ::GetModuleHandle(nullptr),
             .lpszClassName = cNativeDisplayWindowClassName,
         };
-        ATOM atom1 = ::RegisterClassExA(std::addressof(wnd_class_display));
+        ATOM atom1 = ::RegisterClassExW(std::addressof(wnd_class_display));
         VP_ASSERT(atom1 != 0);
 
         return;
@@ -53,7 +53,7 @@ namespace awn::render::impl {
         }
 
         /* Unregister window classes */
-        const bool result1 = ::UnregisterClassA(cNativeDisplayWindowClassName, ::GetModuleHandle(nullptr));
+        const bool result1 = ::UnregisterClassW(cNativeDisplayWindowClassName, ::GetModuleHandle(nullptr));
         VP_ASSERT(result1);
 
         return;

@@ -135,7 +135,7 @@ namespace awn::hid {
                         /* Nothing to do if it's not keyboard input */
                         if (raw_input->header.dwType != RIM_TYPEKEYBOARD) { break; }
 
-                        /* Find corresponding mouse device */
+                        /* Find corresponding keyboard device */
                         KeyboardThread *keyboard_thread = reinterpret_cast<KeyboardThread*>(::GetWindowLongPtrA(window, GWLP_USERDATA));
                         std::scoped_lock l(keyboard_thread->m_device_cs);
                         KeyboardDevice *keyboard_device = nullptr;
@@ -154,7 +154,7 @@ namespace awn::hid {
                     }
                     case WM_INPUT_DEVICE_CHANGE:
                     {
-                        /* Check whether we added of removed a mouse */
+                        /* Check whether we added of removed a keyboard */
                         KeyboardThread *keyboard_thread = reinterpret_cast<KeyboardThread*>(::GetWindowLongPtrA(window, GWLP_USERDATA));
                         std::scoped_lock l(keyboard_thread->m_device_cs);
                         HANDLE change_device = reinterpret_cast<HANDLE>(lparam);
@@ -178,7 +178,7 @@ namespace awn::hid {
         private:
             void InitializeWindow() {
 
-                /* Register mouse window thread */
+                /* Register keyboard window thread */
                 const HINSTANCE process_handle = ::GetModuleHandle(nullptr);
                 const WNDCLASS wc = {
                     .style = 0,
@@ -194,7 +194,7 @@ namespace awn::hid {
                 HWND window_handle = ::CreateWindowEx(0 ,"awn::hid::KeyboardWindow", "KeyboardWindow", 0, 0, 0, 32, 32, HWND_MESSAGE, 0, process_handle, this);
                 VP_ASSERT(window_handle != INVALID_HANDLE_VALUE);
 
-                /* Register for mouse input */
+                /* Register for keyboard input */
                 const RAWINPUTDEVICE raw_input_dev_array[] = {
                     {
                         .usUsagePage = 1,
@@ -232,8 +232,8 @@ namespace awn::hid {
                 return nullptr;
             }
         public:
-            KeyboardThread(mem::Heap *heap, u32 max_mice) : Thread("awn::hid::KeyboardThread", heap, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cPriorityNormal + 5), m_window_handle(), m_keyboard_device_array(), m_device_cs(), m_is_exceed_keyboard_limit_warning() {
-                m_keyboard_device_array.Initialize(heap, max_mice);
+            KeyboardThread(mem::Heap *heap, u32 max_keyboard) : Thread("awn::hid::KeyboardThread", heap, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cPriorityNormal + 5), m_window_handle(), m_keyboard_device_array(), m_device_cs(), m_is_exceed_keyboard_limit_warning() {
+                m_keyboard_device_array.Initialize(heap, max_keyboard);
             }
             virtual ~KeyboardThread() override {
                 ::PostThreadMessage(this->GetWin32ThreadId(), WM_QUIT, 0, 0);

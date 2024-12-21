@@ -383,6 +383,10 @@ namespace awn::gfx {
         return out_list;
     }
 
+    void CommandBuffer::CallCommands(CommandList secondary_command_list) {
+        ::pfn_vkCmdExecuteCommands(m_command_list.vk_command_buffer, 1, std::addressof(secondary_command_list.vk_command_buffer));
+    }
+
     void CommandBuffer::TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
 
         SyncScopeInfo scope_info = {
@@ -469,7 +473,16 @@ namespace awn::gfx {
 
     void CommandBuffer::ClearColor(RenderTargetColor *target_color, const TextureArrayRegion *array_region, vp::util::Color4f color) {
 
-        if (!m_is_rendering) {
+        const auto find_target = [&]() {
+            for (u32 i = 0; i < 8; ++i) {
+                if (m_color_target_array[i] == target_color) { return i; }
+            }
+            return 0xffff'ffff;
+        };
+        u32 target_index = find_target();
+        if (target_index == 0xffff'ffff) {
+
+            this->EndRenderingIfRendering();
 
             const VkClearColorValue color_value = { color.r, color.g, color.b, color.a, };
             const VkImageSubresourceRange subresource_range = {
@@ -487,7 +500,15 @@ namespace awn::gfx {
 
         const VkClearAttachment attachment = {
             .aspectMask = target_color->GetVkAspectMask(),
-            .clearValue = { color.r, color.g, color.b, color.a, },
+            .colorAttachment = target_index,
+            .clearValue = { 
+                .color {
+                    color.r,
+                    color.g,
+                    color.b,
+                    color.a,
+                },
+            },
         };
         const VkClearRect rect = {
             .rect = {
@@ -501,6 +522,53 @@ namespace awn::gfx {
             .layerCount = array_region->layer_count,
         };
         ::pfn_vkCmdClearAttachments(m_command_list.vk_command_buffer, 1, std::addressof(attachment), 1, std::addressof(rect));
+
+        return;
+    }
+
+    void CommandBuffer::ClearDepthStencil(RenderTargetDepthStencil *target_depth_stencil, const TextureArrayRegion *array_region, float depth, u32 stencil) {
+
+        if (target_depth_stencil != m_depth_stencil_target) {
+
+            this->EndRenderingIfRendering();
+
+            const VkClearDepthStencilValue depth_stencil_value = { depth, stencil, };
+            const VkImageSubresourceRange subresource_range = {
+                .aspectMask = target_depth_stencil->GetVkAspectMask(),
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = array_region->base_array_layer,
+                .layerCount = array_region->layer_count,
+            };
+            ::pfn_vkCmdClearDepthStencilImage(m_command_list.vk_command_buffer, target_depth_stencil->GetVkImage(), VK_IMAGE_LAYOUT_GENERAL, std::addressof(depth_stencil_value), 1, std::addressof(subresource_range));
+            return;
+        }
+
+        this->BeginRenderingIfNotRendering();
+
+        const VkClearAttachment attachment = {
+            .aspectMask = target_depth_stencil->GetVkAspectMask(),
+            .clearValue = {
+                .depthStencil = {
+                    .depth = depth,
+                    .stencil = stencil,
+                },
+            },
+        };
+        const VkClearRect rect = {
+            .rect = {
+                .offset = {},
+                .extent = {
+                    .width = target_depth_stencil->GetRenderWidth(),
+                    .height = target_depth_stencil->GetRenderHeight(),
+                },
+            },
+            .baseArrayLayer = array_region->base_array_layer,
+            .layerCount = array_region->layer_count,
+        };
+        ::pfn_vkCmdClearAttachments(m_command_list.vk_command_buffer, 1, std::addressof(attachment), 1, std::addressof(rect));
+
+        return;
     }
 
     void CommandBuffer::Draw(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count) {
@@ -889,20 +957,20 @@ namespace awn::gfx {
 
     void CommandBuffer::SetViewportScissorState(ViewportScissorState *viewport_scissor_state) {
 
-        ::pfn_vkCmdSetViewportWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->viewport_scissor_count, reinterpret_cast<VkViewport*>(viewport_scissor_state->viewport_state_array));
+        ::pfn_vkCmdSetViewportWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->state_count, reinterpret_cast<VkViewport*>(viewport_scissor_state->viewport_state_array));
         if (viewport_scissor_state->is_enable_scissor) {
-            ::pfn_vkCmdSetScissorWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->viewport_scissor_count, reinterpret_cast<VkRect2D*>(viewport_scissor_state->scissor_state_array));
+            ::pfn_vkCmdSetScissorWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->state_count, reinterpret_cast<VkRect2D*>(viewport_scissor_state->scissor_state_array));
             return;
         }
 
         VkRect2D scissor_array[cTargetMaxViewportScissorCount] = {};
-        for (u32 i = 0; i < viewport_scissor_state->viewport_scissor_count; ++i) {
+        for (u32 i = 0; i < viewport_scissor_state->state_count; ++i) {
             scissor_array[i].offset.x      = 0;
             scissor_array[i].offset.y      = 0;
             scissor_array[i].extent.width  = 0x7fff'ffff;
             scissor_array[i].extent.height = 0x7fff'ffff;
         }
-        ::pfn_vkCmdSetScissorWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->viewport_scissor_count, scissor_array);
+        ::pfn_vkCmdSetScissorWithCount(m_command_list.vk_command_buffer, viewport_scissor_state->state_count, scissor_array);
 
         return;
     }

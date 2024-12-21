@@ -22,7 +22,7 @@ namespace awn::render {
             case WM_CREATE:
             {
                 const CREATESTRUCT *create_struct = reinterpret_cast<CREATESTRUCT*>(lparam);
-                ::SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(create_struct->lpCreateParams));
+                ::SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(create_struct->lpCreateParams));
                 break;
             }
             case WM_CLOSE:
@@ -42,7 +42,7 @@ namespace awn::render {
                 if (native_display == nullptr) { break; }
                 const vp::util::Int2 new_size = { .x = client_rect->right - client_rect->left, .y = client_rect->bottom - client_rect->top, };
                 native_display->SetSizeImpl(new_size);
-                ::DefWindowProc(hwnd, msg, wparam, lparam);
+                ::DefWindowProcW(hwnd, msg, wparam, lparam);
                 return WVR_REDRAW;
             }
             case WM_MOVE:
@@ -56,7 +56,7 @@ namespace awn::render {
             default:
                 break;
         };
-        return ::DefWindowProc(hwnd, msg, wparam, lparam);
+        return ::DefWindowProcW(hwnd, msg, wparam, lparam);
     }
 
     void NativeDisplay::SetSizeImpl(vp::util::Int2 size) {
@@ -161,7 +161,7 @@ namespace awn::render {
         vp::util::Int2 size = { adj_rect.right - adj_rect.left, adj_rect.bottom - adj_rect.top };
 
         /* Create window */
-        HWND window_handle = ::CreateWindowEx(ex_style, impl::cNativeDisplayWindowClassName, m_name.GetString(), style, m_update_settings.position.x, m_update_settings.position.y, size.x, size.y, nullptr, nullptr, ::GetModuleHandle(nullptr), this);
+        HWND window_handle = ::CreateWindowExW(ex_style, impl::cNativeDisplayWindowClassName, reinterpret_cast<const wchar_t*>(m_name.GetString()), style, m_update_settings.position.x, m_update_settings.position.y, size.x, size.y, nullptr, nullptr, ::GetModuleHandle(nullptr), this);
         VP_ASSERT(window_handle != nullptr);
 
         /* Get window dpi */
@@ -204,7 +204,7 @@ namespace awn::render {
             const u32 border_style = (m_update_is_border) ? WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU : 0;
             const u32 scale_style = (m_update_is_border && m_update_free_scalable) ?  WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX : 0;
             const u32 style = border_style | scale_style;
-            ::SetWindowLongA(m_hwnd, GWL_STYLE, style);
+            ::SetWindowLongPtrW(m_hwnd, GWL_STYLE, style);
             m_is_update_style = false;
             m_is_border = m_update_is_border;
             m_is_free_scalable = m_update_free_scalable;
@@ -235,6 +235,11 @@ namespace awn::render {
             m_is_update_size = false;
             m_settings.position = pos;
             m_settings.size = size;
+        }
+        if (m_update_is_hide) {
+            m_update_is_hide = false;
+            m_is_hidden = !m_is_hidden;
+            ::ShowWindow(m_hwnd, m_is_hidden);
         }
 
         return;
@@ -314,6 +319,11 @@ namespace awn::render {
         m_layer_list.Remove(*native_layer);
         m_dcmp_visual_main->RemoveVisual(native_layer->GetDcmpVisual());
         --m_layer_count;
+    }
+
+    void NativeDisplay::RequestSetIsHidden(bool is_hide) {
+        std::scoped_lock l(m_settings_cs);
+        m_update_is_hide = (is_hide ^ m_is_hidden);
     }
 
     void NativeDisplay::RequestSetIsBorder(bool is_border) {

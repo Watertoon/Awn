@@ -39,11 +39,10 @@ namespace awn::gfx {
 			bool Initialize(void *gpu_memory_address, const BufferInfo *buffer_info);
             void Finalize();
 
-
             constexpr ALWAYS_INLINE void *GetAddress() const { return m_address; }
             constexpr ALWAYS_INLINE GpuBufferAddress GetGpuBufferAddress() const { return { m_gpu_buffer_address.vk_device_address, m_gpu_buffer_address.vk_buffer }; } 
 		public:
-            static GpuMemoryRequirements GetMemoryRequirements(const BufferInfo *buffer_info);
+            static GpuMemoryRequirements GetGpuMemoryRequirements(const BufferInfo *buffer_info);
         public:
             constexpr ALWAYS_INLINE VkBuffer GetVkBuffer() const { return m_vk_buffer; } 
 			bool InitializeForDedicatedAllocation(const BufferInfo *buffer_info);

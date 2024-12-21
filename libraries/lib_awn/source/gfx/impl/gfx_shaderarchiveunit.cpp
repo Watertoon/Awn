@@ -50,8 +50,8 @@ namespace awn::gfx::impl {
     }
 
     void ShaderArchiveUnit::Finalize() {
-        for (u32 i = 0; i < m_bnsh_container->shader_variation_count; ++i) {
-            vp::res::ResBnshShaderProgram *program = m_bnsh_container->shader_variation_array[i].program_binary;
+        for (u32 i = 0; i < m_bnsh_container->variation_count; ++i) {
+            vp::res::ResBnshShaderProgram *program = m_bnsh_container->variation_array[i].program_binary;
             Shader *shader = reinterpret_cast<Shader*>(program->runtime_shader);
             shader->Finalize();
         }
@@ -80,7 +80,7 @@ namespace awn::gfx::impl {
     bool ShaderArchiveUnit::RequestTransfer() {
 
         if (m_bnsh_container == nullptr) { return false; }
-        if (m_bnsh_container->shader_variation_count < cSmallVariationCount) { 
+        if (m_bnsh_container->variation_count < cSmallVariationCount) { 
             this->Transfer();
             return false;
         }
@@ -101,8 +101,8 @@ namespace awn::gfx::impl {
     void ShaderArchiveUnit::Transfer() {
 
         /* Compile all shader variations */
-        for (u32 i = 0; i < m_bnsh_container->shader_variation_count; ++i) {
-            vp::res::ResBnshShaderProgram *program = m_bnsh_container->shader_variation_array[i].program_binary;
+        for (u32 i = 0; i < m_bnsh_container->variation_count; ++i) {
+            vp::res::ResBnshShaderProgram *program = m_bnsh_container->variation_array[i].program_binary;
             Shader *shader = reinterpret_cast<Shader*>(program->runtime_shader);
             bool is_api_error = shader->Initialize(program);
             if (is_api_error) {

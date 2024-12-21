@@ -44,7 +44,7 @@ namespace awn::render {
                 vp::util::Int2 size;
             };
         public:
-            using NativeDisplayName = vp::util::FixedString<0x40>;
+            using NativeDisplayName = vp::util::FixedString16<0x40>;
             using WindowThread = vp::util::TypedStorage<sys::DelegateThread>;
             using ThreadDelegate = sys::ThreadDelegate<NativeDisplay>;
         private:
@@ -61,6 +61,7 @@ namespace awn::render {
             sys::Event                   m_window_event;
             bool                         m_is_closed;
             bool                         m_is_visible;
+            bool                         m_is_hidden;
             u32                          m_dpi;
             union {
                 u32 m_flags;
@@ -68,6 +69,7 @@ namespace awn::render {
                     u32 m_is_update_size : 1;
                     u32 m_is_update_position : 1;
                     u32 m_is_update_style : 1;
+                    u32 m_update_is_hide : 1;
                     u32 m_update_is_border : 1;
                     u32 m_update_free_scalable : 1;
                     u32 m_update_free_movable : 1;
@@ -75,7 +77,7 @@ namespace awn::render {
                     u32 m_is_free_scalable : 1;
                     u32 m_is_free_movable : 1;
                     u32 m_is_resize : 2;
-                    u32 m_reserve0 : 24;
+                    u32 m_reserve0 : 23;
                 };
             };
             sys::Mutex                  m_settings_cs;
@@ -94,7 +96,7 @@ namespace awn::render {
             void SetPositionForFreeMoveable(vp::util::Int2 position);
             void SetSizeImpl(vp::util::Int2 size);
         public:
-            constexpr NativeDisplay() : m_mgr_node(), m_name(), m_layer_cs(), m_layer_list(), m_layer_count(), m_hwnd(), m_dcmp_target(), m_dcmp_visual_main(), m_thread_delegate(this, WindowThreadMain), m_window_thread(), m_window_event(), m_is_closed(), m_is_visible(), m_dpi(), m_flags(), m_settings_cs(), m_settings(), m_update_settings() {/*...*/}
+            constexpr NativeDisplay() : m_mgr_node(), m_name(), m_layer_cs(), m_layer_list(), m_layer_count(), m_hwnd(), m_dcmp_target(), m_dcmp_visual_main(), m_thread_delegate(this, WindowThreadMain), m_window_thread(), m_window_event(), m_is_closed(), m_is_visible(), m_is_hidden(), m_dpi(), m_flags(), m_settings_cs(), m_settings(), m_update_settings() {/*...*/}
             constexpr ~NativeDisplay() {/*...*/}
 
             void Initialize(const NativeDisplayInfo *display_info);
@@ -111,6 +113,7 @@ namespace awn::render {
                 return m_hwnd;
             }
         public:
+            void RequestSetIsHidden(bool is_hide);
             void RequestSetIsBorder(bool is_border);
             void RequestSetIsFreeMovable(bool is_free_moveable);
             void RequestSetIsFreeScalable(bool is_free_scalable);
@@ -123,11 +126,17 @@ namespace awn::render {
             constexpr vp::util::Int2 GetSize() const {
                 return m_settings.size;
             }
+            constexpr bool IsDrawable() const {
+                return !m_is_closed && m_is_visible && !m_is_hidden;
+            }
             constexpr bool IsClosed() const {
                 return m_is_closed;
             }
             constexpr bool IsVisible() const {
-                return m_is_closed | m_is_visible;
+                return m_is_visible;
+            }
+            constexpr bool IsHidden() const {
+                return m_is_hidden;
             }
 
             constexpr vp::util::Int2 GetUpdatePosition() const {
