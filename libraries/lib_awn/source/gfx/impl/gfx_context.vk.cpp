@@ -17,6 +17,39 @@
 
 namespace awn::gfx::impl {
 
+    Result ConvertVkResultToResult(VkResult vk_result) {
+        switch (vk_result) {
+            case VK_SUCCESS:
+                RESULT_RETURN_SUCCESS;
+            case VK_NOT_READY:
+                RESULT_RETURN(ResultNotReady);
+            case VK_TIMEOUT :
+                RESULT_RETURN(ResultTimeout);
+            case VK_INCOMPLETE:
+                RESULT_RETURN(ResultIncomplete);
+            case VK_ERROR_OUT_OF_HOST_MEMORY:
+                RESULT_RETURN(ResultOutOfCpuMemory);
+            case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+                RESULT_RETURN(ResultOutOfGpuMemory);
+            case VK_ERROR_DEVICE_LOST:
+#ifdef AWN_VK_DEBUG
+                impl::Context::GetInstance()->ReportDeviceLostReason();
+#endif
+                RESULT_RETURN(ResultGpuLost);
+            case VK_ERROR_MEMORY_MAP_FAILED:
+                RESULT_RETURN(ResultFailedToMapMemory);
+            case VK_SUBOPTIMAL_KHR:
+                RESULT_RETURN(ResultSubOptimal);
+            case VK_ERROR_OUT_OF_DATE_KHR:
+                RESULT_RETURN(ResultOutOfDate);
+            case VK_INCOMPATIBLE_SHADER_BINARY_EXT:
+                RESULT_RETURN(ResultInvalidShaderCode);
+            default:
+                break;
+        };
+        return ResultUnknownApiError;
+    }
+
     AWN_SINGLETON_TRAITS_IMPL(Context);
 
     namespace {
@@ -203,7 +236,7 @@ namespace awn::gfx::impl {
             ON_SCOPE_EXIT { ::free(property_array); };
 
             const VkResult result1 = ::pfn_vkEnumerateDeviceExtensionProperties(vk_physical_device, nullptr, std::addressof(property_count), property_array);
-            VP_ASSERT(result1 == VK_SUCCESS);
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
 
             struct DeviceExtensionEntry {
                 const char *extension = "";
@@ -404,11 +437,13 @@ namespace awn::gfx::impl {
             if (!features_13.maintenance4)     { missing_features->SetMissing(RequiredFeature::SupportsMaintenance4); }
 
             /* 1.4 feature checks */
-            if (!features_14.indexTypeUint8)            { missing_features->SetMissing(RequiredFeature::SupportsIndexTypeU8); }
-            if (!features_14.dynamicRenderingLocalRead) { missing_features->SetMissing(RequiredFeature::SupportsDynamicRenderingLocalRead); }
-            if (!features_14.maintenance5)              { missing_features->SetMissing(RequiredFeature::SupportsMaintenance5); }
-            if (!features_14.maintenance6)              { missing_features->SetMissing(RequiredFeature::SupportsMaintenance6); }
-            if (!features_14.hostImageCopy)             { missing_features->SetMissing(RequiredFeature::SupportsHostImageCopy); }
+            if (!features_14.vertexAttributeInstanceRateDivisor) { missing_features->SetMissing(RequiredFeature::SupportsVertexAttributeInstanceRateDivisor); }
+            if (!features_14.vertexAttributeInstanceRateZeroDivisor) { missing_features->SetMissing(RequiredFeature::SupportsVertexAttributeInstanceRateZeroDivisor); }
+            if (!features_14.indexTypeUint8)                         { missing_features->SetMissing(RequiredFeature::SupportsIndexTypeU8); }
+            if (!features_14.dynamicRenderingLocalRead)              { missing_features->SetMissing(RequiredFeature::SupportsDynamicRenderingLocalRead); }
+            if (!features_14.maintenance5)                           { missing_features->SetMissing(RequiredFeature::SupportsMaintenance5); }
+            if (!features_14.maintenance6)                           { missing_features->SetMissing(RequiredFeature::SupportsMaintenance6); }
+            if (!features_14.hostImageCopy)                          { missing_features->SetMissing(RequiredFeature::SupportsHostImageCopy); }
 
             /* SupportsShaderObject checks */
             if (!shader_object_features.shaderObject) { missing_features->SetMissing(RequiredFeature::SupportsShaderObject); }
@@ -468,8 +503,8 @@ namespace awn::gfx::impl {
             MissingFeatures *missing_features_array = nullptr;
 
             /* Get count of physical devices */
-            const u32 result2 = ::pfn_vkEnumeratePhysicalDevices(vk_instance, std::addressof(vk_physical_device_count), nullptr);
-            VP_ASSERT(result2 == VK_SUCCESS);
+            const VkResult result2 = ::pfn_vkEnumeratePhysicalDevices(vk_instance, std::addressof(vk_physical_device_count), nullptr);
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result2));
             VP_ASSERT(vk_physical_device_count != 0);
 
             /* Create physical device array */
@@ -478,13 +513,13 @@ namespace awn::gfx::impl {
             ON_SCOPE_EXIT {
                 ::free(memory);
             };
-            
+
             vk_physical_device_array = reinterpret_cast<VkPhysicalDevice*>(memory);
             missing_features_array = reinterpret_cast<MissingFeatures*>(reinterpret_cast<uintptr_t>(memory) + sizeof(VkPhysicalDevice) * vk_physical_device_count);
 
             /* Query physical devices */
-            const u32 result3 = ::pfn_vkEnumeratePhysicalDevices(vk_instance, std::addressof(vk_physical_device_count), vk_physical_device_array);
-            VP_ASSERT(result3 == VK_SUCCESS);
+            const VkResult result3 = ::pfn_vkEnumeratePhysicalDevices(vk_instance, std::addressof(vk_physical_device_count), vk_physical_device_array);
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result3));
 
             /* Build physical device features */
             for (u32 i = 0; i < vk_physical_device_count; ++i) {
@@ -508,6 +543,40 @@ namespace awn::gfx::impl {
         }
     }
 
+#ifdef AWN_VK_DEBUG
+    void Context::ReportDeviceLostReason() {
+        
+        sys::SleepThread(TimeSpan::FromMilliSeconds(1000));
+        VkDeviceFaultCountsEXT fault_counts = {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT,
+        };
+        VkDeviceFaultInfoEXT fault_info = {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT,
+        };
+        const VkResult result0 = ::pfn_vkGetDeviceFaultInfoEXT(m_vk_device, std::addressof(fault_counts), nullptr);
+        if (result0 != VK_INCOMPLETE) {
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
+        }
+
+        fault_info.pAddressInfos = reinterpret_cast<VkDeviceFaultAddressInfoEXT*>(::malloc(sizeof(VkDeviceFaultAddressInfoEXT) * fault_counts.addressInfoCount));
+        fault_info.pVendorInfos = reinterpret_cast<VkDeviceFaultVendorInfoEXT*>(::malloc(sizeof(VkDeviceFaultVendorInfoEXT) * fault_counts.vendorInfoCount));
+        VP_ASSERT(fault_info.pAddressInfos != nullptr);
+        VP_ASSERT(fault_info.pVendorInfos != nullptr);
+        ON_SCOPE_EXIT {
+            ::free(fault_info.pVendorInfos);
+            ::free(fault_info.pAddressInfos);
+        };
+
+        const VkResult result1 = ::pfn_vkGetDeviceFaultInfoEXT(m_vk_device, std::addressof(fault_counts), std::addressof(fault_info));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
+
+        ::puts(fault_info.description);
+        
+        return;
+    }
+#endif
+
+
     void Context::InitializeInstance(const ContextInfo *context_info) {
 
         /* VKInstance feature enables */
@@ -530,14 +599,14 @@ namespace awn::gfx::impl {
         constexpr const u32 cInstanceExtensionCount = sizeof(cInstanceExtensionArray) / sizeof(const char*);
 
         #if defined(AWN_VK_DEBUG)
-        //const VkValidationFeatureEnableEXT validation_feature_enable_array[] = {
-        //    VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
-        //};
-        //const VkValidationFeaturesEXT validation_features = {
-        //    .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
-        //    .enabledValidationFeatureCount = sizeof(validation_feature_enable_array) / sizeof(VkValidationFeatureEnableEXT),
-        //    .pEnabledValidationFeatures = validation_feature_enable_array
-        //};
+        const VkValidationFeatureEnableEXT validation_feature_enable_array[] = {
+            VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+        };
+        const VkValidationFeaturesEXT validation_features = {
+            .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+            .enabledValidationFeatureCount = sizeof(validation_feature_enable_array) / sizeof(VkValidationFeatureEnableEXT),
+            .pEnabledValidationFeatures = validation_feature_enable_array
+        };
         #endif
 
         const VkApplicationInfo app_info = {
@@ -552,7 +621,7 @@ namespace awn::gfx::impl {
         const VkInstanceCreateInfo instance_info = {
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
             #if defined(AWN_VK_DEBUG)
-            //    .pNext = std::addressof(validation_features),
+                .pNext = std::addressof(validation_features),
             #endif
             .pApplicationInfo = std::addressof(app_info),
             #if defined(AWN_VK_DEBUG)
@@ -562,8 +631,8 @@ namespace awn::gfx::impl {
             .enabledExtensionCount = cInstanceExtensionCount,
             .ppEnabledExtensionNames = cInstanceExtensionArray
         };
-        const u32 result = ::pfn_vkCreateInstance(std::addressof(instance_info), this->GetVkAllocationCallbacks(), std::addressof(m_vk_instance));
-        VP_ASSERT(result == VK_SUCCESS);
+        const VkResult vk_result = ::pfn_vkCreateInstance(std::addressof(instance_info), this->GetVkAllocationCallbacks(), std::addressof(m_vk_instance));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
 
         /* Load instance procs */
         ::LoadVkCProcsInstance(m_vk_instance);
@@ -621,6 +690,9 @@ namespace awn::gfx::impl {
 #ifdef VP_TARGET_PLATFORM_win32
             VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
             VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
+#endif
+#ifdef AWN_VK_DEBUG
+            VK_EXT_DEVICE_FAULT_EXTENSION_NAME,
 #endif
             VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
@@ -753,9 +825,21 @@ namespace awn::gfx::impl {
             .pNext = std::addressof(robustness_2_features),
             .shaderMaximalReconvergence = is_maximal_reconvergance,
         };
+        
+#ifdef AWN_VK_DEBUG
+        VkPhysicalDeviceFaultFeaturesEXT fault_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
+            .pNext = std::addressof(shader_maximal_reconvergence_features),
+            .deviceFault = VK_TRUE,
+        };
+#endif
         VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+#ifdef AWN_VK_DEBUG
+            .pNext = std::addressof(fault_features),
+#else
             .pNext = std::addressof(shader_maximal_reconvergence_features),
+#endif
             .nestedCommandBuffer = VK_TRUE,
             .nestedCommandBufferRendering = VK_TRUE,
             .nestedCommandBufferSimultaneousUse = VK_TRUE,
@@ -780,6 +864,8 @@ namespace awn::gfx::impl {
         VkPhysicalDeviceVulkan14Features target_1_4_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
             .pNext = std::addressof(target_shader_object_features),
+            .vertexAttributeInstanceRateDivisor = VK_TRUE,
+            .vertexAttributeInstanceRateZeroDivisor = VK_TRUE,
             .indexTypeUint8 = VK_TRUE,
             .dynamicRenderingLocalRead = VK_TRUE,
             .maintenance5 = VK_TRUE,
@@ -872,8 +958,8 @@ namespace awn::gfx::impl {
             .ppEnabledExtensionNames = concat_extension_array,
             .pEnabledFeatures = nullptr,
         };
-        const s32 result = ::pfn_vkCreateDevice(m_vk_physical_device, std::addressof(device_info), this->GetVkAllocationCallbacks(), std::addressof(m_vk_device));
-        VP_ASSERT(result == VK_SUCCESS);
+        const VkResult vk_result = ::pfn_vkCreateDevice(m_vk_physical_device, std::addressof(device_info), this->GetVkAllocationCallbacks(), std::addressof(m_vk_device));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
 
         /* Load device procs */
         ::LoadVkCProcsDevice(m_vk_device);
@@ -929,8 +1015,8 @@ namespace awn::gfx::impl {
                 .bindingCount = sizeof(bindless_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
                 .pBindings = bindless_set_binding_array,
             };
-            const u32 result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(bindless_set_layout_info), this->GetVkAllocationCallbacks(), set_layout);
-            VP_ASSERT(result0 == VK_SUCCESS);
+            const VkResult result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(bindless_set_layout_info), this->GetVkAllocationCallbacks(), set_layout);
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
 
             return;
         };
@@ -992,8 +1078,8 @@ namespace awn::gfx::impl {
                 .bindingCount = total_count,
                 .pBindings = bindless_set_binding_array,
             };
-            const u32 result0 = ::pfn_vkCreateDescriptorSetLayout(this->GetVkDevice(), std::addressof(bindless_set_layout_info), this->GetVkAllocationCallbacks(), set_layout);
-            VP_ASSERT(result0 == VK_SUCCESS);
+            const VkResult result0 = ::pfn_vkCreateDescriptorSetLayout(this->GetVkDevice(), std::addressof(bindless_set_layout_info), this->GetVkAllocationCallbacks(), set_layout);
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
 
             return;
         };
@@ -1094,7 +1180,7 @@ namespace awn::gfx::impl {
                 .pSetLayouts = m_vk_combined_descriptor_set_layout_graphics,
             };
             const VkResult result0 = ::pfn_vkCreatePipelineLayout(this->GetVkDevice(), std::addressof(layout_info_graphics), this->GetVkAllocationCallbacks(), std::addressof(m_vk_combined_pipeline_layout_graphics));
-            VP_ASSERT(result0 == VK_SUCCESS);
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
 
             const VkPipelineLayoutCreateInfo layout_info_compute = {
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -1102,7 +1188,7 @@ namespace awn::gfx::impl {
                 .pSetLayouts = m_vk_combined_descriptor_set_layout_compute,
             };
             const VkResult result1 = ::pfn_vkCreatePipelineLayout(this->GetVkDevice(), std::addressof(layout_info_compute), this->GetVkAllocationCallbacks(), std::addressof(m_vk_combined_pipeline_layout_compute));
-            VP_ASSERT(result1 == VK_SUCCESS);
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
         }
 
         return;
@@ -1159,8 +1245,8 @@ namespace awn::gfx::impl {
         /* Check supported Vulkan Api version */
         {
             u32 api_version = 0;
-            const u32 result0 = ::pfn_vkEnumerateInstanceVersion(std::addressof(api_version));
-            VP_ASSERT(result0 == VK_SUCCESS);
+            const VkResult result0 = ::pfn_vkEnumerateInstanceVersion(std::addressof(api_version));
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
             VP_ASSERT(cTargetMinimumApiVersion <= api_version);
         }
 
@@ -1178,8 +1264,8 @@ namespace awn::gfx::impl {
                 .pUserData = nullptr
             };
 
-            const u32 result = ::pfn_vkCreateDebugUtilsMessengerEXT(m_vk_instance, std::addressof(debug_messenger_info), this->GetVkAllocationCallbacks(), std::addressof(m_debug_messenger));
-            VP_ASSERT(result == VK_SUCCESS);
+            const VkResult result = ::pfn_vkCreateDebugUtilsMessengerEXT(m_vk_instance, std::addressof(debug_messenger_info), this->GetVkAllocationCallbacks(), std::addressof(m_debug_messenger));
+            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result));
         }
         #endif
 
@@ -1243,7 +1329,7 @@ namespace awn::gfx::impl {
             wait_semaphore_array[i].pNext       = nullptr;
             wait_semaphore_array[i].semaphore   = wait_sync_array[i]->GetVkSemaphore();
             wait_semaphore_array[i].value       = wait_sync_array[i]->GetExpectedValue();
-            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
             wait_semaphore_array[i].deviceIndex = 0;
         }
         VkSemaphoreSubmitInfo signal_semaphore_array[cMaxQueueSignalSyncCount];
@@ -1252,7 +1338,7 @@ namespace awn::gfx::impl {
             signal_semaphore_array[i].pNext       = nullptr;
             signal_semaphore_array[i].semaphore   = signal_sync_array[i]->GetVkSemaphore();
             signal_semaphore_array[i].value       = signal_sync_array[i]->GetExpectedValue();
-            signal_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+            signal_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
             signal_semaphore_array[i].deviceIndex = 0;
         }
 
@@ -1266,13 +1352,13 @@ namespace awn::gfx::impl {
             .signalSemaphoreInfoCount = signal_sync_count,
             .pSignalSemaphoreInfos    = signal_semaphore_array,
         };
-        const u32 result0 = ::pfn_vkQueueSubmit2(this->GetVkQueue(command_list.GetQueueType()), 1, std::addressof(graphics_submit_info), VK_NULL_HANDLE);
-        VP_ASSERT(result0 == VK_SUCCESS);
+        const VkResult result0 = ::pfn_vkQueueSubmit2(this->GetVkQueue(command_list.GetQueueType()), 1, std::addressof(graphics_submit_info), VK_NULL_HANDLE);
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
 
         return;
     }
 
-    void Context::SubmitCommandLists(CommandList **command_list_array, u32 command_list_count, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count) {
+    void Context::SubmitCommandLists(CommandList *command_list_array, u32 command_list_count, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count) {
 
         /* Integrity checks */
         VP_ASSERT(command_list_count < cMaxQueueCommandListCount);
@@ -1281,12 +1367,12 @@ namespace awn::gfx::impl {
 
         /* Setup command buffer submit info, wait and signal semaphore infos */
         VkCommandBufferSubmitInfo command_buffer_submit_info_array[cMaxQueueCommandListCount];
-        u32 queue_type = static_cast<u32>(command_list_array[0]->GetQueueType());
+        u32 queue_type = static_cast<u32>(command_list_array[0].GetQueueType());
         for (u32 i = 0; i < command_list_count; ++i) {
-            VP_ASSERT(queue_type == static_cast<u32>(command_list_array[i]->GetQueueType()));
+            VP_ASSERT(queue_type == static_cast<u32>(command_list_array[i].GetQueueType()));
             command_buffer_submit_info_array[i].sType         = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
             command_buffer_submit_info_array[i].pNext         = nullptr;
-            command_buffer_submit_info_array[i].commandBuffer = command_list_array[i]->vk_command_buffer;
+            command_buffer_submit_info_array[i].commandBuffer = command_list_array[i].vk_command_buffer;
             command_buffer_submit_info_array[i].deviceMask    = 0;
         }
         VkSemaphoreSubmitInfo wait_semaphore_array[cMaxQueueWaitSyncCount];
@@ -1295,7 +1381,7 @@ namespace awn::gfx::impl {
             wait_semaphore_array[i].pNext       = nullptr;
             wait_semaphore_array[i].semaphore   = wait_sync_array[i]->GetVkSemaphore();
             wait_semaphore_array[i].value       = wait_sync_array[i]->GetExpectedValue();
-            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+            wait_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
             wait_semaphore_array[i].deviceIndex = 0;
         }
         VkSemaphoreSubmitInfo signal_semaphore_array[cMaxQueueSignalSyncCount];
@@ -1304,7 +1390,7 @@ namespace awn::gfx::impl {
             signal_semaphore_array[i].pNext       = nullptr;
             signal_semaphore_array[i].semaphore   = signal_sync_array[i]->GetVkSemaphore();
             signal_semaphore_array[i].value       = signal_sync_array[i]->GetExpectedValue();
-            signal_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+            signal_semaphore_array[i].stageMask   = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
             signal_semaphore_array[i].deviceIndex = 0;
         }
 
@@ -1318,8 +1404,8 @@ namespace awn::gfx::impl {
             .signalSemaphoreInfoCount = signal_sync_count,
             .pSignalSemaphoreInfos    = signal_semaphore_array,
         };
-        const u32 result0 = ::pfn_vkQueueSubmit2(this->GetVkQueue(static_cast<QueueType>(queue_type)), 1, std::addressof(graphics_submit_info), VK_NULL_HANDLE);
-        VP_ASSERT(result0 == VK_SUCCESS);
+        const VkResult result0 = ::pfn_vkQueueSubmit2(this->GetVkQueue(static_cast<QueueType>(queue_type)), 1, std::addressof(graphics_submit_info), VK_NULL_HANDLE);
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
 
         return;
     }

@@ -33,7 +33,7 @@ namespace awn::res::impl {
             void RegisterResourceFactory(ResourceFactoryBase *factory);
             void RemoveResourceFactory(ResourceFactoryBase *factory);
 
-            ResourceFactoryBase *FindResourceFactory(const char *file_extension);
+            const ResourceFactoryBase *FindResourceFactory(const char *file_extension);
 
             Result LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context);
             Result LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor);

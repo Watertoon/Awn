@@ -17,7 +17,13 @@
 
 namespace awn::res {
 
-	Result ResourceFactoryBase::LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor) {
+     ResourceFactoryBase::~ResourceFactoryBase() {
+        impl::ResourceFactoryManager *mgr = impl::ResourceFactoryManager::GetInstance();
+        if (mgr == nullptr) { return; }
+        mgr->RemoveResourceFactory(this);
+    }
+
+	Result ResourceFactoryBase::LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor)  const{
 
 		/* Integrity checks */
 		RESULT_RETURN_UNLESS(out_resource != nullptr, ResultNullOutputResource);
@@ -47,7 +53,7 @@ namespace awn::res {
 		RESULT_RETURN_SUCCESS;
 	}
 
-	Result ResourceFactoryBase::LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context) {
+	Result ResourceFactoryBase::LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context) const {
 
 		/* Integrity checks */
 		RESULT_RETURN_UNLESS(out_resource != nullptr, ResultNullOutputResource);

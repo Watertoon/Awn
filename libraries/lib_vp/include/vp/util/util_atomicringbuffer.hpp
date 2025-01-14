@@ -56,7 +56,7 @@ namespace vp::util {
                 m_offset    = 0;
             }
 
-            void PushBack(T value) {
+            bool PushBack(T value) {
 
                 /* Integrity checks */
                 VP_ASSERT(value != 0);
@@ -68,15 +68,19 @@ namespace vp::util {
 
                     /* Attempt to reserve space */
                     const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(last), std::addressof(m_count), count + 1, count);
-                    if (!result) { count = last; continue; }
+                    if (!result) {
+                        count = last;
+                        continue;
+                    }
 
                     /* Insert our element */
                     vp::util::MemoryBarrierRelease();
                     m_array[count & (m_max_count - 1)] = value;
 
-                    return;
+                    return true;
                 }
-                VP_ASSERT(false);
+
+                return false;
             }
 
             T RemoveFront() {

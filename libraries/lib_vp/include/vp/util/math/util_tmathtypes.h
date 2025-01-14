@@ -143,7 +143,7 @@ namespace vp::util {
     };
 
 	template <typename T>
-	using TMatrixRowMajor4x3 = TMatrixRowMajor4x3Helper<T>;
+	using TMatrixRowMajor4x3 = TMatrixRowMajor4x3Helper<T>::Type;
 
     template <typename T>
     struct TMatrixRowMajor4x4Helper {
@@ -167,7 +167,7 @@ namespace vp::util {
     };
     
 	template <typename T>
-	using TMatrixRowMajor4x4 = TMatrixRowMajor4x4Helper<T>;
+	using TMatrixRowMajor4x4 = TMatrixRowMajor4x4Helper<T>::Type;
 
     template <typename T, u32 ColumnCount, u32 RowCount>
     struct TMatrixRowMajorHelper {
@@ -177,12 +177,12 @@ namespace vp::util {
     template <typename T>
     struct TMatrixRowMajorHelper<T, 4,3> {
         static constexpr bool cIsDummy = false;
-        using Type = TMatrixRowMajor4x3<T>::Type;
+        using Type = TMatrixRowMajor4x3<T>;
     };
     template <typename T>
     struct TMatrixRowMajorHelper<T, 4,4> {
         static constexpr bool cIsDummy = false;
-        using Type = TMatrixRowMajor4x4<T>::Type;
+        using Type = TMatrixRowMajor4x4<T>;
     };
     
 	template <typename T, u32 ColumnCount, u32 RowCount>
@@ -211,7 +211,7 @@ namespace vp::util {
     };
 
 	template <typename T>
-	using TMatrixColumnMajor4x3 = TMatrixColumnMajor4x3Helper<T>;
+	using TMatrixColumnMajor4x3 = TMatrixColumnMajor4x3Helper<T>::Type;
 
     template <typename T>
     struct TMatrixColumnMajor4x4Helper {
@@ -245,12 +245,12 @@ namespace vp::util {
     template <typename T>
     struct TMatrixColumnMajorHelper<T, 4,3> {
         static constexpr bool cIsDummy = false;
-        using Type = TMatrixColumnMajor4x3<T>::Type;
+        using Type = TMatrixColumnMajor4x3<T>;
     };
     template <typename T>
     struct TMatrixColumnMajorHelper<T, 4,4> {
         static constexpr bool cIsDummy = false;
-        using Type = TMatrixColumnMajor4x4<T>::Type;
+        using Type = TMatrixColumnMajor4x4<T>;
     };
     
 	template <typename T, u32 ColumnCount, u32 RowCount>
@@ -265,13 +265,13 @@ namespace vp::util {
     template <typename T, u32 ColumnCount, u32 RowCount>
     struct TMatrixHelper<T, ColumnCount, RowCount, true> {
         static constexpr bool cIsDummy = false;
-        using Type = TMatrixRowMajor<T, ColumnCount, RowCount>::Type;
+        using Type = TMatrixRowMajor<T, ColumnCount, RowCount>;
     };
 
     template <typename T, u32 ColumnCount, u32 RowCount>
     struct TMatrixHelper<T, ColumnCount, RowCount, false> {
         static constexpr bool cIsDummy = false;
-        using Type = TMatrixColumnMajor<T, ColumnCount, RowCount>::Type;
+        using Type = TMatrixColumnMajor<T, ColumnCount, RowCount>;
     };
 
     template <typename T, u32 ColumnCount, u32 RowCount, bool IsRowMajor>

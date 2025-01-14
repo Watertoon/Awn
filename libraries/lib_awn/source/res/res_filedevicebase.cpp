@@ -17,6 +17,12 @@
 
 namespace awn::res {
 
+    FileDeviceBase::~FileDeviceBase() {
+        impl::FileDeviceManager *mgr = impl::FileDeviceManager::GetInstance();
+        if (mgr == nullptr) { return; }
+        mgr->RemoveFileDevice(this);
+    }
+
     Result FileDeviceBase::LoadFileImpl(const char *path, FileLoadContext *file_load_context) {
 
         /* Integrity checks */
@@ -30,13 +36,10 @@ namespace awn::res {
         };
 
         /* Open file handle */
-        const Result open_result = this->OpenFile(std::addressof(handle), path, OpenMode::Read);
-        RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
-
+        RESULT_TRY(this->OpenFile(std::addressof(handle), path, OpenMode::Read));
         /* Get file size */
         size_t       file_size   = 0;
-        const Result size_result = this->GetFileSize(std::addressof(file_size), std::addressof(handle));
-        RESULT_RETURN_UNLESS(size_result == ResultSuccess, size_result);
+        RESULT_TRY(this->GetFileSize(std::addressof(file_size), std::addressof(handle)));
 
         /* Align alignment */
         size_t output_alignment = (file_load_context->file_alignment < cMinimumFileAlignment) ? cMinimumFileAlignment : file_load_context->file_alignment;
@@ -66,21 +69,19 @@ namespace awn::res {
         RESULT_RETURN_UNLESS(file_size <= file_load_context->file_size, ResultInvalidFileBufferSize);
 
         /* Calculate read div */
-        const u32    read_clamp     = (file_load_context->read_div == 0) ? file_size : file_load_context->read_div;
+        const u32 read_clamp = (file_load_context->read_div == 0) ? file_size : file_load_context->read_div;
 
         /* First read */
         size_t file_offset = 0;
-        const Result read_result = this->ReadFile(file_load_context->file, std::addressof(file_offset), std::addressof(handle), read_clamp, file_offset);
-        RESULT_RETURN_UNLESS(read_result == ResultSuccess, read_result);
+        RESULT_TRY(this->ReadFile(file_load_context->file, std::addressof(file_offset), std::addressof(handle), read_clamp, file_offset));
 
         /* Stream read */
         while (file_offset < file_size) {
 
             /* Read next chunk */
             size_t size_read = 0;
-            const Result read_loop_result = this->ReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_load_context->file) + file_offset), std::addressof(size_read), std::addressof(handle), read_clamp, file_offset);
+            RESULT_TRY(this->ReadFile(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(file_load_context->file) + file_offset), std::addressof(size_read), std::addressof(handle), read_clamp, file_offset));
             file_offset += size_read;
-            RESULT_RETURN_UNLESS(read_loop_result == ResultSuccess, read_loop_result);
         }
 
         /* Cancel alloc error for success */
@@ -99,13 +100,11 @@ namespace awn::res {
         ON_SCOPE_EXIT {
             RESULT_ABORT_UNLESS(handle.Close());
         };
-        const Result open_result = this->OpenFile(std::addressof(handle), path, OpenMode::Write);
-        RESULT_RETURN_IF(open_result != ResultSuccess, open_result);
+        RESULT_TRY(this->OpenFile(std::addressof(handle), path, OpenMode::Write));
 
         /* Write file */
         size_t written_size       = 0;
-        const Result write_result = this->WriteFile(std::addressof(written_size), std::addressof(handle), file_save_info->file, file_save_info->file_size, 0);
-        RESULT_RETURN_IF(write_result != ResultSuccess, write_result);
+        RESULT_TRY(this->WriteFile(std::addressof(written_size), std::addressof(handle), file_save_info->file, file_save_info->file_size, 0));
 
         RESULT_RETURN_SUCCESS;
     }
@@ -120,26 +119,22 @@ namespace awn::res {
         ON_SCOPE_EXIT {
             src_handle.Close();
         };
-        const Result src_result = this->OpenFile(std::addressof(src_handle), source_path, OpenMode::Read);
-        if (src_result != ResultSuccess) { return src_result; }
+        RESULT_TRY(this->OpenFile(std::addressof(src_handle), source_path, OpenMode::Read));
 
         /* Open dest */
         FileHandle dst_handle = {};
         ON_SCOPE_EXIT {
             dst_handle.Close();
         };
-        const Result dst_result = this->OpenFile(std::addressof(dst_handle), dest_path, OpenMode::Write);
-        if (dst_result != ResultSuccess) { return dst_result; }
+        RESULT_TRY(this->OpenFile(std::addressof(dst_handle), dest_path, OpenMode::Write));
 
         /* Read source */
         size_t read_size = 0;
-        const Result read_result = this->ReadFile(copy_buffer, std::addressof(read_size), std::addressof(src_handle), copy_size, 0);
-        if (read_result != ResultSuccess) { return read_result; }
+        RESULT_TRY(this->ReadFile(copy_buffer, std::addressof(read_size), std::addressof(src_handle), copy_size, 0));
 
         /* Write to dest */
         size_t write_size = 0;
-        const Result write_result = this->WriteFile(std::addressof(write_size), std::addressof(dst_handle), copy_buffer, read_size, 0);
-        if (write_result != ResultSuccess) { return write_result; }
+        RESULT_TRY(this->WriteFile(std::addressof(write_size), std::addressof(dst_handle), copy_buffer, read_size, 0));
 
         RESULT_RETURN_SUCCESS;
     }

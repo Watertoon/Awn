@@ -19,17 +19,17 @@ namespace awn::res::impl {
 
     void FormatPathWithCompressionExtension(MaxPathString *out_string, MaxPathString *file_path, CompressionType compression_type);
 
-	class DecompressorManager {
+	class ParallelDecompressorManager {
         public:
             using HandleAllocator = vp::util::AtomicIndexAllocator<u8>;
-            using ZstdDecompressorArray = vp::util::HeapArray<ZstdDecompressor>;
+            using ZstdDecompressorArray = vp::util::HeapArray<ParallelZstdDecompressor>;
 		private:
             HandleAllocator       m_index_allocator;
             ZstdDecompressorArray m_zstd_decompressor_array;
             sys::Event            m_free_event;
         public:
-            constexpr DecompressorManager() : m_index_allocator(), m_zstd_decompressor_array(), m_free_event() {/*...*/}
-            constexpr ~DecompressorManager() {/*...*/}
+            constexpr ParallelDecompressorManager() : m_index_allocator(), m_zstd_decompressor_array(), m_free_event() {/*...*/}
+            constexpr ~ParallelDecompressorManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, u32 thread_count);
             void Finalize();
@@ -37,6 +37,6 @@ namespace awn::res::impl {
             u32 AllocateDecompressorHandle();
             void FreeDecompressorHandle(u32 handle);
 
-            IDecompressor *GetDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask);
+            IParallelDecompressor *GetParallelDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask);
         };
 }

@@ -78,21 +78,21 @@ namespace awn::mem {
 
 			m_cpu_uncached_heap_context_array[i].gpu_memory_handle = gpu_heap_mgr_info->cpu_uncached_info_array[i].handle;
 			m_cpu_uncached_heap_context_array[i].memory_size = gpu_heap_mgr_info->cpu_uncached_info_array[i].size;
-			m_cpu_uncached_heap_context_array[i].base_address = mem::MapGpuMemoryHandle(gpu_heap_mgr_info->cpu_uncached_info_array[i].handle);
+			m_cpu_uncached_heap_context_array[i].base_address = gpu_heap_mgr_info->cpu_uncached_info_array[i].handle.GetAddress();
 			m_cpu_uncached_heap_context_array[i].root_heap = mem::GpuExpHeap::TryCreate(cCpuUncachedNameArray[i], heap, m_cpu_uncached_heap_context_array[i].base_address, m_cpu_uncached_heap_context_array[i].memory_size);
 		}
 		for (u32 i = 0; i < gpu_heap_mgr_info->cpu_cached_root_heap_count; ++i) {
 
 			m_cpu_cached_heap_context_array[i].gpu_memory_handle = gpu_heap_mgr_info->cpu_cached_info_array[i].handle;
 			m_cpu_cached_heap_context_array[i].memory_size = gpu_heap_mgr_info->cpu_cached_info_array[i].size;
-			m_cpu_cached_heap_context_array[i].base_address = mem::MapGpuMemoryHandle(gpu_heap_mgr_info->cpu_cached_info_array[i].handle);
+			m_cpu_cached_heap_context_array[i].base_address = gpu_heap_mgr_info->cpu_cached_info_array[i].handle.GetAddress();
 			m_cpu_cached_heap_context_array[i].root_heap = mem::GpuExpHeap::TryCreate(cCpuCachedNameArray[i], heap, m_cpu_cached_heap_context_array[i].base_address, m_cpu_cached_heap_context_array[i].memory_size);
 		}
 		for (u32 i = 0; i < gpu_heap_mgr_info->gpu_uncached_root_heap_count; ++i) {
 
 			m_gpu_uncached_heap_context_array[i].gpu_memory_handle = gpu_heap_mgr_info->gpu_uncached_info_array[i].handle;
 			m_gpu_uncached_heap_context_array[i].memory_size = gpu_heap_mgr_info->gpu_uncached_info_array[i].size;
-			m_gpu_uncached_heap_context_array[i].base_address = mem::MapGpuMemoryHandle(gpu_heap_mgr_info->gpu_uncached_info_array[i].handle);
+			m_gpu_uncached_heap_context_array[i].base_address = gpu_heap_mgr_info->gpu_uncached_info_array[i].handle.GetAddress();
 			m_gpu_uncached_heap_context_array[i].root_heap = mem::GpuExpHeap::TryCreate(cGpuUncachedNameArray[i], heap, m_gpu_uncached_heap_context_array[i].base_address, m_gpu_uncached_heap_context_array[i].memory_size);
 		}
 

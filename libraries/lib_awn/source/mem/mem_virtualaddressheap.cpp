@@ -223,14 +223,14 @@ namespace awn::mem {
         void *start = m_start_address;
         while (reserve < m_start_address) {
             const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(start), std::addressof(m_start_address), reserve, start);
-            if (result == true) { break; }
+            if (result) { break; }
         }
 
         void *new_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(reserve) + (small_page_count_first << 0xc));
-        void *end     = m_end_address;
+        void *end = m_end_address;
         while (end < new_end) {
             const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(end), std::addressof(m_end_address), new_end, end);
-            if (result == true) { break; }
+            if (result) { break; }
         }
 
         return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_small_block) + address_base_offset);
@@ -244,7 +244,7 @@ namespace awn::mem {
 
             /* Remove from map */
             {
-                ScopedHeapLock l(this);                
+                ScopedHeapLock l(this);              
                 m_large_memory_map.Remove(address_t);
             }
 

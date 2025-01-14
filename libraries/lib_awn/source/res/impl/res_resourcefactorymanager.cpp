@@ -22,15 +22,17 @@ namespace awn::res::impl {
     void ResourceFactoryManager::RegisterResourceFactory(ResourceFactoryBase *factory) {
         VP_ASSERT(factory->m_file_extension != nullptr);
         std::scoped_lock lock(m_factory_map_cs);
+        VP_ASSERT(!factory->m_manager_tree_node.IsLinked());
         m_resource_factory_map.Insert(factory);
     }
 
     void ResourceFactoryManager::RemoveResourceFactory(ResourceFactoryBase *factory) {
         std::scoped_lock lock(m_factory_map_cs);
+        if (!factory->m_manager_tree_node.IsLinked()) { return; }
         m_resource_factory_map.Remove(factory);
     }
 
-    ResourceFactoryBase *ResourceFactoryManager::FindResourceFactory(const char *file_extension) {
+    const ResourceFactoryBase *ResourceFactoryManager::FindResourceFactory(const char *file_extension) {
         const u32 ext_hash = vp::util::HashCrc32b(file_extension);
         std::scoped_lock lock(m_factory_map_cs);
         ResourceFactoryBase *res_factory = m_resource_factory_map.Find(ext_hash);
@@ -40,7 +42,7 @@ namespace awn::res::impl {
     Result ResourceFactoryManager::LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context) {
 
         /* Find factory */
-        ResourceFactoryBase *factory = resource_load_context->resource_factory;
+        const ResourceFactoryBase *factory = resource_load_context->resource_factory;
         if (factory == nullptr) {
             MaxExtensionString extension;
             vp::util::GetExtension(std::addressof(extension), path);
@@ -50,10 +52,11 @@ namespace awn::res::impl {
         /* Load file with factory */
         return factory->LoadResource(out_resource, path, resource_load_context);
     }
+
     Result ResourceFactoryManager::LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor) {
 
         /* Get factory */
-        ResourceFactoryBase *factory = resource_load_context->resource_factory;
+        const ResourceFactoryBase *factory = resource_load_context->resource_factory;
         if (factory == nullptr) {
             MaxExtensionString extension;
             vp::util::GetExtension(std::addressof(extension), path);

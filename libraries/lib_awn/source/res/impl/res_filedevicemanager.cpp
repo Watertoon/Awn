@@ -25,7 +25,7 @@ namespace awn::res::impl {
         ContentFileDevice *content_device = new (heap, alignof(ContentFileDevice)) ContentFileDevice();
         m_main_file_device = content_device;
 
-        this->AddFileDevice(content_device);
+        this->RegisterFileDevice(content_device);
 
         return;
     }
@@ -37,10 +37,18 @@ namespace awn::res::impl {
         }
     }
 
-    void FileDeviceManager::AddFileDevice(FileDeviceBase *file_device) {
+    void FileDeviceManager::RegisterFileDevice(FileDeviceBase *file_device) {
         VP_ASSERT(file_device != nullptr);
         std::scoped_lock l(m_device_tree_cs);
+        VP_ASSERT(!file_device->m_manager_tree_node.IsLinked());
         m_mounted_file_device_tree.Insert(file_device);
+    }
+
+    void FileDeviceManager::RemoveFileDevice(FileDeviceBase *file_device) {
+        VP_ASSERT(file_device != nullptr);
+        std::scoped_lock l(m_device_tree_cs);
+        if (!file_device->m_manager_tree_node.IsLinked()) { return; }
+        m_mounted_file_device_tree.Remove(file_device);
     }
 
     FileDeviceBase *FileDeviceManager::GetFileDeviceByDrive(const char *drive) {
@@ -69,5 +77,18 @@ namespace awn::res::impl {
 
         /* Load */
         return device->LoadFile(path_no_drive.GetString(), file_load_context);
+    }
+
+    Result FileDeviceManager::LoadFileWithDecompressor(const char *path, FileLoadContext *file_load_context, IDecompressor *decompressor) {
+
+        /* Find file device */
+        FileDeviceBase *device = this->GetFileDeviceByPath(path);
+
+        /* Get path without drive */
+        vp::util::FixedString<vp::util::cMaxPath> path_no_drive;
+        vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
+
+        /* Load */
+        return decompressor->LoadDecompressFile(nullptr, nullptr, path_no_drive.GetString(), file_load_context, device);
     }
 }

@@ -24,6 +24,9 @@ namespace awn::mem {
         VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
         void *memory;
 
+        constexpr void *GetAddress() const {
+            return this->memory;
+        }
         constexpr bool IsValid() const {
             return this->vk_device_memory != VK_NULL_HANDLE;
         }
@@ -124,6 +127,7 @@ namespace awn::mem {
 
     ALWAYS_INLINE GpuRootHeapContext *FindGpuRootHeapContextFromAddress(void *address) {
         GpuHeapManager *heap_manager = GpuHeapManager::GetInstance();
+        if (heap_manager == nullptr) { return nullptr; }
         return heap_manager->FindGpuRootHeapContextFromAddress(address);
     }
 }

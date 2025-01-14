@@ -17,10 +17,6 @@
 
 namespace awn::res::impl {
 
-    enum class ResourceHeapType : u32 {
-        FrameHeap = 0,
-        ExpHeap   = 1,
-    };
     enum class ManagerHeapType : u32 {
         VirtualAddressHeap = 0,
         ExpHeap            = 1,

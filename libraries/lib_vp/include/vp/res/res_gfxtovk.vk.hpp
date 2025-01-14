@@ -234,7 +234,7 @@ namespace vp::res {
     constexpr inline VkImageUsageFlags GfxGpuAccessFlagsToVkImageUsageFlags(GfxGpuAccessFlags access_flags) {
 
         u32 flags = 0;
-        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::Texture)) != 0)             { flags |= VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE; }
+        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::Texture)) != 0)             { flags |= VK_IMAGE_USAGE_SAMPLED_BIT; }
         if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::RenderTargetColor)) != 0)   { flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; }
         if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::RenderTargetDepth)) != 0)   { flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; }
 
@@ -288,7 +288,7 @@ namespace vp::res {
     }
 
     constexpr ALWAYS_INLINE VkComponentSwizzle GfxTextureSwizzleToVkComponentSwizzle(GfxTextureSwizzle swizzle) {
-        return static_cast<VkComponentSwizzle>(swizzle);
+        return static_cast<VkComponentSwizzle>(static_cast<u32>(swizzle) + 1);
     }
 
     template <typename T>

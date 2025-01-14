@@ -17,30 +17,32 @@
 
 namespace awn::gfx {
 
-    constexpr void CalculatePrimitiveShapeInfoQuad(PrimitiveShapeInfo *out_primitive_shape_info, ShapeFormat shape_format) {
+    constexpr void CalculatePrimitiveShapeInfoQuad(PrimitiveShapeInfo *primitive_shape_info) {
 
-        /* Get stride */
-        const u32 stride = GetPrimitiveShapeVertexStride(shape_format);
+        VP_ASSERT(primitive_shape_info->shape_format == ShapeFormat::Position || primitive_shape_info->primitive_topology != PrimitiveTopology::LineStrip);
 
         /* Calculate shape info */
-        out_primitive_shape_info->vertex_count       = 4;
-        out_primitive_shape_info->vertex_buffer_size = stride * 4;
-        out_primitive_shape_info->index_count        = 6;
-        out_primitive_shape_info->index_buffer_size  = 6;
+        const u32 vertex_stride = GetPrimitiveShapeVertexStride(primitive_shape_info->shape_format);
+        primitive_shape_info->vertex_count = 4;
+        primitive_shape_info->vertex_buffer_size = vertex_stride * 4;
 
-        /* Set formats */
-        out_primitive_shape_info->shape_format = shape_format;
-        out_primitive_shape_info->index_format = IndexFormat::U8;
+        /* Find index count */
+        u32 index_count0 = (primitive_shape_info->primitive_topology == PrimitiveTopology::Triangles) ? 6 : 0;
+        u32 index_count1 = (primitive_shape_info->primitive_topology != PrimitiveTopology::LineStrip) ? index_count0 : 5;
+        primitive_shape_info->index_count = index_count1;
+
+        /* Calculate index size */
+        const u32 index_stride = GetPrimitiveShapeIndexStride(primitive_shape_info->index_format);
+        primitive_shape_info->index_buffer_size  = index_stride * index_count1;
 
         return;
     }
 
-    void CalculateVertexBufferPrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, PrimitiveShapeInfo *primitive_shape_info);
+    void CalculateVertexBufferPrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
 
-    template <typename T> 
-    constexpr void CalculateIndexBufferPrimitiveShapeQuad(T *index_buffer, size_t index_buffer_size, PrimitiveShapeInfo *primitive_shape_info);
+    void CalculateIndexBufferPrimitiveShapeQuad(void *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
 
-    void CalculatePrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, void *index_buffer, size_t index_buffer_size, PrimitiveShapeInfo *primitive_shape_info);
+    void CalculatePrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, void *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
 
-    void CreatePrimitiveShapeQuad(void **out_vertex_buffer_address, void **out_index_buffer_address, mem::Heap *gpu_heap, PrimitiveShapeInfo *primitive_shape_info);
+    void CreatePrimitiveShapeQuad(void **out_vertex_buffer_address, void **out_index_buffer_address, mem::Heap *gpu_heap, const PrimitiveShapeInfo *primitive_shape_info);
 }

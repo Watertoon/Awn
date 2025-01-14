@@ -20,6 +20,28 @@ namespace awn::res {
     struct FileLoadContext;
     class  FileDeviceBase;
 
+    enum class CompressionType : u16 {
+        None        = (0 << 0),
+        Auto        = (1 << 0),
+        Szs         = (1 << 1),
+        Zstandard   = (1 << 2),
+    };
+    VP_ENUM_FLAG_TRAITS(CompressionType);
+
+    using MaxExtensionString = vp::util::MaxExtensionString;
+
+    constexpr CompressionType GetCompressionType(MaxExtensionString *extension) {
+        const MaxExtensionString zs_ext(".zs");
+        if (*extension == zs_ext) {
+            return CompressionType::Zstandard;
+        }
+        const MaxExtensionString szs_ext(".szs");
+        if (*extension == szs_ext) {
+            return CompressionType::Szs;
+        }
+        return CompressionType::None;
+    }
+
     class IDecompressor {
         public:
             VP_RTTI_BASE(IDecompressor);
@@ -27,11 +49,19 @@ namespace awn::res {
             constexpr IDecompressor() {/*...*/}
             constexpr virtual ~IDecompressor() {/*...*/}
 
+            virtual Result LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) { VP_UNUSED(out_size, out_alignment, path, file_load_context, file_device); RESULT_RETURN_SUCCESS; }
+    };
+    
+    class IParallelDecompressor : public IDecompressor {
+        public:
+            VP_RTTI_DERIVED(IParallelDecompressor, IDecompressor);
+        public:
+            constexpr IParallelDecompressor() : IDecompressor() {/*...*/}
+            constexpr virtual ~IParallelDecompressor() {/*...*/}
+
             virtual void SetPriority(u32 priority)            { VP_UNUSED(priority); }
             virtual void SetCoreMask(sys::CoreMask core_mask) { VP_UNUSED(core_mask); }
             virtual u32           GetPriority() { return 0; }
             virtual sys::CoreMask GetCoreMask() { return 0; }
-
-            virtual Result LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) { VP_UNUSED(out_size, out_alignment, path, file_load_context, file_device); RESULT_RETURN_SUCCESS; }
-    };
+     };
 }

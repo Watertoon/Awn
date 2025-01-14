@@ -21,10 +21,27 @@ namespace vp::util {
         return (0x19 < character - 0x41) ? character : character + 0x20;   
     }
 
+    static constexpr u32 cInvalidDelimiter = 0xffff'ffff;
+
+    constexpr u32 FindDelimiter(const char *path, char delimiter) {
+
+        /* Find delimiter */
+        u32 drive_offset = 0;
+        {
+            do {
+                if (path[drive_offset] == delimiter) { break; }
+                if (path[drive_offset] == '\0') { return cInvalidDelimiter; }
+                ++drive_offset;
+            } while (drive_offset != 0);
+        }
+
+        return drive_offset;
+    }
+
     constexpr u32 FindDriveDelimiter(const char *path, u32 path_len) {
 
         /* Find ':' */
-        u32 drive_offset = path_len;
+        u32 drive_offset = path_len - 1;
         {
             do {
                 if (path[drive_offset] == ':') { break; }
@@ -38,7 +55,7 @@ namespace vp::util {
     constexpr u32 FindDirectoryDelimiter(const char *path, u32 path_len) {
         
         /* Find '\\' */
-        u32 back_slash_offset = path_len;
+        u32 back_slash_offset = path_len - 1;
         {
             do {
                 if (path[back_slash_offset] == '\\') { break; }
@@ -47,7 +64,7 @@ namespace vp::util {
         }
 
         /* Find '/' */
-        u32 forward_slash_offset = path_len;
+        u32 forward_slash_offset = path_len - 1;
         {
             do {
                 if (path[forward_slash_offset] == '/') { break; }
@@ -61,7 +78,7 @@ namespace vp::util {
     constexpr u32 FindExtensionDelimiter(const char *path, u32 path_len) {
 
         /* Find '.' */
-        u32 dot_offset = path_len;
+        u32 dot_offset = path_len - 1;
         {
             do {
                 if (path[dot_offset] == '.') { break; }

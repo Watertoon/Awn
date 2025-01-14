@@ -38,16 +38,28 @@ namespace awn::render {
             {
                 /* TODO; investigate moving resize to reduce jitter */
                 RECT *client_rect = reinterpret_cast<RECT*>(lparam);
-                NativeDisplay *native_display = reinterpret_cast<NativeDisplay*>(::GetWindowLongPtrA(hwnd, GWLP_USERDATA));
+                NativeDisplay *native_display = reinterpret_cast<NativeDisplay*>(::GetWindowLongPtrW(hwnd, GWLP_USERDATA));
                 if (native_display == nullptr) { break; }
+                //::DCompositionWaitForCompositorClock(0, nullptr, INFINITE);
                 const vp::util::Int2 new_size = { .x = client_rect->right - client_rect->left, .y = client_rect->bottom - client_rect->top, };
                 native_display->SetSizeImpl(new_size);
                 ::DefWindowProcW(hwnd, msg, wparam, lparam);
                 return WVR_REDRAW;
             }
+            case WM_SIZE:
+            {
+                if (wparam == SIZE_MINIMIZED) {
+                    NativeDisplay *native_display = reinterpret_cast<NativeDisplay*>(::GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+                    native_display->m_is_visible = false;
+                } else if (wparam == SIZE_MAXIMIZED) {
+                    NativeDisplay *native_display = reinterpret_cast<NativeDisplay*>(::GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+                    native_display->m_is_visible = (native_display->m_update_settings.size.x > 0 && native_display->m_update_settings.size.y > 0) && !native_display->m_update_settings.is_hidden;
+                }
+                break;
+            }
             case WM_MOVE:
             {
-                NativeDisplay *native_display = reinterpret_cast<NativeDisplay*>(::GetWindowLongPtrA(hwnd, GWLP_USERDATA));
+                NativeDisplay *native_display = reinterpret_cast<NativeDisplay*>(::GetWindowLongPtrW(hwnd, GWLP_USERDATA));
                 if (!native_display->m_is_border) { break; }
                 const vp::util::Int2 new_pos = { .x = LOWORD(lparam), .y = HIWORD(lparam), };
                 native_display->SetPositionForFreeMoveable(new_pos);
@@ -69,7 +81,7 @@ namespace awn::render {
                 layer.InvokeDisplayResize(this);
             }
             m_is_update_size = false;
-            m_is_visible = (size.x > 0 && size.y > 0);;
+            m_is_visible = (size.x > 0 && size.y > 0) && !m_update_settings.is_hidden;
             m_settings.size = size;
             VP_ASSERT(m_is_resize == 0);
             m_is_resize = 1;
@@ -120,7 +132,7 @@ namespace awn::render {
 
     void NativeDisplay::SendMessage(size_t message) {
         vp::util::GetReference(m_window_thread).SendMessage(message);
-        const bool result = ::PostMessageA(m_hwnd, cWin32AwnMessage, 0, 0);
+        const bool result = ::PostMessageW(m_hwnd, cWin32AwnMessage, 0, 0);
         VP_ASSERT(m_is_closed || result);
     }
 
@@ -136,9 +148,10 @@ namespace awn::render {
         m_is_free_movable = m_update_free_movable;
 
         /* Adjust size of window with respect to dpi */
-        vp::util::Rectanglei rect_helper;
+        vp::util::Rectanglei rect_helper = {};
         rect_helper.SetSize(m_update_settings.size);
-        rect_helper.SetPosition(m_update_settings.position);
+        //vp::util::Float3 position = vp::util::GetPosition(m_update_settings.transform);
+        //rect_helper.SetPosition();
         RECT monitor_rect = {
             .left = rect_helper.left,
             .top = rect_helper.top,
@@ -161,7 +174,7 @@ namespace awn::render {
         vp::util::Int2 size = { adj_rect.right - adj_rect.left, adj_rect.bottom - adj_rect.top };
 
         /* Create window */
-        HWND window_handle = ::CreateWindowExW(ex_style, impl::cNativeDisplayWindowClassName, reinterpret_cast<const wchar_t*>(m_name.GetString()), style, m_update_settings.position.x, m_update_settings.position.y, size.x, size.y, nullptr, nullptr, ::GetModuleHandle(nullptr), this);
+        HWND window_handle = ::CreateWindowExW(ex_style, impl::cNativeDisplayWindowClassName, reinterpret_cast<wchar_t*>(m_name.GetString()), style, m_update_settings.position.x, m_update_settings.position.y, size.x, size.y, nullptr, nullptr, ::GetModuleHandle(nullptr), this);
         VP_ASSERT(window_handle != nullptr);
 
         /* Get window dpi */
@@ -169,12 +182,14 @@ namespace awn::render {
         VP_ASSERT(wnd_dpi != 0);
         m_dpi = wnd_dpi;
 
-        /* Create direct composition target and add main visual */
-        impl::ContextDxgi *context = impl::ContextDxgi::GetInstance();
+        /* Create direct composition target */
+        impl::ContextDxgi11 *context = impl::ContextDxgi11::GetInstance();
         IDCompositionDesktopDevice *device_desktop = context->GetDcmpDevice();
         IDCompositionTarget *target = nullptr;
         const HRESULT result1 = device_desktop->CreateTargetForHwnd(window_handle, false, std::addressof(target));
         VP_ASSERT(result1 == S_OK);
+
+        /* Create direct composition root visual */
         IDCompositionVisual2 *visual_2 = nullptr;
         const HRESULT result2 = device_desktop->CreateVisual(std::addressof(visual_2));
         VP_ASSERT(result2 == S_OK);
@@ -182,6 +197,8 @@ namespace awn::render {
         const HRESULT result3 = visual_2->QueryInterface(std::addressof(visual_main));
         VP_ASSERT(result3 == S_OK);
         visual_2->Release();
+
+        /* Set root visual to target */
         const HRESULT result4 = target->SetRoot(visual_main);
         VP_ASSERT(result4 == S_OK);
 
@@ -212,17 +229,17 @@ namespace awn::render {
         m_is_free_movable = m_update_free_movable;
 
         /* Apply transform */
-        if (m_is_update_size || m_is_update_position) {
+        if (m_is_update_size || m_is_update_position || m_is_update_defer) {
 
             /* Prevent programmatically setting position and size if the user has control of it */
             const vp::util::Int2 pos = m_update_settings.position;
             const vp::util::Int2 size = m_update_settings.size;
+            m_is_visible = (size.x > 0 && size.y > 0) && !m_update_settings.is_hidden;
+            const u32 hidden_flags = (m_update_settings.is_hidden || !m_is_visible) ? SWP_HIDEWINDOW : SWP_SHOWWINDOW;
             const u32 scale_flags = (m_is_free_scalable) ? SWP_NOSIZE : 0;
             const u32 move_flags = (m_is_free_movable) ? SWP_NOMOVE : 0;
-            const u32 flags = move_flags | scale_flags | SWP_NOZORDER | SWP_NOCOPYBITS;
+            const u32 flags = hidden_flags | move_flags | scale_flags | SWP_NOZORDER | SWP_NOCOPYBITS;
             ::DeferWindowPos(hdwp, m_hwnd, nullptr, pos.x, pos.y, size.x, size.y, flags);
-
-            m_is_visible = (size.x > 0 && size.y > 0);
 
             if (size != m_settings.size) {
                 for (NativeLayer &layer : m_layer_list) {
@@ -233,13 +250,9 @@ namespace awn::render {
 
             m_is_update_position = false;
             m_is_update_size = false;
+            m_is_update_defer = false;
             m_settings.position = pos;
             m_settings.size = size;
-        }
-        if (m_update_is_hide) {
-            m_update_is_hide = false;
-            m_is_hidden = !m_is_hidden;
-            ::ShowWindow(m_hwnd, m_is_hidden);
         }
 
         return;
@@ -248,9 +261,29 @@ namespace awn::render {
     void NativeDisplay::FinishResize() {
         std::scoped_lock l(m_settings_cs);
         if (m_is_resize == 0) { return; }
-        if (m_is_resize == 1) { m_is_resize = 2; return; }
+        //if (m_is_resize == 1) { m_is_resize = 2; return; }
         m_is_resize = 0;
         m_window_event.Signal();
+    }
+
+    void NativeDisplay::AddLayerVisual(NativeLayer *native_layer) {
+        auto iter = m_layer_list.IteratorTo(*native_layer);
+        ++iter;
+        auto end = m_layer_list.end();
+        IDCompositionVisual3 *next_visual = nullptr;
+        while (iter != end) {
+            NativeLayer *layer = std::addressof(*iter);
+            if (!layer->m_settings.is_visible) { continue; }
+            next_visual = layer->GetDcmpVisual();
+            break;
+        }
+        const HRESULT hresult0 = m_dcmp_visual_main->AddVisual(native_layer->GetDcmpVisual(), false, next_visual);
+        VP_ASSERT(hresult0 == S_OK);
+    }
+
+    void NativeDisplay::RemoveLayerVisual(NativeLayer *native_layer) {
+        const HRESULT hresult0 = m_dcmp_visual_main->RemoveVisual(native_layer->GetDcmpVisual());
+        VP_ASSERT(hresult0 == S_OK);
     }
 
     void NativeDisplay::Initialize(const NativeDisplayInfo *display_info) {
@@ -259,17 +292,20 @@ namespace awn::render {
         m_name = display_info->name;
         m_update_settings.position = display_info->position;
         m_update_settings.size = display_info->size;
+        m_update_settings.is_hidden = false;
+        m_settings.is_hidden = true;
+        m_is_update_defer = true;
         m_update_is_border = display_info->is_border;
         m_update_free_scalable = display_info->is_free_scalable;
         m_update_free_movable = display_info->is_free_movable;
-        m_is_visible = (display_info->size.x > 0 && display_info->size.y > 0);
+        m_is_visible = (display_info->size.x > 0 && display_info->size.y > 0) && !m_update_settings.is_hidden;
 
         /* Create window thread and barrier window initialization */
         vp::util::ConstructAt(m_window_thread, std::addressof(m_thread_delegate), "awn::render::NativeDisplayThread", nullptr, sys::ThreadRunMode::WaitForMessage, cMessageExitCode, 2, vp::util::c16KB, sys::cPriorityNormal + 3);
         vp::util::GetReference(m_window_thread).StartThread();
         vp::util::GetReference(m_window_thread).SendMessage(cMessageStart);
         m_window_event.Wait();
-        ::ShowWindow(m_hwnd, true);
+        //::ShowWindow(m_hwnd, true);
 
         /* Add display to video manager */
         impl::NativeVideoManager *video_mgr = impl::NativeVideoManager::GetInstance();
@@ -296,20 +332,18 @@ namespace awn::render {
         NativeLayer *next_layer = nullptr;
 
         /* Insert on Z order */
-        const u32 z = native_layer->GetZ();
+        const u32 z = native_layer->GetZOrder();
         for (NativeLayer &layer : m_layer_list) {
-            if (layer.GetZ() < z) { continue; }
+            if (layer.GetZOrder() < z) { continue; }
             next_layer = std::addressof(layer);
             break;
         }
-        IDCompositionVisual3 *prev_visual = nullptr;
         if (next_layer != nullptr) {
             next_layer->m_display_node.LinkPrev(std::addressof(native_layer->m_display_node));
-            prev_visual = next_layer->GetDcmpVisual();
         } else {
             m_layer_list.PushBack(*native_layer);
         }
-        m_dcmp_visual_main->AddVisual(native_layer->GetDcmpVisual(), false, prev_visual);        
+
         ++m_layer_count;
     }
 
@@ -317,13 +351,13 @@ namespace awn::render {
         std::scoped_lock l(m_layer_cs);
         if (!native_layer->m_display_node.IsLinked()) { return; }
         m_layer_list.Remove(*native_layer);
-        m_dcmp_visual_main->RemoveVisual(native_layer->GetDcmpVisual());
         --m_layer_count;
     }
 
-    void NativeDisplay::RequestSetIsHidden(bool is_hide) {
+    void NativeDisplay::RequestSetIsHidden(bool is_hidden) {
         std::scoped_lock l(m_settings_cs);
-        m_update_is_hide = (is_hide ^ m_is_hidden);
+        m_update_settings.is_hidden = is_hidden;
+        m_is_update_defer = true;
     }
 
     void NativeDisplay::RequestSetIsBorder(bool is_border) {

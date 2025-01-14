@@ -21,7 +21,7 @@ namespace awn::gfx {
         impl::Context::GetInstance()->SubmitCommandList(command_list, wait_sync_array, wait_sync_count, signal_sync_array, signal_sync_count);
     }
 
-    void SubmitCommandLists(CommandList **command_list_array, u32 command_list_count, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count) {
+    void SubmitCommandLists(CommandList *command_list_array, u32 command_list_count, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count) {
         impl::Context::GetInstance()->SubmitCommandLists(command_list_array, command_list_count, wait_sync_array, wait_sync_count, signal_sync_array, signal_sync_count);
     }
 

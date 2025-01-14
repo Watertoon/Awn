@@ -17,29 +17,80 @@
 
 namespace awn::gfx {
 
-    bool Texture::Initialize(void *gpu_memory_address, const TextureInfo *texture_info) {
+    Result Texture::Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const TextureInfo *texture_info) {
 
         /* Create image by gpu memory address */
-        m_vk_image = gfx::impl::CreateVkImage(gpu_memory_address, texture_info);
-        if (m_vk_image == nullptr) { return false; }
+        RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), memory_handle, memory_offset, texture_info));
 
+        /* Transition to general */
+        const VkHostImageLayoutTransitionInfo trans_info = {
+            .sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
+            .image = m_vk_image,
+            .oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
+            .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .subresourceRange = {
+                .aspectMask = this->GetVkAspectMask(),
+                .baseMipLevel = 0,
+                .levelCount = VK_REMAINING_MIP_LEVELS,
+                .baseArrayLayer = 0,
+                .layerCount = VK_REMAINING_ARRAY_LAYERS,
+            },
+        };
+        const VkResult vk_result = ::pfn_vkTransitionImageLayout(impl::Context::GetInstance()->GetVkDevice(), 1, std::addressof(trans_info));
+        if (vk_result != VK_SUCCESS) {
+            this->Finalize();
+            RESULT_RETURN(impl::ConvertVkResultToResult(vk_result));
+        }
+
+        /* Save texture meta data */
         m_texture_info = *texture_info;
 
-        return true;
+        RESULT_RETURN_SUCCESS;
     }
 
-    bool Texture::InitializeForDedicatedAllocation(const TextureInfo *texture_info) {
+    Result Texture::Initialize(void *gpu_memory_address, const TextureInfo *texture_info) {
+
+        /* Create image by gpu memory address */
+        RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), gpu_memory_address, texture_info));
+
+        /* Transition to general */
+        const VkHostImageLayoutTransitionInfo trans_info = {
+            .sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
+            .image = m_vk_image,
+            .oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
+            .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .subresourceRange = {
+                .aspectMask = this->GetVkAspectMask(),
+                .baseMipLevel = 0,
+                .levelCount = VK_REMAINING_MIP_LEVELS,
+                .baseArrayLayer = 0,
+                .layerCount = VK_REMAINING_ARRAY_LAYERS,
+            },
+        };
+        const VkResult vk_result = ::pfn_vkTransitionImageLayout(impl::Context::GetInstance()->GetVkDevice(), 1, std::addressof(trans_info));
+        if (vk_result != VK_SUCCESS) {
+            this->Finalize();
+            RESULT_RETURN(impl::ConvertVkResultToResult(vk_result));
+        }
+
+        /* Save texture meta data */
+        m_texture_info = *texture_info;
+
+        RESULT_RETURN_SUCCESS;
+    }
+
+    Result Texture::InitializeForDedicatedAllocation(const TextureInfo *texture_info, VkImageUsageFlags vk_image_usage_flags, void *pnext) {
 
         /* Integrity check */
         VP_ASSERT(texture_info != nullptr);
 
         /* Create image by gpu memory address */
-        m_vk_image = gfx::impl::CreateVkImage(texture_info);
-        if (m_vk_image == nullptr) { return false; }
+        VkImageUsageFlags flags = vk_image_usage_flags | vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags));
+        RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), flags, texture_info, pnext, false));
 
         m_texture_info = *texture_info;
 
-        return true;
+        RESULT_RETURN_SUCCESS;
     }
 
     void Texture::Finalize() {
@@ -81,8 +132,8 @@ namespace awn::gfx {
             .regionCount = copy_region_count,
             .pRegions = memory_to_image_array,
         };
-        const VkResult result = ::pfn_vkCopyMemoryToImage(impl::Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
-        VP_ASSERT(result == VK_SUCCESS);
+        const VkResult vk_result = ::pfn_vkCopyMemoryToImage(impl::Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
         return;
     }
 
@@ -114,8 +165,8 @@ namespace awn::gfx {
             .regionCount = copy_region_count,
             .pRegions = image_to_memory_array,
         };
-        const VkResult result = ::pfn_vkCopyImageToMemory(impl::Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
-        VP_ASSERT(result == VK_SUCCESS);
+        const VkResult vk_result = ::pfn_vkCopyImageToMemory(impl::Context::GetInstance()->GetVkDevice(), std::addressof(copy_info));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
         return;
     }
 
@@ -175,7 +226,7 @@ namespace awn::gfx {
             .arrayLayers           = texture_info->array_layer_count,
             .samples               = static_cast<VkSampleCountFlagBits>(texture_info->sample_count),
             .tiling                = static_cast<VkImageTiling>(texture_info->tile_mode),
-            .usage                 = vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)),
+            .usage                 = vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)) | VK_IMAGE_USAGE_HOST_TRANSFER_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
             .sharingMode           = VK_SHARING_MODE_CONCURRENT,
             .queueFamilyIndexCount = impl::Context::GetInstance()->GetQueueFamilyCount(),
             .pQueueFamilyIndices   = impl::Context::GetInstance()->GetQueueFamilyIndiceArray(),

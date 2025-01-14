@@ -536,4 +536,116 @@ namespace vp::util {
         VP_VECTORIZED_TYPE_TRAITS(unsigned char, 128);
     };
 #endif
+
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator+(const T &left, const T &right) {
+        const T out = { .v = left.v + right.v, };
+        return out;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator-(const T &left, const T &right) {
+        const T out = { .v = left.v - right.v, };
+        return out;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator-(const T &vec) {
+        const T out = { .v = -vec.v, };
+        return out;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator*(const T &left, const T &right) {
+        const T out = { .v = left.v * right.v, };
+        return out;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator*(const T &left, const typename T::UnderlyingType &right) {
+        const T out = { .v = left.v * right, };
+        return out;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator/(const T &left, typename T::UnderlyingType scalar) {
+        const T out = { .v = left.v / scalar, };
+        return out;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T MultiplyAdd(const T& a, const T& b, const T& c) {
+        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+            return T{ .v = __builtin_ia32_vfmaddps(a.v, b.v, c.v) };
+        }
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = (a[i] * b[i]) + c[i];
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T NegateMultiplyAdd(const T& a, const T& b, const T& c) {
+        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+            return T{ .v = __builtin_ia32_vfnmaddps(a.v, b.v, c.v), };
+        }
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = -(a[i] * b[i]) + c[i];
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T MultiplySub(const T& a, const T& b, const T& c) {
+        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+            return T{ .v = __builtin_ia32_vfmsubps(a.v, b.v, c.v), };
+        }
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = (a[i] * b[i]) - c[i];
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T NegateMultiplySub(const T& a, const T& b, const T& c) {
+        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+            return T{ .v = __builtin_ia32_vfnmsubps(a.v, b.v, c.v), };
+        }
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = -(a[i] * b[i]) - c[i];
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T MultiplySubOrAddInterleaved(const T& a, const T& b, const T& c) {
+        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+            return T{ .v = __builtin_ia32_vfmaddsubps(a.v, b.v, c.v), };
+        }
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            if ((i & 1) == 0) {
+                temp[i] = (a[i] * b[i]) - c[i];
+            } else {
+                temp[i] = (a[i] * b[i]) + c[i];
+            }
+        }
+        return temp;
+    }
 }

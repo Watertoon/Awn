@@ -17,14 +17,14 @@
 
 namespace awn::res {
 
-    ZstdDecompressor::DecompressorThread::DecompressorThread(mem::Heap *heap) : Thread("ZstdDecompressorThread", heap, sys::ThreadRunMode::WaitForMessage, 0x7fff'ffff'ffff'ffff, 0x20, 0x4000, sys::cPriorityNormal + 3), m_current_stream_context(), m_decompress_finish_event(sys::SignalState::Signaled, sys::ResetMode::Auto), m_stream_finish_event(sys::SignalState::Cleared, sys::ResetMode::Manual) {/*...*/}
+    ParallelZstdDecompressor::DecompressorThread::DecompressorThread(mem::Heap *heap) : Thread("ZstdDecompressorThread", heap, sys::ThreadRunMode::WaitForMessage, 0x7fff'ffff'ffff'ffff, 0x20, 0x4000, sys::cPriorityNormal + 3), m_current_stream_context(), m_decompress_finish_event(sys::SignalState::Signaled, sys::ResetMode::Auto), m_stream_finish_event(sys::SignalState::Cleared, sys::ResetMode::Manual) {/*...*/}
 
-    ZstdDecompressor::DecompressorThread::~DecompressorThread() {
+    ParallelZstdDecompressor::DecompressorThread::~DecompressorThread() {
         m_decompress_finish_event.Finalize();
         m_stream_finish_event.Finalize();
     }
 
-    void ZstdDecompressor::DecompressorThread::ThreadMain(size_t stream_size) {
+    void ParallelZstdDecompressor::DecompressorThread::ThreadMain(size_t stream_size) {
 
         /* Integrity checks */
         VP_ASSERT(m_current_stream_context != nullptr);
@@ -50,7 +50,7 @@ namespace awn::res {
         return;
     }
 
-    void ZstdDecompressor::Initialize(mem::Heap *heap) {
+    void ParallelZstdDecompressor::Initialize(mem::Heap *heap) {
 
         /* Allocate decomp system memory */
         const size_t dctx_size  = ::ZSTD_estimateDCtxSize();
@@ -67,7 +67,7 @@ namespace awn::res {
         return;
     }
 
-    void ZstdDecompressor::Finalize() {
+    void ParallelZstdDecompressor::Finalize() {
         if (m_decompressor_thread != nullptr) {
             delete m_decompressor_thread;
             m_decompressor_thread = nullptr;
@@ -78,14 +78,14 @@ namespace awn::res {
         }
     }
 
-    void ZstdDecompressor::SetPriority(u32 priority) {
+    void ParallelZstdDecompressor::SetPriority(u32 priority) {
         m_decompressor_thread->SetPriority(priority);
     }
-    void ZstdDecompressor::SetCoreMask(sys::CoreMask core_mask) {
+    void ParallelZstdDecompressor::SetCoreMask(sys::CoreMask core_mask) {
         m_decompressor_thread->SetCoreMask(core_mask);
     }
 
-    Result ZstdDecompressor::LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) {
+    Result ParallelZstdDecompressor::LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) {
 
         /* Integrity checks */
         RESULT_RETURN_IF(file_load_context->file != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
@@ -267,7 +267,7 @@ namespace awn::res {
         RESULT_RETURN_SUCCESS;
     }
 
-    void ZstdDecompressor::RegisterZsDic(ZSTD_DDict *zstd_ddict) {
+    void ParallelZstdDecompressor::RegisterZsDic(ZSTD_DDict *zstd_ddict) {
 
         /* Get dic id */
         u32 dic_id = 0;
@@ -284,7 +284,7 @@ namespace awn::res {
         return;
     }
 
-    void ZstdDecompressor::UnregisterZsDic(ZSTD_DDict *zstd_ddict) {
+    void ParallelZstdDecompressor::UnregisterZsDic(ZSTD_DDict *zstd_ddict) {
 
         /* Clear map */
         m_dic_map.Clear();

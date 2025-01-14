@@ -11,3 +11,4 @@
 #include <vp/res.h>
 #include <vp/codec.h>
 #include <vp/resbui.h>
+#include <vp/image.h>

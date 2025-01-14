@@ -40,7 +40,8 @@ namespace vp::util {
     /* Vectorized matrix naming follows Matrix{row_count}{column_count}{Row or Column}Major{Type abbriviation} */
     /* Non-vectorized matrix naming follows {Type}{row_count}{column_count}{Row or Column}Major */
     /* Matrices are addressed by operator[] always use [row_index][column_index] */
-    /* */
+    /* Logically: Row | Col -> */
+    /*                v        */
     #define VP_MATRIX_TRAITS(type, row_count, column_count, is_row_major, is_vectorized) \
         using UnderlyingType = type ; \
         static constexpr bool cIsMatrixType = true; \
@@ -52,19 +53,19 @@ namespace vp::util {
         template <class Self> \
             requires (cIsRowMajor) \
         constexpr auto &&operator[](this Self&& self, u32 row, u32 column) { \
-            const u32 index = row + column * sizeof( type ); \
+            const u32 index = column + row * sizeof( type ); \
             return std::forward<Self>(self).m[index]; \
         } \
         template <class Self> \
             requires (cIsColumnMajor && !(cIsVectorized && cRowCount == 4 && cColumnCount == 3)) \
         constexpr auto &&operator[](this Self&& self, u32 row, u32 column) { \
-            const u32 index = column + row * sizeof( type ); \
+            const u32 index = row + column * sizeof( type ); \
             return std::forward<Self>(self).m[index]; \
         } \
         template <class Self> \
             requires (cIsColumnMajor && (cIsVectorized && cRowCount == 4 && cColumnCount == 3)) \
         constexpr auto &&operator[](this Self&& self, u32 row, u32 column) { \
-            return std::forward<Self>(self).m[row][column]; \
+            return std::forward<Self>(self).m[column][row]; \
         }
 
     struct Float2 {

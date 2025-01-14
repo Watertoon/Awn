@@ -16,7 +16,6 @@
 #pragma once
 
 #include <awn/res/res_idecompressor.h>
-#include <awn/res/res_decompressorapi.h>
 #include <awn/res/res_filedevicebase.h>
 
 #ifdef VP_TARGET_PLATFORM_win32
@@ -26,15 +25,17 @@
 #endif
 
 #include <awn/res/impl/res_filedevicemanager.h>
-#include <awn/res/res_zstddecompressor.h>
+#include <awn/res/res_parallelzstddecompressor.h>
 #include <awn/res/res_resource.h>
 #include <awn/res/res_archiveresource.h>
 #include <awn/res/res_archivefiledevice.h>
 #include <awn/res/res_resourcefactorybase.h>
 #include <awn/res/impl/res_resourcefactorymanager.h>
 #include <awn/res/res_fileapi.h>
+#include <awn/res/res_resourceapi.h>
 
 #include <awn/res/res_sarcarchiveresource.h>
+#include <awn/res/res_sarcresourcefactory.h>
 #include <awn/res/res_beaarchiveresource.h>
 
 #include <awn/res/impl/res_asyncsavemanager.h>
@@ -43,9 +44,8 @@
 #include <awn/res/impl/res_resourcesizetablemanager.h>
 #include <awn/res/impl/res_extensionmanager.h>
 #include <awn/res/res_resourcebinder.h>
-#include <awn/res/res_threadlocalarchiveapi.h>
 #include <awn/res/impl/res_resourceunit.h>
-#include <awn/res/res_asyncsystemapi.h>
+#include <awn/res/res_asyncresourceapi.h>
 #include <awn/res/impl/res_resourceunitmanager.h>
 #include <awn/res/impl/res_decompressormanager.h>
 #include <awn/res/impl/res_resourcememorymanager.h>

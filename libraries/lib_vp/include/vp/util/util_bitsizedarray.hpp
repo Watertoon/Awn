@@ -18,7 +18,7 @@
 namespace vp::util {
 
 	template <typename IndexType, size_t BitSize>
-		requires ((vp::util::CountOneBits(BitSize) == true) && (BitSize & ((8 * sizeof(IndexType)) - 1)) != 0)
+		requires ((vp::util::CountOneBits(BitSize) == 1) && (BitSize & ((8 * sizeof(IndexType)) - 1)) != 0)
 	class BitSizedArray {
 		public:
 			static constexpr u32 cElementsPerIndex = (8 * sizeof(IndexType)) / BitSize;

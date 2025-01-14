@@ -17,6 +17,8 @@
 
 namespace awn::gfx::impl {
 
+    Result ConvertVkResultToResult(VkResult vk_result);
+
     struct ContextInfo {
         const char *app_name = "AwnDefault";
         const char *engine_name = "Awn";
@@ -31,8 +33,6 @@ namespace awn::gfx::impl {
         VkPhysicalDevice vk_physical_device;
         VkDevice vk_device;
     };
-
-#define AWN_VK_DEBUG
 
     class Context {
         public:
@@ -77,6 +77,7 @@ namespace awn::gfx::impl {
             static constexpr size_t cTargetStorageBufferAlignment    = 0x40;
             static constexpr size_t cTargetTexelBufferAlignment      = 0x40;
             static constexpr size_t cTargetDescriptorBufferAlignment = 0x100;
+            static constexpr size_t cTargetDescriptorBufferOffsetAlignment = 0x40;
 
             /* Max resource sizes */
             static constexpr size_t cTargetMaxUniformBufferSize = vp::util::c64KB;
@@ -237,7 +238,7 @@ namespace awn::gfx::impl {
             #endif
         public:
             AWN_SINGLETON_TRAITS(Context);
-        private:
+        public:
             //static void *DebugAllocCallback(void *user_data, size_t size, size_t alignment, VkSystemAllocationScope scope) {
             //    VP_UNUSED(user_data);
             //    void *memory = ::_aligned_malloc(size, alignment);
@@ -263,6 +264,9 @@ namespace awn::gfx::impl {
             //    VP_UNUSED(user_data);
             //    ::printf("VkInternalFree; 0x%xll bytes, type %d, scope %d\n", size, alloc_type, scope);
             //}
+#ifdef AWN_VK_DEBUG
+            void ReportDeviceLostReason();
+#endif
         public:
             constexpr ALWAYS_INLINE Context() :
             m_vk_instance(), m_vk_physical_device(), m_vk_device(),
@@ -327,8 +331,7 @@ namespace awn::gfx::impl {
             void Finalize();
 
             void SubmitCommandList(CommandList command_list, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count);
-            void SubmitCommandLists(CommandList **command_list_array, u32 command_list_count, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count);
-
+            void SubmitCommandLists(CommandList *command_list_array, u32 command_list_count, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count);
         public:
             constexpr ALWAYS_INLINE u32 GetVkMemoryTypeMask(u32 vk_memory_properties) const {
 
@@ -423,6 +426,10 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutGraphics() const { return m_vk_combined_pipeline_layout_graphics; }
             constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutCompute() const { return m_vk_combined_pipeline_layout_compute; }
 
+            constexpr ALWAYS_INLINE u32 GetBindlessSet() {
+                VP_ASSERT(!this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture));
+                return cTargetBindlessLayoutSet;
+            }
             constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedTextureSampler(ShaderStage shader_stage) {
                 const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
                 const u32 base_set = (this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? cTargetPerStageTextureSamplerLayoutSet : cTargetPerStageTextureSamplerLayoutSetArray[static_cast<u32>(shader_stage)];
@@ -481,7 +488,7 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE const void *GetPhysicalDeviceLuid() const { return m_vk_physical_device_properties_11.deviceLUID; }
 
             constexpr ALWAYS_INLINE size_t GetBindlessDescriptorLayoutSize()  const {
-                if (!this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) { return 0; }
+                if (this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) { return 0; }
                 size_t layout_size = 0;
                 ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetBindlessVkDescriptorSetLayout(), std::addressof(layout_size));
                 return vp::util::AlignUp(layout_size, this->GetDescriptorOffsetAlignment());

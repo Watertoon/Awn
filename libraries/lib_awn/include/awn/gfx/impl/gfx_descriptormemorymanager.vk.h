@@ -29,13 +29,14 @@ namespace awn::gfx::impl {
             void              *m_memory_bindless;
             void              *m_memory_per_stage;
             VkBuffer           m_descriptor_vk_buffer;
-            GpuBufferAddress   m_descriptor_buffer_address;
+            GpuAddress         m_descriptor_buffer_address;
             size_t             m_ts_i_size;
             size_t             m_ub_sb_size;
+            size_t             m_bindless_descriptor_memory_size;
         public:
             AWN_SINGLETON_TRAITS(DescriptorMemoryManager);
         public:
-            constexpr DescriptorMemoryManager() : m_per_stage_heap(), m_per_stage_staging_heap(), m_memory_bindless(), m_memory_per_stage(), m_descriptor_vk_buffer(), m_descriptor_buffer_address(), m_ts_i_size(), m_ub_sb_size() {/*...*/}
+            constexpr DescriptorMemoryManager() : m_per_stage_heap(), m_per_stage_staging_heap(), m_memory_bindless(), m_memory_per_stage(), m_descriptor_vk_buffer(), m_descriptor_buffer_address(), m_ts_i_size(), m_ub_sb_size(), m_bindless_descriptor_memory_size() {/*...*/}
             constexpr ~DescriptorMemoryManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, const DescriptorMemoryManagerInfo *mgr_info);
@@ -48,7 +49,7 @@ namespace awn::gfx::impl {
             void *AllocateStagingMemory();
             void FreeStagingMemory(void *address);
 
-            constexpr GpuBufferAddress GetDescriptorBufferAddress() const {
+            constexpr GpuAddress GetDescriptorBufferAddress() const {
                 return m_descriptor_buffer_address;
             }
 

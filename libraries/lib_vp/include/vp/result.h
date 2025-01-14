@@ -19,3 +19,4 @@
 #include <vp/result/result_trace.h>
 #include <vp/result/result_resbui.h>
 #include <vp/result/result_codec.h>
+#include <vp/result/result_image.h>

@@ -890,7 +890,7 @@ namespace awn::res::impl {
 
         /* Select decompressor */
         const DecompressorHandle handle = res::AllocateDecompressorHandle();
-        IDecompressor *decompressor = res::GetDecompressor(handle, decompressor_type, 0xd, (1ull << (sys::GetCurrentCoreNumber() & (BITSIZEOF(sys::CoreMask) - 1))));
+        IDecompressor *decompressor = res::GetParallelDecompressor(handle, decompressor_type, 0xd, (1ull << (sys::GetCurrentCoreNumber() & (BITSIZEOF(sys::CoreMask) - 1))));
 
         /* Load and decompress */
         const Result result = res::LoadResourceWithDecompressor(std::addressof(m_resource), file_path, std::addressof(load_context), decompressor);

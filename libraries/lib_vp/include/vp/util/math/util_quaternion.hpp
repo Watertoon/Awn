@@ -1,3 +1,18 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 namespace vp::util {
@@ -82,7 +97,7 @@ namespace vp::util {
          * | 0,               0,               0,               0 |
          */
         using v4t = TVectorType<Type, 4>;
-        if (Ret::cIsRowMajor) {
+        if (Ret::cIsColumnMajor) {
             const v4t row_array[3] = {
                 { 1.0f - (m_y * y + m_z * z), m_y * x + m_z * w,       m_z * x - m_y * w,       0.0f, },
                 { m_y * x - m_z * w,          1.0f - (m_xx + m_z * z), m_z * y + m_xw,          0.0f, },
@@ -90,7 +105,7 @@ namespace vp::util {
             };
             Ret ret = {};
             for (u32 i = 0; i < 3; ++i) {
-                Store4(std::addressof(ret[0, i]), row_array[i]);
+                StoreRow(std::addressof(ret), row_array[i], i);
             }
             return ret;
         } else {
@@ -101,7 +116,7 @@ namespace vp::util {
             };
             Ret ret = {};
             for (u32 i = 0; i < 3; ++i) {
-                Store4(std::addressof(ret[i, 0]), col_array[i]);
+                StoreColumn(std::addressof(ret), col_array[i], i);
             }
             return ret;
         }

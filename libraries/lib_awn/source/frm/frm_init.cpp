@@ -105,7 +105,10 @@ namespace awn::frm {
         /* Initialize graphics context */
 #ifdef VP_TARGET_GRAPHICS_API_vk
         gfx::impl::Context *context = gfx::impl::Context::CreateInstance(awn_graphics_heap);
-        gfx::impl::ContextInfo context_info = {};
+        gfx::impl::ContextInfo context_info = {
+            .texture_view_descriptor_count = graphics_info->max_texture_view_count,
+            .sampler_descriptor_count = graphics_info->max_sampler_count,
+        };
         context->Initialize(std::addressof(context_info));
 #elif VP_TARGET_GRAPHICS_API_nvn
         gfx::impl::Context *context = gfx::impl::Context::CreateInstance(awn_graphics_heap);
@@ -115,9 +118,9 @@ namespace awn::frm {
 
         /* Initialize gpu heap manager */
         mem::GpuHeapManager *gpu_heap_mgr = mem::GpuHeapManager::CreateInstance(awn_graphics_heap);
-        sGpuMemoryHandleCpuUncached = mem::AllocateGpuMemoryHandle(awn_graphics_heap, gfx::MemoryPropertyFlags::CpuUncached, graphics_info->cpu_uncached_memory_size);
-        sGpuMemoryHandleCpuCached = mem::AllocateGpuMemoryHandle(awn_graphics_heap, gfx::MemoryPropertyFlags::CpuCached, graphics_info->cpu_cached_memory_size);
-        sGpuMemoryHandleGpuUncached = mem::AllocateGpuMemoryHandle(awn_graphics_heap, gfx::MemoryPropertyFlags::GpuUncached | gfx::MemoryPropertyFlags::CpuUncached, graphics_info->gpu_uncached_memory_size);
+        RESULT_ABORT_UNLESS(mem::AllocateGpuMemoryHandle(std::addressof(sGpuMemoryHandleCpuUncached), awn_graphics_heap, gfx::MemoryPropertyFlags::CpuUncached, graphics_info->cpu_uncached_memory_size));
+        RESULT_ABORT_UNLESS(mem::AllocateGpuMemoryHandle(std::addressof(sGpuMemoryHandleCpuCached), awn_graphics_heap, gfx::MemoryPropertyFlags::CpuCached, graphics_info->cpu_cached_memory_size));
+        RESULT_ABORT_UNLESS(mem::AllocateGpuMemoryHandle(std::addressof(sGpuMemoryHandleGpuUncached), awn_graphics_heap, gfx::MemoryPropertyFlags::GpuUncached | gfx::MemoryPropertyFlags::CpuUncached, graphics_info->gpu_uncached_memory_size));
         const mem::GpuHeapManagerInfo gpu_heap_mgr_info = {
             .cpu_uncached_root_heap_count = 1,
             .cpu_cached_root_heap_count   = 1,
@@ -162,7 +165,7 @@ namespace awn::frm {
         gfx::impl::TextureViewSamplerManager *tex_samp_mgr = gfx::impl::TextureViewSamplerManager::CreateInstance(awn_graphics_heap);
         const gfx::impl::TextureViewSamplerManagerInfo texture_sampler_mgr_info = {
             .max_texture_view_unit_count = graphics_info->max_texture_view_count,
-            .max_sampler_unit_count      = graphics_info->max_sampler_count,
+            .max_sampler_unit_count = graphics_info->max_sampler_count,
         };
         tex_samp_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, std::addressof(texture_sampler_mgr_info));
 

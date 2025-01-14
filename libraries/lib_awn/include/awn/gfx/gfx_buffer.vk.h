@@ -17,8 +17,19 @@
 
 namespace awn::gfx {
 
-    using GpuBufferAddress = impl::GpuBufferAddress;
-    static constexpr GpuBufferAddress cInvalidGpuBufferAddress = impl::cInvalidGpuBufferAddress;
+    using GpuAddress = impl::GpuAddress;
+    static constexpr GpuAddress cInvalidGpuAddress = impl::cInvalidGpuAddress;
+
+    class Buffer;
+
+    struct BufferAddress {
+        const Buffer *buffer;
+        size_t offset;
+
+        constexpr GpuAddress GetGpuAddress();
+
+        constexpr VkBuffer GetVkBuffer();
+    };
 
     static constexpr size_t cTargetVertexBufferAlignment = impl::Context::cTargetVertexBufferAlignment;
     static constexpr size_t cTargetIndexBufferAlignment = impl::Context::cTargetIndexBufferAlignment;
@@ -28,25 +39,29 @@ namespace awn::gfx {
 
 	class Buffer {
 		private:
-            VkBuffer          m_vk_buffer;
-            GpuBufferAddress  m_gpu_buffer_address;
-            void             *m_address;
+            VkBuffer    m_vk_buffer;
+            GpuAddress  m_gpu_address;
+            void       *m_address;
 		public:
-			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(), m_gpu_buffer_address(), m_address() {/*...*/}
+			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(), m_gpu_address(), m_address() {/*...*/}
             constexpr ALWAYS_INLINE ~Buffer() {/*...*/}
 
-			bool Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info);
-			bool Initialize(void *gpu_memory_address, const BufferInfo *buffer_info);
+			Result Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info);
+			Result Initialize(void *gpu_memory_address, const BufferInfo *buffer_info);
             void Finalize();
 
             constexpr ALWAYS_INLINE void *GetAddress() const { return m_address; }
-            constexpr ALWAYS_INLINE GpuBufferAddress GetGpuBufferAddress() const { return { m_gpu_buffer_address.vk_device_address, m_gpu_buffer_address.vk_buffer }; } 
+            constexpr ALWAYS_INLINE GpuAddress GetGpuAddress() const { return m_gpu_address; }
+            constexpr ALWAYS_INLINE BufferAddress GetBufferAddress(size_t offset = 0) const { return { this, offset, }; } 
 		public:
             static GpuMemoryRequirements GetGpuMemoryRequirements(const BufferInfo *buffer_info);
         public:
             constexpr ALWAYS_INLINE VkBuffer GetVkBuffer() const { return m_vk_buffer; } 
-			bool InitializeForDedicatedAllocation(const BufferInfo *buffer_info);
+			Result InitializeForDedicatedAllocation(const BufferInfo *buffer_info);
             void SetAddressForDedicatedAllocation(void *gpu_memory_address);
 	};
     static_assert(sizeof(Buffer) <= cMaxGfxBufferSize);
+
+    constexpr GpuAddress BufferAddress::GetGpuAddress() { return { buffer->GetGpuAddress().vk_device_address + this->offset, }; }
+    constexpr VkBuffer BufferAddress::GetVkBuffer() { return buffer->GetVkBuffer(); }
 }

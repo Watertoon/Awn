@@ -29,8 +29,8 @@ namespace awn::gfx {
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             .pNext = std::addressof(semaphore_type_info),
         };
-        const u32 result = ::pfn_vkCreateSemaphore(impl::Context::GetInstance()->GetVkDevice(), std::addressof(semaphore_info), impl::Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_semaphore));
-        VP_ASSERT(result == VK_SUCCESS);
+        const VkResult vk_result = ::pfn_vkCreateSemaphore(impl::Context::GetInstance()->GetVkDevice(), std::addressof(semaphore_info), impl::Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_semaphore));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
 
         /* Set next expected */
         m_expected_value = 1;
@@ -63,8 +63,8 @@ namespace awn::gfx {
             .pSemaphores    = std::addressof(m_vk_semaphore),
             .pValues        = std::addressof(value)
         };
-        const u32 result = ::pfn_vkWaitSemaphores(impl::Context::GetInstance()->GetVkDevice(), std::addressof(wait_info), 0xffff'ffff'ffff'ffff);
-        VP_ASSERT(result == VK_SUCCESS);
+        const VkResult vk_result = ::pfn_vkWaitSemaphores(impl::Context::GetInstance()->GetVkDevice(), std::addressof(wait_info), 0xffff'ffff'ffff'ffff);
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
 
         return;
     }
@@ -79,8 +79,11 @@ namespace awn::gfx {
             .pSemaphores    = std::addressof(m_vk_semaphore),
             .pValues        = std::addressof(value)
         };
-        const u32 result = ::pfn_vkWaitSemaphores(impl::Context::GetInstance()->GetVkDevice(), std::addressof(wait_info), timeout.GetNanoSeconds());
-        VP_ASSERT(result == VK_SUCCESS || result == VK_TIMEOUT);
+        const VkResult vk_result = ::pfn_vkWaitSemaphores(impl::Context::GetInstance()->GetVkDevice(), std::addressof(wait_info), timeout.GetNanoSeconds());
+        const Result result = impl::ConvertVkResultToResult(vk_result);
+        if (!RESULT_MATCHES(result, ResultTimeout)) {            
+            RESULT_ABORT_UNLESS(result);
+        }
 
         return;
     }
@@ -93,8 +96,8 @@ namespace awn::gfx {
             .semaphore = m_vk_semaphore,
             .value     = m_expected_value,
         };
-        const u32 result = ::pfn_vkSignalSemaphore(impl::Context::GetInstance()->GetVkDevice(), std::addressof(signal_info));
-        VP_ASSERT(result == VK_SUCCESS);
+        const VkResult vk_result = ::pfn_vkSignalSemaphore(impl::Context::GetInstance()->GetVkDevice(), std::addressof(signal_info));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
 
         /* Increment expected value */
         ++m_expected_value;

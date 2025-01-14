@@ -17,9 +17,8 @@
 
 namespace awn::res {
 
-	void SetControlThreadPriority(s32 priority);
-	void SetMemoryThreadPriority(s32 priority);
-	void SetLoadThreadsPriority(s32 priority);
+    Result LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context);
+    Result LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor);
 
-    Result LoadAsyncResourceSync(Resource **out_resource, const char *path, AsyncResourceLoadInfo *load_info);
+    void RegisterResourceFactory(ResourceFactoryBase *resource_factory);
 }

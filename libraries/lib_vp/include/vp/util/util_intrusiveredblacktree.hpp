@@ -41,7 +41,7 @@ namespace vp::util {
             }
 
             ALWAYS_INLINE bool IsLinked() const {
-                return (m_parent_color.GetPointer() == nullptr) & (m_left == nullptr) & (m_right == nullptr);
+                return (m_parent_color.GetPointer() != nullptr) || (m_left != nullptr) || (m_right != nullptr);
             }
 
             constexpr ALWAYS_INLINE void ForceUnlink() {
@@ -414,7 +414,7 @@ namespace vp::util {
     template <typename T>
     constexpr ALWAYS_INLINE void RedBlackTreeDefaultCollision([[maybe_unused]] T *r0, [[maybe_unused]] T *r1) {
         if (std::is_constant_evaluated()) { return; }
-        VP_ASSERT(false);
+        VP_UNEXPECTED_DEFAULT();
     }
 
     template<class RP, auto M, auto Compare = RedBlackTreeDefaultCompare<typename vp::util::MemberType<M>::key_type>, auto Collision = RedBlackTreeDefaultCollision<RP>>

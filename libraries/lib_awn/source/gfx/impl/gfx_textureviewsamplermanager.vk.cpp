@@ -88,11 +88,19 @@ namespace awn::gfx::impl {
         /* Allocate new texture slot */
         const TextureSlotType texture_slot = m_texture_slot_allocator.Allocate();
         RESULT_RETURN_IF(texture_slot == TextureSlotAllocator::cInvalidEntryIndex, ResultExhaustedTextureSlots);
+        auto fail_slot_guard = SCOPE_GUARD {
+            m_texture_slot_allocator.Free(texture_slot);
+        };
 
         /* Initialize texture view unit */
         TextureViewUnit *texture_view_unit = std::addressof(m_texture_view_unit_array[texture_slot]);
         if (reference_texture_binder != nullptr) { texture_view_unit->reference_texture_binder.ReferenceBinderSync(reference_texture_binder); }
-        texture_view_unit->vk_image_view = gfx::impl::CreateVkImageView(texture_view_info);
+        auto fail_binder_guard = SCOPE_GUARD {
+            texture_view_unit->reference_texture_binder.Release();
+        };
+        RESULT_TRY(gfx::impl::CreateVkImageView(std::addressof(texture_view_unit->vk_image_view), texture_view_info));
+        fail_slot_guard.Cancel();
+        fail_binder_guard.Cancel();
         texture_view_unit->reference_count = 1;
 
         /* Cache texture descriptor */
@@ -108,7 +116,7 @@ namespace awn::gfx::impl {
                 .pSampledImage = std::addressof(descriptor_image_info)
             },
         }; 
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(descriptor_get_info), Context::cTargetMaxSeparateTextureDescriptorSize, texture_view_unit->descriptor_memory);
+        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(descriptor_get_info), context->GetSeparateTextureDescriptorSize(), texture_view_unit->descriptor_memory);
 
         /* Register texture descriptor to descriptor buffer */
         if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {
@@ -154,10 +162,14 @@ namespace awn::gfx::impl {
         /* Allocate new sampler slot */
         const SamplerSlotType sampler_slot = m_sampler_slot_allocator.Allocate();
         RESULT_RETURN_IF(sampler_slot == SamplerSlotAllocator::cInvalidEntryIndex, ResultExhaustedSamplerSlots);
+        auto fail_slot_guard = SCOPE_GUARD {
+            m_sampler_slot_allocator.Free(sampler_slot);
+        };
 
         /* Initialize sampler unit */
         SamplerUnit *sampler_unit = std::addressof(m_sampler_unit_array[sampler_slot]);
-        sampler_unit->vk_sampler = gfx::impl::CreateVkSampler(sampler_info);
+        RESULT_TRY(gfx::impl::CreateVkSampler(std::addressof(sampler_unit->vk_sampler), sampler_info));
+        fail_slot_guard.Cancel();
         sampler_unit->reference_count = 1;
 
         /* Cache Sampler descriptor */
@@ -168,7 +180,7 @@ namespace awn::gfx::impl {
             .type = VK_DESCRIPTOR_TYPE_SAMPLER,
             .data = std::addressof(vk_sampler)
         }; 
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(descriptor_get_info), Context::cTargetMaxSeparateSamplerDescriptorSize, sampler_unit->descriptor_memory);
+        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(descriptor_get_info), context->GetSeparateSamplerDescriptorSize(), sampler_unit->descriptor_memory);
 
         /* Register sampler descriptor to descriptor buffer */
         if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {            

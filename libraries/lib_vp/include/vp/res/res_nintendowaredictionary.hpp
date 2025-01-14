@@ -213,7 +213,7 @@ namespace vp::res {
             }
 
             /* Ensure strings are identical */
-            if (max_len == 0 && key_len < len) { return -1; }
+            if (max_len == 0 && key_len < len) { return cInvalidEntryIndex; }
             const s32 result = ::memcmp(node_iter->key + 2, key, max_len);
             if (result != 0)   { return cInvalidEntryIndex; }
             if (len < key_len) { return cInvalidEntryIndex; }
@@ -258,7 +258,7 @@ namespace vp::res {
             }
 
             /* Ensure strings are identical */
-            if (max_len == 0 && key_len < len) { return -1; }
+            if (max_len == 0 && key_len < len) { return cInvalidEntryIndex; }
             const s32 result = ::memcmp(node_iter->key + 2, key, max_len);
             if (result != 0)   { return cInvalidEntryIndex; }
             if (len < key_len) { return cInvalidEntryIndex; }

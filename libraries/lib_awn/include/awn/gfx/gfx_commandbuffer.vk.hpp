@@ -23,8 +23,8 @@ namespace awn::gfx {
     };
 
     struct TextureArrayRegion {
-        u32 base_array_layer;
-        u32 layer_count;
+        u32 base_array_layer = 0;
+        u32 layer_count = 1;
     };
 
     struct CommandList {
@@ -53,13 +53,19 @@ namespace awn::gfx {
         bool is_primary = false;
     };
 
+    enum RenderTargetClearType : u8 {
+        None,
+        Clear,
+        Keep,
+    };
+
     class CommandBuffer {
         protected:
             CommandList m_command_list;
             QueueType m_queue_type;
             bool m_is_primary;
             bool m_is_rendering;
-            bool m_is_render_target_dirty;
+            RenderTargetClearType m_trigger_clear_type;
             void *m_command_memory_base;
             size_t m_command_memory_base_offset;
             u32 m_command_memory_iter;
@@ -67,6 +73,7 @@ namespace awn::gfx {
             u32 m_color_target_count;
             RenderTargetColor *m_color_target_array[cTargetMaxBoundRenderTargetColorCount];
             RenderTargetDepthStencil *m_depth_stencil_target;
+            bool m_is_render_target_dirty;
             bool m_is_preserve_descriptors_between_commit;
             bool m_is_dirty_ts_i_st_ss;
             bool m_is_dirty_ubo_ssbo;
@@ -101,10 +108,8 @@ namespace awn::gfx {
 
             void BeginRenderingIfNotRendering();
             void EndRenderingIfRendering();
-
-            void SetSystemDescriptorBuffers();
         public:
-            constexpr CommandBuffer() : m_command_list(), m_queue_type(), m_is_primary(), m_is_rendering(), m_is_render_target_dirty(), m_command_memory_base(), m_command_memory_base_offset(), m_command_memory_iter(), m_command_memory_size(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_is_preserve_descriptors_between_commit(), m_staging_memory() {/*...*/}
+            constexpr CommandBuffer() : m_command_list(), m_queue_type(), m_is_primary(), m_is_rendering(), m_trigger_clear_type(), m_command_memory_base(), m_command_memory_base_offset(), m_command_memory_iter(), m_command_memory_size(), m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_is_render_target_dirty(), m_is_preserve_descriptors_between_commit(), m_staging_memory() {/*...*/}
             constexpr ~CommandBuffer() {/*...*/}
 
             void Initialize(const CommandBufferInfo *command_buffer_info);
@@ -117,34 +122,40 @@ namespace awn::gfx {
             void Begin();
             CommandList End();
 
+            void SetSystemDescriptorBuffers();
+
             void CallCommands(CommandList secondary_command_list);
 
             void TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
             void TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
 
-            void BlitImage(Texture *dest_texture, const TextureCopyRegion *dest_copy_region, Texture *source_texture, const TextureCopyRegion *source_copy_region, CopyFilter copy_filter);
+            void FlushMemory(GpuAccessFlags gpu_access_flags);
+            void InvalidateMemory(GpuAccessFlags gpu_access_flags);
+
+            void BlitImage(Texture *source_texture, const TextureCopyRegion *source_copy_region, Texture *dest_texture, const TextureCopyRegion *dest_copy_region, CopyFilter copy_filter);
+            void ResolveImage(Texture *source_texture, Texture *dest_texture);
             void ClearColor(RenderTargetColor *target_color, const TextureArrayRegion *array_region, vp::util::Color4f color);
             void ClearDepthStencil(RenderTargetDepthStencil *target_depth_stencil, const TextureArrayRegion *array_region, float depth, u32 stencil);
 
-            void SetRenderTargets(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target);
+            void SetRenderTargets(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target, RenderTargetClearType clear_type = RenderTargetClearType::None);
 
             void Draw(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count);
             void DrawInstanced(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count, u32 base_instance, u32 instance_count);
-            void DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 index_count, u32 base_vertex);
-            void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuBufferAddress index_buffer_address, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count);
+            void DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, BufferAddress index_buffer_address, u32 index_count, u32 base_vertex);
+            void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, BufferAddress index_buffer_address, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count);
 
             void DrawMeshTasks(u32 x, u32 y, u32 z);
 
             void Dispatch(u32 x, u32 y, u32 z);
 
-            void SetVertexBuffer(GpuBufferAddress vertex_buffer_address, u32 binding, u32 stride, u32 size);
+            void SetVertexBuffer(BufferAddress vertex_buffer_address, u32 binding, u32 stride, u32 size);
 
             void SetShader(Shader *shader);
 
             void SetTextureSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot);
             void SetImage(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
-            void SetUniformBuffer(u32 location, gfx::ShaderStage shader_stage, GpuBufferAddress constant_buffer_address, size_t size);
-            void SetStorageBuffer(u32 location, gfx::ShaderStage shader_stage, GpuBufferAddress storage_buffer_address, size_t size);
+            void SetUniformBuffer(u32 location, gfx::ShaderStage shader_stage, GpuAddress uniform_buffer_gpu_address, size_t size);
+            void SetStorageBuffer(u32 location, gfx::ShaderStage shader_stage, GpuAddress storage_buffer_gpu_address, size_t size);
             void SetSeparateTexture(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
             void SetSeparateSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot sampler_slot);
 

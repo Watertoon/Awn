@@ -22,9 +22,9 @@ namespace vp::util {
 
         /* Constexpr impl */
         if (std::is_constant_evaluated()) {
-            u32 count = 0;
-            while (string[0] != '\0') { string += 1; ++count; }
-            return count;
+            const char *start = string;
+            while (*string != '\0') { ++string; }
+            return static_cast<u32>(string - start);
         }
 
         /* Handle unaligned string */
@@ -293,6 +293,7 @@ namespace vp::util {
                 this->AssureTermination();
                 return;
             }
+
             constexpr ALWAYS_INLINE void TruncateEnd(u32 offset_from_end) {
 
                 /* Truncate whole string */
@@ -341,6 +342,12 @@ namespace vp::util {
                 this->AssureTermination();
 
                 return;
+            }
+
+            constexpr void SetString(const char *string, u32 length) {
+                ::memcpy(m_string_array, string, length);
+                m_length = length;
+                this->AssureTermination();
             }
 
             constexpr void ReplaceAllChar(char target, char replace) {

@@ -384,7 +384,7 @@ namespace awn::res::impl {
         if (result) { return; }
 
         /* Acquire default resource factory for file type */
-        ResourceFactoryBase *resource_factory = load_info->m_async_load_info.resource_factory;
+        const ResourceFactoryBase *resource_factory = load_info->m_async_load_info.resource_factory;
         if (resource_factory == nullptr) {                    
             resource_factory = ResourceFactoryManager::GetInstance()->FindResourceFactory(extension.GetString());
             load_info->m_async_load_info.resource_factory = resource_factory;
@@ -1132,8 +1132,8 @@ namespace awn::res::impl {
         m_decompressor_manager.FreeDecompressorHandle(handle);
     }
 
-    IDecompressor *AsyncResourceManager::GetDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask) {
-        return m_decompressor_manager.GetDecompressor(handle, decompressor_type, priority, core_mask);
+    IParallelDecompressor *AsyncResourceManager::GetParallelDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask) {
+        return m_decompressor_manager.GetParallelDecompressor(handle, decompressor_type, priority, core_mask);
     }
 
     /* Thread api */
@@ -1385,7 +1385,7 @@ namespace awn::res::impl {
         if (file_size == 0) { return; }
 
         /* Calculate resource size fallback */
-        ResourceFactoryBase *resource_factory = prepare_info->resource_factory;
+        const ResourceFactoryBase *resource_factory = prepare_info->resource_factory;
         const float  size_scale               = resource_factory->GetDefaultFallbackSizeScale();
         const float  scaled_size              = static_cast<float>(vp::util::AlignUp(file_size, 0x20)) * size_scale;
         const size_t extra_size               = resource_factory->GetDefaultExtraResourceSize();
@@ -1421,12 +1421,9 @@ namespace awn::res::impl {
     //
     //    /* Load zsdic archive */
     //    ResourceBinder binder;
-    //    AsyncResourceLoadInfo load_info = {
-    //        .is_allow_loose_files       = true,
-    //        .is_allow_archive_reference = false,
-    //        .is_allow_compression       = true,
-    //        
-    //    };
+    //    AsyncResourceLoadInfo load_info;
+    //    load_info.SetDefaults();
+    //    load_info.SetIsAllowArchiveReference(false);
     //    RESULT_ABORT_UNLESS(binder.TryLoadSync(zs_dic_path, std::addressof(load_info)));
     //
     //    /* Create archive device */

@@ -24,12 +24,12 @@ namespace awn::render {
     void InitializeNativeVideo(mem::Heap *heap) {
         VP_ASSERT(!cNativeVideoInitGuard);
         cNativeVideoInitGuard = true;
-        impl::ContextDxgi *context = impl::ContextDxgi::CreateInstance(heap);
+        impl::ContextDxgi11 *context = impl::ContextDxgi11::CreateInstance(heap);
         VP_ASSERT(context != nullptr);
         context->Initialize();
         impl::NativeVideoManager *manager = impl::NativeVideoManager::CreateInstance(heap);
         VP_ASSERT(manager != nullptr);
-        manager->Initialize();
+        manager->Initialize(heap);
     }
 
     void FinalizeNativeVideo() {
@@ -37,14 +37,22 @@ namespace awn::render {
         impl::NativeVideoManager *manager = impl::NativeVideoManager::GetInstance();
         VP_ASSERT(manager != nullptr);
         manager->Finalize();
-        impl::ContextDxgi *context = impl::ContextDxgi::GetInstance();
+        impl::NativeVideoManager::DeleteInstance();
+        impl::ContextDxgi11 *context = impl::ContextDxgi11::GetInstance();
         VP_ASSERT(context != nullptr);
         context->Finalize();
+        impl::ContextDxgi11::DeleteInstance();
     }
 
-    void CalculateNativeVideo() {
-        VP_ASSERT(cNativeVideoInitGuard);
+    void SubmitAndPresentAsync(gfx::CommandList *command_list_array, u32 command_list_count) {
         impl::NativeVideoManager *manager = impl::NativeVideoManager::GetInstance();
-        manager->Calculate();
+        VP_ASSERT(manager != nullptr);
+        manager->SubmitAndPresentAsync(command_list_array, command_list_count);
+    }
+
+    void WaitAndCompletePresent() {
+        impl::NativeVideoManager *manager = impl::NativeVideoManager::GetInstance();
+        VP_ASSERT(manager != nullptr);
+        manager->WaitAndCompletePresent();
     }
 }

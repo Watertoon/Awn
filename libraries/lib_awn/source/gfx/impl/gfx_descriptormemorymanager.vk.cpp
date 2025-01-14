@@ -23,15 +23,16 @@ namespace awn::gfx::impl {
 
         /* Get bindless texture view and sampler count */
         Context *context = Context::GetInstance();
-        size_t bindless_descriptor_memory_size = context->GetBindlessDescriptorLayoutSize();     
+        size_t bindless_descriptor_memory_size = context->GetBindlessDescriptorLayoutSize();   
+        m_bindless_descriptor_memory_size = bindless_descriptor_memory_size;
 
         /* Allocate descriptor buffer */
         const size_t buffer_size = bindless_descriptor_memory_size + mgr_info->per_stage_memory_size;
         m_memory_bindless = ::operator new(buffer_size, gpu_heap, Context::cTargetDescriptorBufferAlignment);
         VP_ASSERT(m_memory_bindless != nullptr);
         m_memory_per_stage = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory_bindless) + bindless_descriptor_memory_size);
-        m_descriptor_vk_buffer = gfx::impl::CreateVkBuffer(m_memory_bindless, VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, buffer_size);
-        m_descriptor_buffer_address = gfx::impl::GetGpuBufferAddress(m_descriptor_vk_buffer);
+        RESULT_ABORT_UNLESS(gfx::impl::CreateVkBuffer(std::addressof(m_descriptor_vk_buffer), m_memory_bindless, VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT, buffer_size));
+        m_descriptor_buffer_address = gfx::impl::GetGpuAddress(m_descriptor_vk_buffer);
 
         /* Create descriptor heap */
         const size_t management_size = sizeof(mem::SeparateHeap) + mem::SeparateHeap::CalculateManagementAreaSize(mgr_info->max_command_buffer_count);
@@ -56,7 +57,7 @@ namespace awn::gfx::impl {
             ::operator delete(m_memory_bindless);
             m_memory_bindless = nullptr;
             m_memory_per_stage = nullptr;
-            m_descriptor_buffer_address = cInvalidGpuBufferAddress;
+            m_descriptor_buffer_address = cInvalidGpuAddress;
         }
         if (m_per_stage_heap != nullptr) {
             ::operator delete(m_per_stage_heap);
@@ -71,7 +72,7 @@ namespace awn::gfx::impl {
     void *DescriptorMemoryManager::AllocateCommandMemory(size_t *out_offset, size_t size) {
         void *base_address = m_per_stage_heap->TryAllocate(size, Context::cTargetDescriptorBufferAlignment);
         const size_t offset = reinterpret_cast<uintptr_t>(base_address) - mem::SeparateHeap::cOffsetBase;
-        *out_offset = offset;
+        *out_offset = offset + m_bindless_descriptor_memory_size;
         return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory_per_stage) + offset);
     }
 

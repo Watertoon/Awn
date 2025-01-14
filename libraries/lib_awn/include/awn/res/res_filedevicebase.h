@@ -122,7 +122,7 @@ namespace awn::res {
             static constexpr size_t cMaxAutoReadSize      = 0x20;
         protected:
             vp::util::IntrusiveRedBlackTreeNode<u32> m_manager_tree_node;
-            MaxDriveString                           m_device_name;
+            MaxDriveString                           m_drive;
         public:
             VP_RTTI_BASE(FileDeviceBase);
         protected:
@@ -156,12 +156,12 @@ namespace awn::res {
 
             virtual u32 GetDriveSize() const { return 0; }
         public:
-            explicit constexpr ALWAYS_INLINE FileDeviceBase() : m_manager_tree_node(), m_device_name() {/*...*/}
-            explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *device_name) : m_manager_tree_node(), m_device_name(device_name) {
-                const u32 hash = vp::util::HashCrc32b(device_name);
+            explicit constexpr ALWAYS_INLINE FileDeviceBase() : m_manager_tree_node(), m_drive() {/*...*/}
+            explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *drive_name) : m_manager_tree_node(), m_drive(drive_name) {
+                const u32 hash = vp::util::HashCrc32b(drive_name);
                 m_manager_tree_node.SetKey(hash);
             }
-            constexpr virtual ALWAYS_INLINE ~FileDeviceBase() {/*...*/}
+            virtual ~FileDeviceBase();
 
             ALWAYS_INLINE Result LoadFile(const char *path, FileLoadContext *file_load_context)                                                          { return this->LoadFileImpl(path, file_load_context); }
             ALWAYS_INLINE Result SaveFile(const char *path, FileSaveInfo *file_save_info)                                                                { return this->SaveFileImpl(path, file_save_info); }
@@ -193,7 +193,7 @@ namespace awn::res {
 
             ALWAYS_INLINE Result CheckDirectoryExists(const char *path) { return this->CheckDirectoryExistsImpl(path); }
 
-            constexpr ALWAYS_INLINE const char *GetDeviceName() const { return m_device_name.GetString(); }
+            constexpr ALWAYS_INLINE const char *GetDeviceName() const { return m_drive.GetString(); }
     };
 
     ALWAYS_INLINE Result FileHandle::Close() {

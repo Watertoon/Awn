@@ -123,7 +123,7 @@ namespace awn::res::impl {
             ResourceUnitTreeNode         m_resource_unit_manager_tree_node;
             MaxPathString                m_file_path;
             FileDeviceBase              *m_file_device;
-            ResourceFactoryBase         *m_resource_factory;
+            const ResourceFactoryBase   *m_resource_factory;
             ResourceUserContext         *m_resource_user_context;
             ResourceBinder               m_archive_binder;
             ArchiveResource             *m_archive_resource;

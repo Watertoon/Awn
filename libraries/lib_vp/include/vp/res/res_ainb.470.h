@@ -676,8 +676,7 @@ namespace vp::res {
             return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) + string_absolute_offset);
         }
     };
-    static_assert(sizeof(ResAinb) == 0x74);
-    
+    static_assert(sizeof(ResAinb) == 0x74);  
     
     enum class AinbFloatBBLocation : u32 {
         Float = 0,

@@ -21,8 +21,8 @@ namespace awn::gfx::impl {
     bool TextureUnit::InitializeForPlatform(const TextureUnitInfo *texture_unit_info) {
 
         /* Initialize texture */
-        const bool is_init_api = m_texture.InitializeForDedicatedAllocation(texture_unit_info->texture_info);
-        if (!is_init_api) {
+        const Result is_init_api = m_texture.InitializeForDedicatedAllocation(texture_unit_info->texture_info, 0, nullptr);
+        if (RESULT_FAILED(is_init_api)) {
             m_is_fail_create_api_resource = true;
             m_status = Status::Error;
             return false;
@@ -36,8 +36,8 @@ namespace awn::gfx::impl {
             .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
             .image = vk_image,
         };
-        m_memory_handle = mem::AllocateGpuMemoryHandle(meta_data_heap, texture_unit_info->memory_property_flags, m_memory_requirements.size, std::addressof(dedicated_info));
-        if (!m_memory_handle.IsValid()) {
+        const Result result = mem::AllocateGpuMemoryHandle(std::addressof(m_memory_handle), meta_data_heap, texture_unit_info->memory_property_flags, m_memory_requirements.size, std::addressof(dedicated_info));
+        if (RESULT_FAILED(result)) {
             this->Finalize();
             m_is_fail_memory_allocation = true;
             m_status = Status::Error;

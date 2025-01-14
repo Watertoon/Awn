@@ -44,7 +44,7 @@ namespace vp::util {
             }
 
             constexpr bool IsLinked() const {
-                return (m_parent == nullptr) && (m_left == nullptr) && (m_right == nullptr);
+                return (m_parent != nullptr) || (m_left != nullptr) || (m_right != nullptr);
             }
 
             constexpr ALWAYS_INLINE void ForceUnlink() {

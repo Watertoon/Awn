@@ -15,6 +15,8 @@
  */
 #pragma once
 
+#define AWN_VK_DEBUG
+
 #define DEFINE_EXTERN_VK_PROC(name); extern PFN_##name pfn_##name
 
 /* Initial procs */
@@ -313,9 +315,15 @@ DEFINE_EXTERN_VK_PROC(vkUnmapMemory2);
 
 /* Device VK_KHR_external_memory_win32 */
 DEFINE_EXTERN_VK_PROC(vkGetMemoryWin32HandleKHR);
+DEFINE_EXTERN_VK_PROC(vkGetMemoryWin32HandlePropertiesKHR);
 
 /* Device VK_KHR_external_semaphore_win32 */
 DEFINE_EXTERN_VK_PROC(vkImportSemaphoreWin32HandleKHR);
+
+#ifdef AWN_VK_DEBUG
+    /* Device VK_EXT_device_fault */
+    DEFINE_EXTERN_VK_PROC(vkGetDeviceFaultInfoEXT);
+#endif
 
 /* Device VK_EXT_external_memory_host*/
 DEFINE_EXTERN_VK_PROC(vkGetMemoryHostPointerPropertiesEXT);

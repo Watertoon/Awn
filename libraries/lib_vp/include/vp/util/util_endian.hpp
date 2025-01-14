@@ -39,18 +39,18 @@ namespace vp::util {
 
     template <typename T>
         requires (std::is_floating_point<T>::value) && (sizeof(T) == sizeof(double) || sizeof(T) == sizeof(float))
-    ALWAYS_INLINE T SwapEndian(T value) {
+    constexpr ALWAYS_INLINE T SwapEndian(T value) {
         if constexpr (sizeof(T) == sizeof(u32)) {
-            u32 *value_data = reinterpret_cast<u32*>(std::addressof(value));
-            const u32 swap0 = ((*value_data & 0xff00'ff00) >> 0x8) | ((*value_data & 0x00ff'00ff) << 0x8);
+            u32 value_data = std::bit_cast<u32>(value);
+            const u32 swap0 = ((value_data & 0xff00'ff00) >> 0x8) | ((value_data & 0x00ff'00ff) << 0x8);
             const u32 swap1 = (swap0 >> 0x10) | (swap0 << 0x10);
-            return swap1;
+            return std::bit_cast<T>(swap1);
         } else if constexpr (sizeof(T) == sizeof(u64)) {
-            u64 *value_data = reinterpret_cast<u64*>(std::addressof(value));
-            const u64 swap0 = ((*value_data & 0xff00'ff00'ff00'ff00) >> 0x8) | ((*value_data & 0x00ff'00ff'00ff'00ff) << 0x8);
+            u64 value_data = std::bit_cast<u64>(value);
+            const u64 swap0 = ((value_data & 0xff00'ff00'ff00'ff00) >> 0x8) | ((value_data & 0x00ff'00ff'00ff'00ff) << 0x8);
             const u64 swap1 = ((swap0 & 0xffff'0000'ffff'0000) >> 0x10) | ((swap0 & 0x0000'ffff'0000'ffff) << 0x10);
             const u64 swap2 = (swap1 >> 0x20) | (swap1 << 0x20);
-            return swap2;
+            return std::bit_cast<T>(swap2);
         }
     }
 

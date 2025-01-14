@@ -35,27 +35,22 @@ namespace awn::gfx {
             array_layer_count = 1;
             texture           = nullptr;
         }
-    };
 
-    struct RenderTargetImportInfo {
-        u32      image_format;
-        u16      image_dimension;
-        u16      base_mip_level;
-        u32      base_array_layer;
-        u32      array_layer_count;
-        u32      render_width;
-        u32      render_height;
-        VkImage  vk_image;
-
-        constexpr void SetDefaults() {
-            image_format      = 0;
-            image_dimension   = static_cast<u16>(ImageDimension::Type2d);
-            base_mip_level    = 0;
-            base_array_layer  = 0;
-            array_layer_count = 1;
-            render_width      = 640;
-            render_height     = 480;
-            vk_image          = nullptr;
+        constexpr void SetImageFormat(ImageFormat image_format) {
+            this->image_format = static_cast<u32>(image_format);
+        }
+        constexpr void SetImageDimension(ImageDimension image_dimension) {
+            this->image_dimension = static_cast<u16>(image_dimension);
+        }
+        constexpr void SetBaseMipLevel(u16 base_mip_level) {
+            this->base_mip_level = base_mip_level;
+        }
+        constexpr void SetArrayRange(u32 base_array_layer, u32 array_layer_count) {
+            this->base_array_layer = base_array_layer;
+            this->array_layer_count = array_layer_count;
+        }
+        constexpr void SetTexture(Texture *texture) {
+            this->texture = texture;
         }
     };
 
@@ -66,7 +61,6 @@ namespace awn::gfx {
             friend class CommandBuffer;
         protected:
             VkImageView   m_vk_image_view;
-            VkImage       m_vk_image;
             VkImageLayout m_vk_image_layout;
             u32           m_vk_aspect_mask;
             u32           m_array_layer_count;
@@ -76,19 +70,19 @@ namespace awn::gfx {
         protected:
             void SetVkImageLayout(VkImageLayout vk_image_layout) { m_vk_image_layout = vk_image_layout; }
         public:
-            constexpr RenderTargetBase() : m_vk_image_view(VK_NULL_HANDLE), m_vk_image(VK_NULL_HANDLE), m_vk_image_layout(VK_IMAGE_LAYOUT_UNDEFINED), m_array_layer_count(0), m_render_width(0), m_render_height(0) {/*...*/}
+            constexpr RenderTargetBase() : m_vk_image_view(VK_NULL_HANDLE), m_vk_image_layout(), m_array_layer_count(), m_render_width(), m_render_height(), m_texture() {/*...*/}
             constexpr ~RenderTargetBase() {/*...*/}
 
             void Finalize();
 
             constexpr u32 GetViewCount()    const { return m_array_layer_count; }
-            constexpr u32 GetViewMask()     const { return 0xffff'ffff; }
+            constexpr u32 GetViewMask()     const { return 0; }
             constexpr u32 GetRenderWidth()  const { return m_render_width; }
             constexpr u32 GetRenderHeight() const { return m_render_height; }
 
             constexpr Texture       *GetTexture()       const { return m_texture; }
             constexpr VkImageView    GetVkImageView()   const { return m_vk_image_view; }
-            constexpr VkImage        GetVkImage()       const { return m_vk_image; }
+            constexpr VkImage        GetVkImage()       const { return m_texture->GetVkImage(); }
             constexpr VkImageLayout  GetVkImageLayout() const { return m_vk_image_layout; }
             constexpr u32            GetVkAspectMask()  const { return m_vk_aspect_mask; }
     };
@@ -99,7 +93,6 @@ namespace awn::gfx {
             constexpr ~RenderTargetColor() {/*...*/}
 
             void Initialize(RenderTargetInfo *render_target_info);
-            void Initialize(RenderTargetImportInfo *render_target_import_info);
     };
 
     class RenderTargetDepthStencil : public RenderTargetBase {
@@ -108,7 +101,6 @@ namespace awn::gfx {
             constexpr ~RenderTargetDepthStencil() {/*...*/}
 
             void Initialize(RenderTargetInfo *render_target_info);
-            void Initialize(RenderTargetImportInfo *render_target_import_info);
 
             constexpr bool IsDepthFormat() { return true; }
             constexpr bool IsStencilFormat() { return false; }

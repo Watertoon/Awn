@@ -17,6 +17,20 @@
 
 namespace awn::res {
 
+    Result LoadAsyncResourceSync(Resource **out_resource, const char *path, AsyncResourceLoadInfo *load_info);
+
+	void SetControlThreadPriority(s32 priority);
+	void SetMemoryThreadPriority(s32 priority);
+	void SetLoadThreadsPriority(s32 priority);
+	void SetComposeThreadsPriority(s32 priority);
+
+    using DecompressorHandle = u32;
+
+	DecompressorHandle AllocateDecompressorHandle();
+	void FreeDecompressorHandle(DecompressorHandle handle);
+
+	IParallelDecompressor *GetParallelDecompressor(DecompressorHandle handle, CompressionType decompressor_type, s32 priority, sys::CoreMask core_mask);
+
     class ResourceBinder;
 
 	void SetDefaultArchive(ResourceBinder *archive_binder);

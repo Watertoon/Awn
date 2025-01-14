@@ -24,17 +24,13 @@ namespace vp::util {
     constexpr ALWAYS_INLINE u32 CountOneBits16(u16 value) {
         return std::popcount(value);
     }
+
     constexpr ALWAYS_INLINE u32 CountOneBits32(u32 value) {
-        if (std::is_constant_evaluated()) {
-            return std::popcount(value);
-        }
-        return __builtin_popcount(value);
+        return std::popcount(value);
     }
+
     constexpr ALWAYS_INLINE u32 CountOneBits64(u64 value) {
-        if (std::is_constant_evaluated()) {
-            return std::popcount(value);
-        }
-        return __builtin_popcountll(value);
+        return std::popcount(value);
     }
 
     template <typename T>
@@ -59,16 +55,11 @@ namespace vp::util {
     }
 
     constexpr ALWAYS_INLINE u32 CountRightOneBits32(u32 value) {
-        if (std::is_constant_evaluated()) {
-            return std::countr_one(value);
-        }
-        return __builtin_ctz(~value);
+        return std::countr_one(value);
     }
+
     constexpr ALWAYS_INLINE u32 CountRightOneBits64(u64 value) {
-        if (std::is_constant_evaluated()) {
-            return std::countr_one(value);
-        }
-        return __builtin_ctzll(~value);
+        return std::countr_one(value);
     }
 
     template <typename T>
@@ -93,16 +84,11 @@ namespace vp::util {
     }
 
     constexpr ALWAYS_INLINE u32 CountLeftOneBits32(u32 value) {
-        if (std::is_constant_evaluated()) {
-            return std::countl_one(value);
-        }
-        return __builtin_clz(~value);
+        return std::countl_one(value);
     }
+
     constexpr ALWAYS_INLINE u32 CountLeftOneBits64(u64 value) {
-        if (std::is_constant_evaluated()) {
-            return std::countl_one(value);
-        }
-        return __builtin_clzll(~value);
+        return std::countl_one(value);
     }
 
     template <typename T>
@@ -127,16 +113,11 @@ namespace vp::util {
     }
 
     constexpr ALWAYS_INLINE u32 CountRightZeroBits32(u32 value) {
-        if (std::is_constant_evaluated()) {
-            return std::countr_zero(value);
-        }
-        return __builtin_ctz(value);
+        return std::countr_zero(value);
     }
+
     constexpr ALWAYS_INLINE u32 CountRightZeroBits64(u64 value) {
-        if (std::is_constant_evaluated()) {
-            return std::countr_zero(value);
-        }
-        return __builtin_ctzll(value);
+        return std::countr_zero(value);
     }
 
     template <typename T>
@@ -155,20 +136,17 @@ namespace vp::util {
     constexpr ALWAYS_INLINE u32 CountLeftZeroBits8(u8 value) {
         return std::countl_zero(value);
     }
+
     constexpr ALWAYS_INLINE u32 CountLeftZeroBits16(u16 value) {
         return std::countl_zero(value);
     }
+
     constexpr ALWAYS_INLINE u32 CountLeftZeroBits32(u32 value) {
-        if (std::is_constant_evaluated()) {
-            return std::countl_zero(value);
-        }
-        return __builtin_ctz(value);
+        return std::countl_zero(value);
     }
+
     constexpr ALWAYS_INLINE u32 CountLeftZeroBits64(u64 value) {
-        if (std::is_constant_evaluated()) {
-            return std::countl_zero(value);
-        }
-        return __builtin_ctzll(value);
+        return std::countl_zero(value);
     }
 
     template <typename T>

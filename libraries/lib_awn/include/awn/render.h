@@ -20,11 +20,10 @@
 #ifdef VP_DEBUG
     #include <dxgidebug.h>
 #endif
-    #include <d3d12.h>
+    #include <d3d11_4.h>
     #include <dcomp.h>
     #include <awn/render/impl/render_dxgiinterfaceext.win32.h>
-    #include <awn/render/impl/render_dxgicontext.win32.h>
-    #include <awn/render/impl/render_swapchain.win32.hpp>
+    #include <awn/render/impl/render_dxgicontext11.win32.h>
     #include <awn/render/render_nativelayer.win32.h>
     #include <awn/render/render_nativedisplay.win32.h>
     #include <awn/render/impl/render_nativevideomanager.win32.hpp>

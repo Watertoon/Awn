@@ -17,134 +17,135 @@
 
 namespace awn::gfx {
 
-    void CalculateVertexBufferPrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, PrimitiveShapeInfo *primitive_shape_info) {
+    namespace {
+        static constexpr const vp::util::Float3 cPositionArray[] = {
+            { -1.0f,  1.0f, 0.0f, },
+            {  1.0f,  1.0f, 0.0f, },
+            { -1.0f, -1.0f, 0.0f, },
+            {  1.0f, -1.0f, 0.0f, },
+        };
+        static constexpr const u32 cPositionCount = sizeof(cPositionArray) / sizeof(vp::util::Float3);
+
+        static constexpr const vp::util::Float3 cNormal = { 0.0f, 0.0f, 1.0f, };
+
+        static constexpr const vp::util::Float2 cTextureCoordinateArray[] = {
+            { 0.0f, 0.0f, },
+            { 1.0f, 0.0f, },
+            { 0.0f, 1.0f, },
+            { 1.0f, 1.0f, },
+        };
+        static constexpr const u32 cTextureCoordinateCount = sizeof(cTextureCoordinateArray) / sizeof(vp::util::Float2);
+        static_assert(cPositionCount == cTextureCoordinateCount);
+
+        static constexpr const u8 cTrianglesIndexArray[] = {
+            0,
+            2,
+            1,
+            1,
+            2,
+            3,
+        };
+        static constexpr const u32 cTrianglesIndexCount = sizeof(cTrianglesIndexArray) / sizeof(u8);
+        static constexpr const u8 cLineStripIndexArray[] = {
+            0,
+            1,
+            3,
+            2,
+            0,
+        };
+        static constexpr const u32 cLineStripIndexCount = sizeof(cLineStripIndexArray) / sizeof(u8);
+
+        template <typename T> 
+        constexpr void CalculateIndexBufferPrimitiveShapeQuadImpl(T *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info) {
+
+            /* Integrity check */
+            VP_ASSERT(primitive_shape_info->index_buffer_size <= index_buffer_size);
+
+            /* Initialize index buffer */
+            switch (primitive_shape_info->primitive_topology) {
+                case PrimitiveTopology::Triangles:
+                {
+                    VP_ASSERT(primitive_shape_info->index_count <= cTrianglesIndexCount);
+                    for (u32 i = 0; i < primitive_shape_info->index_count; ++i) {
+                        index_buffer[i] = static_cast<T>(cTrianglesIndexArray[i]);
+                    }
+                    break;
+                }
+                case PrimitiveTopology::LineStrip:
+                {
+                    VP_ASSERT(primitive_shape_info->index_count <= cLineStripIndexCount);
+                    for (u32 i = 0; i < primitive_shape_info->index_count; ++i) {
+                        index_buffer[i] = static_cast<T>(cLineStripIndexArray[i]);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            };
+
+            return;
+        }
+    }
+
+    void CalculateVertexBufferPrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, const PrimitiveShapeInfo *primitive_shape_info) {
 
         /* Integrity check */
         VP_ASSERT(primitive_shape_info->vertex_buffer_size <= vertex_buffer_size);
+        VP_ASSERT(primitive_shape_info->vertex_count <= cPositionCount);
+
+        if (primitive_shape_info->primitive_topology == PrimitiveTopology::LineStrip) {
+            vp::util::Float3 *pos_array = reinterpret_cast<vp::util::Float3*>(vertex_buffer);
+            for (u32 i = 0; i < primitive_shape_info->vertex_count; ++i) {
+                pos_array[i] = cPositionArray[i];
+            }
+            return;
+        }
 
         /* Initialize vertex buffer */
-        float *vertex_buffer_iter = reinterpret_cast<float*>(vertex_buffer);
-        if ((primitive_shape_info->shape_format & ShapeFormat::Position) == ShapeFormat::Position) {
-            vertex_buffer_iter[0] = -1.0f;
-            vertex_buffer_iter[1] = 1.0f;
-            vertex_buffer_iter[2] = 0.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector3f));
-        }
-        if ((primitive_shape_info->shape_format & ShapeFormat::Normal) == ShapeFormat::Normal) {
-            vertex_buffer_iter[0] = 0.0f;
-            vertex_buffer_iter[1] = 0.0f;
-            vertex_buffer_iter[2] = 1.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector3f));
-        }
-        if ((primitive_shape_info->shape_format & ShapeFormat::TextureCoordinate) == ShapeFormat::TextureCoordinate) {
-            vertex_buffer_iter[0] = 0.0f;
-            vertex_buffer_iter[1] = 0.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector2f));
-        }
-
-        if ((primitive_shape_info->shape_format & ShapeFormat::Position) == ShapeFormat::Position) {
-            vertex_buffer_iter[0] = 1.0f;
-            vertex_buffer_iter[1] = 1.0f;
-            vertex_buffer_iter[2] = 0.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector3f));
-        }
-        if ((primitive_shape_info->shape_format & ShapeFormat::Normal) == ShapeFormat::Normal) {
-            vertex_buffer_iter[0] = 0.0f;
-            vertex_buffer_iter[1] = 0.0f;
-            vertex_buffer_iter[2] = 1.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector3f));
-        }
-        if ((primitive_shape_info->shape_format & ShapeFormat::TextureCoordinate) == ShapeFormat::TextureCoordinate) {
-            vertex_buffer_iter[0] = 1.0f;
-            vertex_buffer_iter[1] = 0.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector2f));
-        }
-
-        if ((primitive_shape_info->shape_format & ShapeFormat::Position) == ShapeFormat::Position) {
-            vertex_buffer_iter[0] = -1.0f;
-            vertex_buffer_iter[1] = -1.0f;
-            vertex_buffer_iter[2] = 0.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector3f));
-        }
-        if ((primitive_shape_info->shape_format & ShapeFormat::Normal) == ShapeFormat::Normal) {
-            vertex_buffer_iter[0] = 0.0f;
-            vertex_buffer_iter[1] = 0.0f;
-            vertex_buffer_iter[2] = 1.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector3f));
-        }
-        if ((primitive_shape_info->shape_format & ShapeFormat::TextureCoordinate) == ShapeFormat::TextureCoordinate) {
-            vertex_buffer_iter[0] = 0.0f;
-            vertex_buffer_iter[1] = 1.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector2f));
-        }
-
-        if ((primitive_shape_info->shape_format & ShapeFormat::Position) == ShapeFormat::Position) {
-            vertex_buffer_iter[0] = 1.0f;
-            vertex_buffer_iter[1] = -1.0f;
-            vertex_buffer_iter[2] = 0.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector3f));
-        }
-        if ((primitive_shape_info->shape_format & ShapeFormat::Normal) == ShapeFormat::Normal) {
-            vertex_buffer_iter[0] = 0.0f;
-            vertex_buffer_iter[1] = 0.0f;
-            vertex_buffer_iter[2] = 1.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector3f));
-        }
-        if ((primitive_shape_info->shape_format & ShapeFormat::TextureCoordinate) == ShapeFormat::TextureCoordinate) {
-            vertex_buffer_iter[0] = 1.0f;
-            vertex_buffer_iter[1] = 1.0f;
-            vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Vector2f));
+        const bool is_position = ((primitive_shape_info->shape_format & ShapeFormat::Position) == ShapeFormat::Position);
+        const bool is_normal = ((primitive_shape_info->shape_format & ShapeFormat::Normal) == ShapeFormat::Normal);
+        const bool is_tex_coord = ((primitive_shape_info->shape_format & ShapeFormat::TextureCoordinate) == ShapeFormat::TextureCoordinate);
+        uintptr_t vertex_buffer_iter = reinterpret_cast<uintptr_t>(vertex_buffer);
+        for (u32 i = 0; i < primitive_shape_info->vertex_count; ++i) {
+            if (is_position) {
+                *reinterpret_cast<vp::util::Float3*>(vertex_buffer_iter) = cPositionArray[i];
+                vertex_buffer_iter += sizeof(vp::util::Float3);
+            }
+            if (is_normal) {
+                *reinterpret_cast<vp::util::Float3*>(vertex_buffer_iter) = cNormal;
+                vertex_buffer_iter += sizeof(vp::util::Float3);
+            }
+            if (is_tex_coord) {
+                *reinterpret_cast<vp::util::Float2*>(vertex_buffer_iter) = cTextureCoordinateArray[i];
+                vertex_buffer_iter += sizeof(vp::util::Float2);
+            }
         }
 
         return;
     }
 
-    template <typename T> 
-    constexpr void CalculateIndexBufferPrimitiveShapeQuad(T *index_buffer, size_t index_buffer_size, PrimitiveShapeInfo *primitive_shape_info) {
+    void CalculateIndexBufferPrimitiveShapeQuad(void *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info) {
 
-        /* Integrity check */
-        VP_ASSERT(primitive_shape_info->index_buffer_size  <= index_buffer_size);
+        if (primitive_shape_info->index_format == IndexFormat::U8) {
+            CalculateIndexBufferPrimitiveShapeQuadImpl(reinterpret_cast<u8*>(index_buffer), index_buffer_size, primitive_shape_info);
+        } else if (primitive_shape_info->index_format == IndexFormat::U16) {
+            CalculateIndexBufferPrimitiveShapeQuadImpl(reinterpret_cast<u16*>(index_buffer), index_buffer_size, primitive_shape_info);
+        } else if (primitive_shape_info->index_format == IndexFormat::U32) {
+            CalculateIndexBufferPrimitiveShapeQuadImpl(reinterpret_cast<u32*>(index_buffer), index_buffer_size, primitive_shape_info);
+        } else {
+            VP_UNEXPECTED_DEFAULT();
+        }
 
-        /* Initialize index buffer */
-        index_buffer[0] = 0;
-        index_buffer[1] = 2;
-        index_buffer[2] = 1;
-        index_buffer[3] = 1;
-        index_buffer[4] = 2;
-        index_buffer[5] = 3;
+        return;
     }
 
-    void CalculatePrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, void *index_buffer, size_t index_buffer_size, PrimitiveShapeInfo *primitive_shape_info) {
+    void CalculatePrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, void *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info) {
 
-        /* Calculate Triangle vertex buffer */
+        /* Calculate triangle vertex buffer */
         CalculateVertexBufferPrimitiveShapeQuad(vertex_buffer, vertex_buffer_size, primitive_shape_info);
 
         /* Calculate index buffer coresponding to index format */
-        if (primitive_shape_info->index_format == IndexFormat::U8) {
-            CalculateIndexBufferPrimitiveShapeQuad(reinterpret_cast<u8*>(index_buffer), index_buffer_size, primitive_shape_info);
-        } else if (primitive_shape_info->index_format == IndexFormat::U16) {
-            CalculateIndexBufferPrimitiveShapeQuad(reinterpret_cast<u16*>(index_buffer), index_buffer_size, primitive_shape_info);
-        } else if (primitive_shape_info->index_format == IndexFormat::U32) {
-            CalculateIndexBufferPrimitiveShapeQuad(reinterpret_cast<u32*>(index_buffer), index_buffer_size, primitive_shape_info);
-        } else {
-            VP_ASSERT(false);
-        }
-
-        return;
-    }
-
-    void CreatePrimitiveShapeQuad(void **out_vertex_buffer_address, void **out_index_buffer_address, mem::Heap *gpu_heap, PrimitiveShapeInfo *primitive_shape_info) {
-
-        /* Allocate gpu memory */
-        void *vbo_address = ::operator new(primitive_shape_info->vertex_buffer_size, gpu_heap, cTargetVertexBufferAlignment);
-        void *ibo_address = ::operator new(primitive_shape_info->index_buffer_size, gpu_heap, cTargetIndexBufferAlignment);
-
-        /* Calculate shape */
-        CalculatePrimitiveShapeQuad(vbo_address, primitive_shape_info->vertex_buffer_size, ibo_address, primitive_shape_info->index_buffer_size, primitive_shape_info);
-
-        /* Set memory addresses */
-        *out_vertex_buffer_address = vbo_address;
-        *out_index_buffer_address  = ibo_address;
+        CalculateIndexBufferPrimitiveShapeQuad(index_buffer, index_buffer_size, primitive_shape_info);
 
         return;
     }

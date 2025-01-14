@@ -20,10 +20,11 @@ namespace awn::res {
     Result LoadFile(const char *path, FileLoadContext *file_load_context) {
 		return impl::FileDeviceManager::GetInstance()->LoadFile(path, file_load_context);
 	}
-    Result LoadResource(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context) {
-		return impl::ResourceFactoryManager::GetInstance()->LoadResource(out_resource, path, resource_load_context);
+    Result LoadFileWithDecompressor(const char *path, FileLoadContext *file_load_context, IDecompressor *decompressor) {
+		return impl::FileDeviceManager::GetInstance()->LoadFileWithDecompressor(path, file_load_context, decompressor);
 	}
-    Result LoadResourceWithDecompressor(Resource **out_resource, const char *path, ResourceLoadContext *resource_load_context, IDecompressor *decompressor) {
-		return impl::ResourceFactoryManager::GetInstance()->LoadResourceWithDecompressor(out_resource, path, resource_load_context, decompressor);
-	}
+
+    void RegisterFileDevice(FileDeviceBase *file_device) {
+        impl::FileDeviceManager::GetInstance()->RegisterFileDevice(file_device);
+    }
 }

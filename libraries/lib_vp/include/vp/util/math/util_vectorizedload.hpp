@@ -1,6 +1,43 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 namespace vp::util {
+
+    template <typename T>
+    constexpr TVectorType<T, 4> Broadcast4(const T *value) {
+        using v4t = TVectorType<T, 4>;
+        using Type = v4t::UnderlyingType;
+        if (!std::is_constant_evaluated() && std::is_same_v<Type, float>) {
+            return v4t{ .v = reinterpret_cast<float __attribute__((vector_size(16)))>(__builtin_ia32_vbroadcastss(value)), };
+        }
+        const Type v = *value;
+        return v4t{v,v,v,v,};
+    }
+
+    template <typename T>
+    constexpr TVectorType<T, 8> Broadcast8(const T *value) {
+        using v8t = TVectorType<T, 8>;
+        using Type = v8t::UnderlyingType;
+        if (!std::is_constant_evaluated() && std::is_same_v<Type, float>) {
+            return v8t{ .v = reinterpret_cast<float __attribute__((vector_size(32)))>(__builtin_ia32_vbroadcastss256(value)), };
+        }
+        const Type v = *value;
+        return v8t{v,v,v,v,v,v,v,v,};
+    }
 
     template <typename T>
     constexpr TVectorType<T, 2> Load2(T const *address) {

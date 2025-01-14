@@ -55,8 +55,8 @@ namespace awn::gfx {
 
         /* Create shaders */
         VkShaderEXT vk_shader_array[cMaxShaderStageCount];
-        const u32 vk_result = ::pfn_vkCreateShadersEXT(context->GetVkDevice(), info_i, vk_shader_create_info_array, context->GetVkAllocationCallbacks(), vk_shader_array);
-        RESULT_RETURN_UNLESS(vk_result == VK_SUCCESS, ResultFailedToCreateShaders);
+        const VkResult vk_result = ::pfn_vkCreateShadersEXT(context->GetVkDevice(), info_i, vk_shader_create_info_array, context->GetVkAllocationCallbacks(), vk_shader_array);
+        RESULT_TRY(impl::ConvertVkResultToResult(vk_result));
 
         /* Set shaders */
         for (u32 i = 0; i < stage_count; ++i) {
@@ -153,7 +153,7 @@ namespace awn::gfx {
             VkShaderStageFlags vk_next_shader_stage = 0;
             u32 flags = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT;
             if (i < 4) {
-                for (u32 j = i; j < 5; ++j) {
+                for (u32 j = i + 1; j < 5; ++j) {
                     if (code_info_array[j] == nullptr) { continue; }
                     const ShaderStage next_shader_stage = static_cast<ShaderStage>(j);
                     vk_next_shader_stage = vp::res::GfxShaderStageToVkShaderStageFlags(next_shader_stage);
@@ -171,28 +171,28 @@ namespace awn::gfx {
             u32 desc_count = 0;
             const VkDescriptorSetLayout *desc_layout = impl::Context::GetInstance()->GetPerStageDescriptorLayoutArray(std::addressof(desc_count), shader_stage);
 
-            vk_shader_create_info_array[i].sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
-            vk_shader_create_info_array[i].pNext                  = nullptr;
-            vk_shader_create_info_array[i].flags                  = flags;
-            vk_shader_create_info_array[i].stage                  = static_cast<VkShaderStageFlagBits>(vk_shader_stage);
-            vk_shader_create_info_array[i].nextStage              = vk_next_shader_stage;
-            vk_shader_create_info_array[i].codeType               = vk_code_type;
-            vk_shader_create_info_array[i].codeSize               = code_info->code_size;
-            vk_shader_create_info_array[i].pCode                  = code_info->code;
-            vk_shader_create_info_array[i].pName                  = "main";
-            vk_shader_create_info_array[i].setLayoutCount         = desc_count;
-            vk_shader_create_info_array[i].pSetLayouts            = desc_layout;
-            vk_shader_create_info_array[i].pushConstantRangeCount = 0;
-            vk_shader_create_info_array[i].pPushConstantRanges    = nullptr;
-            vk_shader_create_info_array[i].pSpecializationInfo    = nullptr;
+            vk_shader_create_info_array[compile_count].sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
+            vk_shader_create_info_array[compile_count].pNext                  = nullptr;
+            vk_shader_create_info_array[compile_count].flags                  = flags;
+            vk_shader_create_info_array[compile_count].stage                  = static_cast<VkShaderStageFlagBits>(vk_shader_stage);
+            vk_shader_create_info_array[compile_count].nextStage              = vk_next_shader_stage;
+            vk_shader_create_info_array[compile_count].codeType               = vk_code_type;
+            vk_shader_create_info_array[compile_count].codeSize               = code_info->code_size;
+            vk_shader_create_info_array[compile_count].pCode                  = code_info->code;
+            vk_shader_create_info_array[compile_count].pName                  = "main";
+            vk_shader_create_info_array[compile_count].setLayoutCount         = desc_count;
+            vk_shader_create_info_array[compile_count].pSetLayouts            = desc_layout;
+            vk_shader_create_info_array[compile_count].pushConstantRangeCount = 0;
+            vk_shader_create_info_array[compile_count].pPushConstantRanges    = nullptr;
+            vk_shader_create_info_array[compile_count].pSpecializationInfo    = nullptr;
 
             ++compile_count;
         }
 
         /* Create shaders */
         VkShaderEXT vk_shader_array[cMaxShaderStageCount] = {};
-        const u32 vk_result = ::pfn_vkCreateShadersEXT(impl::Context::GetInstance()->GetVkDevice(), compile_count, vk_shader_create_info_array, impl::Context::GetInstance()->GetVkAllocationCallbacks(), vk_shader_array);
-        RESULT_RETURN_UNLESS(vk_result == VK_SUCCESS, ResultFailedToCreateShaders);
+        const VkResult vk_result = ::pfn_vkCreateShadersEXT(impl::Context::GetInstance()->GetVkDevice(), compile_count, vk_shader_create_info_array, impl::Context::GetInstance()->GetVkAllocationCallbacks(), vk_shader_array);
+        RESULT_TRY(impl::ConvertVkResultToResult(vk_result));
 
         /* Write back shader handles */
         for (u32 i = 0; i < compile_count; ++i) {
@@ -236,7 +236,7 @@ namespace awn::gfx {
         if (7 < stage_index) { return cInvalidInterfaceSlot; }
         vp::res::ResBnshShaderInterfaceInfoTable *interface_info_table = m_res_program->shader_interface_info_table;
         if (interface_info_table == nullptr) { return cInvalidInterfaceSlot; }
-        vp::res::ResBnshShaderInterfaceInfo *interface_info = std::addressof(interface_info_table->interface_info_vertex)[stage_index];
+        vp::res::ResBnshShaderInterfaceInfo *interface_info = interface_info_table->interface_info_array[stage_index];
         if (interface_info == nullptr) { return cInvalidInterfaceSlot; }
 
         /* Select base index and dictionary for interface type */
@@ -244,22 +244,22 @@ namespace awn::gfx {
         u32 base_index = 0;
         const u32 interface_type_index = static_cast<u32>(interface_type);
         if (interface_type_index < static_cast<u32>(ShaderInterfaceType::Image)) {
-            dictionary = std::addressof(interface_info->input_attribute_dictionary)[interface_type_index];
-            base_index = (interface_type_index == 0) ? 0 : std::addressof(interface_info->base_index_output_attribute)[interface_type_index - 1];
+            dictionary = interface_info->base_dictionary_array[interface_type_index];
+            base_index = (interface_type_index == 0) ? 0 : interface_info->base_base_index_array[interface_type_index - 1];
         } else if (interface_type == ShaderInterfaceType::Image) {
             dictionary = interface_info->image_dictionary;
             base_index = interface_info->base_index_image;
         } else if (interface_type_index <= static_cast<u32>(ShaderInterfaceType::SeparateSampler)) {
             if (interface_info->extended_interface_info == nullptr) { return cInvalidInterfaceSlot; }
             const u32 adj_index = interface_type_index - static_cast<u32>(ShaderInterfaceType::Image);
-            dictionary = std::addressof(interface_info->extended_interface_info->separate_texture_dictionary)[adj_index];
-            base_index = std::addressof(interface_info->extended_interface_info->base_index_separate_texture)[adj_index];
+            dictionary = interface_info->extended_interface_info->ext_dictionary_array[adj_index];
+            base_index = interface_info->extended_interface_info->ext_base_index_array[adj_index];
         }
-        if (dictionary == nullptr) { return false; }
+        if (dictionary == nullptr) { return cInvalidInterfaceSlot; }
 
         /* Lookup local slot index */
         const u32 index = dictionary->TryGetEntryIndexByKey(key);
-        if (index == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex) { return false; }
+        if (index == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex) { return cInvalidInterfaceSlot; }
 
         /* Get slot from global slot array */
         const u32 slot_index = base_index + index;

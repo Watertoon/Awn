@@ -141,7 +141,7 @@ namespace vp::util {
                 return Iterator(this, vp::util::Min(base_index, BitCount));
             }
             constexpr Iterator end() const {
-                return Iterator(BitCount);
+                return Iterator(this, BitCount);
             }
 
             constexpr void Clear() { ::memset(m_mask_array, 0, sizeof(m_mask_array)); }

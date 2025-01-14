@@ -30,8 +30,8 @@ namespace awn::gfx::impl {
                     .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
                     .queueFamilyIndex = context->GetQueueFamilyIndex(queue_type),
                 };
-                const u32 result = ::pfn_vkCreateCommandPool(context->GetVkDevice(), std::addressof(command_pool_create_info), context->GetVkAllocationCallbacks(), std::addressof(unit->vk_command_pool));
-                VP_ASSERT(result == VK_SUCCESS);
+                const VkResult vk_result = ::pfn_vkCreateCommandPool(context->GetVkDevice(), std::addressof(command_pool_create_info), context->GetVkAllocationCallbacks(), std::addressof(unit->vk_command_pool));
+                RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
                 pool_id = handle;
             } else {
                 VP_ASSERT(m_unit_array[pool_id].vk_command_pool != VK_NULL_HANDLE);
@@ -52,8 +52,8 @@ namespace awn::gfx::impl {
         };
 
         VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
-        const u32 result = ::pfn_vkAllocateCommandBuffers(context->GetVkDevice(), std::addressof(allocate_info), std::addressof(vk_command_buffer));
-        VP_ASSERT(result == VK_SUCCESS);
+        const VkResult vk_result = ::pfn_vkAllocateCommandBuffers(context->GetVkDevice(), std::addressof(allocate_info), std::addressof(vk_command_buffer));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
 
         return { vk_command_buffer, pool_id, };
     }

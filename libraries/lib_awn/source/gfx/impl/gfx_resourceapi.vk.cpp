@@ -17,89 +17,86 @@
 
 namespace awn::gfx::impl {
 
-	VkBuffer CreateVkBuffer(const BufferInfo *buffer_info) {
-        return CreateVkBuffer(vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
+	Result CreateVkBuffer(VkBuffer *out_buffer, const BufferInfo *buffer_info) {
+        return CreateVkBuffer(out_buffer, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
     }
 
-    VkBuffer CreateVkBuffer(VkBufferUsageFlags usage_flags, size_t size) {
+    Result CreateVkBuffer(VkBuffer *out_buffer, VkBufferUsageFlags usage_flags, size_t size) {
 
         /* Create VkBuffer */
         VkBuffer buffer = VK_NULL_HANDLE;
         const VkBufferCreateInfo vk_buffer_info = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .size  = size,
-            .usage = static_cast<u32>(usage_flags) | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+            .usage = static_cast<u32>(usage_flags) | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
         };
-        const u32 result0 = ::pfn_vkCreateBuffer(Context::GetInstance()->GetVkDevice(), std::addressof(vk_buffer_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(buffer));
-        if (result0 != VK_SUCCESS) { return VK_NULL_HANDLE; }
-        
-        return buffer;
+        const VkResult vk_result = ::pfn_vkCreateBuffer(Context::GetInstance()->GetVkDevice(), std::addressof(vk_buffer_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(buffer));
+        const Result result = ConvertVkResultToResult(vk_result);
+        RESULT_TRY(result);
+        *out_buffer = buffer;
+
+        RESULT_RETURN_SUCCESS;
     }
 
-	VkBuffer CreateVkBuffer(void *gpu_address, const BufferInfo *buffer_info) {
-        return CreateVkBuffer(gpu_address, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
+	Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, const BufferInfo *buffer_info) {
+        return CreateVkBuffer(out_buffer, gpu_address, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
     }
 
-    VkBuffer CreateVkBuffer(void *gpu_address, VkBufferUsageFlags usage_flags, size_t size) {
+    Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, VkBufferUsageFlags usage_flags, size_t size) {
 
         /* Ensure address */
-        if (gpu_address == nullptr) { return VK_NULL_HANDLE; }
+        size_t offset;
+        mem::GpuMemoryHandle handle = mem::FindGpuMemoryHandle(std::addressof(offset), gpu_address);
 
         /* Create VkBuffer */
-        VkBuffer buffer = CreateVkBuffer(usage_flags, size);
-        if (buffer == VK_NULL_HANDLE) { return VK_NULL_HANDLE; }
-
-        /* Bind gpu memory allocation to buffer from offset */
-        mem::GpuRootHeapContext *gpu_root_heap_context = mem::FindGpuRootHeapContextFromAddress(gpu_address);
-        VP_ASSERT(gpu_root_heap_context != nullptr);
-        const u32 result1 = ::pfn_vkBindBufferMemory(Context::GetInstance()->GetVkDevice(), buffer, gpu_root_heap_context->gpu_memory_handle.vk_device_memory, gpu_root_heap_context->GetMemoryOffset(gpu_address));
-        if (result1 != VK_SUCCESS) { DestroyVkBuffer(buffer); return VK_NULL_HANDLE; }
-        
-        return buffer;
+        return CreateVkBuffer(out_buffer, handle, offset, usage_flags, size);
     }
 
-	VkBuffer CreateVkBuffer(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info) {
-        return CreateVkBuffer(memory_handle, memory_offset, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
+	Result CreateVkBuffer(VkBuffer *out_buffer, mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info) {
+        return CreateVkBuffer(out_buffer, memory_handle, memory_offset, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
     }
 
-    VkBuffer CreateVkBuffer(mem::GpuMemoryHandle memory_handle, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size) {
+    Result CreateVkBuffer(VkBuffer *out_buffer, mem::GpuMemoryHandle memory_handle, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size) {
 
         /* Ensure memory handle */
-        if (!memory_handle.IsValid()) { return VK_NULL_HANDLE; }
+        RESULT_RETURN_IF(!memory_handle.IsValid(), ResultInvalidGpuMemoryHandle);
 
         /* Create VkBuffer */
-        VkBuffer buffer = VK_NULL_HANDLE;
-        const VkBufferCreateInfo vk_buffer_info = {
-            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size  = size,
-            .usage = static_cast<u32>(usage_flags) | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
-        };
-        const u32 result0 = ::pfn_vkCreateBuffer(Context::GetInstance()->GetVkDevice(), std::addressof(vk_buffer_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(buffer));
-        if (result0 != VK_SUCCESS) { return VK_NULL_HANDLE; }
+        RESULT_TRY(CreateVkBuffer(out_buffer, usage_flags, size));
 
         /* Bind gpu memory allocation to buffer from offset */
-        const u32 result1 = ::pfn_vkBindBufferMemory(Context::GetInstance()->GetVkDevice(), buffer, memory_handle.vk_device_memory, memory_offset);
-        if (result1 != VK_SUCCESS) { DestroyVkBuffer(buffer); return VK_NULL_HANDLE; }
-        
-        return buffer;
+        const VkResult vk_result = ::pfn_vkBindBufferMemory(Context::GetInstance()->GetVkDevice(), *out_buffer, memory_handle.vk_device_memory, memory_offset);
+        const Result result = ConvertVkResultToResult(vk_result);
+        if (RESULT_FAILED(result)) {
+            DestroyVkBuffer(*out_buffer);
+            *out_buffer = VK_NULL_HANDLE;
+            RESULT_RETURN(result);
+        }
+
+        RESULT_RETURN_SUCCESS;
     }
 
-	VkImage  CreateVkImage(const TextureInfo *texture_info) {
-        return CreateVkImage(vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info, nullptr);
+	Result CreateVkImage(VkImage *out_image, const TextureInfo *texture_info) {
+        return CreateVkImage(out_image, texture_info, nullptr);
     }
 
-	VkImage  CreateVkImage(const TextureInfo *texture_info, const void *pnext) {
-        return CreateVkImage(vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info, pnext);
+	Result CreateVkImage(VkImage *out_image, const TextureInfo *texture_info, const void *pnext) {
+        const VkImageUsageFlags flags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT | vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags));
+        return CreateVkImage(out_image, flags, texture_info, pnext);
     }
 
-    VkImage CreateVkImage(VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
-        return CreateVkImage(image_usage_flags, texture_info, nullptr);
+    Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
+        return CreateVkImage(out_image, image_usage_flags, texture_info, nullptr);
     }
 
-    VkImage CreateVkImage(VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext) {
+    Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext) {
+        return CreateVkImage(out_image, image_usage_flags, texture_info, pnext, true);
+    }
+
+    Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext, bool is_preinit) {
 
         /* Ensure texture info */
-        if (texture_info == nullptr) { return VK_NULL_HANDLE; }
+        RESULT_RETURN_IF(texture_info == nullptr, ResultNullArgument);
 
         /* Create VkImage */
         VkImage image = VK_NULL_HANDLE;
@@ -118,80 +115,80 @@ namespace awn::gfx::impl {
             .arrayLayers           = texture_info->array_layer_count,
             .samples               = static_cast<VkSampleCountFlagBits>(texture_info->sample_count),
             .tiling                = vp::res::GfxTileModeToVkImageTiling(static_cast<gfx::TileMode>(texture_info->tile_mode)),
-            .usage                 = image_usage_flags | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+            .usage                 = image_usage_flags,
             .sharingMode           = (0 < Context::GetInstance()->GetQueueFamilyCount()) ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = Context::GetInstance()->GetQueueFamilyCount(),
             .pQueueFamilyIndices   = Context::GetInstance()->GetQueueFamilyIndiceArray(),
-            .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED,
+            .initialLayout         = (is_preinit) ? VK_IMAGE_LAYOUT_PREINITIALIZED : VK_IMAGE_LAYOUT_UNDEFINED,
         };
-        const u32 result0 = ::pfn_vkCreateImage(Context::GetInstance()->GetVkDevice(), std::addressof(image_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(image));
-        if (result0 != VK_SUCCESS) { return VK_NULL_HANDLE; }
+        const VkResult vk_result = ::pfn_vkCreateImage(Context::GetInstance()->GetVkDevice(), std::addressof(image_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(image));
+        const Result result = ConvertVkResultToResult(vk_result);
+        RESULT_TRY(result);
+        *out_image = image;
 
-        return image;
+        RESULT_RETURN_SUCCESS;
     }
 
-	VkImage  CreateVkImage(void *gpu_address, const TextureInfo *texture_info) {
-        return CreateVkImage(gpu_address, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info, nullptr);
+	Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *texture_info) {
+        return CreateVkImage(out_image, gpu_address, texture_info, nullptr);
     }
 
-	VkImage  CreateVkImage(void *gpu_address, const TextureInfo *texture_info, const void *pnext) {
-        return CreateVkImage(gpu_address, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info, pnext);
+	Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *texture_info, const void *pnext) {
+        const VkImageUsageFlags flags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT | vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags));
+        return CreateVkImage(out_image, gpu_address, flags, texture_info, pnext);
     }
 
-    VkImage CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
-        return CreateVkImage(gpu_address, image_usage_flags, texture_info, nullptr);
+    Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
+        return CreateVkImage(out_image, gpu_address, image_usage_flags, texture_info, nullptr);
     }
 
-    VkImage CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext) {
+    Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext) {
 
-        /* Ensure address */
-        if (gpu_address == nullptr) { return VK_NULL_HANDLE; }
+        /* Get handle by address */
+        size_t offset;
+        mem::GpuMemoryHandle handle = mem::FindGpuMemoryHandle(std::addressof(offset), gpu_address);
 
         /* Create VkImage */
-        VkImage image = CreateVkImage(image_usage_flags, texture_info, pnext);
-        if (image == VK_NULL_HANDLE) { return VK_NULL_HANDLE; }
-
-        /* Bind gpu memory to image from offset */
-        mem::GpuRootHeapContext *gpu_root_heap_context = mem::FindGpuRootHeapContextFromAddress(gpu_address);
-        VP_ASSERT(gpu_root_heap_context != nullptr);
-        const u32 result1 = ::pfn_vkBindImageMemory(Context::GetInstance()->GetVkDevice(), image, gpu_root_heap_context->gpu_memory_handle.vk_device_memory, gpu_root_heap_context->GetMemoryOffset(gpu_address));
-        if (result1 != VK_SUCCESS) { DestroyVkImage(image); return VK_NULL_HANDLE; }
-
-        return image;
+        return CreateVkImage(out_image, handle, offset, image_usage_flags, texture_info, pnext);
     }
 
-	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *texture_info) {
-        return CreateVkImage(memory_handle, offset, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info, nullptr);
+	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *texture_info) {
+        return CreateVkImage(out_image, memory_handle, offset, texture_info, nullptr);
     }
 
-	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *texture_info, const void *pnext) {
-        return CreateVkImage(memory_handle, offset, vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags)), texture_info, pnext);
+	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *texture_info, const void *pnext) {
+        const VkImageUsageFlags flags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT | vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags));
+        return CreateVkImage(out_image, memory_handle, offset, flags, texture_info, pnext);
     }
 
-    VkImage CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
-        return CreateVkImage(memory_handle, offset, image_usage_flags, texture_info, nullptr);
+    Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
+        return CreateVkImage(out_image, memory_handle, offset, image_usage_flags, texture_info, nullptr);
     }
 
-	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext)  {
+	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext)  {
 
         /* Ensure memory handle */
-        if (!memory_handle.IsValid()) { return VK_NULL_HANDLE; }
+        RESULT_RETURN_IF(!memory_handle.IsValid(), ResultInvalidGpuMemoryHandle);
 
         /* Create VkImage */
-        VkImage image = CreateVkImage(image_usage_flags, texture_info, pnext);
-        if (image == VK_NULL_HANDLE) { return VK_NULL_HANDLE; }
+        RESULT_TRY(CreateVkImage(out_image, image_usage_flags, texture_info, pnext));
 
         /* Bind gpu memory to image from offset */
-        const u32 result1 = ::pfn_vkBindImageMemory(Context::GetInstance()->GetVkDevice(), image, memory_handle.vk_device_memory, offset);
-        if (result1 != VK_SUCCESS) { DestroyVkImage(image); return VK_NULL_HANDLE; }
+        const VkResult vk_result = ::pfn_vkBindImageMemory(Context::GetInstance()->GetVkDevice(), *out_image, memory_handle.vk_device_memory, offset);
+        const Result result = ConvertVkResultToResult(vk_result);
+        if (RESULT_FAILED(result)) {
+            DestroyVkImage(*out_image);
+            *out_image = VK_NULL_HANDLE;
+            RESULT_RETURN(result);
+        }
 
-        return image;
+        RESULT_RETURN_SUCCESS;
     }
 
-    VkSampler CreateVkSampler(const SamplerInfo *sampler_info) {
+    Result CreateVkSampler(VkSampler *out_sampler, const SamplerInfo *sampler_info) {
 
         /* Ensure sampler info */
-        if (sampler_info == nullptr) { return VK_NULL_HANDLE; }
+        RESULT_RETURN_IF(sampler_info == nullptr, ResultNullArgument);
 
         /* Create VkSampler */
         VkSampler vk_sampler = VK_NULL_HANDLE;
@@ -217,10 +214,11 @@ namespace awn::gfx::impl {
             .maxLod           = sampler_info->lod_clamp_max,
             .borderColor      = vp::res::GfxBorderColorToVkBorderColor(static_cast<BorderColor>(sampler_info->border_color)),
         };
-        const u32 result = ::pfn_vkCreateSampler(Context::GetInstance()->GetVkDevice(), std::addressof(sampler_create_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(vk_sampler));
-        if (result != VK_SUCCESS) { return VK_NULL_HANDLE; }
-
-        return vk_sampler;
+        const VkResult vk_result = ::pfn_vkCreateSampler(Context::GetInstance()->GetVkDevice(), std::addressof(sampler_create_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(vk_sampler));
+        const Result result = ConvertVkResultToResult(vk_result);
+        RESULT_TRY(result);
+        *out_sampler = vk_sampler;
+        RESULT_RETURN_SUCCESS;
     }
 
     GpuMemoryRequirements GetVkImageMemoryRequirements(VkImage vk_image) {
@@ -237,10 +235,10 @@ namespace awn::gfx::impl {
         return { memory_requirements_2.memoryRequirements.size, static_cast<s32>(memory_requirements_2.memoryRequirements.alignment), };
     }
 
-    VkImageView CreateVkImageView(const TextureViewInfo *texture_view_info) {
+    Result CreateVkImageView(VkImageView *out_image_view, const TextureViewInfo *texture_view_info) {
 
         /* Ensure texture view info */
-        if (texture_view_info == nullptr) { return VK_NULL_HANDLE; }
+        RESULT_RETURN_IF(texture_view_info == nullptr, ResultNullArgument);
 
         /* Create VkImageView */
         VkImageView vk_image_view = VK_NULL_HANDLE;
@@ -263,10 +261,11 @@ namespace awn::gfx::impl {
                 .layerCount     = texture_view_info->array_layer_count,
             }
         };
-        const u32 result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(vk_image_view));
-        if (result != VK_SUCCESS) { return VK_NULL_HANDLE; }
-
-        return vk_image_view;
+        const VkResult vk_result = ::pfn_vkCreateImageView(Context::GetInstance()->GetVkDevice(), std::addressof(image_view_info), Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(vk_image_view));
+        const Result result = ConvertVkResultToResult(vk_result);
+        RESULT_TRY(result);
+        *out_image_view = vk_image_view;
+        RESULT_RETURN_SUCCESS;
     }
 
     void DestroyVkBuffer(VkBuffer vk_buffer) {
@@ -293,11 +292,11 @@ namespace awn::gfx::impl {
         ::pfn_vkDestroySampler(context->GetVkDevice(), vk_sampler, context->GetVkAllocationCallbacks());
     }
 
-    GpuBufferAddress GetGpuBufferAddress(VkBuffer vk_buffer) {
+    GpuAddress GetGpuAddress(VkBuffer vk_buffer) {
         const VkBufferDeviceAddressInfo address_info = {
             .sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR,
             .buffer = vk_buffer,
         };
-        return { ::pfn_vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(address_info)), vk_buffer, };
+        return { ::pfn_vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(address_info)), };
     }
 }

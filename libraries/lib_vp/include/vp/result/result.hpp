@@ -72,7 +72,7 @@ namespace vp {
         return (result)
 
     #define RESULT_TRY(result)  \
-        if ((result) != ::vp::ResultSuccess) { return result; }
+        if (RESULT_FAILED(result)) { return result; }
 
     #define RESULT_SUCCEEDED(result)  \
         ((result) == ::vp::ResultSuccess)

@@ -13,19 +13,14 @@
  *  You should have received a copy of the GNU General Public License along with this program; 
  *  if not, see <https://www.gnu.org/licenses/>.
  */
-#include <awn.hpp>
+#pragma once
 
-namespace awn::res {
+#include <vp/image/image_pixelformat.h>
 
-    DecompressorHandle AllocateDecompressorHandle() {
-        return impl::AsyncResourceManager::GetInstance()->AllocateDecompressor();
-    }
+#define VP_IMAGE_ENABLE_PNG
 
-    void FreeDecompressorHandle(DecompressorHandle handle) {
-        impl::AsyncResourceManager::GetInstance()->FreeDecompressor(handle);
-    }
-
-    IDecompressor *GetDecompressor(DecompressorHandle handle, CompressionType compression_type, s32 priority, sys::CoreMask core_mask) {
-        return impl::AsyncResourceManager::GetInstance()->GetDecompressor(handle, compression_type, priority, core_mask);
-    }
-}
+#ifdef VP_IMAGE_ENABLE_PNG
+    #include <vp/image/impl/image_pngimpl.h>
+    #include <vp/image/image_pngdecoder.h>
+    #include <vp/image/image_pngencoder.h>
+#endif

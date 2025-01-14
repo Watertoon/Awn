@@ -1,105 +1,102 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 namespace vp::util {
 
     template <typename T>
-        requires (T::cIsVectorType && T::cIsVectorized)
-    constexpr T operator+(const T &left, const T &right) {
-        const T out = { .v = left.v.v + right.v.v, };
-        return out;
-    }
-
-    template <typename T>
-        requires (T::cIsVectorType && T::cIsVectorized)
-    constexpr T operator-(const T &left, const T &right) {
-        const T out = { .v = left.v.v - right.v.v, };
-        return out;
-    }
-
-    template <typename T>
-        requires (T::cIsVectorType && T::cIsVectorized)
-    constexpr T operator-(const T &vec) {
-        const T out = { .v = -vec.v.v, };
-        return out;
-    }
-
-    template <typename T>
-        requires (T::cIsVectorType && T::cIsVectorized)
-    constexpr T operator*(const T &left, const T &right) {
-        const T out = { .v = left.v.v * right.v.v, };
-        return out;
-    }
-
-    template <typename T>
-        requires (T::cIsVectorType && T::cIsVectorized)
-    constexpr T operator*(const T &left, const typename T::UnderlyingType &right) {
-        const T out = { .v = left.v.v * right, };
-        return out;
-    }
-
-    template <typename T>
-        requires (T::cIsVectorType && T::cIsVectorized)
-    constexpr T operator/(const T &left, typename T::UnderlyingType scalar) {
-        const T out = { .v = left.v.v / scalar, };
-        return out;
-    }
-
-    template <typename T>
-        requires (T::cIsVectorType && !T::cIsVectorized)
+        requires (T::cIsVectorType)
     constexpr T operator+(const T &left, const T &right) {
         T out;
-        for (u32 i = 0; i < T::cVectorCount; ++i) {
-            out[i] = left[i] + right[i];
+        if constexpr (T::cIsVectorized) {
+            out = { .v = left.v + right.v, };
+        } else {
+            for (u32 i = 0; i < T::cVectorCount; ++i) {
+                out[i] = left[i] + right[i];
+            }
         }
         return out;
     }
 
     template <typename T>
-        requires (T::cIsVectorType && !T::cIsVectorized)
+        requires (T::cIsVectorType)
     constexpr T operator-(const T &left, const T &right) {
         T out;
-        for (u32 i = 0; i < T::cVectorCount; ++i) {
-            out[i] = left[i] - right[i];
+        if constexpr (T::cIsVectorized) {
+            out = { .v = left.v - right.v, };
+        } else {
+            for (u32 i = 0; i < T::cVectorCount; ++i) {
+                out[i] = left[i] - right[i];
+            }
         }
         return out;
     }
 
     template <typename T>
-        requires (T::cIsVectorType && !T::cIsVectorized)
+        requires (T::cIsVectorType)
     constexpr T operator-(const T &vec) {
         T out;
-        for (u32 i = 0; i < T::cVectorCount; ++i) {
-            out[i] = -vec[i];
+        if constexpr (T::cIsVectorized) {
+            out = { .v = -vec.v, };
+        } else {
+            for (u32 i = 0; i < T::cVectorCount; ++i) {
+                out[i] = -vec[i];
+            }
         }
         return out;
     }
 
     template <typename T>
-        requires (T::cIsVectorType && !T::cIsVectorized)
+        requires (T::cIsVectorType)
     constexpr T operator*(const T &left, const T &right) {
         T out;
-        for (u32 i = 0; i < T::cVectorCount; ++i) {
-            out[i] = left[i] * right[i];
+        if constexpr (T::cIsVectorized) {
+            out = { .v = left.v * right.v, };
+        } else {
+            for (u32 i = 0; i < T::cVectorCount; ++i) {
+                out[i] = left[i] * right[i];
+            }
         }
         return out;
     }
 
     template <typename T>
-        requires (T::cIsVectorType && !T::cIsVectorized)
+        requires (T::cIsVectorType)
     constexpr T operator*(const T &left, const typename T::UnderlyingType &right) {
         T out;
-        for (u32 i = 0; i < T::cVectorCount; ++i) {
-            out[i] = left[i] * right;
+        if constexpr (T::cIsVectorized) {
+            out = { .v = left.v * right, };
+        } else {
+            for (u32 i = 0; i < T::cVectorCount; ++i) {
+                out[i] = left[i] * right;
+            }
         }
         return out;
     }
 
     template <typename T>
-        requires (T::cIsVectorType && !T::cIsVectorized)
+        requires (T::cIsVectorType)
     constexpr T operator/(const T &left, typename T::UnderlyingType scalar) {
         T out;
-        for (u32 i = 0; i < T::cVectorCount; ++i) {
-            out[i] = left[i] / scalar;
+        if constexpr (T::cIsVectorized) {
+            out = { .v = left.v / scalar, };
+        } else {
+            for (u32 i = 0; i < T::cVectorCount; ++i) {
+                out[i] = left[i] / scalar;
+            }
         }
         return out;
     }
@@ -123,9 +120,10 @@ namespace vp::util {
     template <typename T>
         requires (T::cIsVectorType)
     constexpr T::UnderlyingType Magnitude(const T &vector) {
+        const T mul = vector * vector;
         typename T::UnderlyingType squared_summation = {};
         for (u32 i = 0; i < T::cVectorCount; ++i) {
-            squared_summation += vector[i] * vector[i];
+            squared_summation += mul[i];
         }
         const typename T::UnderlyingType out = SquareRoot(squared_summation);
         return out;
@@ -135,8 +133,12 @@ namespace vp::util {
         requires (T::cIsVectorType)
     constexpr T ScalarMultiply(const T &vector, typename T::UnderlyingType scalar) {
         T ret;
-        for (u32 i = 0; i < T::cVectorCount; ++i) {
-            ret[i] = vector[i] * scalar;
+        if constexpr (T::cIsVectorized) {
+            ret.v = vector.v * scalar;
+        } else {            
+            for (u32 i = 0; i < T::cVectorCount; ++i) {
+                ret[i] = vector[i] * scalar;
+            }
         }
         return ret;
     }
@@ -146,15 +148,17 @@ namespace vp::util {
     constexpr T Normalize(const T &vector) {
         T temp = vector;  
         const float mag0 = Magnitude(vector);
-        if (mag0 == cFloatInfinity) {
-            temp = ScalarMultiply(temp, 3.129822e-20f);
-            const float mag1 = Magnitude(temp);
-            temp = ScalarMultiply(temp, mag1);
-        } else if (cFloatNormalizeEpsilon < mag0) {
-            const float reciprocal_mag = 1.0f / mag0;
-            temp = ScalarMultiply(temp, reciprocal_mag);
+        if (cFloatNormalizeEpsilon < mag0) {            
+            if (mag0 == cFloatInfinity) {
+                temp = ScalarMultiply(temp, 3.129822e-20f);
+                const float mag1 = Magnitude(temp);
+                temp = ScalarMultiply(temp, mag1);
+            } else {
+                const float reciprocal_mag = 1.0f / mag0;
+                temp = ScalarMultiply(temp, reciprocal_mag);
+            }
         } else {
-            temp = T{};
+            temp = T::cZero;
         }
         return temp;
     }
@@ -164,17 +168,17 @@ namespace vp::util {
     constexpr T Cross(const T &left, const T &right) {
 #ifdef VP_TARGET_ARCHITECTURE_x86
         if constexpr (T::cIsVectorized) {            
-            using v4t = TVectorType<typename T::UnderlyingType, 4>;     
+            using v4t = TVectorType<typename T::UnderlyingType, 4>;
             const v4t a = Swizzle4(left.v, GetSwizzle4Order(1,2,0,3));
             const v4t b = Swizzle4(right.v, GetSwizzle4Order(2,0,1,3));
-            const v4t c = v4f{ a.v * right.v.v, };
-            const v4t d = v4f{ a.v * b.v, };
+            const v4t c = v4t{ a.v * right.v.v, };
+            const v4t d = v4t{ a.v * b.v, };
             const v4t e = Swizzle4(c, GetSwizzle4Order(1,2,0,3));
             return T{ .v = d.v - e.v, };
         }
 #endif
         const typename T::UnderlyingType out_x = (left[1] * right[2]) - (left[2] * right[1]);
-        const typename T::UnderlyingType out_y = -((left[0] * right[2]) - (left[2] * right[0]));
+        const typename T::UnderlyingType out_y = (left[2] * right[0]) - (left[0] * right[2]);
         const typename T::UnderlyingType out_z = (left[0] * right[1]) - (left[1] * right[0]);
         return T{ out_x, out_y, out_z, };
     }

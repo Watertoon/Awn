@@ -32,8 +32,8 @@ namespace awn::para {
         public:
             static Document *CreateDocument(mem::Heap *heap, const char *file_path, const char *class_name, void *byaml);
         private:
-            Document                                    *m_document;
-            vp::util::TypedStorage<res::ResourceBinder>  m_resource_binder_bgyml;
+            Document *m_document;
+            vp::util::TypedStorage<res::ResourceBinder> m_resource_binder_bgyml;
         public:
             VP_RTTI_DERIVED(ResourceDocument, res::Resource);
         public:
@@ -50,24 +50,24 @@ namespace awn::para {
                 vp::util::ConstructAt(m_resource_binder_bgyml);
                 vp::util::GetReference(m_resource_binder_bgyml).ReferenceBinderSync(binder);
             }
-
+        public:
             constexpr Document *GetDocument() { return m_document; }
     };
 
     class ResourceFactoryDocument : public res::ResourceFactoryBase {
         public:
-            constexpr ResourceFactoryDocument() : ResourceFactoryBase("bgyml") {/*...*/}
+            static constexpr u32 cResourceSize = sizeof(ResourceDocument);
+            static constexpr u32 cResourceAlignment = alignof(ResourceDocument);
+            static constexpr u32 cFileAlignment = alignof(u32);
+            static constexpr res::CompressionType cDefaultCompressionType = res::CompressionType::None;
+            static constexpr float cDefaultFallbackSizeScale = 2.0f;
+            static constexpr u32 cDefaultExtraSize = 0;
+        public:
+            constexpr ResourceFactoryDocument() : ResourceFactoryBase("bgyml", cResourceSize, cResourceAlignment, cFileAlignment, cDefaultCompressionType, cDefaultFallbackSizeScale, cDefaultExtraSize, true, false) {/*...*/}
             constexpr ~ResourceFactoryDocument() {/*...*/}
 
-            virtual ResourceDocument *AllocateResource(mem::Heap *heap, s32 alignment) {
+            virtual res::Resource *AllocateResource(mem::Heap *heap, s32 alignment) const override {
                 return new (heap, alignment) ResourceDocument();
             }
-
-            virtual constexpr u32                  GetResourceSize()             const { return sizeof(ResourceDocument); }
-            virtual constexpr u32                  GetResourceAlignment()        const { return alignof(ResourceDocument); }
-            virtual constexpr u32                  GetFileAlignment()            const { return cFileAlignment; }
-            virtual constexpr res::CompressionType GetDefaultCompressionType()   const { return cDefaultCompressionType; }
-            virtual constexpr float                GetDefaultFallbackSizeScale() const { return 2.0f; }
-            virtual constexpr u32                  GetDefaultExtraResourceSize() const { return cDefaultExtraSize; }
     };
 }

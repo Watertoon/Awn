@@ -32,24 +32,44 @@ namespace vp::res {
     static_assert(sizeof(ResBnshShaderCodeInfo) == 0x40);
 
     struct ResBnshExtendedInterfaceInfo {
-        ResNintendoWareDictionary *separate_texture_dictionary;
-        ResNintendoWareDictionary *separate_sampler_dictionary;
-        u32                        base_index_separate_texture;
-        u32                        base_index_separate_sampler;
+        union {
+            ResNintendoWareDictionary *ext_dictionary_array[2];
+            struct {
+                ResNintendoWareDictionary *separate_texture_dictionary;
+                ResNintendoWareDictionary *separate_sampler_dictionary;
+            };
+        };
+        union {
+            u32 ext_base_index_array[2];
+            struct {
+                u32 base_index_separate_texture;
+                u32 base_index_separate_sampler;
+            };
+        };
         u64                        reserve0[3];
     };
     static_assert(sizeof(ResBnshExtendedInterfaceInfo) == 0x30);
 
     struct ResBnshShaderInterfaceInfo {
-        ResNintendoWareDictionary    *input_attribute_dictionary;
-        ResNintendoWareDictionary    *output_attribute_dictionary;
-        ResNintendoWareDictionary    *texture_sampler_dictionary;
-        ResNintendoWareDictionary    *uniform_buffer_dictionary;
-        ResNintendoWareDictionary    *storage_buffer_dictionary;
-        u32                           base_index_output_attribute;
-        u32                           base_index_texture_sampler;
-        u32                           base_index_uniform_buffer;
-        u32                           base_index_storage_buffer;
+        union {
+            ResNintendoWareDictionary *base_dictionary_array[5];
+            struct {
+                ResNintendoWareDictionary *input_attribute_dictionary;
+                ResNintendoWareDictionary *output_attribute_dictionary;
+                ResNintendoWareDictionary *texture_sampler_dictionary;
+                ResNintendoWareDictionary *uniform_buffer_dictionary;
+                ResNintendoWareDictionary *storage_buffer_dictionary;
+            };
+        };
+        union {
+            u32 base_base_index_array[4];
+            struct {
+                u32 base_index_output_attribute;
+                u32 base_index_texture_sampler;
+                u32 base_index_uniform_buffer;
+                u32 base_index_storage_buffer;
+            };
+        };
         u32                          *interface_slot_array;
         s32                           work_group_count_x;
         s32                           work_group_count_y;

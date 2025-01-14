@@ -24,7 +24,7 @@ namespace awn::res::impl {
         }
     }
 
-	void DecompressorManager::Initialize(mem::Heap *heap, u32 core_count) {
+	void ParallelDecompressorManager::Initialize(mem::Heap *heap, u32 core_count) {
 
 		/* Initialize arrays */
 		m_index_allocator.Initialize(heap, core_count);
@@ -41,7 +41,7 @@ namespace awn::res::impl {
 		return;
 	}
 
-	void DecompressorManager::Finalize() {
+	void ParallelDecompressorManager::Finalize() {
 
 		/* Finalize decompressors */
 		for (u32 i = 0; i < m_zstd_decompressor_array.GetCount(); ++i) {
@@ -55,7 +55,7 @@ namespace awn::res::impl {
 		return;
 	}
 
-	u32 DecompressorManager::AllocateDecompressorHandle() {
+	u32 ParallelDecompressorManager::AllocateDecompressorHandle() {
 
 		/* Allocate handle */
 		u32 index = 0;
@@ -68,7 +68,7 @@ namespace awn::res::impl {
 		return index;
 	}
 
-	void DecompressorManager::FreeDecompressorHandle(u32 handle) {
+	void ParallelDecompressorManager::FreeDecompressorHandle(u32 handle) {
 
 		/* Free handle */
 		m_index_allocator.Free(handle);
@@ -77,10 +77,10 @@ namespace awn::res::impl {
 		return;
 	}
 
-	IDecompressor *DecompressorManager::GetDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask) {
+	IParallelDecompressor *ParallelDecompressorManager::GetParallelDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask) {
 
 		/* Get decompressor */
-		IDecompressor *decompressor = nullptr;
+		IParallelDecompressor *decompressor = nullptr;
 		if (decompressor_type == CompressionType::Zstandard) {                    
 			decompressor = std::addressof(m_zstd_decompressor_array[handle]);
 		}

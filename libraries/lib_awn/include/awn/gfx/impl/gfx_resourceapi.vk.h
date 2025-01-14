@@ -17,46 +17,46 @@
 
 namespace awn::gfx::impl {
 
-    struct GpuBufferAddress {
+    struct GpuAddress {
         VkDeviceAddress vk_device_address = 0;
-        VkBuffer        vk_buffer = VK_NULL_HANDLE;
 
         constexpr bool IsValid() const {
-            return vk_device_address != 0 && vk_buffer != VK_NULL_HANDLE;
+            return vk_device_address != 0;
         }
     };
 
-    static constexpr GpuBufferAddress cInvalidGpuBufferAddress = {};
+    static constexpr GpuAddress cInvalidGpuAddress = {};
 
-	VkBuffer CreateVkBuffer(const BufferInfo *buffer_info);
-	VkBuffer CreateVkBuffer(VkBufferUsageFlags usage_flags, size_t size);
-	VkBuffer CreateVkBuffer(void *gpu_address, const BufferInfo *buffer_info);
-	VkBuffer CreateVkBuffer(void *gpu_address, VkBufferUsageFlags usage_flags, size_t size);
-	VkBuffer CreateVkBuffer(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info);
-    VkBuffer CreateVkBuffer(mem::GpuMemoryHandle memory_handle, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size);
-    
-	VkImage  CreateVkImage(const TextureInfo *buffer_info);
-	VkImage  CreateVkImage(const TextureInfo *buffer_info, const void *pnext);
-	VkImage  CreateVkImage(VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
-	VkImage  CreateVkImage(VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
-	VkImage  CreateVkImage(void *gpu_address, const TextureInfo *buffer_info);
-	VkImage  CreateVkImage(void *gpu_address, const TextureInfo *buffer_info, const void *pnext);
-	VkImage  CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
-	VkImage  CreateVkImage(void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
-	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *buffer_info);
-	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *buffer_info, const void *pnext);
-	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
-	VkImage  CreateVkImage(mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
+	Result CreateVkBuffer(VkBuffer *out_buffer, const BufferInfo *buffer_info);
+	Result CreateVkBuffer(VkBuffer *out_buffer, VkBufferUsageFlags usage_flags, size_t size);
+	Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, const BufferInfo *buffer_info);
+	Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, VkBufferUsageFlags usage_flags, size_t size);
+	Result CreateVkBuffer(VkBuffer *out_buffer, mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info);
+    Result CreateVkBuffer(VkBuffer *out_buffer, mem::GpuMemoryHandle memory_handle, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size);
+
+	Result CreateVkImage(VkImage *out_image, const TextureInfo *buffer_info);
+	Result CreateVkImage(VkImage *out_image, const TextureInfo *buffer_info, const void *pnext);
+	Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
+	Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
+	Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext, bool is_preinit);
+	Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *buffer_info);
+	Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *buffer_info, const void *pnext);
+	Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
+	Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
+	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *buffer_info);
+	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *buffer_info, const void *pnext);
+	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
+	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
 
     GpuMemoryRequirements GetVkImageMemoryRequirements(VkImage vk_image);
 
-    VkSampler   CreateVkSampler(const SamplerInfo *sampler_info);
-    VkImageView CreateVkImageView(const TextureViewInfo *texture_view_info);
+    Result CreateVkSampler(VkSampler *out_sampler, const SamplerInfo *sampler_info);
+    Result CreateVkImageView(VkImageView *out_image_view, const TextureViewInfo *texture_view_info);
 
     void DestroyVkBuffer(VkBuffer vk_buffer);
     void DestroyVkImage(VkImage vk_image);
     void DestroyVkSampler(VkSampler vk_sampler);
     void DestroyVkImageView(VkImageView vk_image_view);
 
-    GpuBufferAddress GetGpuBufferAddress(VkBuffer vk_buffer);
+    GpuAddress GetGpuAddress(VkBuffer vk_buffer);
 }

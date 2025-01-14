@@ -33,9 +33,11 @@ namespace awn::res::impl {
             void Initialize(mem::Heap *heap);
             void Finalize();
 
-            void AddFileDevice(FileDeviceBase *file_device);
+            void RegisterFileDevice(FileDeviceBase *file_device);
+            void RemoveFileDevice(FileDeviceBase *file_device);
     
             Result LoadFile(const char *path, FileLoadContext *file_load_context);
+            Result LoadFileWithDecompressor(const char *path, FileLoadContext *file_load_context, IDecompressor *decompressor);
 
             FileDeviceBase *GetFileDeviceByDrive(const char *drive);
             FileDeviceBase *GetFileDeviceByPath(const char *path);

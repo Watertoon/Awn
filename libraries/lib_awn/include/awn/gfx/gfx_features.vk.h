@@ -64,6 +64,8 @@ namespace awn::gfx {
         SupportsMaintenance4,
 
         /* VkPhysicalDeviceFeatures14 features */
+        SupportsVertexAttributeInstanceRateDivisor,
+        SupportsVertexAttributeInstanceRateZeroDivisor,
         SupportsIndexTypeU8,
         SupportsDynamicRenderingLocalRead,
         SupportsMaintenance5,
@@ -138,6 +140,8 @@ namespace awn::gfx {
         SupportsSynchronization2,
         SupportsDynamicRendering,
         SupportsMaintenance4,
+        SupportsVertexAttributeInstanceRateDivisor,
+        SupportsVertexAttributeInstanceRateZeroDivisor,
         SupportsIndexTypeU8,
         SupportsDynamicRenderingLocalRead,
         SupportsMaintenance5,
@@ -210,9 +214,7 @@ namespace awn::gfx {
         }
 
         constexpr bool HasRequiredFeatures(const OptionalFeatureMask *required_optional_features) {
-            for ([[maybe_unused]] const u32 &index : this->missing_required_feature_mask) {
-                return false;
-            }
+            if (this->missing_required_feature_mask.begin() != this->missing_required_feature_mask.end()) { return false; }
             for (const u32 &index : *required_optional_features) {
                 if (this->missing_optional_feature_mask.GetBit(index)) { return false; }
             }

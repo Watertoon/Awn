@@ -17,41 +17,40 @@
 
 namespace awn::gfx {
 
-    bool Buffer::Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info) {
+    Result Buffer::Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info) {
 
         /* Create vk buffer  */
-        m_vk_buffer = gfx::impl::CreateVkBuffer(memory_handle, memory_offset, buffer_info);
-        if (m_vk_buffer == VK_NULL_HANDLE) { return false; }
+        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), memory_handle, memory_offset, buffer_info));
 
         /* Set gpu address */
-        m_address = mem::MapGpuMemoryHandle(memory_handle);
+        m_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory_handle.GetAddress()) + memory_offset);
 
         /* Query VkDeviceAddress */
-        m_gpu_buffer_address = gfx::impl::GetGpuBufferAddress(m_vk_buffer);
+        m_gpu_address = gfx::impl::GetGpuAddress(m_vk_buffer);
 
-        return true;
+        RESULT_RETURN_SUCCESS;
     }
 
-    bool Buffer::Initialize(void *gpu_memory_address, const BufferInfo *buffer_info) {
+    Result Buffer::Initialize(void *gpu_memory_address, const BufferInfo *buffer_info) {
 
         /* Create vk buffer  */
-        m_vk_buffer = gfx::impl::CreateVkBuffer(gpu_memory_address, buffer_info);
-        if (m_vk_buffer == VK_NULL_HANDLE) { return false; }
+        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), gpu_memory_address, buffer_info));
 
         /* Set gpu address */
         m_address = gpu_memory_address;
 
         /* Query VkDeviceAddress */
-        m_gpu_buffer_address = gfx::impl::GetGpuBufferAddress(m_vk_buffer);
+        m_gpu_address = gfx::impl::GetGpuAddress(m_vk_buffer);
 
-        return true;
+        RESULT_RETURN_SUCCESS;
     }
 
     void Buffer::Finalize() {
         if (m_vk_buffer != VK_NULL_HANDLE) {
             gfx::impl::DestroyVkBuffer(m_vk_buffer);
-            m_vk_buffer         = VK_NULL_HANDLE;
-            m_gpu_buffer_address = gfx::cInvalidGpuBufferAddress;
+            m_vk_buffer = VK_NULL_HANDLE;
+            m_gpu_address = gfx::cInvalidGpuAddress;
+            m_address = nullptr;
         }
     }
 
@@ -75,19 +74,18 @@ namespace awn::gfx {
         return { memory_requirements_2.memoryRequirements.size, static_cast<s32>(memory_requirements_2.memoryRequirements.alignment), };
     }
 
-    bool Buffer::InitializeForDedicatedAllocation(const BufferInfo *buffer_info) {
+    Result Buffer::InitializeForDedicatedAllocation(const BufferInfo *buffer_info) {
 
         /* Create VkBuffer */
-        m_vk_buffer = gfx::impl::CreateVkBuffer(buffer_info);
-        if (m_vk_buffer == VK_NULL_HANDLE) { return false; }
+        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), buffer_info));
 
-        return true;
+        RESULT_RETURN_SUCCESS;
     }
 
     void Buffer::SetAddressForDedicatedAllocation(void *gpu_memory_address) {
 
         /* Query VkDeviceAddress */
-        m_gpu_buffer_address = gfx::impl::GetGpuBufferAddress(m_vk_buffer);
+        m_gpu_address = gfx::impl::GetGpuAddress(m_vk_buffer);
 
         /* Map memory */
         m_address = gpu_memory_address;

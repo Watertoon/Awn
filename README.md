@@ -17,6 +17,7 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
 
 # Vp Features
 * vp::codec; compression (zstd), encryption (nisasyst, aes128cbc)
+* vp::image; a png decoder and encoder utility on top of libpng
 * vp::imem; a base heap interface for memory allocators
 * vp::res; Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
   * Ainb (AI Node Binary)

@@ -56,13 +56,14 @@ namespace awn::gfx {
     }
 
     struct PrimitiveShapeInfo {
-        ShapeFormat  shape_format;
-        IndexFormat  index_format;
-        u32          vertex_count;
-        u32          index_count;
-        u32          vertex_buffer_size;
-        u32          index_buffer_size;
-        u32          segment_count;
+        ShapeFormat       shape_format = ShapeFormat::Position;
+        IndexFormat       index_format = IndexFormat::U16;
+        PrimitiveTopology primitive_topology = PrimitiveTopology::Triangles;
+        u32               vertex_count;
+        u32               index_count;
+        u32               vertex_buffer_size;
+        u32               index_buffer_size;
+        u32               segment_count;
     };
 
     void CalculatePrimitiveShapeInfoRoundRectangle(PrimitiveShapeInfo *out_primitive_shape_info);

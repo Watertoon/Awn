@@ -368,6 +368,7 @@ namespace vp::res {
         (((static_cast<u32>(channel_format) & 0xff) << 8) | (static_cast<u32>(type_format) & 0xff))
 
     enum class GfxImageFormat : u32 {
+        None_Unorm            = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::None,         GfxTypeFormat::Unorm),
         R8_Unorm              = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::R8,           GfxTypeFormat::Unorm),
         R8_Snorm              = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::R8,           GfxTypeFormat::Snorm),
         R8_UInt               = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::R8,           GfxTypeFormat::UInt),
@@ -469,6 +470,7 @@ namespace vp::res {
     };
     VP_ENUM_TRAITSV(
         vp::res::GfxImageFormat, GfxImageFormat,
+        None_Unorm,
         R8_Unorm,
         R8_Snorm,
         R8_UInt,
@@ -727,19 +729,64 @@ namespace vp::res {
                 u8  reserve0            : 4;
             };
         };
-        u8  image_storage_dimension = static_cast<u8>(GfxImageStorageDimension::Type2d);
-        u16 tile_mode = static_cast<u16>(GfxTileMode::Optimal);
-        u16 swizzle = 0;
-        u16 mip_level_count = 1;
-        u16 sample_count = 1;
+        u8  image_storage_dimension;
+        u16 tile_mode;
+        u16 swizzle;
+        u16 mip_level_count;
+        u16 sample_count;
         u16 reserve1;
-        u32 image_format = 0;
-        u32 gpu_access_flags = 0;
-        u32 width = 1;
-        u32 height = 1;
-        u32 depth = 1;
-        u32 array_layer_count = 1;
+        u32 image_format;
+        u32 gpu_access_flags;
+        u32 width;
+        u32 height;
+        u32 depth;
+        u32 array_layer_count;
         u32 packaged_texture_layout;
+
+        constexpr void SetDefaults() {
+            this->image_storage_dimension = static_cast<u8>(GfxImageStorageDimension::Type2d);
+            this->tile_mode = static_cast<u16>(GfxTileMode::Optimal);
+            this->swizzle = 0;
+            this->mip_level_count = 1;
+            this->sample_count = 1;
+            this->image_format = static_cast<u32>(GfxImageFormat::None_Unorm);
+            this->gpu_access_flags = 0;
+            this->width = 1;
+            this->height = 1;
+            this->depth = 1;
+            this->array_layer_count = 1;
+        }
+
+        constexpr void SetImageStorageDimension(GfxImageStorageDimension image_storage_dimension) {
+            this->image_storage_dimension = static_cast<u8>(image_storage_dimension);
+        }
+        constexpr void SetTileMode(GfxTileMode tile_mode) {
+            this->tile_mode = static_cast<u32>(tile_mode);
+        }
+        constexpr void SetMipLevelCount(u16 mip_level_count) {
+            this->mip_level_count = mip_level_count;
+        }
+        constexpr void SetSampleCount(u16 sample_count) {
+            this->sample_count = sample_count;
+        }
+        constexpr void SetImageFormat(GfxImageFormat image_format) {
+            this->image_format = static_cast<u32>(image_format);
+        }
+        constexpr void SetGpuAccessFlags(GfxGpuAccessFlags gpu_access_flags) {
+            this->gpu_access_flags = static_cast<u32>(gpu_access_flags);
+        }
+        constexpr void SetWidth(u32 width) {
+            this->width = width;
+        }
+        constexpr void SetHeight(u32 height) {
+            this->height = height;
+        }
+        constexpr void SetDepth(u32 depth) {
+            this->depth = depth;
+        }
+        constexpr void SetArrayLayerCount(u32 array_layer_count) {
+            this->array_layer_count = array_layer_count;
+        }
     };
     static_assert(sizeof(ResGfxTextureInfo) == 0x28);
 
@@ -816,6 +863,47 @@ namespace vp::res {
         u32  array_layer_count;
         u32  reserve3[2];
         T   *texture;
+
+        constexpr void SetDefaults() {
+            this->image_dimension = static_cast<u8>(GfxImageDimension::Type2d);
+            this->depth_stencil_mode = static_cast<u8>(GfxTextureDepthStencilMode::Depth);
+            this->image_format = static_cast<u32>(GfxImageFormat::None_Unorm);
+            this->swizzle_x = static_cast<u8>(GfxTextureSwizzle::R);
+            this->swizzle_y = static_cast<u8>(GfxTextureSwizzle::G);
+            this->swizzle_z = static_cast<u8>(GfxTextureSwizzle::B);
+            this->swizzle_w = static_cast<u8>(GfxTextureSwizzle::A);
+            this->base_mip_level = 0;
+            this->mip_level_count = 1;
+            this->base_array_layer = 0;
+            this->array_layer_count = 1;
+        }
+
+        constexpr void SetImageDimension(GfxImageDimension image_dimension) {
+            this->image_dimension = static_cast<u8>(image_dimension);
+        }
+        constexpr void SetDepthStencilMode(GfxTextureDepthStencilMode depth_stencil_mode) {
+            this->depth_stencil_mode = static_cast<u8>(depth_stencil_mode);
+        }
+        constexpr void SetImageFormat(GfxImageFormat image_format) {
+            this->image_format = static_cast<u32>(image_format);
+        }
+        constexpr void SetSwizzle(GfxTextureSwizzle x, GfxTextureSwizzle y, GfxTextureSwizzle z, GfxTextureSwizzle w) {
+            this->swizzle_x = static_cast<u8>(x);
+            this->swizzle_y = static_cast<u8>(y);
+            this->swizzle_z = static_cast<u8>(z);
+            this->swizzle_w = static_cast<u8>(w);
+        }
+        constexpr void SetMipLevelRange(u32 base_mip_level, u32 mip_level_count) {
+            this->base_mip_level = base_mip_level;
+            this->mip_level_count = mip_level_count;
+        }
+        constexpr void SetArrayLayerRange(u32 base_array_layer, u32 array_layer_count) {
+            this->base_array_layer = base_array_layer;
+            this->array_layer_count = array_layer_count;
+        }
+        constexpr void SetTexture(T *texture) {
+            this->texture = texture;
+        }
     };
     static_assert(sizeof(ResGfxTextureViewInfo<void*>) == 0x38);
 
@@ -944,22 +1032,56 @@ namespace vp::res {
         u32   reserve3;
         
         constexpr void SetDefaults() {
-            wrap_mode_u       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
-            wrap_mode_v       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
-            wrap_mode_w       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
-            compare_op        =  static_cast<u8>(GfxCompareOperation::Never);
-            border_color      =  static_cast<u8>(GfxBorderColor::White);
-            max_anisotropy    =  1;
-            mip_map_filter    =  static_cast<u8>(GfxMipMapFilter::Linear);
-            mag_filter        =  static_cast<u8>(GfxMagFilter::Linear);
-            min_filter        =  static_cast<u8>(GfxMinFilter::Linear);
-            is_enable_anisotropy =  false;
-            is_compare_r_to_texture = false;
-            reduction_filter  =  static_cast<u8>(GfxReductionFilter::Average);
-            reserve0          =  0;
-            lod_clamp_min     = -1000.0;
-            lod_clamp_max     =  1000.0;
-            lod_bias          =  0.0;
+            this->wrap_mode_u       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
+            this->wrap_mode_v       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
+            this->wrap_mode_w       =  static_cast<u8>(GfxWrapMode::ClampToEdge);
+            this->compare_op        =  static_cast<u8>(GfxCompareOperation::Never);
+            this->border_color      =  static_cast<u8>(GfxBorderColor::White);
+            this->max_anisotropy    =  1;
+            this->mip_map_filter    =  static_cast<u8>(GfxMipMapFilter::Linear);
+            this->mag_filter        =  static_cast<u8>(GfxMagFilter::Linear);
+            this->min_filter        =  static_cast<u8>(GfxMinFilter::Linear);
+            this->is_enable_anisotropy = false;
+            this->is_compare_r_to_texture = false;
+            this->reduction_filter  =  static_cast<u8>(GfxReductionFilter::Average);
+            this->reserve0          =  0;
+            this->lod_clamp_min     = -1000.0;
+            this->lod_clamp_max     =  1000.0;
+            this->lod_bias          =  0.0;
+        }
+
+        constexpr void SetWrapModes(GfxWrapMode u, GfxWrapMode v, GfxWrapMode w) {
+            this->wrap_mode_u = static_cast<u8>(u);
+            this->wrap_mode_v = static_cast<u8>(v);
+            this->wrap_mode_w = static_cast<u8>(w);
+        }
+        constexpr void SetCompareOperation(GfxCompareOperation compare_op) {
+            this->compare_op = static_cast<u8>(compare_op);
+        }
+        constexpr void SetBorderColor(GfxBorderColor border_color) {
+            this->border_color = static_cast<u8>(border_color);
+        }
+        constexpr void SetAnisotropy(bool is_enable_anisotropy, u8 max_anisotropy) {
+            this->is_enable_anisotropy = is_enable_anisotropy;
+            this->max_anisotropy = max_anisotropy;
+        }
+        constexpr void SetFilters(GfxMipMapFilter mip_map_filter, GfxMagFilter mag_filter, GfxMinFilter min_filter) {
+            this->mip_map_filter = static_cast<u8>(mip_map_filter);
+            this->mag_filter = static_cast<u8>(mag_filter);
+            this->min_filter = static_cast<u8>(min_filter);
+        }
+        constexpr void SetIsCompareRToTexture(bool is_compare_r_to_texture) {
+            this->is_compare_r_to_texture = is_compare_r_to_texture;
+        }
+        constexpr void SetReductionFilter(GfxReductionFilter reduction_filter) {
+            this->reduction_filter = static_cast<u8>(reduction_filter);
+        }
+        constexpr void SetLodClamp(float lod_clamp_min, float lod_clamp_max) {
+            this->lod_clamp_min = lod_clamp_min;
+            this->lod_clamp_max = lod_clamp_max;
+        }
+        constexpr void SetLodBias(float lod_bias) {
+            this->lod_bias = lod_bias;
         }
     };
     static_assert(sizeof(ResGfxSamplerInfo) == 0x20);

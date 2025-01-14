@@ -81,9 +81,12 @@ namespace vp::util {
                 while (offset != cInvalidOffset) {
 
                     /* Try acquire object and increment offset */
-                    FreeList *list       = std::addressof(m_array[offset]);
+                    FreeList *list = std::addressof(m_array[offset]);
                     const u64 next_state = ((last_state + 0x1'0000'0000) & 0xffff'ffff'0000'0000) | list->next;
-                    if (vp::util::InterlockedCompareExchange(std::addressof(last_state), std::addressof(m_state), next_state, last_state) == false) { offset = static_cast<u32>(last_state); continue; }
+                    if (!vp::util::InterlockedCompareExchangeAcquire(std::addressof(last_state), std::addressof(m_state), next_state, last_state)) {
+                        offset = static_cast<u32>(last_state);
+                        continue;
+                    }
 
                     /* Construct new object */
                     T *allocation = reinterpret_cast<T>(list);

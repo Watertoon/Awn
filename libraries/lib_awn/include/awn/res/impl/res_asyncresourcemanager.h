@@ -55,14 +55,14 @@ namespace awn::res::impl {
         FileDeviceBase *file_device;
     };
     struct ResourceSizePrepareInfo {
-        size_t               user_resource_size;
-        s32                  file_alignment;
-        ArchiveResource     *archive_resource;
-        FileDeviceBase      *file_device;
-        ResourceFactoryBase *resource_factory;
-        CompressionType      compression_type;
-        const char          *formatted_path;
-        const char          *original_path;
+        size_t                     user_resource_size;
+        s32                        file_alignment;
+        ArchiveResource           *archive_resource;
+        FileDeviceBase            *file_device;
+        const ResourceFactoryBase *resource_factory;
+        CompressionType            compression_type;
+        const char                *formatted_path;
+        const char                *original_path;
     };
 
     class ResourceMemoryManager;
@@ -122,7 +122,7 @@ namespace awn::res::impl {
             ResourceSizeTableManager       m_resource_size_table_manager;
 
             mem::Heap                     *m_zsdic_heap;
-            DecompressorManager            m_decompressor_manager;
+            ParallelDecompressorManager    m_decompressor_manager;
 
             sys::Mutex                     m_persistant_thread_array_cs;
             PersistantThreadArray         *m_persistant_thread_array;
@@ -252,7 +252,7 @@ namespace awn::res::impl {
             u32 AllocateDecompressor();
             void FreeDecompressor(u32 handle);
 
-            IDecompressor *GetDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask);
+            IParallelDecompressor *GetParallelDecompressor(u32 handle, CompressionType decompressor_type, u32 priority, sys::CoreMask core_mask);
         public:
             bool IsComposeEnabled() { return false; }
 

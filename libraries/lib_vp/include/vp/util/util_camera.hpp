@@ -23,7 +23,7 @@ namespace vp::util {
         public:
             VP_RTTI_BASE(Camera);
         public:
-            constexpr Camera() : m_camera_mtx() {/*...*/}
+            constexpr Camera() : m_camera_mtx(vp::util::MatrixRowMajor4x3f::cIdentity) {/*...*/}
             constexpr virtual ~Camera() {/*...*/}
 
             void UpdateMatrix() {
@@ -38,7 +38,7 @@ namespace vp::util {
                 return std::addressof(m_camera_mtx);
             }
 
-            constexpr inline virtual void CalculateCameraMatrix(MatrixRowMajor4x3f *out_view_matrix) const = 0;
+            constexpr virtual void CalculateCameraMatrix(MatrixRowMajor4x3f *out_view_matrix) const = 0;
     };
 
     class LookAtCamera : public Camera {
@@ -49,37 +49,41 @@ namespace vp::util {
         public:
             VP_RTTI_DERIVED(LookAtCamera, Camera);
         public:
+            constexpr LookAtCamera() : Camera(), m_pos(Vector3d{0.0,0.0,10.0}), m_at(Vector3d{0.0,0.0,0.0}), m_up(Vector3f{0.0f,1.0f,0.0f}) {/*...*/}
             constexpr LookAtCamera(const Vector3f& pos, const Vector3f& at, const Vector3f& up) : Camera(), m_pos(CastVector3d(pos)), m_at(CastVector3d(at)), m_up(up) {/*...*/}
             constexpr virtual ~LookAtCamera() override {/*...*/}
 
             constexpr virtual void CalculateCameraMatrix(MatrixRowMajor4x3f *out_view_matrix) const override {
 
                 /* Calculate normalized direction */
-                Vector3f dir = CastVector3f(m_pos - m_at);
-                dir = Normalize(dir);
+                const Vector3f inv_dir = this->GetInverseDirection();
 
                 /* Calculate normalized right */
-                Vector3f right = Cross(m_up, dir);
-                right = Normalize(right);
+                const Vector3f right = Cross(m_up, inv_dir);
+                const Vector3f norm_right = Normalize(right);
 
                 /* Calculate normalized up */
-                const Vector3f up = Cross(dir, right);
+                const Vector3f up = Cross(inv_dir, norm_right);
+
+                /* Calculate position */
+                const Vector3d d_right = CastVector3d(norm_right);
+                const Vector3d d_up = CastVector3d(up);
+                const Vector3d d_dir = CastVector3d(inv_dir);
+                const double pos_x = m_pos[0];
+                const double pos_y = m_pos[1];
+                const double pos_z = m_pos[2];
+                const Vector3f pos = {
+                    -static_cast<float>(d_right[0] * pos_x + d_right[1] * pos_y + d_right[2] * pos_z),
+                    -static_cast<float>(d_up[0]    * pos_x + d_up[1]    * pos_y + d_up[2]    * pos_z),
+                    -static_cast<float>(d_dir[0]   * pos_x + d_dir[1]   * pos_y + d_dir[2]   * pos_z),
+                    0.0f,
+                };
 
                 /* Set matrix */
-                (*out_view_matrix)[0,0] = right[0];
-                (*out_view_matrix)[1,0] = right[1];
-                (*out_view_matrix)[2,0] = right[2];
-                (*out_view_matrix)[0,1] = up[0];
-                (*out_view_matrix)[1,1] = up[1];
-                (*out_view_matrix)[2,1] = up[2];
-                (*out_view_matrix)[0,2] = dir[0];
-                (*out_view_matrix)[1,2] = dir[1];
-                (*out_view_matrix)[2,2] = dir[2];
-
-                /* Calculate position inline */
-                (*out_view_matrix)[3,0] = -(right[0] * m_pos[0] + right[1] * m_pos[1] + right[2] * m_pos[2]);
-                (*out_view_matrix)[3,1] = -(up[0]    * m_pos[0] + up[1]    * m_pos[1] + up[2]    * m_pos[2]);
-                (*out_view_matrix)[3,2] = -(dir[0]   * m_pos[0] + dir[1]   * m_pos[1] + dir[2]   * m_pos[2]);
+                StoreColumn(out_view_matrix, norm_right.v, 0);
+                StoreColumn(out_view_matrix, up.v, 1);
+                StoreColumn(out_view_matrix, inv_dir.v, 2);
+                StoreColumn(out_view_matrix, pos.v, 3);
 
                 return;
             }
@@ -93,9 +97,9 @@ namespace vp::util {
 
             template <typename V>
                 requires (V::cIsVectorType && 3 <= V::cVectorCount)
-            constexpr void SetAt(const Vector3f &new_at) {
+            constexpr void SetAt(const V &new_at) {
                 const Vector3d next = CastVector3d(new_at);
-                m_pos = next;
+                m_at = next;
             }
 
             template <typename V>
@@ -107,6 +111,16 @@ namespace vp::util {
             }
 
             constexpr Vector3f GetPosition() const { return CastVector3f(m_pos); }
+            constexpr Vector3f GetInverseDirection() const {
+                Vector3f dir = CastVector3f(m_pos - m_at);
+                dir = Normalize(dir);
+                return dir;
+            }
+            constexpr Vector3f GetDirection() const {
+                Vector3f dir = CastVector3f(m_at - m_pos);
+                dir = Normalize(dir);
+                return dir;
+            }
             constexpr Vector3f GetAt() const {  return CastVector3f(m_at); }
             constexpr Vector3f GetUp() const {  return m_up; }
 

@@ -26,6 +26,7 @@ namespace awn::gfx {
         out_primitive_shape_info->vertex_count       = segment_count + 1;
         out_primitive_shape_info->vertex_buffer_size = stride * (segment_count + 1);
         out_primitive_shape_info->index_count        = segment_count * 3;
+        out_primitive_shape_info->segment_count      = segment_count;
 
         /* Set shape format */
         out_primitive_shape_info->shape_format = shape_format;
@@ -48,12 +49,9 @@ namespace awn::gfx {
         return;
     }
 
-    void CalculateVertexBufferPrimitiveShapeCircle(void *vertex_buffer, size_t vertex_buffer_size, PrimitiveShapeInfo *primitive_shape_info);
+    void CalculateVertexBufferPrimitiveShapeCircle(void *vertex_buffer, size_t vertex_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
 
-    template <typename T>
-    void CalculateIndexBufferPrimitiveShapeCircle(T *index_buffer, size_t index_buffer_size, PrimitiveShapeInfo *primitive_shape_info);
+    void CalculateIndexBufferPrimitiveShapeCircle(void *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
 
-    void CalculatePrimitiveShapeCircle(void *vertex_buffer, size_t vertex_buffer_size, void *index_buffer, size_t index_buffer_size, PrimitiveShapeInfo *primitive_shape_info);
-
-    void CreatePrimitiveShapeCircle(void **out_vertex_buffer_address, void **out_index_buffer_address, mem::Heap *gpu_heap, PrimitiveShapeInfo *primitive_shape_info);
+    void CalculatePrimitiveShapeCircle(void *vertex_buffer, size_t vertex_buffer_size, void *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
 }

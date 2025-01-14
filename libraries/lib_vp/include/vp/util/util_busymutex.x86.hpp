@@ -37,10 +37,12 @@ namespace vp::util {
 
                 /* Wait until release count is matched */
                 if ((wait & 0xffff) != ((wait >> 0x10) & 0xffff)) {
+                    u16 count;
                     do {
                         /* Signal the processor to not aggressively speculatively execute for a bit */
                         util::x86::pause();
-                    } while (m_release_count != ((wait >> 0x10) & 0xffff));
+                        count = m_release_count;
+                    } while (count != ((wait >> 0x10) & 0xffff));
                 }
 
                 return;

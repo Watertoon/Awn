@@ -31,15 +31,17 @@ namespace awn::gfx {
     };
 
 	class Texture {
+        public:
+            friend class CommandBuffer;
         private:
-            VkImage          m_vk_image;
-            TextureInfo      m_texture_info;
+            VkImage     m_vk_image;
+            TextureInfo m_texture_info;
         public:
             constexpr ALWAYS_INLINE Texture() : m_vk_image(VK_NULL_HANDLE), m_texture_info() {/*...*/}
             constexpr ALWAYS_INLINE ~Texture() {/*...*/}
 
-            bool Initialize(void *gpu_memory_address, const TextureInfo *texture_info);
-            bool Initialize(mem::GpuMemoryHandle gpu_memory_handle, const TextureInfo *texture_info);
+            Result Initialize(mem::GpuMemoryHandle gpu_memory_handle, size_t memory_offset, const TextureInfo *texture_info);
+            Result Initialize(void *gpu_memory_address, const TextureInfo *texture_info);
             void Finalize();
 
             void CopyMemoryToTexture(const void * const*memory_array, const TextureCopyRegion *copy_region_array, u32 copy_region_count, bool is_no_conversion = false);
@@ -74,7 +76,7 @@ namespace awn::gfx {
                 return vp::res::GfxImageFormatToVkImageAspectFlags(this->GetImageFormat());
             }
 
-            bool InitializeForDedicatedAllocation(const TextureInfo *texture_info);
+            Result InitializeForDedicatedAllocation(const TextureInfo *texture_info, VkImageUsageFlags vk_image_usage_flags, void *pnext = nullptr);
     };
     static_assert(sizeof(Texture) <= cMaxGfxTextureSize);
 }

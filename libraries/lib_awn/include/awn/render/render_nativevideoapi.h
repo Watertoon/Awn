@@ -20,5 +20,6 @@ namespace awn::render {
     void InitializeNativeVideo(mem::Heap *heap);
     void FinalizeNativeVideo();
 
-    void CalculateNativeVideo();
+    void SubmitAndPresentAsync(gfx::CommandList *command_list_array, u32 command_list_count);
+    void WaitAndCompletePresent();
 }

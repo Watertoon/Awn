@@ -17,7 +17,7 @@
 
 namespace awn::res {
 
-    class ZstdDecompressor : public IDecompressor {
+    class ParallelZstdDecompressor : public IParallelDecompressor {
         public:
             static constexpr size_t cMaxDictionaryCount = 8;
             static constexpr size_t cReadSize           = 0xd'0000;
@@ -28,7 +28,7 @@ namespace awn::res {
         public:
             class DecompressorThread : public sys::Thread {
                 public:
-                    friend class ZstdDecompressor;
+                    friend class ParallelZstdDecompressor;
                 private:
                     u32                           m_stream_count;
                     u32                           m_is_error;
@@ -49,10 +49,10 @@ namespace awn::res {
             ZSTD_DDict           *m_dic_array[cMaxDictionaryCount];
             DictionaryAllocator   m_dic_index_allocator;
         public:
-            VP_RTTI_DERIVED(ZstdDecompressor, IDecompressor);
+            VP_RTTI_DERIVED(ParallelZstdDecompressor, IParallelDecompressor);
         public:
-            constexpr ZstdDecompressor() : m_decompressor_thread(), m_work_memory(), m_dic_map(), m_dic_array{}, m_dic_index_allocator() {/*...*/}
-            constexpr virtual ~ZstdDecompressor() {/*...*/}
+            constexpr ParallelZstdDecompressor() : m_decompressor_thread(), m_work_memory(), m_dic_map(), m_dic_array{}, m_dic_index_allocator() {/*...*/}
+            constexpr virtual ~ParallelZstdDecompressor() {/*...*/}
 
             void Initialize(mem::Heap *heap);
             void Finalize();
