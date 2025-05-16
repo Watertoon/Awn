@@ -39,5 +39,7 @@ namespace awn::gfx {
                 if (!tex_view_samp_mgr->IsTextureViewSlotValid(m_texture_slot)) { return cInvalidDescriptorSlot; }
                 return m_texture_slot; 
             }
+
+            bool IsSameInfo(const TextureViewInfo *texture_view_info);
     };
 }

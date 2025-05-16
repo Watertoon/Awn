@@ -61,7 +61,7 @@ namespace awn::gfx::impl {
             u32                    m_reference_count;
             u32                    m_priority;
             MemoryPropertyFlags    m_memory_property_flags;
-            mem::GpuMemoryHandle   m_memory_handle;
+            MemoryPool             m_memory_pool;
             GpuMemoryRequirements  m_memory_requirements;
             async::AsyncTask       m_transfer_task;
             gfx::Texture           m_texture;
@@ -70,7 +70,7 @@ namespace awn::gfx::impl {
             bool InitializeForPlatform(const TextureUnitInfo *texture_unit_info);
             bool TransferForPlatform();
         public:
-            TextureUnit() : m_status(), m_state(), m_reference_count(), m_priority(), m_memory_property_flags(), m_memory_handle(), m_memory_requirements{}, m_transfer_task(), m_texture(), m_import_mip_array{} {/*...*/}
+            TextureUnit() : m_status(), m_state(), m_reference_count(), m_priority(), m_memory_property_flags(), m_memory_pool(), m_memory_requirements{}, m_transfer_task(), m_texture(), m_import_mip_array{} {/*...*/}
             ~TextureUnit() {/*...*/}
 
             bool Initialize(const TextureUnitInfo *texture_unit_info);

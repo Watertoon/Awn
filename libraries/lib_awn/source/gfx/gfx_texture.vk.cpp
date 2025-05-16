@@ -17,10 +17,10 @@
 
 namespace awn::gfx {
 
-    Result Texture::Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const TextureInfo *texture_info) {
+    Result Texture::Initialize(MemoryPool *memory_pool, size_t memory_offset, const TextureInfo *texture_info) {
 
         /* Create image by gpu memory address */
-        RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), memory_handle, memory_offset, texture_info));
+        RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), memory_pool, memory_offset, texture_info));
 
         /* Transition to general */
         const VkHostImageLayoutTransitionInfo trans_info = {
@@ -44,6 +44,7 @@ namespace awn::gfx {
 
         /* Save texture meta data */
         m_texture_info = *texture_info;
+        m_memory_offset = memory_offset;
 
         RESULT_RETURN_SUCCESS;
     }
@@ -51,7 +52,9 @@ namespace awn::gfx {
     Result Texture::Initialize(void *gpu_memory_address, const TextureInfo *texture_info) {
 
         /* Create image by gpu memory address */
-        RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), gpu_memory_address, texture_info));
+        size_t offset;
+        MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_memory_address);
+        RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), memory_pool, offset, texture_info));
 
         /* Transition to general */
         const VkHostImageLayoutTransitionInfo trans_info = {
@@ -75,6 +78,7 @@ namespace awn::gfx {
 
         /* Save texture meta data */
         m_texture_info = *texture_info;
+        m_memory_offset = offset;
 
         RESULT_RETURN_SUCCESS;
     }

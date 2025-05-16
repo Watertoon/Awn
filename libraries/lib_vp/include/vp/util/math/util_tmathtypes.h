@@ -18,107 +18,155 @@
 namespace vp::util {
 
     /* Vector */
-    template <typename T>
+    template <typename T, bool IsVectorized>
     struct TVector2Helper {
         static constexpr bool cIsDummy = true;
     };
 
     template <>
-    struct TVector2Helper<float> {
+    struct TVector2Helper<float, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector2f;
     };
     template <>
-    struct TVector2Helper<double> {
+    struct TVector2Helper<double, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector2d;
     };
     template <>
-    struct TVector2Helper<s32> {
+    struct TVector2Helper<s32, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector2i;
     };
 
-	template <typename T>
-        requires (!TVector2Helper<T>::cIsDummy)
-	using TVector2 = TVector2Helper<T>::Type;
+    template <>
+    struct TVector2Helper<float, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Float2;
+    };
+    template <>
+    struct TVector2Helper<double, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Double2;
+    };
+    template <>
+    struct TVector2Helper<s32, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Int2;
+    };
 
-    template <typename T>
+	template <typename T, bool IsVectorized>
+        requires (!TVector2Helper<T, IsVectorized>::cIsDummy)
+	using TVector2 = TVector2Helper<T, IsVectorized>::Type;
+
+    template <typename T, bool IsVectorized>
     struct TVector3Helper {
         static constexpr bool cIsDummy = true;
     };
 
     template <>
-    struct TVector3Helper<float> {
+    struct TVector3Helper<float, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector3f;
     };
     template <>
-    struct TVector3Helper<double> {
+    struct TVector3Helper<double, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector3d;
     };
     template <>
-    struct TVector3Helper<s32> {
+    struct TVector3Helper<s32, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector3i;
     };
 
-	template <typename T>
-        requires (!TVector3Helper<T>::cIsDummy)
-	using TVector3 = TVector3Helper<T>::Type;
+    template <>
+    struct TVector3Helper<float, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Float3;
+    };
+    template <>
+    struct TVector3Helper<double, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Double3;
+    };
+    template <>
+    struct TVector3Helper<s32, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Int3;
+    };
 
-    template <typename T>
+	template <typename T, bool IsVectorized>
+        requires (!TVector3Helper<T, IsVectorized>::cIsDummy)
+	using TVector3 = TVector3Helper<T, IsVectorized>::Type;
+
+    template <typename T, bool IsVectorized>
     struct TVector4Helper {
         static constexpr bool cIsDummy = true;
     };
 
     template <>
-    struct TVector4Helper<float> {
+    struct TVector4Helper<float, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector4f;
     };
     template <>
-    struct TVector4Helper<double> {
+    struct TVector4Helper<double, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector4d;
     };
     template <>
-    struct TVector4Helper<s32> {
+    struct TVector4Helper<s32, true> {
         static constexpr bool cIsDummy = false;
         using Type = Vector4i;
     };
 
-	template <typename T>
-        requires (!TVector4Helper<T>::cIsDummy)
-	using TVector4 = TVector4Helper<T>::Type;
+    template <>
+    struct TVector4Helper<float, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Float4;
+    };
+    template <>
+    struct TVector4Helper<double, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Double4;
+    };
+    template <>
+    struct TVector4Helper<s32, false> {
+        static constexpr bool cIsDummy = false;
+        using Type = Int4;
+    };
 
-	template <typename T, u32 Count>
+	template <typename T, bool IsVectorized>
+        requires (!TVector4Helper<T, IsVectorized>::cIsDummy)
+	using TVector4 = TVector4Helper<T, IsVectorized>::Type;
+
+	template <typename T, u32 Count, bool IsVectorized>
     struct TVectorHelper {
         static constexpr bool cIsDummy = true;
     };
 
-	template <typename T>
-    struct TVectorHelper<T, 2> {
+	template <typename T, bool IsVectorized>
+    struct TVectorHelper<T, 2, IsVectorized> {
         static constexpr bool cIsDummy = false;
-        using Type = TVector2<T>::Type;
+        using Type = TVector2<T, IsVectorized>;
     };
 
-	template <typename T>
-    struct TVectorHelper<T, 3> {
+	template <typename T, bool IsVectorized>
+    struct TVectorHelper<T, 3, IsVectorized> {
         static constexpr bool cIsDummy = false;
-        using Type = TVector3<T>::Type;
+        using Type = TVector3<T, IsVectorized>;
     };
 
-	template <typename T>
-    struct TVectorHelper<T, 4> {
+	template <typename T, bool IsVectorized>
+    struct TVectorHelper<T, 4, IsVectorized> {
         static constexpr bool cIsDummy = false;
-        using Type = TVector4<T>::Type;
+        using Type = TVector4<T, IsVectorized>;
     };
 
-    template <typename T, u32 Count>
-        requires (!TVectorHelper<T, Count>::cIsDummy)
-    using TVector = TVectorHelper<T, Count>;
+    template <typename T, u32 Count, bool IsVectorized = true>
+        requires (!TVectorHelper<T, Count, IsVectorized>::cIsDummy)
+    using TVector = TVectorHelper<T, Count, IsVectorized>::Type;
 
     /* Matrix */
     template <typename T>
@@ -279,9 +327,9 @@ namespace vp::util {
 	using TMatrix = TMatrixHelper<T, ColumnCount, RowCount, IsRowMajor>::Type;
 
     using Real  = double;
-    using Real2 = Double2;
-    using Real3 = Double3;
-    using Real4 = Double4;
+    using Real2 = TVector<Real, 2, false>;
+    using Real3 = TVector<Real, 3, false>;
+    using Real4 = TVector<Real, 4, false>;
     
     using RealRowMajor33 = DoubleRowMajor3x3;
     using RealRowMajor43 = DoubleRowMajor4x3;
@@ -291,9 +339,9 @@ namespace vp::util {
     using RealColumnMajor43 = DoubleColumnMajor4x3;
     using RealColumnMajor44 = DoubleColumnMajor4x4;
 
-    using Vector2r = TVector2<Real>;
-    using Vector3r = TVector3<Real>;
-    using Vector4r = TVector4<Real>;
+    using Vector2r = TVector2<Real, true>;
+    using Vector3r = TVector3<Real, true>;
+    using Vector4r = TVector4<Real, true>;
 
     using MatrixRowMajor4x3r = TMatrixRowMajor4x3<Real>;
     using MatrixRowMajor4x4r = TMatrixRowMajor4x4<Real>;

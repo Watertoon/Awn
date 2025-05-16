@@ -18,6 +18,7 @@
 namespace vp::util {
 
     constexpr inline float cFloatNan                = NAN;
+    constexpr inline float cFloatNegativeNan        = -NAN;
     constexpr inline float cFloatInfinity           = INFINITY;
     constexpr inline float cFloatNegativeInfinity   = -INFINITY;
     constexpr inline float cFloatPi                 = 3.1415927;
@@ -28,7 +29,7 @@ namespace vp::util {
     constexpr inline float cFloatDegree180          = 180.0;
     constexpr inline float cFloatNormalizeEpsilon   = 9.094947e-14;
     constexpr inline float cFloatQuaternionEpsilon  = 0.00001;
-    constexpr inline float cFloatSquareroot0Point5  = 0.70710678;
+    constexpr inline float cFloatSquareRootOneHalf  = 0.70710678;
     constexpr inline float cFloatUlp                = 1.1920929E-7;
     constexpr inline float cFloatMax                = FLT_MAX;
 
@@ -39,7 +40,6 @@ namespace vp::util {
     constexpr inline double cDouble1Divided2Pi = 0.15915494;
     constexpr inline double cDoubleDegree180   = 180.0;
     constexpr inline double cDoubleMax         = DBL_MAX;
-
 
     template <typename T>
         requires (std::is_floating_point_v<T>)
@@ -55,11 +55,33 @@ namespace vp::util {
 
     template <typename T>
         requires (std::is_floating_point_v<T> || std::is_integral_v<T>)
-    constexpr T Modulo(T value0, T value1) {
+    constexpr T Modulo(T value, T by) {
         if constexpr (std::is_floating_point_v<T>) {
-            return std::fmod(value0, value1);
+            return std::fmod(value, by);
         }
-        return value0 % value1;
+        return value % by;
+    }
+
+    template <typename T>
+        requires (std::is_floating_point_v<T>)
+    constexpr T ModuloPi(T value) {
+        constexpr T pi = (sizeof(T) == sizeof(float)) ? cFloatPi : cDoublePi;
+        constexpr T one_div_pi2 = (sizeof(T) == sizeof(float)) ? cFloat1Divided2Pi : cDouble1Divided2Pi;
+        constexpr T pi2 = (sizeof(T) == sizeof(float)) ? cFloat2Pi : cDouble2Pi;
+        constexpr T pi_div_2 = (sizeof(T) == sizeof(float)) ? cFloatPiDivided2 : cDoublePiDivided2;
+        const T temp = value;
+        const T sel0 = (temp < 0.0f) ? -0.5f : 0.5f;
+        const s32 adj0 = static_cast<s32>(sel0 + (temp * one_div_pi2));
+        T adj1 = temp - (static_cast<T>(adj0) * pi2);
+        if (adj1 <= pi_div_2) {
+            if (adj1 < -pi_div_2) {
+                adj1 = -pi - adj1;
+            }
+        } else {
+            adj1 = pi - adj1;
+        }
+        const T fin = adj1;
+        return fin;
     }
 
     template <typename T>
@@ -74,19 +96,19 @@ namespace vp::util {
     template <typename T>
         requires (std::is_floating_point_v<T> || std::is_integral_v<T>)
     constexpr T NegateMultiplyAdd(T value0, T value1, T addend) {
-        return -(value0 * value1) + addend;
+        return (-value0 * value1) - addend;
     }
 
     template <typename T>
         requires (std::is_floating_point_v<T> || std::is_integral_v<T>)
     constexpr T MultiplySub(T value0, T value1, T addend) {
-        return (value0 * value1) - addend;
+        return (-value0 * value1) + addend;
     }
 
     template <typename T>
         requires (std::is_floating_point_v<T> || std::is_integral_v<T>)
     constexpr T NegateMultiplySub(T value0, T value1, T addend) {
-        return -(value0 * value1) - addend;
+        return (value0 * value1) - addend;
     }
 
     template <typename T>
@@ -96,6 +118,19 @@ namespace vp::util {
             return std::sqrt(value);
         }
         return static_cast<T>(std::sqrt(static_cast<double>(value)));
+    }
+
+    template <typename T>
+        requires (std::is_floating_point_v<T>)
+    constexpr T ReciprocalSquareRootNewton(T value) {
+        const T r = static_cast<T>(1) / value;
+        const T rsqrt = SquareRoot(r);
+        const T mx = static_cast<T>(-0.5) * value;
+        const T fma0 = MultiplyAdd(mx, r, static_cast<T>(0.5));
+        const T fma1 = MultiplyAdd(rsqrt, rsqrt, -r);
+        const T fma2 = MultiplyAdd(mx, fma1, fma0);
+        const T fma3 = MultiplyAdd(rsqrt, fma2, rsqrt);
+        return fma3;
     }
 
     template <typename T>

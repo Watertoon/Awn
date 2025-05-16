@@ -17,16 +17,18 @@
 
 namespace vp::res {
 
-    struct ResBfresCameraAnimResultDefault {
+    struct ResBfresCameraAnimResult {
         float        near;
         float        far;
         float        aspect;
         float        fovy;
-        util::Float3 translation;
+        util::Float3 position;
         util::Float3 rotation;
         float        twist;
     };
-    static_assert(sizeof(ResBfresCameraAnimResultDefault) == 0x2c);
+    static_assert(sizeof(ResBfresCameraAnimResult) == 0x2c);
+
+    using BfresCameraAnimResult = vp::res::ResBfresCameraAnimResult;
 
     enum class BfresCameraAnimRotationMode   : u8 {
         At       = 0,
@@ -40,17 +42,22 @@ namespace vp::res {
 
     struct ResBfresCameraAnim {
         u32                              magic;
-        u32                              is_baked        : 1;
-        u32                              reserve0        : 1;
-        u32                              is_looping      : 1;
-        u32                              reserve1        : 1;
-        u32                              rotation_mode   : 1;
-        u32                              reserve2        : 1;
-        u32                              projection_mode : 1;
-        u32                              reserve3        : 25;
-        const char                      *animation_name;
+        union {
+            u32 flags;
+            struct {
+                u32 is_baked        : 1;
+                u32 reserve0        : 1;
+                u32 is_looping      : 1;
+                u32 reserve1        : 1;
+                u32 rotation_mode   : 1;
+                u32 reserve2        : 1;
+                u32 projection_mode : 1;
+                u32 reserve3        : 25;
+            };
+        };
+        const char                      *name;
         ResBfresAnimCurve               *anim_curve_array;
-        ResBfresCameraAnimResultDefault *camera_anim_result_default;
+        ResBfresCameraAnimResult        *default_result;
         ResGfxUserData                  *user_data_array;
         ResNintendoWareDictionary       *user_data_dictionary;
         u32                              frame_count;
@@ -62,6 +69,32 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FCAM");
 
+        constexpr void Initialize(BfresCameraAnimResult *out_result) {
+            *out_result = *this->default_result;
+            return;
+        }
+
+        void Evaluate(BfresCameraAnimResult *out_result, float frame, BfresAnimFrameCache *cache_array) {
+            const u32 count = this->anim_curve_count;
+            for (u32 i = 0; i < count; ++i) {
+                BfresAnimFrameCache *cache = std::addressof(cache_array[i]);
+                const float result = this->anim_curve_array[i].EvaluateFloat(cache, frame);
+                *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(out_result) + this->anim_curve_array[i].base_result_offset) = result;
+            }
+            return;
+        }
+
+        void Evaluate(BfresCameraAnimResult *out_result, float frame) {
+            const u32 count = this->anim_curve_count;
+            BfresAnimFrameCache cache;
+            for (u32 i = 0; i < count; ++i) {
+                cache.SetDefaults();
+                const float result = this->anim_curve_array[i].EvaluateFloat(std::addressof(cache), frame);
+                *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(out_result) + this->anim_curve_array[i].base_result_offset) = result;
+            }
+            return;
+        }
+
         constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
@@ -71,35 +104,42 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfresCameraAnim) == 0x40);
 
-    struct ResBfresLightAnimResultDefault {
-        s32          enable;
-        util::Float3 translation;
+    struct ResBfresLightAnimResult {
+        s32          is_enable;
+        util::Float3 position;
         util::Float3 rotation;
         util::Float2 distance_attenuation;
         util::Float2 angle_attenuation;
         util::Float3 color0;
         util::Float3 color1;
     };
-    static_assert(sizeof(ResBfresLightAnimResultDefault) == 0x44);
+    static_assert(sizeof(ResBfresLightAnimResult) == 0x44);
+
+    using BfresLightAnimResult = ResBfresLightAnimResult;
 
     struct ResBfresLightAnim {
         u32                             magic;
-        u32                             is_baked                    : 1;
-        u32                             reserve0                    : 1;
-        u32                             is_looping                  : 1;
-        u32                             reserve1                    : 5;
-        u32                             is_use_curves               : 1;
-        u32                             is_use_enable               : 1;
-        u32                             is_use_position             : 1;
-        u32                             is_use_rotation             : 1;
-        u32                             is_use_distance_attenuation : 1;
-        u32                             is_use_angle_attenuation    : 1;
-        u32                             is_use_color0               : 1;
-        u32                             is_use_color1               : 1;
-        u32                             reserve2                    : 16;
-        const char                     *animation_name;
+        union {
+            u32 flags;
+            struct {
+                u32 is_baked                    : 1;
+                u32 reserve0                    : 1;
+                u32 is_looping                  : 1;
+                u32 reserve1                    : 5;
+                u32 is_anim_curve               : 1;
+                u32 is_use_enable               : 1;
+                u32 is_use_position             : 1;
+                u32 is_use_rotation             : 1;
+                u32 is_use_distance_attenuation : 1;
+                u32 is_use_angle_attenuation    : 1;
+                u32 is_use_color0               : 1;
+                u32 is_use_color1               : 1;
+                u32 reserve2                    : 16;
+            };
+        };
+        const char                     *name;
         ResBfresAnimCurve              *anim_curve_array;
-        ResBfresLightAnimResultDefault *light_anim_result_default;
+        void                           *default_result;
         ResGfxUserData                 *user_data_array;
         ResNintendoWareDictionary      *user_data_dictionary;
         const char                     *light_type_name;
@@ -116,6 +156,96 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FLIT");
 
+        void Initialize(BfresLightAnimResult *out_result) {
+            /* Decompose default result */
+            uintptr_t result_iter = reinterpret_cast<uintptr_t>(this->default_result);
+            if (this->is_use_enable) {
+                s32 *enable = reinterpret_cast<s32*>(result_iter);
+                out_result->is_enable = *enable;
+                result_iter += sizeof(s32);
+            }
+            if (this->is_use_position) {
+                vp::util::Float3 *position = reinterpret_cast<vp::util::Float3*>(result_iter);
+                out_result->position = *position;
+                result_iter += sizeof(vp::util::Float3);
+            }
+            if (this->is_use_rotation) {
+                vp::util::Float3 *rotation = reinterpret_cast<vp::util::Float3*>(result_iter);
+                out_result->rotation = *rotation;
+                result_iter += sizeof(vp::util::Float3);
+            }
+            if (this->is_use_distance_attenuation) {
+                vp::util::Float2 *distance_attenuation = reinterpret_cast<vp::util::Float2*>(result_iter);
+                out_result->distance_attenuation = *distance_attenuation;
+                result_iter += sizeof(vp::util::Float2);
+            }
+            if (this->is_use_angle_attenuation) {
+                vp::util::Float2 *angle_attenuation = reinterpret_cast<vp::util::Float2*>(result_iter);
+                out_result->angle_attenuation = *angle_attenuation;
+                result_iter += sizeof(vp::util::Float2);
+            }
+            if (this->is_use_color0) {
+                vp::util::Float3 *color0 = reinterpret_cast<vp::util::Float3*>(result_iter);
+                out_result->color0 = *color0;
+                result_iter += sizeof(vp::util::Float3);
+            }
+            if (this->is_use_color1) {
+                vp::util::Float3 *color1 = reinterpret_cast<vp::util::Float3*>(result_iter);
+                out_result->color1 = *color1;
+                result_iter += sizeof(vp::util::Float3);
+            }
+            return;
+        }
+
+        void Evaluate(BfresLightAnimResult *out_result, float frame, BfresAnimFrameCache *cache_array) {
+
+            /* Special enable int curve */
+            const u32 count = this->anim_curve_count;
+            if (count == 0) { return; }
+            u32 i;
+            if (this->is_use_enable) {
+                const s32 enable = this->anim_curve_array[0].EvaluateInt(std::addressof(cache_array[0]), frame);
+                *reinterpret_cast<s32*>(out_result) = enable;
+                i = 1;
+            } else {
+                i = 0;
+            }
+
+            /* Float curves */
+            for (; i < count; ++i) {
+                BfresAnimFrameCache *cache = std::addressof(cache_array[i]);
+                const float result = this->anim_curve_array[i].EvaluateFloat(cache, frame);
+                *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(out_result) + this->anim_curve_array[i].base_result_offset) = result;
+            }
+
+            return;
+        }
+
+        void Evaluate(BfresLightAnimResult *out_result, float frame) {
+
+            /* Special enable int curve */
+            const u32 count = this->anim_curve_count;
+            u32 i;
+            BfresAnimFrameCache cache;
+            if (this->is_use_enable) {
+                cache.SetDefaults();
+                const s32 enable = this->anim_curve_array[0].EvaluateInt(std::addressof(cache), frame);
+                *reinterpret_cast<s32*>(out_result) = enable;
+                i = 1;
+            } else {
+                i = 0;
+            }
+
+            /* Float curves */
+            for (; i < count; ++i) {
+                cache.SetDefaults();
+                const float result = this->anim_curve_array[i].EvaluateFloat(std::addressof(cache), frame);
+                *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(out_result) + this->anim_curve_array[i].base_result_offset) = result;
+            }
+
+            return;
+        }
+
         constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
@@ -125,21 +255,28 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfresLightAnim) == 0x58);
 
-    struct ResBfresFogAnimResultDefault {
+    struct ResBfresFogAnimResult {
         util::Float2 distance_attenuation;
         util::Float3 color;
     };
-    static_assert(sizeof(ResBfresFogAnimResultDefault) == 0x14);
+    static_assert(sizeof(ResBfresFogAnimResult) == 0x14);
+    
+    using BfresFogAnimResult = ResBfresFogAnimResult;
 
     struct ResBfresFogAnim {
         u32                           magic;
-        u32                           is_baked   : 1;
-        u32                           reserve0   : 1;
-        u32                           is_looping : 1;
-        u32                           reserve1   : 29;
-        const char                   *animation_name;
+        union {
+            u32 flags;
+            struct {
+                u32 is_baked   : 1;
+                u32 reserve0   : 1;
+                u32 is_looping : 1;
+                u32 reserve1   : 29;
+            };
+        };
+        const char                   *name;
         ResBfresAnimCurve            *anim_curve_array;
-        ResBfresFogAnimResultDefault *fog_anim_result_default;
+        ResBfresFogAnimResult        *default_result;
         ResGfxUserData               *user_data_array;
         ResNintendoWareDictionary    *user_data_dictionary;
         const char                   *distance_attenuation_type_name;
@@ -152,6 +289,32 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FFOG");
 
+        constexpr void Initialize(BfresFogAnimResult *out_result) {
+            *out_result = *this->default_result;
+            return;
+        }
+
+        void Evaluate(BfresFogAnimResult *out_result, float frame, BfresAnimFrameCache *cache_array) {
+            const u32 count = this->anim_curve_count;
+            for (u32 i = 0; i < count; ++i) {
+                BfresAnimFrameCache *cache = std::addressof(cache_array[i]);
+                const float result = this->anim_curve_array[i].EvaluateFloat(cache, frame);
+                *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(out_result) + this->anim_curve_array[i].base_result_offset) = result;
+            }
+            return;
+        }
+
+        void Evaluate(BfresFogAnimResult *out_result, float frame) {
+            const u32 count = this->anim_curve_count;
+            BfresAnimFrameCache cache;
+            for (u32 i = 0; i < count; ++i) {
+                cache.SetDefaults();
+                const float result = this->anim_curve_array[i].EvaluateFloat(std::addressof(cache), frame);
+                *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(out_result) + this->anim_curve_array[i].base_result_offset) = result;
+            }
+            return;
+        }
+
         constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
@@ -163,9 +326,9 @@ namespace vp::res {
 
     struct ResBfresSceneAnim {
         u32                        magic;
-        u32                        reserve0;
-        const char                *animation_name;
-        const char                *reserve1;
+        u32                        flags;
+        const char                *name;
+        const char                *reserve0;
         ResBfresCameraAnim        *camera_anim_array;
         ResNintendoWareDictionary *camera_anim_dictionary;
         ResBfresLightAnim         *light_anim_array;

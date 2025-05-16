@@ -17,13 +17,15 @@
 
 namespace awn::gfx {
 
-    Result Buffer::Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info) {
+    Result Buffer::Initialize(MemoryPool *memory_pool, size_t memory_offset, const BufferInfo *buffer_info) {
 
         /* Create vk buffer  */
-        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), memory_handle, memory_offset, buffer_info));
+        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), memory_pool, memory_offset, buffer_info));
 
         /* Set gpu address */
-        m_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory_handle.GetAddress()) + memory_offset);
+        m_memory_pool = memory_pool;
+        m_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory_pool->GetAddress()) + memory_offset);
+        m_memory_offset = memory_offset;
 
         /* Query VkDeviceAddress */
         m_gpu_address = gfx::impl::GetGpuAddress(m_vk_buffer);
@@ -34,10 +36,14 @@ namespace awn::gfx {
     Result Buffer::Initialize(void *gpu_memory_address, const BufferInfo *buffer_info) {
 
         /* Create vk buffer  */
-        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), gpu_memory_address, buffer_info));
+        size_t offset;
+        MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_memory_address);
+        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), memory_pool, offset, buffer_info));
 
         /* Set gpu address */
+        m_memory_pool = memory_pool;
         m_address = gpu_memory_address;
+        m_memory_offset = offset;
 
         /* Query VkDeviceAddress */
         m_gpu_address = gfx::impl::GetGpuAddress(m_vk_buffer);
@@ -51,7 +57,22 @@ namespace awn::gfx {
             m_vk_buffer = VK_NULL_HANDLE;
             m_gpu_address = gfx::cInvalidGpuAddress;
             m_address = nullptr;
+            m_memory_pool = nullptr;
+            m_memory_offset = 0;
         }
+        return;
+    }
+
+    void Buffer::FlushMappedRange(size_t offset, size_t size) {
+        if (!m_memory_pool->IsCached()) { return; }
+        const size_t base_offset = reinterpret_cast<uintptr_t>(m_address) - reinterpret_cast<uintptr_t>(m_memory_pool->GetAddress());
+        m_memory_pool->FlushMappedRange(base_offset + offset, size);
+    }
+
+    void Buffer::InvalidateMappedRange(size_t offset, size_t size) {
+        if (!m_memory_pool->IsCached()) { return; }
+        const size_t base_offset = reinterpret_cast<uintptr_t>(m_address) - reinterpret_cast<uintptr_t>(m_memory_pool->GetAddress());
+        m_memory_pool->InvalidateMappedRange(base_offset + offset, size);
     }
 
     GpuMemoryRequirements Buffer::GetGpuMemoryRequirements(const BufferInfo *buffer_info) {

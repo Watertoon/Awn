@@ -21,9 +21,8 @@ namespace vp::util {
         requires (sizeof(T) <= sizeof(u32))
     class IndexAllocator {
         public:
-            static constexpr T   cInvalidHandle     = static_cast<T>(0xffff'ffff'ffff'ffff);
-            static constexpr T   cInvalidEntryIndex = static_cast<T>(0xffff'ffff'ffff'ffff);
-            static constexpr u32 cMaxSize       = ~T(0);
+            static constexpr T cInvalidEntryIndex = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr u32 cMaxMaxIndexCount = ~T(0);
         private:
             u32  m_next_index;
             u32  m_max_count;
@@ -35,7 +34,7 @@ namespace vp::util {
             void Initialize(imem::IHeap *heap, u32 max_index_count) {
 
                 /* Integrity check size */
-                VP_ASSERT(max_index_count < cMaxSize);
+                VP_ASSERT(max_index_count < cMaxMaxIndexCount);
 
                 /* Allocate array */
                 m_handle_array = new (heap, alignof(T)) T[max_index_count];
@@ -46,7 +45,7 @@ namespace vp::util {
                 for (u32 i = 0; i < max_index_count - 1; ++i) {
                     m_handle_array[i] = i + 1;
                 }
-                m_handle_array[max_index_count - 1] = static_cast<T>(cInvalidHandle);
+                m_handle_array[max_index_count - 1] = static_cast<T>(cInvalidEntryIndex);
 
                 /* Set max */
                 m_max_count  = max_index_count;
@@ -56,7 +55,7 @@ namespace vp::util {
 
             void Finalize() {
 
-                m_next_index = static_cast<T>(cInvalidHandle);
+                m_next_index = static_cast<T>(cInvalidEntryIndex);
                 m_max_count  = 0;
                 if (m_handle_array != 0) {
                     delete [] m_handle_array;
@@ -66,19 +65,7 @@ namespace vp::util {
                 return;
             }
 
-            void Clear() {
-
-                /* Clear allocator */
-                m_next_index = 0;
-                for (u32 i = 0; i < m_max_count - 1; ++i) {
-                    m_handle_array[i] = i + 1;
-                }
-                m_handle_array[m_max_count - 1] = static_cast<T>(cInvalidHandle);
-
-                return;
-            }
-
-            constexpr ALWAYS_INLINE T Allocate() {
+            constexpr T Allocate() {
 
                 /* Try to acquire an index */
                 const u32 handle_value = m_next_index;
@@ -87,7 +74,7 @@ namespace vp::util {
                 return handle_value;
             }
 
-            constexpr ALWAYS_INLINE void Free(T index) {
+            constexpr void Free(T index) {
 
                 /* Release an index */
                 m_handle_array[index] = m_next_index;
@@ -96,6 +83,19 @@ namespace vp::util {
                 return;
             }
 
-            constexpr ALWAYS_INLINE u32 GetMaxCount() const { return m_max_count; }
+            constexpr void Clear() {
+
+                /* Clear allocator */
+                m_next_index = 0;
+                for (u32 i = 0; i < m_max_count - 1; ++i) {
+                    m_handle_array[i] = i + 1;
+                }
+                m_handle_array[m_max_count - 1] = static_cast<T>(cInvalidEntryIndex);
+
+                return;
+            }
+
+
+            constexpr u32 GetMaxCount() const { return m_max_count; }
     };
 }

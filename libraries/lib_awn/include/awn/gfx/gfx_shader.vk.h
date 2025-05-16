@@ -90,6 +90,7 @@ namespace awn::gfx {
             u32 GetInterfaceSlot(ShaderStage shader_stage, ShaderInterfaceType interface_type, const char *key);
         public:
             constexpr VkShaderEXT *GetVkShaderArray() { return m_vk_shader_array; }
+            constexpr const VkShaderEXT *GetVkShaderArray() const { return m_vk_shader_array; }
     };
     static_assert(sizeof(Shader) <= cMaxGfxShaderSize);
 }

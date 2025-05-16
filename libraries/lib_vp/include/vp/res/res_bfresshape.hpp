@@ -26,60 +26,65 @@ namespace vp::res {
     static_assert(sizeof(ResBfresVertexBufferStride) == 0x10);
 
     struct ResBfresVertexAttribute {
-        const char *attribute_name;
+        const char *name;
         u32         attribute_format;
-        u16         buffer_offset;
+        u16         attribute_offset;
         u8          buffer_index;
-        u8          is_dynamic_vbo;
+        u8          runtime_is_dynamic_vbo;
+
+        constexpr GfxAttributeFormat GetAttributeFormat() const {
+            return static_cast<GfxAttributeFormat>(this->attribute_format);
+        }
     };
     static_assert(sizeof(ResBfresVertexAttribute) == 0x10);
 
     struct ResBfresVertex {
         u32                          magic;
-        u32                          reserve0;
-        ResBfresVertexAttribute     *vertex_attribute_array;
-        ResNintendoWareDictionary   *vertex_attribute_dictionary;
+        u32                          flags;
+        ResBfresVertexAttribute     *attribute_array;
+        ResNintendoWareDictionary   *attribute_dictionary;
         void                        *runtime_memory_pool_pointer;
         void                        *runtime_vertex_buffer_array;
         void                       **runtime_user_vertex_buffer_array;
-        ResGfxBufferInfo            *vertex_buffer_info_array;
-        ResBfresVertexBufferStride  *vertex_buffer_stride_info_array;
-        void                        *user_pointer;
+        ResGfxBufferInfo            *buffer_info_array;
+        ResBfresVertexBufferStride  *buffer_stride_array;
+        void                        *runtime_user_pointer;
         u32                          base_gpu_region_offset;
-        u8                           vertex_attribute_count;
+        u8                           attribute_count;
         u8                           vertex_buffer_count;
         u16                          section_index;
         u32                          vertex_count;
-        u16                          reserve1;
+        u8                           vertex_skin_weight_count;
+        u8                           reserve0;
         u16                          vertex_buffer_alignment;
 
         static constexpr u32 cMagic = util::TCharCode32("FVTX");
 
         using DynamicVboConnection = vp::util::FixedConnection<u64, 0x100>;
 
-        constexpr void CalculateDynamicVertexBufferIndices(DynamicVboConnection *out_mask) {
-            for (u32 i = 0; i < this->vertex_attribute_count; ++i) {
-                if (!(this->vertex_attribute_array[i].is_dynamic_vbo & 1)) { continue; }
-                out_mask->SetBit(this->vertex_attribute_array[i].buffer_index);
+        constexpr void CalculateDynamicVertexBufferConnection(DynamicVboConnection *out_mask) const {
+            for (u32 i = 0; i < this->attribute_count; ++i) {
+                if (!(this->attribute_array[i].runtime_is_dynamic_vbo & 1)) { continue; }
+                out_mask->SetBit(this->attribute_array[i].buffer_index);
             }
         }
     };
     static_assert(sizeof(ResBfresVertex) == 0x58);
 
     struct ResBfresMeshlet {
-        u64 reserve0;
-        void *runtime_meshlet_buffer_array;
-        ResGfxBufferInfo *meshlet_buffer_info_array;
-        s64 *meshlet_buffer_memory_offset_array;
+        void *runtime_memory_pool_pointer;
+        void *runtime_storage_buffer_array;
+        ResGfxBufferInfo *buffer_info_array;
+        s64 *buffer_memory_offset_array;
         u64 reserve1[4];
         u32 reserve2;
-        u8 meshlet_buffer_count;
+        u8 buffer_count;
         u8 reserve3[3];
     };
     static_assert(sizeof(ResBfresMeshlet) == 0x48);
 
     struct ResBfresSubMeshRange {
-        u32 base_gpu_region_offset;
+        u32 index_buffer_base_offset;
         u32 index_count;
     };
     static_assert(sizeof(ResBfresSubMeshRange) == 0x8);
@@ -89,42 +94,50 @@ namespace vp::res {
         void                 *runtime_memory_pool_pointer;
         void                 *runtime_index_buffer;
         ResGfxBufferInfo     *index_buffer_info;
-        u32                   index_buffer_memory_offset;
+        u32                   base_gpu_region_offset;
         u32                   primitive_topology;
         u32                   index_format;
         u32                   index_count;
         u32                   base_vertex;
         u16                   sub_mesh_count;
         u16                   reserve0;
+        
+        constexpr GfxIndexFormat GetIndexFormat() const {
+            return static_cast<GfxIndexFormat>(this->index_format);
+        }
+        constexpr GfxPrimitiveTopology GetPrimitiveTopology() const {
+            return static_cast<GfxPrimitiveTopology>(this->primitive_topology);
+        }
     };
     static_assert(sizeof(ResBfresMesh) == 0x38);
 
+    static constexpr u32 cMaxBfresRelativeKeyShapeCount = 18;
+
     struct ResBfresKeyShape {
-        u8 key_shape_attribute_location_array[18];
+        u8 attribute_location_array[cMaxBfresRelativeKeyShapeCount];
         u8 reserve[2];
     };
     static_assert(sizeof(ResBfresKeyShape) == 0x14);
 
-    struct ResBfresBounding {
-        util::Float3 center_position;
-        util::Float3 extent;
-    };
+    using ResBfresBounding = vp::util::BoundingBoxf;
     static_assert(sizeof(ResBfresBounding) == 0x18);
 
-    struct ResBfresBoundingSphere {
-        util::Float3 center_position;
-        float        radius;
-    };
+    using ResBfresBoundingSphere = vp::util::Spheref;
     static_assert(sizeof(ResBfresBoundingSphere) == 0x10);
 
     struct ResBfresShape {
         u32                        magic;
-        u32                        reserve0                    : 1;
-        u32                        is_bounding_consistent      : 1;
-        u32                        has_vertex_buffer           : 1;
-        u32                        is_skip_setup_index_buffers : 1;
-        u32                        is_meshlet                  : 1;
-        u32                        reserve1                    : 27;
+        union {
+            u32 flags;
+            struct {
+                u32 reserve0                    : 1;
+                u32 is_bounding_consistent      : 1;
+                u32 has_vertex_buffer           : 1;
+                u32 is_skip_setup_index_buffers : 1;
+                u32 is_meshlet                  : 1;
+                u32 reserve1                    : 27;
+            };
+        };
         const char                *shape_name;
         ResBfresVertex            *vertex;
         union {
@@ -141,7 +154,7 @@ namespace vp::res {
         u16                        material_index;
         u16                        base_bone_index;
         u16                        vertex_index;
-        u16                        skin_bone_index_count;
+        u16                        skin_bone_count;
         u8                         vertex_skin_weight_count;
         u8                         mesh_count;
         u8                         key_shape_count;
@@ -150,12 +163,32 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FSHP");
 
+        constexpr void SetDynamicVertexBuffers() const {
+            if (this->key_shape_count < 1) { return; }
+            const ResBfresKeyShape *key_shape = std::addressof(this->key_shape_array[0]);
+            ResBfresVertexAttribute *attr_array  = vertex->attribute_array;
+            for (u32 i = 0; i < cMaxBfresRelativeKeyShapeCount; ++i) {
+                const u32 attr_index = key_shape->attribute_location_array[i];
+                if (attr_index == 0) { continue; }
+                attr_array[attr_index - 1].runtime_is_dynamic_vbo |= 1;
+            }
+            return;
+        }
+
         constexpr u32 GetTotalSubMeshCount() const {
             u32 total_sub_mesh_count = 0;
             for (u32 i = 0; i < this->mesh_count; ++i) {
                 total_sub_mesh_count += this->mesh_array[i].sub_mesh_count;
             }
             return total_sub_mesh_count;
+        }
+
+        constexpr u32 GetSubMeshBaseIndex(u32 mesh_index) const {
+            u32 base_index = 0;
+            for (u32 i = 0; i < mesh_index; ++i) {
+                base_index += this->mesh_array[i].sub_mesh_count;
+            }
+            return base_index;
         }
 
         constexpr ResBfresKeyShape *TryGetKeyShape(const char *key_shape_name) {

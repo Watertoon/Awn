@@ -30,6 +30,7 @@ namespace vp::resbui {
             using DictionaryNodeList = vp::util::IntrusiveListTraits<DictionaryStringBase, &DictionaryStringBase::m_dictionary_builder_node>::List;
         private:
             DictionaryNodeList m_node_list;
+            u32 m_node_count;
         public:
             constexpr ALWAYS_INLINE void CalculateHeaderLocation(BufferLocation *out_location, size_t offset) {
                 out_location->offset           = offset;
@@ -39,20 +40,26 @@ namespace vp::resbui {
             }
             constexpr ALWAYS_INLINE void CalculateNodeArrayLocation(BufferLocation *out_location, size_t offset) {
                 out_location->offset           = offset;
-                out_location->size             = sizeof(vp::res::ResNintendoWareDictionary::ResDicNode) * m_node_list.GetCount();
+                out_location->size             = sizeof(vp::res::ResNintendoWareDictionary::ResDicNode) * m_node_count;
                 out_location->alignment        = alignof(size_t);
                 out_location->relocation_count = 1;
             }
         public:
-            constexpr  NintendoWareDictionaryBuilder() : m_node_list() {/*...*/}
+            constexpr  NintendoWareDictionaryBuilder() : m_node_list(), m_node_count() {/*...*/}
             constexpr ~NintendoWareDictionaryBuilder() { this->Finalize(); }
 
             constexpr void Finalize() {
                 m_node_list.Clear();
+                m_node_count = 0;
             }
 
             Result AddNode(DictionaryStringBase *dictionary_string);
-            void Serialize(NintendoWareDictionaryBuilderMemoryInfo *memory_info, NintendoWareRelocationTableStream *relocation_table_stream, vp::res::ResNintendoWareStringPool *string_pool, void *output_buffer, size_t buffer_size);
+            void Remove(DictionaryStringBase *dictionary_string);
+            bool IsSame(vp::res::ResNintendoWareDictionary *res_dic);
+            bool IsSame(NintendoWareDictionaryBuilder *builder);
+            constexpr u32 GetCount() const { return m_node_count; }
+        public:
+            void Serialize(NintendoWareDictionaryBuilderMemoryInfo *memory_info, NintendoWareRelocationTableStream *relocation_table_stream, const vp::res::ResNintendoWareStringPool *string_pool, void *output_buffer, size_t buffer_size);
 
             constexpr void CalculateMemoryInfo(NintendoWareDictionaryBuilderMemoryInfo *out_memory_info) {
 
@@ -70,6 +77,10 @@ namespace vp::resbui {
                 out_memory_info->total_relocation_count = 1;
                 
                 return;
+            }
+
+            static constexpr size_t GetDictionarySize(u32 node_count) {
+                return sizeof(vp::res::ResNintendoWareDictionary) + node_count * sizeof(vp::res::ResNintendoWareDictionary::ResDicNode);
             }
     };
 }

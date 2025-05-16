@@ -17,7 +17,7 @@ ALL_PROGRAMS_LIST := $(THIRD_PARTY_LIST) $(LIBRARY_DIR_LIST) $(TOOL_LIST) $(PROG
 arch         ?= x86
 platform     ?= win32
 graphics_api ?= vk
-binary_type  ?= release
+binary_type  ?= debug
 
 #Valid Architectures: x86, aarch64, arm, powerpc, mips
 #Valid platforms:     win32, winnt, nx, ctr, cafe, rvl, dol, ntr, nus, agb

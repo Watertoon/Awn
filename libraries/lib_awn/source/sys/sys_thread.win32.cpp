@@ -17,41 +17,53 @@
 
 namespace awn::sys {
 
-    Thread::Thread(const char *name, mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, s32 priority) : ThreadBase(thread_heap, run_mode, exit_code, max_messages, stack_size, priority), m_handle(), m_waitable_timer_for_sleep(), m_name('\0'), m_name_utf16(u'\0') {
+    Result Thread::Initialize(mem::Heap *thread_heap, const ThreadInfo *info) {
 
         /* Create win32 thread */
-        m_handle = ::CreateThread(nullptr, stack_size, ThreadBase::InternalServiceThreadMain, this, CREATE_SUSPENDED, std::addressof(m_win32_thread_id));
-        VP_ASSERT(m_handle != nullptr);
+        m_handle = ::CreateThread(nullptr, info->stack_size, ThreadBase::InternalServiceThreadMain, this, CREATE_SUSPENDED, std::addressof(m_win32_thread_id));
+        RESULT_RETURN_UNLESS(m_handle != nullptr, ResultFailedToCreateThread);
+        auto fail_guard0 = SCOPE_GUARD {
+            ::CloseHandle(m_handle);
+            m_handle = nullptr;
+        };
 
         /* Create waitable time for sleep */
         m_waitable_timer_for_sleep = ::CreateWaitableTimerExA(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
-        VP_ASSERT(m_waitable_timer_for_sleep != nullptr);
+        RESULT_RETURN_UNLESS(m_waitable_timer_for_sleep != nullptr, ResultFailedToCreateThread);
+        auto fail_guard1 = SCOPE_GUARD {
+            ::CloseHandle(m_waitable_timer_for_sleep);
+            m_waitable_timer_for_sleep = nullptr;
+        };
 
         /* Set priority */
-        bool result0 = ::SetThreadPriority(m_handle, ConvertAwnPriorityToWin32(priority));
-        VP_ASSERT(result0);
+        const s32 win_priority = ConvertAwnPriorityToWin32(info->priority);
+        bool result0 = ::SetThreadPriority(m_handle, win_priority);
+        RESULT_RETURN_UNLESS(result0, ResultInvalidPriority);
 
         /* Set local thread name */
-        const u32 name_length = vp::util::StringLength(name);
-        VP_ASSERT((cMaxThreadNameLength - 1) > name_length);
-        ::memcpy(m_name, name, name_length);
+        const u32 name_length = vp::util::StringLength(info->name);
+        RESULT_RETURN_UNLESS((cMaxThreadNameLength - 1) > name_length, ResultInvalidThreadName);
+        ::memcpy(m_name, info->name, name_length);
         m_name[name_length] = '\0';
 
         /* Set thread name for system */
         u32 size_utf16;
         const u32 name_result = vp::util::ConvertStringUtf8ToUtf16(std::addressof(size_utf16), m_name_utf16, 0x20, m_name, name_length);
-        VP_ASSERT(name_result == 0);
-        VP_ASSERT((cMaxThreadNameLength - 1) > size_utf16);
+        RESULT_RETURN_UNLESS(name_result == 0, ResultInvalidThreadName);
+        RESULT_RETURN_UNLESS((cMaxThreadNameLength - 1) > size_utf16, ResultInvalidThreadName);
         m_name_utf16[size_utf16] = u'\0';
         ::SetThreadDescription(m_handle, reinterpret_cast<wchar_t*>(m_name_utf16));
 
-        return;
+        /* Initialize base */
+        this->ThreadBase::Initialize(thread_heap, info);
+
+        fail_guard0.Cancel();
+        fail_guard1.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
-    Thread::Thread(mem::Heap *thread_heap) : ThreadBase(thread_heap), m_handle(), m_waitable_timer_for_sleep(), m_name('\0') {/*...*/}
-
-    Thread::~Thread() {
-        this->ExitThread(awn::sys::ExitType::Send);
+    void Thread::Finalize() {
+        return;
     }
 
     void Thread::StartThread() {
@@ -61,10 +73,15 @@ namespace awn::sys {
 
     void Thread::ExitThread(ExitType exit_type) {
         this->ThreadBase::ExitThread(exit_type);
-        if (m_waitable_timer_for_sleep != nullptr) {                    
+        if (m_waitable_timer_for_sleep != nullptr) {
             ::CloseHandle(m_waitable_timer_for_sleep);
             m_waitable_timer_for_sleep = nullptr;
         }
+        if (m_handle != nullptr) {
+            ::CloseHandle(m_handle);
+            m_handle = nullptr;
+        }
+        return;
     }
 
     void Thread::WaitForThreadExit() {
@@ -92,25 +109,28 @@ namespace awn::sys {
 
         const LARGE_INTEGER timeout_100ns = { .QuadPart = -(timeout_ns.GetNanoSeconds() / 100)};
         const bool is_set = ::SetWaitableTimer(m_waitable_timer_for_sleep, std::addressof(timeout_100ns), 0, nullptr, nullptr, false);
-        if (!is_set) {
-            ::printf("LastError: %ld\n", ::GetLastError());
-        }
+        //if (!is_set) {
+        //    ::printf("LastError: %ld\n", ::GetLastError());
+        //}
         VP_ASSERT(is_set);
 
         const u32 result0 = ::WaitForSingleObjectEx(m_waitable_timer_for_sleep, INFINITE, false);
-        if (result0 != WAIT_OBJECT_0) {
-            ::printf("LastError: %ld\n", ::GetLastError());
-        }
+        //if (result0 != WAIT_OBJECT_0) {
+        //    ::printf("LastError: %ld\n", ::GetLastError());
+        //}
         VP_ASSERT(result0 == WAIT_OBJECT_0);
+
+        return;
     }
 
     void Thread::YieldThread() {
         ::SwitchToThread();
     }
 
-    void Thread::SetPriority(s32 priority) {
-        VP_ASSERT(priority < cMaxPriority)
-        bool result0 = ::SetThreadPriority(m_handle, ConvertAwnPriorityToWin32(priority));
+    void Thread::SetPriority(u32 priority) {
+        VP_ASSERT(priority < cMaxPriority);
+        const s32 win_priority = ConvertAwnPriorityToWin32(priority);
+        bool result0 = ::SetThreadPriority(m_handle, win_priority);
         VP_ASSERT(result0);
         m_priority = priority;
     }

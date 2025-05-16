@@ -17,15 +17,6 @@
 
 namespace awn::async {
 
-    AsyncQueueThread::AsyncQueueThread(const AsyncQueueThreadInfo *queue_thread_info, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority) : Thread(name, thread_heap, sys::ThreadRunMode::WaitForMessage, 0x7fff'ffff, 8, stack_size, priority), m_status(Status::Active), m_state(), m_requests_per_yield(), m_current_task(), m_queue(), m_execute_event(sys::SignalState::Signaled, sys::ResetMode::Manual), m_suspend_event(sys::SignalState::Signaled, sys::ResetMode::Manual) {
-        AsyncQueue *queue = queue_thread_info->queue;
-        if (queue != nullptr) {
-            queue->AddThread(this, queue_thread_info->thread_set, queue_thread_info->is_boost_thread);
-        }
-        m_requests_per_yield = queue_thread_info->requests_per_yield;
-    }
-    AsyncQueueThread::~AsyncQueueThread() {/*...*/}
-
     void AsyncQueueThread::ThreadMain(size_t message) {
 
         /* Handle suspension */

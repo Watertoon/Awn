@@ -20,10 +20,10 @@ namespace awn::para {
     AWN_PARA_DECLARE_TYPED_PARAM_IMPL(TypedParam);
 
     Result Composite::FindComposite(FindCompositeContext *out_find_info, const char *composite_name) {
-        const u8   cur_char = *composite_name;
-        const bool is_this  = cur_char == '\0';
-        out_find_info->composite = (is_this == true) ? this : nullptr;
-        RESULT_RETURN_IF(is_this == false, ResultNoComposite);
+        const u8 cur_char = *composite_name;
+        const bool is_this = cur_char == '\0';
+        out_find_info->composite = (is_this) ? this : nullptr;
+        RESULT_RETURN_IF(!is_this, ResultNoComposite);
         RESULT_RETURN_SUCCESS;
     }
 
@@ -32,7 +32,7 @@ namespace awn::para {
         /* Allocate parent handle in parent if necessary */
         impl::DocumentManager *manager = impl::DocumentManager::GetInstance();
         u16 last_handle;
-        u16 new_handle  = manager->AcquireTypedParamHandle(parent);
+        u16 new_handle = manager->AcquireTypedParamHandle(parent);
         if (!vp::util::InterlockedCompareExchange(std::addressof(last_handle), std::addressof(parent->m_handle), new_handle, impl::DocumentManager::HandleAllocator::cInvalidHandle)) { manager->ReleaseTypedParamHandle(new_handle); new_handle = last_handle; }
 
         /* Set parent handle */
@@ -185,7 +185,7 @@ namespace awn::para {
                 const Result result = this->TypedParam::FindComposite(std::addressof(find_result), field_name_rec);
 
                 /* Finish if found */
-                if (result == ResultSuccess && find_result.is_non_default != 0) {
+                if (RESULT_SUCCEEDED(result) && find_result.is_non_default != 0) {
 
                     /* Set parent handle to found parent composite */
                     if (find_result.parent != nullptr) {                                
@@ -268,7 +268,7 @@ namespace awn::para {
 
             /* Get iterator to data */
             vp::res::ByamlIterator embed_iter;
-            const bool has_data   = byaml_iterator.TryGetIteratorByKey(std::addressof(embed_iter), embed_info->name);
+            const bool has_data = byaml_iterator.TryGetIteratorByKey(std::addressof(embed_iter), embed_info->name);
 
             /* Get class name */
             const char *type_name = embed_info->embedded_class_name;
@@ -276,9 +276,9 @@ namespace awn::para {
                 embed_iter.TryGetStringByKey(std::addressof(type_name), "$type");
             }
 
-            /* Check if a composite already exists */
+            /* Recreate the embed with a derived type if the derived type changed */
             TypedParam *typed_param = *embed_info->embedded_typed_param;
-            if (typed_param == nullptr || ::strcmp(typed_param->GetClassName(), type_name) != 0) {
+            if (typed_param == nullptr || !vp::util::StringCompare(typed_param->GetClassName(), type_name)) {
                 if (typed_param != nullptr) {
                     typed_param->Finalize();
                     delete typed_param;
@@ -305,7 +305,7 @@ namespace awn::para {
 
             /* Get iterator to data */
             vp::res::ByamlIterator comp_iter;
-            const bool has_data   = byaml_iterator.TryGetIteratorByKey(std::addressof(comp_iter), comp_info->name);
+            const bool has_data = byaml_iterator.TryGetIteratorByKey(std::addressof(comp_iter), comp_info->name);
 
             /* Initialize defaults if no data */
             if (!has_data) {
@@ -343,7 +343,7 @@ namespace awn::para {
         auto prop_loop_func = vp::util::MakeLambdaFunction<Result(PropertyLoopInfo*)>(prop_loop_lambda);
         this->LoopProperties(std::addressof(prop_loop_func));
 
-        /* Load embeds */
+        /* Set default embeds */
         const auto embed_loop_lambda = [=](EmbeddedLoopInfo *embed_info) {
 
             /* Recreate embed if different class */
@@ -362,7 +362,7 @@ namespace awn::para {
         auto embed_loop_func = vp::util::MakeLambdaFunction<Result(EmbeddedLoopInfo*)>(embed_loop_lambda);
         this->LoopEmbeds(std::addressof(embed_loop_func));
 
-        /* Load composites */
+        /* Set default composites */
         const auto comp_loop_lambda = [=](CompositeLoopInfo *comp_info) {
 
             /* Initialize defaults */
@@ -377,7 +377,7 @@ namespace awn::para {
         this->LoopComposites(std::addressof(comp_loop_func));
 
         /* Complete if not unlinking parents */
-        if (is_force_unlink_parents == false) { return; }
+        if (!is_force_unlink_parents) { return; }
 
         /* Release parent */
         this->ReleaseParent();

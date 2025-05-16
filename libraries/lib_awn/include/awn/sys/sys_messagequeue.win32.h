@@ -38,6 +38,7 @@ namespace awn::sys {
 
             void Initialize(vp::imem::IHeap *heap, s32 max_message_count);
             void Initialize(mem::Heap *heap, s32 max_message_count);
+            constexpr void InitializeByReference(size_t *memory, s32 max_message_count);
             void Finalize();
 
             void ReceiveMessage(size_t *out_message);
@@ -50,4 +51,18 @@ namespace awn::sys {
             void JamMessage(size_t message);
             bool TryJamMessage(size_t message);
     };
+
+    /* Constexpr impl */
+    constexpr void MessageQueue::InitializeByReference(size_t *memory, s32 max_message_count) {
+
+        /* Allocate message buffer */
+        m_message_buffer = memory;
+        VP_ASSERT(m_message_buffer != nullptr);
+
+        m_max = max_message_count;
+        m_count  = 0;
+        m_offset = 0;
+
+        return;
+    }
 }

@@ -21,13 +21,13 @@ namespace awn::sys {
         public:
             using ThreadList = vp::util::IntrusiveListTraits<ThreadBase, &ThreadBase::m_thread_manager_list_node>::List;
         private:
-            ThreadList                         m_thread_list;
-            sys::Mutex                         m_list_cs;
-            sys::Mutex                         m_tls_cs;
-            vp::util::TypedStorage<MainThread> m_main_thread;
-            u32                                m_current_thread_tls_slot;
-            u32                                m_tls_slot_count;
-            TlsDestructor                      m_tls_destructor_array[ThreadBase::cMaxThreadTlsSlotCount];
+            ThreadList    m_thread_list;
+            sys::Mutex    m_list_cs;
+            sys::Mutex    m_tls_cs;
+            MainThread    m_main_thread;
+            u32           m_current_thread_tls_slot;
+            u32           m_tls_slot_count;
+            TlsDestructor m_tls_destructor_array[ThreadBase::cMaxThreadTlsSlotCount];
         public:
             AWN_SINGLETON_TRAITS(ThreadManager);
         private:
@@ -73,13 +73,13 @@ namespace awn::sys {
             }
 
             static void DefaultTlsDestructor(size_t arg) { VP_UNUSED(arg); }
+        private:
+            void InitializeMainThread(mem::Heap *heap);
         public:
             constexpr ThreadManager() : m_thread_list(), m_list_cs(), m_tls_cs(), m_main_thread(), m_current_thread_tls_slot(), m_tls_slot_count(), m_tls_destructor_array() {/*...*/}
             ~ThreadManager();
 
             void Initialize(mem::Heap *heap);
-
-            void InitializeMainThread(mem::Heap *heap);
 
             void PushBackThreadSafe(ThreadBase *thread);
 

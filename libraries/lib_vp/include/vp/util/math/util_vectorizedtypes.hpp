@@ -26,6 +26,12 @@
     #endif
 
 #endif
+
+#ifdef VP_TARGET_ARCHITECTURE_x86
+    static_assert(VP_MAX_VECTOR_REGISTER_SIZE == 256, "x86 requires 256-bit avx2 support.");
+#elifdef VP_TARGET_ARCHITECTURE_aarch64
+    static_assert(VP_MAX_VECTOR_REGISTER_SIZE == 128, "aarch64 requires 128-bit neon support.");
+#endif
 static_assert(VP_MAX_VECTOR_REGISTER_SIZE == 128 || VP_MAX_VECTOR_REGISTER_SIZE == 256, "Invalid VP_MAX_VECTOR_REGISTER_SIZE (must be 128 or 256)");
 
 namespace vp::util {
@@ -37,7 +43,7 @@ namespace vp::util {
         static constexpr bool cIsVectorizedType = true; \
         static constexpr u32 cCount = count ; \
         static constexpr u32 cCountPerRegister = cSimdRegisterSize / BITSIZEOF(UnderlyingType); \
-        static constexpr u32 cRegisterCount = cCount / cCountPerRegister + (cCount % cCountPerRegister != 0); \
+        static constexpr u32 cRegisterCount = cCount / cCountPerRegister + ((cCount % cCountPerRegister) != 0); \
         static_assert(0 < cRegisterCount); \
         template <class Self> \
             requires (cRegisterCount == 1) \
@@ -537,54 +543,165 @@ namespace vp::util {
     };
 #endif
 
-
     template <typename T>
-        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+        requires (T::cIsVectorizedType)
     constexpr T operator+(const T &left, const T &right) {
-        const T out = { .v = left.v + right.v, };
+        T out;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            out[i] = left[i] + right[i];
+        }
         return out;
     }
 
     template <typename T>
-        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+        requires (T::cIsVectorizedType)
     constexpr T operator-(const T &left, const T &right) {
-        const T out = { .v = left.v - right.v, };
+        T out;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            out[i] = left[i] - right[i];
+        }
         return out;
     }
 
     template <typename T>
-        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+        requires (T::cIsVectorizedType)
     constexpr T operator-(const T &vec) {
-        const T out = { .v = -vec.v, };
+        T out;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            out[i] = -vec[i];
+        }
         return out;
     }
 
     template <typename T>
         requires (T::cIsVectorizedType && T::cRegisterCount == 1)
     constexpr T operator*(const T &left, const T &right) {
-        const T out = { .v = left.v * right.v, };
+        T out;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            out[i] = left[i] * right[i];
+        }
         return out;
     }
 
     template <typename T>
         requires (T::cIsVectorizedType && T::cRegisterCount == 1)
-    constexpr T operator*(const T &left, const typename T::UnderlyingType &right) {
-        const T out = { .v = left.v * right, };
+    constexpr T operator*(const T &vec, const typename T::UnderlyingType &scalar) {
+        T out;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            out[i] = vec[i] * scalar;
+        }
         return out;
     }
 
     template <typename T>
         requires (T::cIsVectorizedType && T::cRegisterCount == 1)
-    constexpr T operator/(const T &left, typename T::UnderlyingType scalar) {
-        const T out = { .v = left.v / scalar, };
+    constexpr T operator/(const T &vec, const typename T::UnderlyingType &scalar) {
+        T out;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            out[i] = vec[i] * scalar;
+        }
         return out;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator&(const T &left, const T &right) {
+        using Type = typename T::UnderlyingType;
+#ifdef VP_TARGET_ARCHITECTURE_x86
+        if (!std::is_constant_evaluated()) {
+            if constexpr (std::is_same_v<Type, float> && T::cCount == 4) {
+                const T out = T{ .v = _mm_and_ps(left.v, right.v), };
+                return out;
+            } else if constexpr (std::is_same_v<Type, double> && T::cCount == 4) {
+                const T out = T{ .v = _mm256_and_pd(left.v, right.v), };
+                return out;
+            }
+        }
+#endif
+        using MaskType = MinUIntType<1ull << (BITSIZEOF(Type) - 1)>;
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = std::bit_cast<Type>(std::bit_cast<MaskType>(left[i]) & std::bit_cast<MaskType>(right[i]));
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator|(const T &left, const T &right) {
+        using Type = typename T::UnderlyingType;
+#ifdef VP_TARGET_ARCHITECTURE_x86
+        if (!std::is_constant_evaluated()) {
+            if constexpr (std::is_same_v<Type, float> && T::cCount == 4) {
+                const T out = T{ .v = _mm_or_ps(left.v, right.v), };
+                return out;
+            } else if constexpr (std::is_same_v<Type, double> && T::cCount == 4) {
+                const T out = T{ .v = _mm256_or_pd(left.v, right.v), };
+                return out;
+            }
+        }
+#endif
+        using MaskType = MinUIntType<1ull << (BITSIZEOF(Type) - 1)>;
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = std::bit_cast<Type>(std::bit_cast<MaskType>(left[i]) | std::bit_cast<MaskType>(right[i]));
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T operator^(const T &left, const T &right) {
+        using Type = typename T::UnderlyingType;
+#ifdef VP_TARGET_ARCHITECTURE_x86
+        if (!std::is_constant_evaluated()) {
+            if constexpr (std::is_same_v<Type, float> && T::cCount == 4) {
+                const T out = T{ .v = _mm_xor_ps(left.v, right.v), };
+                return out;
+            } else if constexpr (std::is_same_v<Type, double> && T::cCount == 4) {
+                const T out = T{ .v = _mm256_xor_pd(left.v, right.v), };
+                return out;
+            }
+        }
+#endif
+        using MaskType = MinUIntType<1ull << (BITSIZEOF(Type) - 1)>;
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = std::bit_cast<Type>(std::bit_cast<MaskType>(left[i]) ^ std::bit_cast<MaskType>(right[i]));
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T AndNot(const T &left, const T &right) {
+        using Type = typename T::UnderlyingType;
+        if (!std::is_constant_evaluated() && T::cCount == 4) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            if constexpr (std::is_same_v<float, Type>) {
+                return T{ .v = _mm_andnot_ps(right.v, left.v) };
+            } else if constexpr (std::is_same_v<double, Type>) {
+                return T{ .v = _mm256_andnot_ps(right.v, left.v) };
+            } else if constexpr (std::is_same_v<s32, Type> || std::is_same_v<u32, Type>) {
+                return T{ .v = _mm_andnot_si128(right.v, left.v) };
+            }
+#endif
+        }
+        using MaskType = MinUIntType<1ull << (BITSIZEOF(Type) - 1)>;
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = left[i] * std::bit_cast<Type>(~std::bit_cast<MaskType>(right[i]));
+        }
+        return temp;
     }
 
     template <typename T>
         requires (T::cIsVectorizedType && T::cRegisterCount == 1)
     constexpr T MultiplyAdd(const T& a, const T& b, const T& c) {
-        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+        if (!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
             return T{ .v = __builtin_ia32_vfmaddps(a.v, b.v, c.v) };
+#endif
         }
         T temp;
         for (u32 i = 0; i < T::cCount; ++i) {
@@ -596,8 +713,10 @@ namespace vp::util {
     template <typename T>
         requires (T::cIsVectorizedType && T::cRegisterCount == 1)
     constexpr T NegateMultiplyAdd(const T& a, const T& b, const T& c) {
-        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+        if (!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
             return T{ .v = __builtin_ia32_vfnmaddps(a.v, b.v, c.v), };
+#endif
         }
         T temp;
         for (u32 i = 0; i < T::cCount; ++i) {
@@ -609,8 +728,10 @@ namespace vp::util {
     template <typename T>
         requires (T::cIsVectorizedType && T::cRegisterCount == 1)
     constexpr T MultiplySub(const T& a, const T& b, const T& c) {
-        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+        if (!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
             return T{ .v = __builtin_ia32_vfmsubps(a.v, b.v, c.v), };
+#endif
         }
         T temp;
         for (u32 i = 0; i < T::cCount; ++i) {
@@ -622,8 +743,10 @@ namespace vp::util {
     template <typename T>
         requires (T::cIsVectorizedType && T::cRegisterCount == 1)
     constexpr T NegateMultiplySub(const T& a, const T& b, const T& c) {
-        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+        if (!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
             return T{ .v = __builtin_ia32_vfnmsubps(a.v, b.v, c.v), };
+#endif
         }
         T temp;
         for (u32 i = 0; i < T::cCount; ++i) {
@@ -635,8 +758,10 @@ namespace vp::util {
     template <typename T>
         requires (T::cIsVectorizedType && T::cRegisterCount == 1)
     constexpr T MultiplySubOrAddInterleaved(const T& a, const T& b, const T& c) {
-        if(!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+        if (!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
             return T{ .v = __builtin_ia32_vfmaddsubps(a.v, b.v, c.v), };
+#endif
         }
         T temp;
         for (u32 i = 0; i < T::cCount; ++i) {
@@ -645,6 +770,67 @@ namespace vp::util {
             } else {
                 temp[i] = (a[i] * b[i]) + c[i];
             }
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T SquareRoot(const T &vec) {
+        if (!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            const auto sqrt = _mm_sqrt_ps(vec.v);
+            return T{ .v = sqrt, };
+#endif
+        }
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = SquareRoot(vec[i]);
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T ReciprocalSquareRoot(const T &vec) {
+        if (!std::is_constant_evaluated() && T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            const auto rsqrt = _mm_rsqrt_ps(vec.v);
+            return T{ .v = rsqrt, };
+#endif
+        }
+        using Type = typename T::UnderlyingType;
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            temp[i] = SquareRoot(static_cast<Type>(1) / vec[i]);
+        }
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cRegisterCount == 1)
+    constexpr T ReciprocalSquareRootNewtonRaphson(const T &vec) {
+        if (!std::is_constant_evaluated()) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            if constexpr (T::cCount == 4 && std::is_same_v<float, typename T::UnderlyingType>) {                
+                /* Refer to Intel Architecture Optimization Reference Manual v50 */
+                static constexpr const v4f three = T{ 3.0, 3.0, 3.0, 3.0, };
+                static constexpr const v4f half = T{ 0.5, 0.5, 0.5, 0.5, };
+                const v4f rsqrt = v4f{ .v = _mm_rsqrt_ps(vec.v) };
+                const v4f rsqrt_sq = rsqrt * rsqrt;
+                const v4f ev = rsqrt_sq * vec;
+                const v4f sub = three - ev;
+                const v4f rs = rsqrt * sub;
+                const v4f iter = rs * half;
+                return iter;
+            }
+#endif
+        }
+        using Type = typename T::UnderlyingType;
+        T temp;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            const Type result = ReciprocalSquareRootNewton<Type>(vec[i]);
+            temp[i] = result;
         }
         return temp;
     }

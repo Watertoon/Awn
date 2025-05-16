@@ -27,7 +27,7 @@ namespace vp::util {
                 u32 index;
             };
         private:
-            FixedHashMap<&Index::hash, Size> m_hash_map;
+            FixedHashMap<Index, &Index::hash, Size> m_hash_map;
         public:
             constexpr ALWAYS_INLINE  FixedKeyIndexMap() : m_hash_map() {/*...*/}
             constexpr ALWAYS_INLINE ~FixedKeyIndexMap() {/*...*/}
@@ -44,5 +44,9 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE void Clear() { m_hash_map.Clear(); }
+        public:
+            constexpr u32 CountMaxIterationsPerKey() const {
+                return m_hash_map.CountMaxIterationsPerKey();
+            }
     };
 }

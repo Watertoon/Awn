@@ -18,30 +18,44 @@
 namespace vp::util {
 
     template<typename T>
-        requires std::is_pointer<T>::value
+        requires (std::is_pointer_v<T>)
     ALWAYS_INLINE T AlignUp(T value, size_t align) {
         const size_t alignment = align - 1;
-        return reinterpret_cast<T>((reinterpret_cast<uintptr_t>(value) + alignment) & ~alignment);
+        return reinterpret_cast<T>((reinterpret_cast<uintptr_t>(value) + alignment) & (~alignment));
     }
 
     template<typename T>
-        requires (std::is_pointer<T>::value == false)
+        requires (!std::is_pointer_v<T>)
     constexpr ALWAYS_INLINE T AlignUp(T value, size_t align) {
         const size_t alignment = align - 1;
         return static_cast<T>((value + alignment) & ~alignment);
     }
 
     template<typename T>
-        requires std::is_pointer<T>::value
+        requires (std::is_pointer_v<T>)
     ALWAYS_INLINE T AlignDown(T value, size_t align) {
         const size_t alignment = align - 1;
-        return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(value) & ~alignment);
+        return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(value) & (~alignment));
     }
 
     template<typename T>
-        requires (std::is_pointer<T>::value == false)
+        requires (!std::is_pointer_v<T>)
     constexpr ALWAYS_INLINE T AlignDown(T value, size_t align) {
         const size_t alignment = align - 1;
-        return static_cast<T>(value & ~alignment);
+        return static_cast<T>(value & (~alignment));
+    }
+
+    template<typename T>
+        requires (std::is_pointer_v<T>)
+    ALWAYS_INLINE bool IsAligned(T value, size_t align) {
+        const size_t alignment = align - 1;
+        return (reinterpret_cast<uintptr_t>(value) & alignment) == 0;
+    }
+
+    template<typename T>
+        requires (!std::is_pointer_v<T>)
+    constexpr ALWAYS_INLINE bool IsAligned(T value, size_t align) {
+        const size_t alignment = align - 1;
+        return (value & alignment) == 0;
     }
 }

@@ -14,10 +14,12 @@ namespace vp::util {
             };
         };
     };
-    static_assert(sizeof(Guid) == sizeof(GUID));
 
+#ifdef VP_TARGET_PLATFORM_win32
+    static_assert(sizeof(Guid) == sizeof(GUID));
     ALWAYS_INLINE void GenerateGuid(Guid *guid) {
         const HRESULT result = ::CoCreateGuid(reinterpret_cast<GUID*>(guid));
         VP_ASSERT(result == S_OK);
     }
+#endif
 }

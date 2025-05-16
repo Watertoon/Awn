@@ -17,7 +17,9 @@
 
 namespace vp::util {
 
-    constexpr u32 MoveMask128(const v16cc &a) {
+    template <typename T>
+        requires (T::cIsVectorizedType && sizeof(T) == 0x10)
+    constexpr u32 MoveMask128(const T &a) {
 
         /* Runtime intrinsic  */
         if (!std::is_constant_evaluated()) {
@@ -31,12 +33,14 @@ namespace vp::util {
         u32 out   = 0;
         for (u32 i = 0; i < 0x10; ++i) {
             index  = i * 8;
-            out   |= ((a[index] >> 0x7) << i);
+            out   |= (((*reinterpret_cast<const v16uc*>(std::addressof(a)))[index] >> static_cast<u8>(0x7)) << i);
         }
         return out;
     }
 
-    constexpr u32 MoveMask256(const v32cc &a) {
+    template <typename T>
+        requires (T::cIsVectorizedType && sizeof(T) == 0x20)
+    constexpr u32 MoveMask256(const T &a) {
 
         /* Runtime intrinsic  */
         if (!std::is_constant_evaluated()) {
@@ -50,7 +54,7 @@ namespace vp::util {
         u32 out   = 0;
         for (u32 i = 0; i < 0x20; ++i) {
             index  = i * 8;
-            out   |= ((a[index] >> 0x7) << i);
+            out   |= (((*reinterpret_cast<const v32uc*>(std::addressof(a)))[index] >> static_cast<u8>(0x7)) << i);
         }
         return out;
     }

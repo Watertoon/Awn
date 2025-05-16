@@ -19,16 +19,21 @@ namespace vp::res {
 
     struct ResBfresBoneVisibilityAnim {
         u32                         magic;
-        u32                         is_baked        : 1;
-        u32                         reserve0        : 1;
-        u32                         is_looping      : 1;
-        u32                         reserve1        : 29;
-        const char                 *animation_name;
+        union {
+            u32 flags;
+            struct {                
+                u32 is_baked        : 1;
+                u32 reserve0        : 1;
+                u32 is_looping      : 1;
+                u32 reserve1        : 29;
+            };
+        };
+        const char                 *name;
         const char                 *reserve2;
         ResBfresModel              *runtime_bound_model;
-        u16                        *bind_fast_table;
+        u16                        *fast_bind_table;
         ResBfresAnimCurve          *anim_curve_array;
-        bool                       *default_result_array;
+        u32                        *default_result_array;
         const char                **bone_name_array;
         ResGfxUserData             *user_data_array;
         ResNintendoWareDictionary  *user_data_dictionary;

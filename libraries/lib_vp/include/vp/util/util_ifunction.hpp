@@ -207,7 +207,7 @@ namespace vp::util {
             }
 
             template <typename T>
-                requires (IFunction<Return(Args...)>::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) == true) && (sizeof(T) <= sizeof(m_any))
+                requires (IFunction<Return(Args...)>::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic())) && (sizeof(T) <= sizeof(m_any))
             constexpr ALWAYS_INLINE void SetFunction(const T &function) {
                 function.CopyTo(this);
             }

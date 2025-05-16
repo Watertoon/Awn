@@ -17,23 +17,32 @@
 
 namespace awn::sys {
 
-    ThreadBase::ThreadBase(mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages , u32 stack_size, s32 priority) : m_thread_heap(thread_heap), m_lookup_heap(), m_message_queue(), m_message_queue_buffer(), m_exit_message(exit_code), m_stack_size(stack_size), m_priority(priority), m_core_mask(), m_run_mode(static_cast<u32>(run_mode)), 
-#ifdef VP_TARGET_PLATFORM_win32
-    m_tls_slot_array(), 
-#endif
-    m_thread_manager_list_node() 
-    {
-        m_message_queue.Initialize(thread_heap, max_messages);
+    void ThreadBase::Initialize(mem::Heap *thread_heap, const ThreadInfo *info) {
+
+        /* Set info */
+        m_thread_heap = thread_heap;
+        m_lookup_heap = nullptr;
+        m_exit_message = info->exit_code;
+        m_stack_size = info->stack_size;
+        m_priority = info->priority;
+        m_run_mode = static_cast<u32>(info->run_mode);
+
+        /* Allocate or set memory queue memory */
+        if (info->message_memory == nullptr) {            
+            m_message_queue_memory = nullptr;
+            m_message_queue.Initialize(thread_heap, info->message_count);
+        } else {
+            m_message_queue_memory = info->message_memory;
+            m_message_queue.InitializeByReference(m_message_queue_memory, info->message_count);
+        }
+
+        /* Allocate or set memory */
         ThreadManager *manager = ThreadManager::GetInstance();
         if (manager != nullptr) {
             manager->PushBackThreadSafe(this);
         }
-    }
-    ThreadBase::ThreadBase(mem::Heap *thread_heap) : m_thread_heap(thread_heap), m_lookup_heap(nullptr) {
-        ThreadManager *manager = ThreadManager::GetInstance();
-        if (manager != nullptr) {
-            manager->PushBackThreadSafe(this);
-        }
+
+        return;
     }
 
     void ThreadBase::InternalThreadMain(void *arg) {
@@ -51,6 +60,7 @@ namespace awn::sys {
 
         return;
     }
+
     long unsigned int ThreadBase::InternalServiceThreadMain(void *arg) {
         VP_ASSERT((::GetCurrentThreadId() & (~0xbfff'ffff)) == 0);
 
@@ -68,5 +78,29 @@ namespace awn::sys {
 
         return 0;
     }
-    
+
+    void ThreadBase::ExitThread(ExitType exit_type) {
+
+        /* Send exit message */
+        if (exit_type == ExitType::Jam) {
+            m_message_queue.JamMessage(m_exit_message);
+        } else {
+            m_message_queue.SendMessage(m_exit_message);
+        }
+
+        /* Wait until the thread exits */
+        this->WaitForThreadExit();
+
+        /* Free the message queue */
+        if (m_message_queue_memory == nullptr) {
+            m_message_queue.Finalize();
+        }
+
+        ThreadManager *manager = ThreadManager::GetInstance();
+        if (manager != nullptr) {
+            manager->RemoveThreadSafe(this);
+        }
+
+        return;
+    }
 }

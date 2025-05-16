@@ -37,4 +37,8 @@ namespace awn::gfx {
         m_texture_slot.free_count = cInvalidDescriptorSlotFreeCount;
         return;
     }
+
+    bool TextureViewBinder::IsSameInfo(const TextureViewInfo *texture_view_info) {
+        return impl::TextureViewSamplerManager::GetInstance()->IsSameInfo(m_texture_slot, texture_view_info);
+    }
 }

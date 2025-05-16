@@ -228,7 +228,8 @@ namespace awn::gfx::impl {
             /* Vulkan physical device features */
             MissingFeatures     m_missing_features;
             OptionalFeatureMask m_optional_features;
-            bool                m_is_ext_bindless_nv;
+            bool                m_is_unified_memory;
+            //bool                m_is_ext_bindless_nv;
 
             VkPhysicalDeviceMemoryProperties m_vk_physical_device_memory_properties;
 
@@ -314,7 +315,9 @@ namespace awn::gfx::impl {
                 .pNext = nullptr,
             },
             m_missing_features(),
-            m_optional_features()
+            m_optional_features(),
+            m_is_unified_memory()
+            //m_is_ext_bindless_nv()
             //m_debug_callbacks {
             //    .pUserData = this,
             //    .pfnAllocation = DebugAllocCallback,
@@ -394,22 +397,17 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE u32 GetOpticalFlowQueueFamilyIndex() const { return m_queue_family_index_array_enum[static_cast<u32>(QueueType::OpticalFlow)]; }
 
             constexpr ALWAYS_INLINE VkDescriptorSetLayout GetBindlessVkDescriptorSetLayout() const { return m_vk_bindless_descriptor_set_layout; }
-            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet - this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)]; }
-            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedBuffer(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet - this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)]; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet]; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedBuffer(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet]; }
             constexpr ALWAYS_INLINE const VkDescriptorSetLayout *GetPerStageDescriptorLayoutArray(u32 *out_count, ShaderStage shader_stage) const {
-                const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
-                const bool is_per_stage = this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets);
                 const VkDescriptorSetLayout *array;
-                if (is_per_stage) {
-                    array = m_per_stage_descriptor_layout_array[static_cast<u32>(shader_stage)].vk_descriptor_set_layout_array;
-                    *out_count = cMaxPerStageSetCount - is_nv_bindless;
-                } else if (shader_stage == ShaderStage::Compute) {
+                if (shader_stage == ShaderStage::Compute) {
                     array = m_vk_combined_descriptor_set_layout_compute;
-                    *out_count = cMaxCombinedSetCountCompute - is_nv_bindless;
+                    *out_count = cMaxCombinedSetCountCompute;
                 } else {
                     const bool is_mesh_shaders = this->IsOptionalFeature(OptionalFeature::SupportsMeshShaders);
                     array = m_vk_combined_descriptor_set_layout_graphics;
-                    *out_count = cMaxCombinedSetCountGraphics - (is_mesh_shaders * 4) - is_nv_bindless;
+                    *out_count = cMaxCombinedSetCountGraphics - (is_mesh_shaders * 4);
                 }
                 return array;
             }
@@ -427,18 +425,15 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutCompute() const { return m_vk_combined_pipeline_layout_compute; }
 
             constexpr ALWAYS_INLINE u32 GetBindlessSet() {
-                VP_ASSERT(!this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture));
                 return cTargetBindlessLayoutSet;
             }
             constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedTextureSampler(ShaderStage shader_stage) {
-                const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
-                const u32 base_set = (this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? cTargetPerStageTextureSamplerLayoutSet : cTargetPerStageTextureSamplerLayoutSetArray[static_cast<u32>(shader_stage)];
-                return base_set - is_nv_bindless;
+                const u32 base_set = cTargetPerStageTextureSamplerLayoutSetArray[static_cast<u32>(shader_stage)];
+                return base_set;
             }
             constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedBuffer(ShaderStage shader_stage) {
-                const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
-                const u32 base_set = (this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? cTargetPerStageBufferLayoutSet : cTargetPerStageBufferLayoutSetArray[static_cast<u32>(shader_stage)];
-                return base_set - is_nv_bindless;
+                const u32 base_set = cTargetPerStageBufferLayoutSetArray[static_cast<u32>(shader_stage)];
+                return base_set;
             }
             constexpr ALWAYS_INLINE u32 GetPerStageSetTextureSampler(ShaderStage shader_stage) {
                 return this->GetPerStageSetCombinedTextureSampler(shader_stage);
@@ -488,7 +483,6 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE const void *GetPhysicalDeviceLuid() const { return m_vk_physical_device_properties_11.deviceLUID; }
 
             constexpr ALWAYS_INLINE size_t GetBindlessDescriptorLayoutSize()  const {
-                if (this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) { return 0; }
                 size_t layout_size = 0;
                 ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetBindlessVkDescriptorSetLayout(), std::addressof(layout_size));
                 return vp::util::AlignUp(layout_size, this->GetDescriptorOffsetAlignment());
@@ -525,8 +519,8 @@ namespace awn::gfx::impl {
             constexpr bool IsOptionalFeature(OptionalFeature optional_feature) const {
                 return m_optional_features.GetBit(static_cast<u32>(optional_feature));
             }
-            constexpr bool IsExtBindless() const {
-                return m_is_ext_bindless_nv;
+            constexpr bool IsUnifiedMemory() const {
+                return m_is_unified_memory;
             }
     };
 }

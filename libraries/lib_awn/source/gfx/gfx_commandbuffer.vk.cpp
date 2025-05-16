@@ -125,7 +125,8 @@ namespace awn::gfx {
 
         /* Set per stage offset */
         const size_t gpu_offset = m_command_memory_base_offset + memory_offset;
-        const bool is_per_stage = gfx::IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets);
+        //const bool is_per_stage = gfx::IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets);
+        const bool is_per_stage = false;
         VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
         if (!is_per_stage) {
             if (m_queue_type == QueueType::Graphics) {
@@ -346,7 +347,7 @@ namespace awn::gfx {
         ::pfn_vkCmdBindDescriptorBuffersEXT(m_command_list.vk_command_buffer, 1, std::addressof(binding_info));
 
         /* Map bindless */
-        if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture) && !gfx::IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) {
+        //if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture) && !gfx::IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) {
             const size_t gpu_offset = 0;
             VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
             if (m_queue_type == QueueType::Graphics) {
@@ -365,7 +366,7 @@ namespace awn::gfx {
                 .pOffsets = std::addressof(gpu_offset),
             };
             ::pfn_vkCmdSetDescriptorBufferOffsets2EXT(m_command_list.vk_command_buffer, std::addressof(offsets_info));
-        }
+        //}
 
         return;
     }
@@ -774,7 +775,7 @@ namespace awn::gfx {
         return;
     }
 
-    void CommandBuffer::SetShader(Shader *shader) {
+    void CommandBuffer::SetShader(const Shader *shader) {
         static constexpr VkShaderStageFlagBits cShaderStageFlagBitsArray[impl::Context::cTargetMaxShaderStageCount] = {
             VK_SHADER_STAGE_VERTEX_BIT,
             VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
@@ -1012,7 +1013,7 @@ namespace awn::gfx {
         return;
     }
 
-    void CommandBuffer::SetBlendState(BlendState *blend_state) {
+    void CommandBuffer::SetBlendState(const BlendState *blend_state) {
 
         ::pfn_vkCmdSetLogicOpEnableEXT(m_command_list.vk_command_buffer, blend_state->is_enable_logic_op);
         const VkLogicOp logic_op = vp::res::GfxLogicOperationToVkLogicOp(static_cast<LogicOperation>(blend_state->logic_op));
@@ -1040,7 +1041,7 @@ namespace awn::gfx {
         return;
     }
 
-    void CommandBuffer::SetDepthStencilState(DepthStencilState *depth_stencil_state) {
+    void CommandBuffer::SetDepthStencilState(const DepthStencilState *depth_stencil_state) {
 
         ::pfn_vkCmdSetDepthTestEnable(m_command_list.vk_command_buffer, depth_stencil_state->is_enable_depth_test);
         ::pfn_vkCmdSetDepthWriteEnable(m_command_list.vk_command_buffer, depth_stencil_state->is_enable_depth_write);
@@ -1070,7 +1071,7 @@ namespace awn::gfx {
         return;
     }
 
-    void CommandBuffer::SetRasterizerState(RasterizerState *rasterizer_state) {
+    void CommandBuffer::SetRasterizerState(const RasterizerState *rasterizer_state) {
 
         ::pfn_vkCmdSetRasterizerDiscardEnable(m_command_list.vk_command_buffer, rasterizer_state->is_enable_rasterizer_discard);
 
@@ -1098,7 +1099,7 @@ namespace awn::gfx {
         return;
     }
 
-    void CommandBuffer::SetVertexState(VertexState *vertex_state) {
+    void CommandBuffer::SetVertexState(const VertexState *vertex_state) {
 
         VkVertexInputBindingDescription2EXT   vertex_binding_description_array[cTargetMaxVertexBufferCount];
         VkVertexInputAttributeDescription2EXT vertex_attribute_description_array[cTargetMaxVertexBufferCount];
@@ -1122,7 +1123,7 @@ namespace awn::gfx {
         ::pfn_vkCmdSetPrimitiveRestartEnable(m_command_list.vk_command_buffer, false);
     }
 
-    void CommandBuffer::SetViewportScissorState(ViewportScissorState *viewport_scissor_state) {
+    void CommandBuffer::SetViewportScissorState(const ViewportScissorState *viewport_scissor_state) {
 
         /* Transform viewport state to represent a lower left window origin */
         VkViewport viewport_array[cTargetMaxViewportScissorCount];

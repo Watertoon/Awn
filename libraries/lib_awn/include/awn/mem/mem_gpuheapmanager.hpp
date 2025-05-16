@@ -19,40 +19,11 @@ namespace awn::mem {
 
     constexpr inline size_t cMaxGpuRootHeapCount = 2;
 
-#ifdef VP_TARGET_GRAPHICS_API_vk
-    struct GpuMemoryHandle {
-        VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
-        void *memory;
-
-        constexpr void *GetAddress() const {
-            return this->memory;
-        }
-        constexpr bool IsValid() const {
-            return this->vk_device_memory != VK_NULL_HANDLE;
-        }
-    };
-
-    static constexpr size_t cGpuMemoryHandleMetaDataSize = 0;
-    static constexpr size_t cGpuMemoryHandleMetaDataAlignment = 0;
-#elif VP_TARGET_GRAPHICS_API_nvn
-    struct GpuMemoryHandle {
-        NVNmemoryPool *nvn_memory_pool = nullptr;
-
-        constexpr bool IsValid() const {
-            return this->nvn_memory_pool != nullptr;
-        }
-    };
-
-    static constexpr size_t cGpuMemoryHandleMetaDataSize = sizeof(NVNmemoryPool);
-    static constexpr size_t cGpuMemoryHandleMetaDataAlignment = alignof(NVNmemoryPool);
-#endif
-    static constexpr GpuMemoryHandle cInvalidGpuMemoryHandle = {};
-
     struct GpuRootHeapInfo {
-        GpuMemoryHandle handle;
+        gfx::MemoryPool *memory_pool;
         size_t size;
     };
-        
+
     struct GpuHeapManagerInfo {
         u32 cpu_uncached_root_heap_count;
         u32 cpu_cached_root_heap_count;
@@ -68,12 +39,12 @@ namespace awn::mem {
 
     struct GpuRootHeapContext {
         gfx::MemoryPropertyFlags memory_property_flags;
-        void                   *base_address;
-        size_t                  memory_size;
-        GpuMemoryHandle         gpu_memory_handle;
-        GpuExpHeap             *root_heap;
+        void            *base_address;
+        size_t           memory_size;
+        gfx::MemoryPool *memory_pool;
+        GpuExpHeap      *root_heap;
 
-        ALWAYS_INLINE size_t GetMemoryOffset(void *address) {
+        ALWAYS_INLINE uintptr_t GetMemoryOffset(void *address) {
             return reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(base_address);
         }
 

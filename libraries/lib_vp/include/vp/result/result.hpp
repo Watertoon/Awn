@@ -68,11 +68,19 @@ namespace vp {
         } \
     }
 
-    #define RESULT_RETURN(result)  \
-        return (result)
+    #define RESULT_RETURN(result_expression)  \
+    { \
+        const ::vp::Result __result = (result_expression); \
+        return __result; \
+    }
 
-    #define RESULT_TRY(result)  \
-        if (RESULT_FAILED(result)) { return result; }
+    #define RESULT_TRY(result_expression)  \
+    { \
+        const ::vp::Result __result = (result_expression); \
+        if (RESULT_FAILED(__result)) { \
+            return __result; \
+        } \
+    }
 
     #define RESULT_SUCCEEDED(result)  \
         ((result) == ::vp::ResultSuccess)

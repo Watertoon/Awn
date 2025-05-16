@@ -232,8 +232,17 @@ namespace awn::hid {
                 return nullptr;
             }
         public:
-            KeyboardThread(mem::Heap *heap, u32 max_keyboard) : Thread("awn::hid::KeyboardThread", heap, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cPriorityNormal + 5), m_window_handle(), m_keyboard_device_array(), m_device_cs(), m_is_exceed_keyboard_limit_warning() {
+            KeyboardThread(mem::Heap *heap, u32 max_keyboard) : Thread(), m_window_handle(), m_keyboard_device_array(), m_device_cs(), m_is_exceed_keyboard_limit_warning() {
                 m_keyboard_device_array.Initialize(heap, max_keyboard);
+                sys::ThreadInfo thread_info = {
+                    .name = "awn::hid::KeyboardThread",
+                    .exit_code = 0,
+                    .run_mode = sys::ThreadRunMode::Looping,
+                    .message_count = 1,
+                    .stack_size = 0x1000,
+                    .priority = sys::cPriorityNormal - 3,
+                };
+                RESULT_ABORT_UNLESS(this->Thread::Initialize(heap, std::addressof(thread_info)));
             }
             virtual ~KeyboardThread() override {
                 ::PostThreadMessage(this->GetWin32ThreadId(), WM_QUIT, 0, 0);

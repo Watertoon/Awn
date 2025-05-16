@@ -99,28 +99,28 @@ namespace vp::util {
     constexpr inline double TCos = 1 - (TPow<double, V, 2> / TFactorial<double, 2>) + (TPow<double, V, 4> / TFactorial<double, 4>) - (TPow<double, V, 6> / TFactorial<double, 6>) + (TPow<double, V, 8> / TFactorial<double, 8>) - (TPow<double, V, 10> / TFactorial<double, 10>) + (TPow<double, V, 12> / TFactorial<double, 12>) - (TPow<double, V, 14> / TFactorial<double, 14>);
 
     constexpr float cSinCoefficients[5] = {
-        (TPow<double, 1.0, 11> / TFactorial<double,11>),
-        (TPow<double, 1.0, 9> / TFactorial<double,9>),
-        (TPow<double, 1.0, 7> / TFactorial<double,7>),
-        (TPow<double, 1.0, 5> / TFactorial<double,5>),
-        (TPow<double, 1.0, 3> / TFactorial<double,3>),
+        2.06962649e-08,
+        2.70857196e-06,
+        1.98172518e-04,
+        8.33277685e-03,
+        1.66666217e-01,
     };
     constexpr float cCosCoefficients[5] = {
-        (TPow<double, 1.0, 10> / TFactorial<double,10>),
-        (TPow<double, 1.0, 8> / TFactorial<double,8>),
-        (TPow<double, 1.0, 6> / TFactorial<double,6>),
-        (TPow<double, 1.0, 4> / TFactorial<double,4>),
-        (TPow<double, 1.0, 2> / TFactorial<double,2>),
+        2.22696745e-07,
+        2.42727578e-05,
+        1.38645759e-03,
+        4.16617756e-02,
+        4.99996803e-01,
     };
     constexpr float cArcTanCoefficients[8] = {
-        1.0 / 17.0,
-        1.0 / 15.0,
-        1.0 / 13.0,
-        1.0 / 11.0,
-        1.0 / 9.0,
-        1.0 / 7.0,
-        1.0 / 5.0,
-        1.0 / 3.0,
+        0.00273138,
+        0.01555041,
+        0.04176995,
+        0.07418835,
+        0.10597013,
+        0.14191457,
+        0.19991017,
+        0.33333011,
     };
 
     constexpr float CoefficientsSin(float value) {
@@ -129,11 +129,13 @@ namespace vp::util {
         const float coef2 = cSinCoefficients[2];
         const float coef3 = cSinCoefficients[3];
         const float coef4 = cSinCoefficients[4];
-        const float t0 = MultiplySub(value, coef1, coef0);
-        const float t1 = NegateMultiplySub(value, coef2, t0);
-        const float t2 = MultiplyAdd(value, coef3, t1);
-        const float t3 = NegateMultiplySub(value, coef4, t2);
-        const float result = MultiplyAdd(value, 1.0f, t3);
+        const float value_sq = value * value;
+        const float n4 = MultiplySub(coef0, value_sq, coef1);
+        const float n3 = NegateMultiplySub(n4, value_sq, coef2);
+        const float n2 = MultiplyAdd(n3, value_sq, coef3);
+        const float n1 = NegateMultiplySub(n2, value_sq, coef4);
+        const float n0 = MultiplyAdd(n1, value_sq, 1.0f);
+        const float result = value * n0;
         return result;
     }
 
@@ -143,11 +145,13 @@ namespace vp::util {
         const float coef2 = cCosCoefficients[2];
         const float coef3 = cCosCoefficients[3];
         const float coef4 = cCosCoefficients[4];
-        const float t0 = MultiplySub(value, coef1, coef0);
-        const float t1 = NegateMultiplySub(value, coef2, t0);
-        const float t2 = MultiplyAdd(value, coef3, t1);
-        const float t3 = NegateMultiplySub(value, coef4, t2);
-        const float result = MultiplyAdd(value, 1.0f, t3);
+        const float value_sq = value * value;
+        const float n4 = MultiplySub(coef0, value_sq, coef1);
+        const float n3 = NegateMultiplySub(n4, value_sq, coef2);
+        const float n2 = MultiplyAdd(n3, value_sq, coef3);
+        const float n1 = NegateMultiplySub(n2, value_sq, coef4);
+        const float n0 = MultiplyAdd(n1, value_sq, 1.0f);
+        const float result = n0;
         return result;
     }
 
@@ -160,21 +164,105 @@ namespace vp::util {
         const float coef5 = cArcTanCoefficients[5];
         const float coef6 = cArcTanCoefficients[6];
         const float coef7 = cArcTanCoefficients[7];
-        const float t0 = NegateMultiplySub(coef0, value, coef1);
-        const float t1 = MultiplyAdd(t0, value, coef2);
-        const float t2 = NegateMultiplySub(t1, value, coef3);
-        const float t3 = MultiplyAdd(t2, value, coef4);
-        const float t4 = NegateMultiplySub(t3, value, coef5);
-        const float t5 = MultiplyAdd(t4, value, coef6);
-        const float t6 = NegateMultiplySub(t5, value, coef7);
-        const float result = MultiplyAdd(t6, value, 1.0f);
+        const float value_sq = value * value;
+        const float n7 = NegateMultiplySub(coef0, value_sq, coef1);
+        const float n6 = MultiplyAdd(n7, value_sq, coef2);
+        const float n5 = NegateMultiplySub(n6, value_sq, coef3);
+        const float n4 = MultiplyAdd(n5, value_sq, coef4);
+        const float n3 = NegateMultiplySub(n4, value_sq, coef5);
+        const float n2 = MultiplyAdd(n3, value_sq, coef6);
+        const float n1 = NegateMultiplySub(n2, value_sq, coef7);
+        const float n0 = MultiplyAdd(n1, value_sq, 1.0f);
+        const float result = value * n0;
         return result;
+    }
+
+    constexpr float ApproximateArcCos(float angle_rag) {
+        const float one_min_ang_sq = 1.0f - (angle_rag * angle_rag);
+        if (0.0f <= angle_rag) {
+            if (angle_rag <= cFloatSquareRootOneHalf) {
+                /* {0 <= ang <= cFloatSqrtOneHalf} */
+                const float ang_div = angle_rag / vp::util::SquareRoot(one_min_ang_sq);
+                const float atan = CoefficientsArcTan(ang_div);
+                const float result = cFloatPiDivided2 - atan;
+                return result;
+            }
+            /* {cFloatSqrtOneHalf < ang} */
+            const float ang_div = vp::util::SquareRoot(one_min_ang_sq) / angle_rag;
+            const float atan = CoefficientsArcTan(ang_div);
+            const float result = atan;
+            return result;
+        }
+        if (-cFloatSquareRootOneHalf <= angle_rag) {
+            /* {-cFloatSqrtOneHalf <= angle_rag < 0} */
+            const float ang_div = -angle_rag / vp::util::SquareRoot(one_min_ang_sq);
+            const float atan = CoefficientsArcTan(ang_div);
+            const float result = cFloatPiDivided2 + atan;
+            return result;
+        }
+        /* {ang < -cFloatSqrtOneHalf} */
+        const float ang_div = (-vp::util::SquareRoot(one_min_ang_sq)) / angle_rag;
+        const float atan = CoefficientsArcTan(ang_div);
+        const float result = cFloatPiDivided2 - atan;
+        return result;
+    }
+
+    constexpr float ApproximateArcTan2(float y, float x) {
+        if (y == 0.0f && x == 0.0f) { return 0.0f; }
+        if (0.0f <= x) {
+            if (0.0f <= y) {
+                if (y <= x) {
+                    const float y_div_x = y / x;
+                    const float atan = CoefficientsArcTan(y_div_x);
+                    return atan;
+                } else {
+                    const float x_div_y = x / y;
+                    const float atan = CoefficientsArcTan(x_div_y);
+                    return vp::util::cFloatPiDivided2 - atan;
+                }
+            } else {
+                const float neg_y = -y;
+                if (neg_y <= x) {
+                    const float y_div_x = neg_y / x;
+                    const float atan = CoefficientsArcTan(y_div_x);
+                    return -atan;
+                } else {
+                    const float x_div_y = x / neg_y;
+                    const float atan = CoefficientsArcTan(x_div_y);
+                    return atan - vp::util::cFloatPiDivided2;
+                }
+            }
+        }
+        else {
+            if (0.0f <= y) {
+                const float neg_x = -x;
+                if (y <= x) {
+                    const float y_div_x = y / neg_x;
+                    const float atan = CoefficientsArcTan(y_div_x);
+                    return vp::util::cFloatPi - atan;
+                } else {
+                    const float x_div_y = neg_x / y;
+                    const float atan = CoefficientsArcTan(x_div_y);
+                    return vp::util::cFloatPiDivided2 + atan;
+                }
+            } else {
+                if (y < x) {
+                    const float x_div_y = x / y;
+                    const float atan = CoefficientsArcTan(x_div_y);
+                    return vp::util::cFloatPiDivided2 - atan;
+                } else {
+                    const float y_div_x = y / x;
+                    const float atan = CoefficientsArcTan(y_div_x);
+                    return atan - vp::util::cFloatPi;
+                }
+            }
+        }
     }
 
     /* Values used to calculate an angle index for the sincos sample table */
     constexpr inline u32 cAngleIndexHalfRound = 0x80000000;
     constexpr inline u32 cAngleIndexQuarterRound = 0x40000000;
-    constexpr inline u32 cAngleIndexThreeQuarterRound = 0xC0000000;
+    constexpr inline u32 cAngleIndexThreeQuarterRound = 0xc0000000;
 
     constexpr long double PreciseSin(long double V) {
         return V - (std::pow(V, 3) / TFactorial<long double, 3>) + (std::pow(V, 5) / TFactorial<long double, 5>) - (std::pow(V, 7) / TFactorial<long double, 7>) + (std::pow(V, 9) / TFactorial<long double, 9>) - (std::pow(V, 11) / TFactorial<long double, 11>) + (std::pow(V, 13) / TFactorial<long double, 13>) - (std::pow(V, 15) / TFactorial<long double, 15>) + (std::pow(V, 17) / TFactorial<long double, 17>) - (std::pow(V, 19) / TFactorial<long double, 19>) + (std::pow(V, 21) / TFactorial<long double, 21>) - (std::pow(V, 23) / TFactorial<long double, 23>) + (std::pow(V, 25) / TFactorial<long double, 25>) - (std::pow(V, 27) / TFactorial<long double, 27>) + (std::pow(V, 29) / TFactorial<long double, 29>) - (std::pow(V, 31) / TFactorial<long double, 31>) + (std::pow(V, 33) / TFactorial<long double, 33>) - (std::pow(V, 35) / TFactorial<long double, 35>);

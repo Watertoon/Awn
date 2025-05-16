@@ -46,26 +46,26 @@ namespace awn::gfx::impl {
 
         /* Ensure address */
         size_t offset;
-        mem::GpuMemoryHandle handle = mem::FindGpuMemoryHandle(std::addressof(offset), gpu_address);
+        MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_address);
 
         /* Create VkBuffer */
-        return CreateVkBuffer(out_buffer, handle, offset, usage_flags, size);
+        return CreateVkBuffer(out_buffer, memory_pool, offset, usage_flags, size);
     }
 
-	Result CreateVkBuffer(VkBuffer *out_buffer, mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info) {
-        return CreateVkBuffer(out_buffer, memory_handle, memory_offset, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
+	Result CreateVkBuffer(VkBuffer *out_buffer, MemoryPool *memory_pool, size_t memory_offset, const BufferInfo *buffer_info) {
+        return CreateVkBuffer(out_buffer, memory_pool, memory_offset, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
     }
 
-    Result CreateVkBuffer(VkBuffer *out_buffer, mem::GpuMemoryHandle memory_handle, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size) {
+    Result CreateVkBuffer(VkBuffer *out_buffer, MemoryPool *memory_pool, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size) {
 
         /* Ensure memory handle */
-        RESULT_RETURN_IF(!memory_handle.IsValid(), ResultInvalidGpuMemoryHandle);
+        RESULT_RETURN_IF(!memory_pool->IsValid(), ResultInvalidMemoryPool);
 
         /* Create VkBuffer */
         RESULT_TRY(CreateVkBuffer(out_buffer, usage_flags, size));
 
         /* Bind gpu memory allocation to buffer from offset */
-        const VkResult vk_result = ::pfn_vkBindBufferMemory(Context::GetInstance()->GetVkDevice(), *out_buffer, memory_handle.vk_device_memory, memory_offset);
+        const VkResult vk_result = ::pfn_vkBindBufferMemory(Context::GetInstance()->GetVkDevice(), *out_buffer, memory_pool->GetVkDeviceMemory(), memory_offset);
         const Result result = ConvertVkResultToResult(vk_result);
         if (RESULT_FAILED(result)) {
             DestroyVkBuffer(*out_buffer);
@@ -146,35 +146,35 @@ namespace awn::gfx::impl {
 
         /* Get handle by address */
         size_t offset;
-        mem::GpuMemoryHandle handle = mem::FindGpuMemoryHandle(std::addressof(offset), gpu_address);
+        MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_address);
 
         /* Create VkImage */
-        return CreateVkImage(out_image, handle, offset, image_usage_flags, texture_info, pnext);
+        return CreateVkImage(out_image, memory_pool, offset, image_usage_flags, texture_info, pnext);
     }
 
-	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *texture_info) {
-        return CreateVkImage(out_image, memory_handle, offset, texture_info, nullptr);
+	Result CreateVkImage(VkImage *out_image, MemoryPool *memory_pool, size_t offset, const TextureInfo *texture_info) {
+        return CreateVkImage(out_image, memory_pool, offset, texture_info, nullptr);
     }
 
-	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, const TextureInfo *texture_info, const void *pnext) {
+	Result CreateVkImage(VkImage *out_image, MemoryPool *memory_pool, size_t offset, const TextureInfo *texture_info, const void *pnext) {
         const VkImageUsageFlags flags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT | vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags));
-        return CreateVkImage(out_image, memory_handle, offset, flags, texture_info, pnext);
+        return CreateVkImage(out_image, memory_pool, offset, flags, texture_info, pnext);
     }
 
-    Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
-        return CreateVkImage(out_image, memory_handle, offset, image_usage_flags, texture_info, nullptr);
+    Result CreateVkImage(VkImage *out_image, MemoryPool *memory_pool, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
+        return CreateVkImage(out_image, memory_pool, offset, image_usage_flags, texture_info, nullptr);
     }
 
-	Result CreateVkImage(VkImage *out_image, mem::GpuMemoryHandle memory_handle, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext)  {
+	Result CreateVkImage(VkImage *out_image, MemoryPool *memory_pool, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext)  {
 
         /* Ensure memory handle */
-        RESULT_RETURN_IF(!memory_handle.IsValid(), ResultInvalidGpuMemoryHandle);
+        RESULT_RETURN_IF(!memory_pool->IsValid(), ResultInvalidMemoryPool);
 
         /* Create VkImage */
         RESULT_TRY(CreateVkImage(out_image, image_usage_flags, texture_info, pnext));
 
         /* Bind gpu memory to image from offset */
-        const VkResult vk_result = ::pfn_vkBindImageMemory(Context::GetInstance()->GetVkDevice(), *out_image, memory_handle.vk_device_memory, offset);
+        const VkResult vk_result = ::pfn_vkBindImageMemory(Context::GetInstance()->GetVkDevice(), *out_image, memory_pool->GetVkDeviceMemory(), offset);
         const Result result = ConvertVkResultToResult(vk_result);
         if (RESULT_FAILED(result)) {
             DestroyVkImage(*out_image);

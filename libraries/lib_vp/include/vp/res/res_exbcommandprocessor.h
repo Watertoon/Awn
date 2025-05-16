@@ -23,17 +23,17 @@ namespace vp::res {
             constexpr ExbUserMemoryCallback() {/*...*/}
             virtual constexpr ~ExbUserMemoryCallback() {/*...*/}
 
-            virtual s32                *GetUserMemoryInputS32(u16 arg);
-            virtual float              *GetUserMemoryInputFloat(u16 arg);
-            virtual bool               *GetUserMemoryInputBool(u16 arg);
-            virtual char               *GetUserMemoryInputString(u16 arg);
-            virtual vp::util::Vector3f *GetUserMemoryInputVector3f(u16 arg);
+            virtual s32              *GetUserMemoryInputS32(u16 arg);
+            virtual float            *GetUserMemoryInputFloat(u16 arg);
+            virtual bool             *GetUserMemoryInputBool(u16 arg);
+            virtual char             *GetUserMemoryInputString(u16 arg);
+            virtual vp::util::Float3 *GetUserMemoryInputVector3f(u16 arg);
     
-            virtual s32                **GetUserMemoryOutputS32(u16 arg);
-            virtual float              **GetUserMemoryOutputFloat(u16 arg);
-            virtual bool               **GetUserMemoryOutputBool(u16 arg);
-            virtual char               **GetUserMemoryOutputString(u16 arg);
-            virtual vp::util::Vector3f **GetUserMemoryOutputVector3f(u16 arg);
+            virtual s32              **GetUserMemoryOutputS32(u16 arg);
+            virtual float            **GetUserMemoryOutputFloat(u16 arg);
+            virtual bool             **GetUserMemoryOutputBool(u16 arg);
+            virtual char             **GetUserMemoryOutputString(u16 arg);
+            virtual vp::util::Float3 **GetUserMemoryOutputVector3f(u16 arg);
     };
 
     struct ExbCommandProcessorInfo;

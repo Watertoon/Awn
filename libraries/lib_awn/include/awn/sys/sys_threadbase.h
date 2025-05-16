@@ -27,18 +27,31 @@ namespace awn::sys {
         Send,
     };
 
+    struct ThreadInfo {
+        const char *name;
+        size_t exit_code;
+        ThreadRunMode run_mode;
+        u32 message_count;
+        size_t *message_memory;
+        u32 stack_size;
+#ifdef VP_TARGET_PLATFORM_nx
+        void *stack_memory;
+#endif
+        u32 priority;
+    };
+    
     using TlsDestructor = void (*)(size_t);
     using TlsSlot       = u32;
 
     /* A higher value is a lower priority */
-    constexpr inline s32 cMinPriority = 0x1f;
-    constexpr inline s32 cMaxPriority = 0x0;
+    constexpr inline u32 cMinPriority = 0x1f;
+    constexpr inline u32 cMaxPriority = 0x0;
 
-    constexpr inline s32 cPriorityHigh = 0x4;
-    constexpr inline s32 cPriorityAboveNormal = 0xb;
-    constexpr inline s32 cPriorityNormal = 0x10;
-    constexpr inline s32 cPriorityBelowNormal = 0x15;
-    constexpr inline s32 cPriorityLow = 0x1b;
+    constexpr inline u32 cPriorityHigh = 0x4;
+    constexpr inline u32 cPriorityAboveNormal = 0xb;
+    constexpr inline u32 cPriorityNormal = 0x10;
+    constexpr inline u32 cPriorityBelowNormal = 0x15;
+    constexpr inline u32 cPriorityLow = 0x1b;
     constexpr inline u32 cInvalidTlsSlot = 0xffff'ffff;
 
     class ThreadManager;
@@ -52,10 +65,10 @@ namespace awn::sys {
             mem::Heap                   *m_thread_heap;
             mem::Heap                   *m_lookup_heap;
             sys::MessageQueue            m_message_queue;
-            size_t                      *m_message_queue_buffer;
+            size_t                      *m_message_queue_memory;
             size_t                       m_exit_message;
             u32                          m_stack_size;
-            s32                          m_priority;
+            u32                          m_priority;
             CoreMask                     m_core_mask;
             u32                          m_run_mode;
 #ifdef VP_TARGET_PLATFORM_win32
@@ -69,52 +82,50 @@ namespace awn::sys {
             static long unsigned int InternalServiceThreadMain(void *arg);
         public:
             virtual void Run() {
-                size_t current_message = static_cast<size_t>(-1);
 
+                /* Message loop */
+                size_t current_message = static_cast<size_t>(-1);
                 if (m_run_mode == static_cast<u32>(ThreadRunMode::WaitForMessage)) {
                     m_message_queue.ReceiveMessage(std::addressof(current_message));
                 }
-
                 while(current_message != m_exit_message) {
                     this->ThreadMain(current_message);
                     if (m_run_mode == static_cast<u32>(ThreadRunMode::WaitForMessage)) {
                         m_message_queue.ReceiveMessage(std::addressof(current_message));
                     } else {
-                        if (m_message_queue.TryReceiveMessage(std::addressof(current_message)) == false) {
+                        if (!m_message_queue.TryReceiveMessage(std::addressof(current_message))) {
                             current_message = 0;
                         }
                     }
                 }
+
+                return;
             }
 
             virtual void ThreadMain([[maybe_unused]] size_t message) {/*...*/}
         public:
-            ThreadBase(mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages , u32 stack_size, s32 priority);
-            ThreadBase(mem::Heap *thread_heap);
+            constexpr ThreadBase(): m_thread_heap(), m_lookup_heap(), m_message_queue(), m_message_queue_memory(), m_exit_message(), m_stack_size(), m_priority(), m_core_mask(), m_run_mode(), 
+            #ifdef VP_TARGET_PLATFORM_win32
+                m_tls_slot_array(), 
+            #endif
+                m_thread_manager_list_node()
+                {/*...*/}
+            virtual ~ThreadBase() {/*...*/}
 
-            virtual ~ThreadBase() {
-                m_message_queue.Finalize();
-            }
+            void Initialize(mem::Heap *thread_heap, const ThreadInfo *thread_info);
 
             virtual void StartThread() {/*...*/}
-            virtual void ExitThread(ExitType exit_type) {
-                if (exit_type == ExitType::Jam) {
-                    m_message_queue.JamMessage(m_exit_message);
-                } else {
-                    m_message_queue.SendMessage(m_exit_message);
-                }
-                this->WaitForThreadExit();
-            }
+            virtual void ExitThread(ExitType exit_type);
             virtual void WaitForThreadExit() {/*...*/}
             virtual void ResumeThread() {/*...*/}
             virtual void SuspendThread() {/*...*/}
             virtual void SleepThread([[maybe_unused]] vp::TimeSpan timeout_ns) {/*...*/}
             virtual void YieldThread() {/*...*/}
 
-            virtual void SetPriority([[maybe_unused]] s32 priority)  {/*...*/}
+            virtual void SetPriority([[maybe_unused]] u32 priority)  {/*...*/}
             virtual void SetCoreMask([[maybe_unused]] CoreMask core_mask) {/*...*/}
 
-            constexpr ALWAYS_INLINE s32 GetPriority() const {
+            constexpr ALWAYS_INLINE u32 GetPriority() const {
                 return m_priority;
             }
             constexpr ALWAYS_INLINE u64 GetCoreMask() const {

@@ -59,11 +59,9 @@ namespace awn::gfx::impl {
         m_sampler_slot_allocator.Initialize(heap, manager_info->max_sampler_unit_count);
 
         /* Setup descriptor base */
-        if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {
-            Context *context = Context::GetInstance();
-            ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(context->GetVkDevice(), context->GetBindlessVkDescriptorSetLayout(), Context::cBindlessBindingBaseTexture, std::addressof(m_texture_base_offset));
-            ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(context->GetVkDevice(), context->GetBindlessVkDescriptorSetLayout(), Context::cBindlessBindingBaseSampler, std::addressof(m_sampler_base_offset));
-        }
+        Context *context = Context::GetInstance();
+        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(context->GetVkDevice(), context->GetBindlessVkDescriptorSetLayout(), Context::cBindlessBindingBaseTexture, std::addressof(m_texture_base_offset));
+        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(context->GetVkDevice(), context->GetBindlessVkDescriptorSetLayout(), Context::cBindlessBindingBaseSampler, std::addressof(m_sampler_base_offset));
 
         return;
     }
@@ -79,11 +77,12 @@ namespace awn::gfx::impl {
 
         /* Ensure texture is valid */
         RESULT_RETURN_UNLESS(texture_view_info->texture != nullptr, ResultNoTexture);
-        if (reference_texture_binder != nullptr) {
-            RESULT_RETURN_UNLESS(reference_texture_binder->IsRegistered(), ResultInvalidTextureBinder);
-            Texture *binder_texture = reference_texture_binder->GetTexture();                        
-            RESULT_RETURN_UNLESS(binder_texture == texture_view_info->texture, ResultTextureBinderAndTextureViewInfoMismatch);
-        }
+        VP_ASSERT(reference_texture_binder == nullptr);
+        //if (reference_texture_binder != nullptr) {
+        //    RESULT_RETURN_UNLESS(reference_texture_binder->IsRegistered(), ResultInvalidTextureBinder);
+        //    Texture *binder_texture = reference_texture_binder->GetTexture();                        
+        //    RESULT_RETURN_UNLESS(binder_texture == texture_view_info->texture, ResultTextureBinderAndTextureViewInfoMismatch);
+        //}
 
         /* Allocate new texture slot */
         const TextureSlotType texture_slot = m_texture_slot_allocator.Allocate();
@@ -94,13 +93,14 @@ namespace awn::gfx::impl {
 
         /* Initialize texture view unit */
         TextureViewUnit *texture_view_unit = std::addressof(m_texture_view_unit_array[texture_slot]);
-        if (reference_texture_binder != nullptr) { texture_view_unit->reference_texture_binder.ReferenceBinderSync(reference_texture_binder); }
-        auto fail_binder_guard = SCOPE_GUARD {
-            texture_view_unit->reference_texture_binder.Release();
-        };
+        //if (reference_texture_binder != nullptr) { texture_view_unit->reference_texture_binder.ReferenceBinderSync(reference_texture_binder); }
+        //auto fail_binder_guard = SCOPE_GUARD {
+        //    texture_view_unit->reference_texture_binder.Release();
+        //};
         RESULT_TRY(gfx::impl::CreateVkImageView(std::addressof(texture_view_unit->vk_image_view), texture_view_info));
         fail_slot_guard.Cancel();
-        fail_binder_guard.Cancel();
+        //fail_binder_guard.Cancel();
+        texture_view_unit->key.SetFromInfo(texture_view_info);
         texture_view_unit->reference_count = 1;
 
         /* Cache texture descriptor */
@@ -119,12 +119,10 @@ namespace awn::gfx::impl {
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(descriptor_get_info), context->GetSeparateTextureDescriptorSize(), texture_view_unit->descriptor_memory);
 
         /* Register texture descriptor to descriptor buffer */
-        if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {
-            const u32 descriptor_size = context->GetSeparateTextureDescriptorSize();
-            const size_t descriptor_offset = descriptor_size * texture_slot;
-            void *memory = DescriptorMemoryManager::GetInstance()->GetBindlessDescriptorMemory();
-            ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + m_texture_base_offset + descriptor_offset), texture_view_unit->descriptor_memory, descriptor_size);
-        }
+        const u32 descriptor_size = context->GetSeparateTextureDescriptorSize();
+        const size_t descriptor_offset = descriptor_size * texture_slot;
+        void *memory = DescriptorMemoryManager::GetInstance()->GetBindlessDescriptorMemory();
+        ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + m_texture_base_offset + descriptor_offset), texture_view_unit->descriptor_memory, descriptor_size);
 
         *out_texture_slot = DescriptorSlot{ texture_slot, texture_view_unit->free_count, };
 
@@ -178,17 +176,15 @@ namespace awn::gfx::impl {
         const VkDescriptorGetInfoEXT descriptor_get_info = {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
             .type = VK_DESCRIPTOR_TYPE_SAMPLER,
-            .data = std::addressof(vk_sampler)
+            .data = std::addressof(vk_sampler),
         }; 
         ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(descriptor_get_info), context->GetSeparateSamplerDescriptorSize(), sampler_unit->descriptor_memory);
 
-        /* Register sampler descriptor to descriptor buffer */
-        if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {            
-            const u32    descriptor_size   = context->GetSeparateSamplerDescriptorSize();
-            const size_t descriptor_offset = descriptor_size * sampler_slot;
-            void *memory = DescriptorMemoryManager::GetInstance()->GetBindlessDescriptorMemory();
-            ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + m_sampler_base_offset + descriptor_offset), sampler_unit->descriptor_memory, descriptor_size);
-        }
+        /* Register sampler descriptor to descriptor buffer */        
+        const u32 descriptor_size = context->GetSeparateSamplerDescriptorSize();
+        const size_t descriptor_offset = descriptor_size * sampler_slot;
+        void *memory = DescriptorMemoryManager::GetInstance()->GetBindlessDescriptorMemory();
+        ::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + m_sampler_base_offset + descriptor_offset), sampler_unit->descriptor_memory, descriptor_size);
 
         /* Insert into tree */
         sampler_unit->rb_node.SetKey(hash);
@@ -226,7 +222,7 @@ namespace awn::gfx::impl {
 
         /* Free texture view */
         gfx::impl::DestroyVkImageView(texture_view_unit->vk_image_view);
-        texture_view_unit->reference_texture_binder.Release();
+        //texture_view_unit->reference_texture_binder.Release();
         texture_view_unit->IncrementFreeCount();
         m_texture_slot_allocator.Free(texture_index);
 

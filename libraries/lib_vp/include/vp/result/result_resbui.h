@@ -32,4 +32,8 @@ namespace vp::resbui {
     DECLARE_RESULT(FailedToBuildDictionary,    12);
     DECLARE_RESULT(OutOfBoundsOffset,          13);
     DECLARE_RESULT(OutOfBoundsVariation,       14);
+    DECLARE_RESULT(OverlappingFrame,           15);
+    DECLARE_RESULT(InvalidFrame,               16);
+    DECLARE_RESULT(MismatchedExt,              17);
+    DECLARE_RESULT(MismatchedCurveType,        18);
 }

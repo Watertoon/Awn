@@ -34,7 +34,11 @@ namespace vp::util {
         bool ApplyByamlDictionaryLowerCase(vp::res::ByamlIterator iter); \
         template <class Self> \
         constexpr auto &&operator[](this Self&& self, u32 index) { \
-            return std::forward<Self>(self).v[index]; \
+            if constexpr (cIsVectorized && sizeof(UnderlyingType) == sizeof(double) && 2 < cVectorCount && cSimdRegisterSize == 128) { \
+                return std::forward<Self>(self).v[index / 2][index & 1]; \
+            } else { \
+                return std::forward<Self>(self).v[index]; \
+            } \
         }
 
     /* Vectorized matrix naming follows Matrix{row_count}{column_count}{Row or Column}Major{Type abbriviation} */
@@ -492,142 +496,142 @@ namespace vp::util {
         return Vector4f{ .v = in_vector.v, };
     }
 
-    constexpr MatrixRowMajor4x3f ConvertToMatrix43(const FloatRowMajor3x3 *in_matrix) {
-
-        const v4si mask = GetLoad4Mask128(true, true, true, false);
-        const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
-        const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
-        const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
-
-        const MatrixRowMajor4x3f matrix = {
-            a[0], a[1], a[2], a[3],
-            b[0], b[1], b[2], b[3],
-            c[0], c[1], c[2], c[3],
-        };
-        return matrix;
-    }
-
-    constexpr MatrixRowMajor4x3f ConvertToMatrix43(const FloatRowMajor4x3 *in_matrix) {
-
-        const v4si mask = GetLoad4Mask128(true, true, true, false);
-        const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
-        const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
-        const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
-        const v4f d = Load4Mask128(std::addressof((*in_matrix)[3,0]), mask);
-
-        const MatrixRowMajor4x3f matrix = {
-            a[0], a[1], a[2], a[3],
-            b[0], b[1], b[2], b[3],
-            c[0], c[1], c[2], c[3],
-            d[0], d[1], d[2], d[3],
-        };
-        return matrix;
-    }
-
-    constexpr MatrixRowMajor4x4f ConvertToMatrix44(const FloatRowMajor3x3 *in_matrix) {
-
-        const v4si mask = GetLoad4Mask128(true, true, true, false);
-        const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
-        const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
-        const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
-
-        const MatrixRowMajor4x4f matrix = {
-            a[0], a[1], a[2], a[3],
-            b[0], b[1], b[2], b[3],
-            c[0], c[1], c[2], c[3],
-            0, 0, 0, 1,
-        };
-        return matrix;
-    }
-
-    constexpr MatrixRowMajor4x4f ConvertToMatrix44(const FloatRowMajor4x3 *in_matrix) {
-
-        const v4si mask = GetLoad4Mask128(true, true, true, false);
-        const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
-        const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
-        const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
-        const v4f d = Load4Mask128(std::addressof((*in_matrix)[3,0]), mask);
-
-        const MatrixRowMajor4x4f matrix = {
-            a[0], a[1], a[2], a[3],
-            b[0], b[1], b[2], b[3],
-            c[0], c[1], c[2], c[3],
-            d[0], d[1], d[2], 1,
-        };
-        return matrix;
-    }
-
-    constexpr MatrixRowMajor4x4f ConvertToMatrix44(const FloatRowMajor4x4 *in_matrix) {
-        const v8f a = Load8(std::addressof((*in_matrix)[0, 0]));
-        const v8f b = Load8(std::addressof((*in_matrix)[2, 0]));
-        return MatrixRowMajor4x4f { a, b, };
-    }
-
-    constexpr MatrixRowMajor4x4f PromoteMatrix44(const MatrixRowMajor4x3f *in_matrix) {
-        return MatrixRowMajor4x4f { .m = in_matrix->m, };
-    }
-
-    constexpr MatrixColumnMajor4x3f ConvertToMatrix43(const FloatColumnMajor3x3 *in_matrix) {
-
-        const v4si mask = GetLoad4Mask128(true, true, true, false);
-        const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
-        const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
-        const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
-
-        return MatrixColumnMajor4x3f { a, b, c, };
-    }
-
-    constexpr MatrixColumnMajor4x3f ConvertToMatrix43(const FloatColumnMajor4x3 *in_matrix) {
-
-        const v4f a = Load4(std::addressof((*in_matrix)[0,0]));
-        const v4f b = Load4(std::addressof((*in_matrix)[1,0]));
-        const v4f c = Load4(std::addressof((*in_matrix)[2,0]));
-
-        return MatrixColumnMajor4x3f { a, b, c, };
-    }
-
-    constexpr MatrixColumnMajor4x4f ConvertToMatrix44(const FloatColumnMajor3x3 *in_matrix) {
-
-        const v4si mask = GetLoad4Mask128(true, true, true, false);
-        const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
-        const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
-        const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
-
-        const MatrixColumnMajor4x4f matrix = {
-            a[0], a[1], a[2], a[3],
-            b[0], b[1], b[2], b[3],
-            c[0], c[1], c[2], c[3],
-            0,0,0,1,
-        };
-        return matrix;
-    }
-
-    constexpr MatrixColumnMajor4x4f ConvertToMatrix44(const FloatColumnMajor4x3 *in_matrix) {
-
-        const v4f a = Load4(std::addressof((*in_matrix)[0,0]));
-        const v4f b = Load4(std::addressof((*in_matrix)[1,0]));
-        const v4f c = Load4(std::addressof((*in_matrix)[2,0]));
-
-        const MatrixColumnMajor4x4f matrix = {
-            a[0], a[1], a[2], a[3],
-            b[0], b[1], b[2], b[3],
-            c[0], c[1], c[2], c[3],
-            0,0,0,1,
-        };
-        return matrix;
-    }
-
-    constexpr MatrixColumnMajor4x4f ConvertToMatrix44(const FloatColumnMajor4x4 *in_matrix) {
-        const v8f a = Load8(std::addressof((*in_matrix)[0,0]));
-        const v8f b = Load8(std::addressof((*in_matrix)[2,0]));
-        return MatrixColumnMajor4x4f { a, b, };
-    }
-
-    constexpr MatrixColumnMajor4x4f PromoteToMatrix44(const MatrixColumnMajor4x3f *in_matrix) {
-        const v8f a = Load8Aligned(std::addressof((*in_matrix)[0,0]));
-        const v8f b = Load8Aligned(std::addressof((*in_matrix)[2,0]));
-        return MatrixColumnMajor4x4f {  a, b, };
-    }
+    //constexpr MatrixRowMajor4x3f ConvertToMatrix43(const FloatRowMajor3x3 *in_matrix) {
+    //
+    //    const v4si mask = GetLoad4Mask128(true, true, true, false);
+    //    const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    const MatrixRowMajor4x3f matrix = {
+    //        a[0], a[1], a[2], a[3],
+    //        b[0], b[1], b[2], b[3],
+    //        c[0], c[1], c[2], c[3],
+    //    };
+    //    return matrix;
+    //}
+    //
+    //constexpr MatrixRowMajor4x3f ConvertToMatrix43(const FloatRowMajor4x3 *in_matrix) {
+    //
+    //    const v4si mask = GetLoad4Mask128(true, true, true, false);
+    //    const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
+    //    const v4f d = Load4Mask128(std::addressof((*in_matrix)[3,0]), mask);
+    //
+    //    const MatrixRowMajor4x3f matrix = {
+    //        a[0], a[1], a[2], a[3],
+    //        b[0], b[1], b[2], b[3],
+    //        c[0], c[1], c[2], c[3],
+    //        d[0], d[1], d[2], d[3],
+    //    };
+    //    return matrix;
+    //}
+    //
+    //constexpr MatrixRowMajor4x4f ConvertToMatrix44(const FloatRowMajor3x3 *in_matrix) {
+    //
+    //    const v4si mask = GetLoad4Mask128(true, true, true, false);
+    //    const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    const MatrixRowMajor4x4f matrix = {
+    //        a[0], a[1], a[2], a[3],
+    //        b[0], b[1], b[2], b[3],
+    //        c[0], c[1], c[2], c[3],
+    //        0, 0, 0, 1,
+    //    };
+    //    return matrix;
+    //}
+    //
+    //constexpr MatrixRowMajor4x4f ConvertToMatrix44(const FloatRowMajor4x3 *in_matrix) {
+    //
+    //    const v4si mask = GetLoad4Mask128(true, true, true, false);
+    //    const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
+    //    const v4f d = Load4Mask128(std::addressof((*in_matrix)[3,0]), mask);
+    //
+    //    const MatrixRowMajor4x4f matrix = {
+    //        a[0], a[1], a[2], a[3],
+    //        b[0], b[1], b[2], b[3],
+    //        c[0], c[1], c[2], c[3],
+    //        d[0], d[1], d[2], 1,
+    //    };
+    //    return matrix;
+    //}
+    //
+    //constexpr MatrixRowMajor4x4f ConvertToMatrix44(const FloatRowMajor4x4 *in_matrix) {
+    //    const v8f a = Load8(std::addressof((*in_matrix)[0, 0]));
+    //    const v8f b = Load8(std::addressof((*in_matrix)[2, 0]));
+    //    return MatrixRowMajor4x4f { a, b, };
+    //}
+    //
+    //constexpr MatrixRowMajor4x4f PromoteMatrix44(const MatrixRowMajor4x3f *in_matrix) {
+    //    return MatrixRowMajor4x4f { .m = in_matrix->m, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x3f ConvertToMatrix43(const FloatColumnMajor3x3 *in_matrix) {
+    //
+    //    const v4si mask = GetLoad4Mask128(true, true, true, false);
+    //    const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    return MatrixColumnMajor4x3f { a, b, c, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x3f ConvertToMatrix43(const FloatColumnMajor4x3 *in_matrix) {
+    //
+    //    const v4f a = Load4(std::addressof((*in_matrix)[0,0]));
+    //    const v4f b = Load4(std::addressof((*in_matrix)[1,0]));
+    //    const v4f c = Load4(std::addressof((*in_matrix)[2,0]));
+    //
+    //    return MatrixColumnMajor4x3f { a, b, c, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x4f ConvertToMatrix44(const FloatColumnMajor3x3 *in_matrix) {
+    //
+    //    const v4si mask = GetLoad4Mask128(true, true, true, false);
+    //    const v4f a = Load4Mask128(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4f b = Load4Mask128(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4f c = Load4Mask128(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    const MatrixColumnMajor4x4f matrix = {
+    //        a[0], a[1], a[2], a[3],
+    //        b[0], b[1], b[2], b[3],
+    //        c[0], c[1], c[2], c[3],
+    //        0,0,0,1,
+    //    };
+    //    return matrix;
+    //}
+    //
+    //constexpr MatrixColumnMajor4x4f ConvertToMatrix44(const FloatColumnMajor4x3 *in_matrix) {
+    //
+    //    const v4f a = Load4(std::addressof((*in_matrix)[0,0]));
+    //    const v4f b = Load4(std::addressof((*in_matrix)[1,0]));
+    //    const v4f c = Load4(std::addressof((*in_matrix)[2,0]));
+    //
+    //    const MatrixColumnMajor4x4f matrix = {
+    //        a[0], a[1], a[2], a[3],
+    //        b[0], b[1], b[2], b[3],
+    //        c[0], c[1], c[2], c[3],
+    //        0,0,0,1,
+    //    };
+    //    return matrix;
+    //}
+    //
+    //constexpr MatrixColumnMajor4x4f ConvertToMatrix44(const FloatColumnMajor4x4 *in_matrix) {
+    //    const v8f a = Load8(std::addressof((*in_matrix)[0,0]));
+    //    const v8f b = Load8(std::addressof((*in_matrix)[2,0]));
+    //    return MatrixColumnMajor4x4f { a, b, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x4f PromoteToMatrix44(const MatrixColumnMajor4x3f *in_matrix) {
+    //    const v8f a = Load8Aligned(std::addressof((*in_matrix)[0,0]));
+    //    const v8f b = Load8Aligned(std::addressof((*in_matrix)[2,0]));
+    //    return MatrixColumnMajor4x4f {  a, b, };
+    //}
 
     constexpr Float2 ConvertToFloat2(const Vector2f &in_vector) {
         const float x = in_vector[0];

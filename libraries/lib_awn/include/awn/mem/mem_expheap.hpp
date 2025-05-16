@@ -27,22 +27,18 @@ namespace awn::mem {
 
         static constexpr u16 cFreeMagic  = vp::util::TCharCode16("FR");
         static constexpr u16 cAllocMagic = vp::util::TCharCode16("UD");
-
-        constexpr  ExpHeapMemoryBlock() : alloc_magic(0), alignment(0), reserve0(0), block_size(0), exp_list_node() {/*...*/}
-        constexpr ~ExpHeapMemoryBlock() {/*...*/}
     };
     static_assert(sizeof(ExpHeapMemoryBlock) == 0x20);
 
     class ExpHeap : public Heap {
         public:
-            using FreeList      = vp::util::IntrusiveListTraits<ExpHeapMemoryBlock, &ExpHeapMemoryBlock::exp_list_node>::List;
-            using AllocatedList = vp::util::IntrusiveListTraits<ExpHeapMemoryBlock, &ExpHeapMemoryBlock::exp_list_node>::List;
+            using BlockList = vp::util::IntrusiveListTraits<ExpHeapMemoryBlock, &ExpHeapMemoryBlock::exp_list_node>::List;
         public:
-            static constexpr s32    cMinimumAlignment             = 4;
+            static constexpr s32 cMinimumAlignment = 4;
             static constexpr size_t cMinimumAllocationGranularity = 4;
         protected:
-            FreeList       m_free_block_list;
-            AllocatedList  m_allocated_block_list;
+            BlockList m_free_list;
+            BlockList m_used_list;
             AllocationMode m_allocation_mode;
         public:
             VP_RTTI_DERIVED(ExpHeap, Heap);
@@ -54,7 +50,7 @@ namespace awn::mem {
         public:
             static ExpHeap *TryCreate(const char *name, void *address, size_t size, bool is_thread_safe);
         public:
-            explicit ExpHeap(const char *name, Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : Heap(name, parent_heap, start_address, size, is_thread_safe), m_free_block_list(), m_allocated_block_list(), m_allocation_mode(AllocationMode::BestFit) {/*...*/}
+            explicit ExpHeap(const char *name, Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : Heap(name, parent_heap, start_address, size, is_thread_safe), m_free_list(), m_used_list(), m_allocation_mode(AllocationMode::BestFit) {/*...*/}
             virtual ~ExpHeap() override {/*...*/}
 
             static ExpHeap *TryCreate(const char *name, Heap *parent_heap, size_t size, s32 alignment, bool is_thread_safe);
@@ -72,7 +68,7 @@ namespace awn::mem {
             virtual size_t GetMaximumAllocatableSize(s32 alignment) override;
             size_t GetMaximumAllocatableSizeUnsafe(s32 alignment);
 
-            virtual bool IsEmpty() const override { return m_allocated_block_list.IsEmpty(); }
+            virtual bool IsEmpty() const override { return m_used_list.IsEmpty(); }
 
             virtual bool IsAddressAllocation(void *address) override;
 

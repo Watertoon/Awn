@@ -15,19 +15,11 @@
  */
 #pragma once
 
-#ifdef VP_TARGET_PLATFORM_win32
-    #include <dxgi1_6.h>
-#ifdef VP_DEBUG
-    #include <dxgidebug.h>
-#endif
-    #include <d3d11_4.h>
-    #include <dcomp.h>
-    #include <awn/render/impl/render_dxgiinterfaceext.win32.h>
-    #include <awn/render/impl/render_dxgicontext11.win32.h>
-    #include <awn/render/render_nativelayer.win32.h>
-    #include <awn/render/render_nativedisplay.win32.h>
-    #include <awn/render/impl/render_nativevideomanager.win32.hpp>
-#elif VP_TARGET_PLATFORM_nx
+namespace awn::grr {
 
-#endif
-#include <awn/render/render_nativevideoapi.h>
+    void InitializeDisplayManager(mem::Heap *heap);
+    void FinalizeDisplayManager();
+
+    void SubmitAndPresentAsync(gfx::CommandList *command_list_array, u32 command_list_count);
+    void WaitAndCompletePresent();
+}

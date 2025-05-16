@@ -799,16 +799,13 @@ namespace vp::util {
             }
 
             constexpr size_t GetCount() {
-                
+
                 size_t count = 0;
-
                 if (m_root == nullptr) { return count; }
-
                 node_type *node = m_root;
                 while (node->m_left != nullptr) {
                     node = node->m_left;
                 }
-
                 do {
                     ++count;
                     node = this->GetNext(node);

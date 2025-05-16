@@ -27,11 +27,11 @@ namespace vp::res {
     struct ResBntx;
 
     struct GfxBindTextureView {
-        u64   texture_view_decriptor_slot;
         void *texture_view;
+        u64   texture_view_decriptor_slot;
     };
 
-    using GfxBindTextureCallback = GfxBindTextureView (*) (ResBntx*, const char *);
+    using GfxBindTextureCallback = GfxBindTextureView (*) (const char *texture_name, void *user_data);
 
     enum class GfxMemoryPoolFlags : u32 {
         CpuNoAccess  = (1 << 0),
@@ -91,6 +91,25 @@ namespace vp::res {
         u32   memory_pool_flags;
         u32   size;
         void *gpu_region_base;
+        
+        constexpr void SetDefaults() {
+            this->memory_pool_flags = static_cast<u32>(GfxMemoryPoolFlags::CpuUncached | GfxMemoryPoolFlags::GpuCached);
+            this->size = 0;
+            this->gpu_region_base = nullptr;
+        }
+        constexpr void SetMemoryPropertyFlags(GfxMemoryPoolFlags property_flags) {
+            this->memory_pool_flags = static_cast<u32>(property_flags);
+        }
+        constexpr void SetSize(u32 size) {
+            this->size = size;
+        }
+        constexpr void SetGpuRegionBase(void *address) {
+            this->gpu_region_base = address;
+        }
+
+        constexpr GfxMemoryPoolFlags GetMemoryPropertyFlags() const {
+            return static_cast<GfxMemoryPoolFlags>(this->memory_pool_flags);
+        }
     };
     static_assert(sizeof(ResGfxMemoryPoolInfo) == 0x10);
 
@@ -99,6 +118,18 @@ namespace vp::res {
         u32 gpu_access_flags;
         u32 reserve0;
         u32 reserve1;
+
+        constexpr void SetDefaults() {
+            this->size = 0;
+            this->gpu_access_flags = 0;
+        }
+
+        constexpr void SetSize(u32 size) {
+            this->size = size;
+        }
+        constexpr void SetGpuAccessFlags(GfxGpuAccessFlags gpu_access_flags) {
+            this->gpu_access_flags = static_cast<u32>(gpu_access_flags);
+        }
     };
     static_assert(sizeof(ResGfxBufferInfo) == 0x10);
 
@@ -241,7 +272,30 @@ namespace vp::res {
         0x10, 0x02,
     };
 
-    constexpr ALWAYS_INLINE u32 CalculateGfxAttributeSize(GfxChannelFormat channel_format, u32 count) {
+    constexpr ALWAYS_INLINE u32 CalculateGfxImageTexelSize(GfxChannelFormat channel_format) {
+        u32 format = static_cast<u32>(channel_format);
+        u32 package_format = format - 0x1a;
+        u32 texel_size = 0;
+        if (package_format < 0x22) {
+            texel_size = cPackagedTextureTexelSizeTable[package_format];
+        } else if (format < 0x3) {
+            texel_size = 1;
+        } else if (format < 0xb) {
+            texel_size = 2;
+        } else if (format < 0x15) {
+            texel_size = 4;
+        } else if (format < 0x18) {
+            texel_size = 8;
+        } else {
+            texel_size = 12;
+            if (format != 0x18) {
+                texel_size = 16;
+            }
+        }
+        return texel_size;
+    }
+
+    constexpr ALWAYS_INLINE u32 CalculateGfxAttributeSize(GfxChannelFormat channel_format, u32 component_count) {
 
         u32 format = static_cast<u32>(channel_format);
         u32 attribute_size = 0;
@@ -260,18 +314,18 @@ namespace vp::res {
             }
         }
 
-        return attribute_size * count;
+        return attribute_size * component_count;
     }
 
     constexpr ALWAYS_INLINE u32 CalculateGfxImageSize(GfxChannelFormat channel_format, u32 width, u32 height, u32 depth) {
-        u32 format = static_cast<u32>(channel_format);
+        const u32 format = static_cast<u32>(channel_format);
 
         /* Adjust width and height for compressed formats */
-        u32 package_format = format - 0x1a;
+        const u32 package_format = format - 0x1a;
         if (package_format < 0x21) {
-            u32 variable_format = format - 0x27;
-            u32 block_width     = 4;
-            u32 block_height    = 4;
+            const u32 variable_format = format - 0x27;
+            u32 block_width  = 4;
+            u32 block_height = 4;
             if (variable_format < 0x14) {
                 block_width  = cVariableBlockWidthTable[variable_format];
                 block_height = cVariableBlockHeightTable[variable_format];
@@ -281,26 +335,8 @@ namespace vp::res {
             height = (block_height != 0) ? (height + block_height - 1) / block_height : 0;
         }
 
-        /* Find texel size */
-        u32 texel_size = 0;
-        if (package_format < 0x22) {
-            texel_size = cPackagedTextureTexelSizeTable[package_format];
-        } else if (format < 0x3) {
-            texel_size = 1;
-        } else if (format < 0xb) {
-            texel_size = 2;
-        } else if (format < 0x15) {
-            texel_size = 4;
-        } else if (format < 0x18) {
-            texel_size = 8;
-        } else {
-            texel_size = 12;
-            if (format != 0x18) {
-                texel_size = 16;
-            }
-        }
-
-        /* Calculate */
+        /* Calculate size */
+        const u32 texel_size = CalculateGfxImageTexelSize(channel_format);
         return texel_size * width * height * depth;
     }
 
@@ -316,26 +352,26 @@ namespace vp::res {
             width = (block_width != 0) ? (width + block_width - 1) / block_width : 0;
         }
 
-        /* Find texel size */
-        u32 texel_size = 0;
-        if (package_format < 0x22) {
-            texel_size = cPackagedTextureTexelSizeTable[package_format];
-        } else if (format < 0x3) {
-            texel_size = 1;
-        } else if (format < 0xb) {
-            texel_size = 2;
-        } else if (format < 0x15) {
-            texel_size = 4;
-        } else if (format < 0x18) {
-            texel_size = 8;
-        } else {
-            texel_size = 12;
-            if (format != 0x18) {
-                texel_size = 16;
+        /* Calculate size */
+        const u32 texel_size = CalculateGfxImageTexelSize(channel_format);
+        return width * texel_size;
+    }
+
+    constexpr ALWAYS_INLINE vp::util::Int2 CalculateGfxImageBlockSize(GfxChannelFormat channel_format) {
+        u32 format = static_cast<u32>(channel_format);
+        u32 block_width     = 1;
+        u32 block_height    = 1;
+        u32 package_format = format - 0x1a;
+        if (package_format < 0x21) {
+            u32 variable_format = format - 0x27;
+            block_width  = 4;
+            block_height = 4;
+            if (variable_format < 0x14) {
+                block_width  = cVariableBlockWidthTable[variable_format];
+                block_height = cVariableBlockHeightTable[variable_format];
             }
         }
-        
-        return width * texel_size;
+        return { static_cast<s32>(block_width), static_cast<s32>(block_height), };
     }
 
     enum class GfxTypeFormat : u8 {
@@ -695,6 +731,12 @@ namespace vp::res {
     constexpr GfxTypeFormat GetGfxTypeFormat(GfxImageFormat image_format) {
         return static_cast<GfxTypeFormat>(static_cast<u32>(image_format) & 0xff);
     }
+    constexpr GfxChannelFormat GetGfxChannelFormat(GfxAttributeFormat attribute_format) {
+        return static_cast<GfxChannelFormat>(static_cast<u32>(attribute_format) >> 0x8);
+    }
+    constexpr GfxTypeFormat GetGfxTypeFormat(GfxAttributeFormat attribute_format) {
+        return static_cast<GfxTypeFormat>(static_cast<u32>(attribute_format) & 0xff);
+    }
 
     enum class GfxImageStorageDimension : u8 { 
         Type1d = 1,
@@ -744,6 +786,7 @@ namespace vp::res {
         u32 packaged_texture_layout;
 
         constexpr void SetDefaults() {
+            this->texture_flags = 0;
             this->image_storage_dimension = static_cast<u8>(GfxImageStorageDimension::Type2d);
             this->tile_mode = static_cast<u16>(GfxTileMode::Optimal);
             this->swizzle = 0;
@@ -755,6 +798,7 @@ namespace vp::res {
             this->height = 1;
             this->depth = 1;
             this->array_layer_count = 1;
+            this->packaged_texture_layout = 0;
         }
 
         constexpr void SetImageStorageDimension(GfxImageStorageDimension image_storage_dimension) {
@@ -783,6 +827,20 @@ namespace vp::res {
         }
         constexpr void SetDepth(u32 depth) {
             this->depth = depth;
+        }
+        template <typename T>
+            requires (T::cIsVectorType && 2 <= T::cVectorCount)
+        constexpr void SetSize2d(const T &vec) {
+            this->width = static_cast<u32>(vec[0]);
+            this->height = static_cast<u32>(vec[1]);
+            this->depth = 1;
+        }
+        template <typename T>
+            requires (T::cIsVectorType && 3 <= T::cVectorCount)
+        constexpr void SetSize3d(const T &vec) {
+            this->width = static_cast<u32>(vec[0]);
+            this->height = static_cast<u32>(vec[1]);
+            this->depth = static_cast<u32>(vec[2]);
         }
         constexpr void SetArrayLayerCount(u32 array_layer_count) {
             this->array_layer_count = array_layer_count;
@@ -867,13 +925,18 @@ namespace vp::res {
         constexpr void SetDefaults() {
             this->image_dimension = static_cast<u8>(GfxImageDimension::Type2d);
             this->depth_stencil_mode = static_cast<u8>(GfxTextureDepthStencilMode::Depth);
+            this->reserve0 = 0;
             this->image_format = static_cast<u32>(GfxImageFormat::None_Unorm);
             this->swizzle_x = static_cast<u8>(GfxTextureSwizzle::R);
             this->swizzle_y = static_cast<u8>(GfxTextureSwizzle::G);
             this->swizzle_z = static_cast<u8>(GfxTextureSwizzle::B);
             this->swizzle_w = static_cast<u8>(GfxTextureSwizzle::A);
+            this->reserve1 = 0;
             this->base_mip_level = 0;
             this->mip_level_count = 1;
+            this->reserve2[0] = 0;
+            this->reserve2[1] = 0;
+            this->reserve2[2] = 0;
             this->base_array_layer = 0;
             this->array_layer_count = 1;
         }
@@ -1055,6 +1118,15 @@ namespace vp::res {
             this->wrap_mode_v = static_cast<u8>(v);
             this->wrap_mode_w = static_cast<u8>(w);
         }
+        constexpr void SetWrapModeU(GfxWrapMode u) {
+            this->wrap_mode_u = static_cast<u8>(u);
+        }
+        constexpr void SetWrapModeV(GfxWrapMode v) {
+            this->wrap_mode_v = static_cast<u8>(v);
+        }
+        constexpr void SetWrapModeW(GfxWrapMode w) {
+            this->wrap_mode_w = static_cast<u8>(w);
+        }
         constexpr void SetCompareOperation(GfxCompareOperation compare_op) {
             this->compare_op = static_cast<u8>(compare_op);
         }
@@ -1069,6 +1141,15 @@ namespace vp::res {
             this->mip_map_filter = static_cast<u8>(mip_map_filter);
             this->mag_filter = static_cast<u8>(mag_filter);
             this->min_filter = static_cast<u8>(min_filter);
+        }
+        constexpr void SetMipMapFilter(GfxMipMapFilter mip_map_filter) {
+            this->mip_map_filter = static_cast<u8>(mip_map_filter);
+        }
+        constexpr void SetMinFilter(GfxMinFilter min_filter) {
+            this->min_filter = static_cast<u8>(min_filter);
+        }
+        constexpr void SetMaxFilter(GfxMagFilter mag_filter) {
+            this->mag_filter = static_cast<u8>(mag_filter);
         }
         constexpr void SetIsCompareRToTexture(bool is_compare_r_to_texture) {
             this->is_compare_r_to_texture = is_compare_r_to_texture;
@@ -1305,13 +1386,6 @@ namespace vp::res {
         Clockwise
     );
 
-    struct ResGfxEmbedFile {
-        void *file_offset;
-        u32   file_size;
-        u32   reserve0;
-    };
-    static_assert(sizeof(ResGfxEmbedFile) == 0x10);
-
     enum class GfxUserDataType : u8 {
         S32    = 0,
         Float  = 1,
@@ -1327,9 +1401,9 @@ namespace vp::res {
     );
 
     struct ResGfxUserData {
-        const char *user_data_name;
-        void       *user_data;
-        s32         data_entries;
+        const char *name;
+        void       *value;
+        s32         data_count;
         u8          data_type;
         u8          reserve0[0x2b];
     };

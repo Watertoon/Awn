@@ -50,7 +50,7 @@
 #include <vp/util/util_fixedringbuffer.hpp>
 #include <vp/util/util_atomicfixedringbuffer.hpp>
 #include <vp/util/util_fixedpriorityqueue.hpp>
-#include <vp/util/util_heapobjectallocator.hpp>
+#include <vp/util/util_objectallocator.hpp>
 #include <vp/util/util_atomicobjectallocator.hpp>
 #include <vp/util/util_pointerarray.hpp>
 #include <vp/util/util_fixedpointerarray.hpp>
@@ -62,6 +62,7 @@
 #include <vp/util/util_constevalfail.hpp>
 #include <vp/util/util_pointerbitflag.hpp>
 #include <vp/util/util_hashmap.hpp>
+#include <vp/util/util_fixedhashmap.hpp>
 #include <vp/util/util_keyindexmap.hpp>
 #include <vp/util/util_fixedkeyindexmap.hpp>
 #include <vp/util/util_intrusiveredblacktree.hpp>
@@ -87,10 +88,9 @@
 #include <vp/util/util_atomicbitsizedarray.hpp>
 #include <vp/util/util_atomicfixedbitsizedarray.hpp>
 
-#ifdef VP_TARGET_PLATFORM_win32
-    #include <vp/util/util_guid.win32.hpp>
-#endif
+#include <vp/util/util_guid.hpp>
 
+#include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/util_vectorizedtypes.hpp>
 #include <vp/util/math/util_tvectorizedtypes.h>
 #include <vp/util/math/util_vectorizedload.hpp>
@@ -105,15 +105,17 @@
 #include <vp/util/math/util_doubletypes.hpp>
 #include <vp/util/math/util_inttypes.hpp>
 #include <vp/util/math/util_tmathtypes.h>
-#include <vp/util/math/util_constants.hpp>
 #include <vp/util/math/util_trigonometry.hpp>
+#include <vp/util/math/util_vectorizedtrigonometry.hpp>
 #include <vp/util/math/util_vectorarithmetic.hpp>
 #include <vp/util/math/util_matrixarithmetic.hpp>
-#include <vp/util/math/util_rotation.hpp>
+#include <vp/util/math/util_quaternion.hpp>
 #include <vp/util/math/util_rotation.hpp>
 #include <vp/util/math/util_floatcalc.hpp>
 #include <vp/util/math/util_doublecalc.hpp>
 #include <vp/util/math/util_intcalc.hpp>
+#include <vp/util/math/util_sphere.hpp>
+#include <vp/util/math/util_boundingbox.hpp>
 
 #include <vp/util/util_tstring.hpp>
 #include <vp/util/util_charencodingutil.hpp>

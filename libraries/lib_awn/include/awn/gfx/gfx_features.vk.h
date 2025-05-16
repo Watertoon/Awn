@@ -179,10 +179,10 @@ namespace awn::gfx {
         SupportsCommandBufferInheritance,
 
         /* VK_NV_per_stage_descriptor_set */
-        SupportsPerStageDescriptorSets,
+        //SupportsPerStageDescriptorSets,
 
         /* VK_NVX_image_view_handle */
-        SupportsNvBindlessTexture,
+        //SupportsNvBindlessTexture,
     };
     VP_ENUM_TRAITSV(
         awn::gfx::OptionalFeature, OptionalFeature,
@@ -192,9 +192,9 @@ namespace awn::gfx {
         SupportsRobustness2,
         SupportsVertexAttributeRobustness,
         SupportsMeshShaders,
-        SupportsCommandBufferInheritance,
-        SupportsPerStageDescriptorSets,
-        SupportsNvBindlessTexture
+        SupportsCommandBufferInheritance
+        //SupportsPerStageDescriptorSets,
+        //SupportsNvBindlessTexture
     );
 
     static constexpr u32 cOptionalFeatureCount = OptionalFeatureTraits::cEnumCount;
@@ -205,6 +205,13 @@ namespace awn::gfx {
     struct MissingFeatures {
         RequiredFeatureMask missing_required_feature_mask;
         OptionalFeatureMask missing_optional_feature_mask;
+
+        constexpr bool IsRequiredFeature(RequiredFeature required_feature) {
+            return !this->missing_required_feature_mask.GetBit(static_cast<u32>(required_feature));
+        }
+        constexpr bool IsOptionalFeature(OptionalFeature optional_feature) {
+            return !this->missing_optional_feature_mask.GetBit(static_cast<u32>(optional_feature));
+        }
 
         constexpr void SetMissing(RequiredFeature required_feature) {
             this->missing_required_feature_mask.SetBit(static_cast<u32>(required_feature));

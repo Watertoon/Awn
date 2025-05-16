@@ -20,21 +20,34 @@ namespace awn::sys::impl {
     void ArbitrateLockImpl(u32 *address, u32 tag) {
 
         /* Wait until we acquire the tag */
-        u32 last;
+        u32 prev = 0;
         for (;;) {
-            const bool cmp_result = vp::util::InterlockedCompareExchangeAcquire(std::addressof(last), address, tag, 0u);
-            if (cmp_result) { return; }
-            const bool wait_result = ::WaitOnAddress(address, std::addressof(last), sizeof(u32), INFINITE);
+
+            /* Try claim tag */
+            while (prev == 0) {
+                const bool cmp_result = vp::util::InterlockedCompareExchangeAcquire(std::addressof(prev), address, tag, 0u);
+                if (cmp_result) { return; }
+            }
+
+            /* Set lock bit */
+            u32 wait_tag = prev | cTagLockSetMask;
+            if (!((prev >> cTagLockBitOffset) & 1)) {
+                const bool tag_result = vp::util::InterlockedCompareExchange(std::addressof(prev), address, wait_tag, prev);
+                if (!tag_result) { continue; }
+            }
+
+            /* System wait */
+            const bool wait_result = ::WaitOnAddress(address, std::addressof(wait_tag), sizeof(u32), INFINITE);
             VP_ASSERT(wait_result);
         }
     }
 
     void ArbitrateUnlockImpl(u32 *address) {
 
-        /* Release the tag and wake a waiter if necessary */
+        /* Release the tag, wake all waiters for acquisition to ensure multi-waits set the lock bit again */
         const u32 prev = vp::util::InterlockedExchangeRelease(address, 0u);
         if ((prev >> cTagLockBitOffset) & 1) {
-            ::WakeByAddressSingle(address);
+            ::WakeByAddressAll(address);
         }
 
         return;
@@ -42,25 +55,28 @@ namespace awn::sys::impl {
 
     void WaitProcessWideKeyImpl(u32 *address_cs, u32 *address_cv, u32 tag) {
 
-        /* Release our tag */
+        /* Try to release our tag for no contention */
         u32 last_cs;
         const bool cs_release_result = vp::util::InterlockedCompareExchangeRelease(std::addressof(last_cs), address_cs, 0u, tag);
         if ((last_cs >> cTagLockBitOffset) & 1) {
-            /* Release next cs waiter */
+            /* Release for contention */
             VP_ASSERT((last_cs & cTagLockClearMask) == tag);
             ArbitrateUnlockImpl(address_cs);
         } else {
             VP_ASSERT(cs_release_result);
         }
 
-        /* Increment our waiter count and wait while it's valid (lifo scheme) */
+        /* Wait for cv to change from initial value */
         u32 prev;
         u32 wait_val = *address_cv;
         for (;;) {
             const bool wait_result = ::WaitOnAddress(address_cv, std::addressof(wait_val), sizeof(u32), INFINITE);
             VP_ASSERT(wait_result);
-            const bool is_single_clear = vp::util::InterlockedCompareExchangeRelease(std::addressof(prev), address_cv, wait_val, wait_val | cWideKeySingleMask);
+
+            /* Succeed if clear single wake bit */
+            const bool is_single_clear = vp::util::InterlockedCompareExchange(std::addressof(prev), address_cv, wait_val, wait_val | cWideKeySingleMask);
             if (is_single_clear) { break; }
+            /* Succeed if broadcast id advanced */
             if (wait_val != prev) { break; }
         }
 
@@ -101,26 +117,8 @@ namespace awn::sys::impl {
 
     void InternalCriticalSectionImplByWin32::Enter() {
         const u32 thread_id = sys::GetCurrentThreadId();
-        bool cmp_result;
-        u32 prev = this->tag;
-        for (;;) {
-            while (prev == 0) {                
-                /* Try claim tag */
-                cmp_result = vp::util::InterlockedCompareExchange(std::addressof(prev), std::addressof(this->tag), thread_id, 0u);
-                if (cmp_result) { return; }
-            }
-
-            /* Set we have waiters */
-            if (!((prev >> cTagLockBitOffset) & 1)) {
-                const u32 wait_tag = prev | cTagLockSetMask;
-                cmp_result = vp::util::InterlockedCompareExchange(std::addressof(prev), std::addressof(this->tag), wait_tag, prev);
-                if (!cmp_result) { continue; } 
-            }
-
-            /* Wait while locked */
-            ArbitrateLockImpl(std::addressof(this->tag), thread_id);
-            return;
-        }
+        ArbitrateLockImpl(std::addressof(this->tag), thread_id);
+        return;
     }
 
     bool InternalCriticalSectionImplByWin32::TryEnter() {

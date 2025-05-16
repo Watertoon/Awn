@@ -15,9 +15,9 @@
  */
 #pragma once
 
-namespace awn::render::impl {
+namespace awn::grr::impl {
 
-//#define AWN_RENDER_DIRECTX_DEBUG
+#define AWN_RENDER_DIRECTX_DEBUG
 
     constexpr DXGI_FORMAT GfxImageFormatToDxgiFormat(gfx::ImageFormat format) {
         switch(format) {
@@ -32,10 +32,25 @@ namespace awn::render::impl {
             case gfx::ImageFormat::R16G16B16A16_Float:
                 return DXGI_FORMAT_R16G16B16A16_FLOAT;
             default:
-                break;
+                VP_UNEXPECTED_DEFAULT();
         }
-        VP_UNEXPECTED_DEFAULT();
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
+    }
+
+    constexpr bool IsHdrFormat(gfx::ImageFormat format) {
+        switch(format) {
+            case gfx::ImageFormat::B8G8R8A8_Unorm:
+                return false;
+            case gfx::ImageFormat::R8G8B8A8_Unorm:
+                return false;
+            case gfx::ImageFormat::R10G10B10A2_Unorm:
+                return true;
+            //case gfx::ImageFormat::R11G11B10F_Float:
+            //    return DXGI_FORMAT_R11G11B10_FLOAT;
+            case gfx::ImageFormat::R16G16B16A16_Float:
+                return true;
+            default:
+                VP_UNEXPECTED_DEFAULT();
+        }
     }
 
 	class ContextDxgi11 {
@@ -47,6 +62,7 @@ namespace awn::render::impl {
             IDCompositionDevice4       *m_dcmp_device4;
             ID3D11Device5              *m_d3d11_device;
             ID3D11DeviceContext4       *m_d3d11_device_context;
+            IPresentationFactory       *m_presentation_factory;
 #ifdef AWN_RENDER_DIRECTX_DEBUG
             IDXGIDebug1                *m_dxgi_debug;
             ID3D11Debug                *m_d3d11_debug;
@@ -54,7 +70,7 @@ namespace awn::render::impl {
         public:
             AWN_SINGLETON_TRAITS(ContextDxgi11);
         public:
-            constexpr ContextDxgi11() : m_dxgi_factory(), m_dxgi_adapter(), m_dcmp_device(), m_dcmp_device4(), m_d3d11_device()
+            constexpr ContextDxgi11() : m_dxgi_factory(), m_dxgi_adapter(), m_dcmp_device(), m_dcmp_device4(), m_d3d11_device(), m_presentation_factory()
 #ifdef AWN_RENDER_DIRECTX_DEBUG
             , m_dxgi_debug(), m_d3d11_debug()
 #endif
@@ -70,6 +86,7 @@ namespace awn::render::impl {
             constexpr ID3D11DeviceContext4 *GetD3d11DeviceContext() const { return m_d3d11_device_context; }
             constexpr IDCompositionDesktopDevice *GetDcmpDevice() const { return m_dcmp_device; }
             constexpr IDCompositionDevice4 *GetDcmpDevice4() const { return m_dcmp_device4; }
+            constexpr IPresentationFactory *GetPresentationFactory() const { return m_presentation_factory; }
 
             void ReportDebug() {
 #ifdef AWN_RENDER_DIRECTX_DEBUG

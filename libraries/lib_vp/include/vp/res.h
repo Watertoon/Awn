@@ -39,6 +39,7 @@
     //#include <vp/res/res_gfxtostring.hpp>
 
     /* Reverse engineered NintendoWare g3d formats */
+    #include <vp/res/res_bfsha.hpp>
     #include <vp/res/res_bfresanimcurve.hpp>
     #include <vp/res/res_bfresskeleton.hpp>
     #include <vp/res/res_bfresmaterial.hpp>
@@ -50,7 +51,6 @@
     #include <vp/res/res_bfresshapeanim.hpp>
     #include <vp/res/res_bfressceneanim.hpp>
     #include <vp/res/res_bfres.hpp>
-    #include <vp/res/res_bfsha.hpp>
 
     /* Reverse engineered NintendoWare bezel formats*/
     #include <vp/res/res_bea.hpp>

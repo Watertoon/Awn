@@ -392,120 +392,120 @@ namespace vp::util {
         return Vector4d{ .v = in_vector.v, };
     }
 
-    constexpr MatrixRowMajor4x3d ConvertToMatrix43(const DoubleRowMajor3x3 *in_matrix) {
-
-        const v4sll mask = GetLoad4Mask256(true, true, true, false);
-        const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
-        const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
-        const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
-
-        return MatrixRowMajor4x3d { a, b, c, Vector4d::cZero.v, };
-    }
-
-    constexpr MatrixRowMajor4x3d ConvertToMatrix43(const DoubleRowMajor4x3 *in_matrix) {
-
-        const v4sll mask = GetLoad4Mask256(true, true, true, false);
-        const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
-        const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
-        const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
-        const v4d d = Load4Mask256(std::addressof((*in_matrix)[3,0]), mask);
-
-        return MatrixRowMajor4x3d { a, b, c, d, };
-    }
-
-    constexpr MatrixRowMajor4x4d ConvertToMatrix44(const DoubleRowMajor3x3 *in_matrix) {
-
-        const v4sll mask = GetLoad4Mask256(true, true, true, false);
-        const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
-        const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
-        const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
-
-        return MatrixRowMajor4x4d { a, b, c, Vector4d::cZero.v, };
-    }
-
-    constexpr MatrixRowMajor4x4d ConvertToMatrix44(const DoubleRowMajor4x3 *in_matrix) {
-
-        const v4sll mask = GetLoad4Mask256(true, true, true, false);
-        const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
-        const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
-        const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
-        const v4d d = Load4Mask256(std::addressof((*in_matrix)[3,0]), mask);
-
-        return MatrixRowMajor4x4d { a, b, c, d, };
-    }
-
-    constexpr MatrixRowMajor4x4d ConvertToMatrix44(const DoubleRowMajor4x4 *in_matrix) {
-        const v4d a = Load4(std::addressof((*in_matrix)[0,0]));
-        const v4d b = Load4(std::addressof((*in_matrix)[1,0]));
-        const v4d c = Load4(std::addressof((*in_matrix)[2,0]));
-        const v4d d = Load4(std::addressof((*in_matrix)[3,0]));
-        return MatrixRowMajor4x4d { a, b, c, d, };
-    }
-
-    constexpr MatrixRowMajor4x4d PromoteMatrix44(const MatrixRowMajor4x3d *in_matrix) {
-        const v4d a = Load4Aligned(std::addressof((*in_matrix)[0,0]));
-        const v4d b = Load4Aligned(std::addressof((*in_matrix)[1,0]));
-        const v4d c = Load4Aligned(std::addressof((*in_matrix)[2,0]));
-        const v4d d = Load4Aligned(std::addressof((*in_matrix)[3,0]));
-        return MatrixRowMajor4x4d { a, b, c, d, };
-    }
-
-    constexpr MatrixColumnMajor4x3d ConvertToMatrix43(const DoubleColumnMajor3x3 *in_matrix) {
-
-        const v4sll mask = GetLoad4Mask256(true, true, true, false);
-        const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
-        const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
-        const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
-
-        return MatrixColumnMajor4x3d { a, b, c, };
-    }
-
-    constexpr MatrixColumnMajor4x3d ConvertToMatrix43(const DoubleColumnMajor4x3 *in_matrix) {
-
-        const v4sll mask = GetLoad4Mask256(true, true, true, false);
-        const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
-        const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
-        const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
-
-        return MatrixColumnMajor4x3d { a, b, c, };
-    }
-
-    constexpr MatrixColumnMajor4x4d ConvertToMatrix44(const DoubleColumnMajor3x3 *in_matrix) {
-
-        const v4sll mask = GetLoad4Mask256(true, true, true, false);
-        const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
-        const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
-        const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
-
-        return MatrixColumnMajor4x4d { a, b, c, Vector4d::cZero.v, };
-    }
-
-    constexpr MatrixColumnMajor4x4d ConvertToMatrix44(const DoubleColumnMajor4x3 *in_matrix) {
-
-        const v4sll mask = GetLoad4Mask256(true, true, true, false);
-        const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
-        const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
-        const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
-        const v4d d = Load4Mask256(std::addressof((*in_matrix)[3,0]), mask);
-
-        return MatrixColumnMajor4x4d { a, b, c, d, };
-    }
-
-    constexpr MatrixColumnMajor4x4d ConvertToMatrix44(const DoubleColumnMajor4x4 *in_matrix) {
-        const v4d a = Load4(std::addressof((*in_matrix)[0,0]));
-        const v4d b = Load4(std::addressof((*in_matrix)[1,0]));
-        const v4d c = Load4(std::addressof((*in_matrix)[2,0]));
-        const v4d d = Load4(std::addressof((*in_matrix)[3,0]));
-        return MatrixColumnMajor4x4d { a, b, c, d, };
-    }
-
-    constexpr MatrixColumnMajor4x4d PromoteMatrix44(const MatrixColumnMajor4x3d *in_matrix) {
-        const v4d a = Load4Aligned(std::addressof((*in_matrix)[0,0]));
-        const v4d b = Load4Aligned(std::addressof((*in_matrix)[1,0]));
-        const v4d c = Load4Aligned(std::addressof((*in_matrix)[2,0]));
-        const v4d d = Load4Aligned(std::addressof((*in_matrix)[3,0]));
-        return MatrixColumnMajor4x4d { a, b, c, d, };
-    }
+    //constexpr MatrixRowMajor4x3d ConvertToMatrix43(const DoubleRowMajor3x3 *in_matrix) {
+    //
+    //    const v4sll mask = GetLoad4Mask256(true, true, true, false);
+    //    const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    return MatrixRowMajor4x3d { a, b, c, Vector4d::cZero.v, };
+    //}
+    //
+    //constexpr MatrixRowMajor4x3d ConvertToMatrix43(const DoubleRowMajor4x3 *in_matrix) {
+    //
+    //    const v4sll mask = GetLoad4Mask256(true, true, true, false);
+    //    const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
+    //    const v4d d = Load4Mask256(std::addressof((*in_matrix)[3,0]), mask);
+    //
+    //    return MatrixRowMajor4x3d { a, b, c, d, };
+    //}
+    //
+    //constexpr MatrixRowMajor4x4d ConvertToMatrix44(const DoubleRowMajor3x3 *in_matrix) {
+    //
+    //    const v4sll mask = GetLoad4Mask256(true, true, true, false);
+    //    const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    return MatrixRowMajor4x4d { a, b, c, Vector4d::cZero.v, };
+    //}
+    //
+    //constexpr MatrixRowMajor4x4d ConvertToMatrix44(const DoubleRowMajor4x3 *in_matrix) {
+    //
+    //    const v4sll mask = GetLoad4Mask256(true, true, true, false);
+    //    const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
+    //    const v4d d = Load4Mask256(std::addressof((*in_matrix)[3,0]), mask);
+    //
+    //    return MatrixRowMajor4x4d { a, b, c, d, };
+    //}
+    //
+    //constexpr MatrixRowMajor4x4d ConvertToMatrix44(const DoubleRowMajor4x4 *in_matrix) {
+    //    const v4d a = Load4(std::addressof((*in_matrix)[0,0]));
+    //    const v4d b = Load4(std::addressof((*in_matrix)[1,0]));
+    //    const v4d c = Load4(std::addressof((*in_matrix)[2,0]));
+    //    const v4d d = Load4(std::addressof((*in_matrix)[3,0]));
+    //    return MatrixRowMajor4x4d { a, b, c, d, };
+    //}
+    //
+    //constexpr MatrixRowMajor4x4d PromoteMatrix44(const MatrixRowMajor4x3d *in_matrix) {
+    //    const v4d a = Load4Aligned(std::addressof((*in_matrix)[0,0]));
+    //    const v4d b = Load4Aligned(std::addressof((*in_matrix)[1,0]));
+    //    const v4d c = Load4Aligned(std::addressof((*in_matrix)[2,0]));
+    //    const v4d d = Load4Aligned(std::addressof((*in_matrix)[3,0]));
+    //    return MatrixRowMajor4x4d { a, b, c, d, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x3d ConvertToMatrix43(const DoubleColumnMajor3x3 *in_matrix) {
+    //
+    //    const v4sll mask = GetLoad4Mask256(true, true, true, false);
+    //    const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    return MatrixColumnMajor4x3d { a, b, c, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x3d ConvertToMatrix43(const DoubleColumnMajor4x3 *in_matrix) {
+    //
+    //    const v4sll mask = GetLoad4Mask256(true, true, true, false);
+    //    const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    return MatrixColumnMajor4x3d { a, b, c, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x4d ConvertToMatrix44(const DoubleColumnMajor3x3 *in_matrix) {
+    //
+    //    const v4sll mask = GetLoad4Mask256(true, true, true, false);
+    //    const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
+    //
+    //    return MatrixColumnMajor4x4d { a, b, c, Vector4d::cZero.v, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x4d ConvertToMatrix44(const DoubleColumnMajor4x3 *in_matrix) {
+    //
+    //    const v4sll mask = GetLoad4Mask256(true, true, true, false);
+    //    const v4d a = Load4Mask256(std::addressof((*in_matrix)[0,0]), mask);
+    //    const v4d b = Load4Mask256(std::addressof((*in_matrix)[1,0]), mask);
+    //    const v4d c = Load4Mask256(std::addressof((*in_matrix)[2,0]), mask);
+    //    const v4d d = Load4Mask256(std::addressof((*in_matrix)[3,0]), mask);
+    //
+    //    return MatrixColumnMajor4x4d { a, b, c, d, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x4d ConvertToMatrix44(const DoubleColumnMajor4x4 *in_matrix) {
+    //    const v4d a = Load4(std::addressof((*in_matrix)[0,0]));
+    //    const v4d b = Load4(std::addressof((*in_matrix)[1,0]));
+    //    const v4d c = Load4(std::addressof((*in_matrix)[2,0]));
+    //    const v4d d = Load4(std::addressof((*in_matrix)[3,0]));
+    //    return MatrixColumnMajor4x4d { a, b, c, d, };
+    //}
+    //
+    //constexpr MatrixColumnMajor4x4d PromoteMatrix44(const MatrixColumnMajor4x3d *in_matrix) {
+    //    const v4d a = Load4Aligned(std::addressof((*in_matrix)[0,0]));
+    //    const v4d b = Load4Aligned(std::addressof((*in_matrix)[1,0]));
+    //    const v4d c = Load4Aligned(std::addressof((*in_matrix)[2,0]));
+    //    const v4d d = Load4Aligned(std::addressof((*in_matrix)[3,0]));
+    //    return MatrixColumnMajor4x4d { a, b, c, d, };
+    //}
 
     constexpr Double2 ConvertDouble2(const Vector2d &in_vector) {
         const double x = in_vector[0];

@@ -39,10 +39,7 @@ namespace awn::gfx {
     }
 
     void CalculateVertexBufferPrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
-
     void CalculateIndexBufferPrimitiveShapeQuad(void *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
 
     void CalculatePrimitiveShapeQuad(void *vertex_buffer, size_t vertex_buffer_size, void *index_buffer, size_t index_buffer_size, const PrimitiveShapeInfo *primitive_shape_info);
-
-    void CreatePrimitiveShapeQuad(void **out_vertex_buffer_address, void **out_index_buffer_address, mem::Heap *gpu_heap, const PrimitiveShapeInfo *primitive_shape_info);
 }

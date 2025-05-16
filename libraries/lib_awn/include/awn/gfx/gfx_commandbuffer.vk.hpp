@@ -150,7 +150,7 @@ namespace awn::gfx {
 
             void SetVertexBuffer(BufferAddress vertex_buffer_address, u32 binding, u32 stride, u32 size);
 
-            void SetShader(Shader *shader);
+            void SetShader(const Shader *shader);
 
             void SetTextureSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot);
             void SetImage(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
@@ -159,11 +159,11 @@ namespace awn::gfx {
             void SetSeparateTexture(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
             void SetSeparateSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot sampler_slot);
 
-            void SetBlendState(BlendState *blend_state);
-            void SetDepthStencilState(DepthStencilState *depth_stencil_state);
-            void SetRasterizerState(RasterizerState *rasterizer_state);
-            void SetVertexState(VertexState *vertex_state);
-            void SetViewportScissorState(ViewportScissorState *viewport_scissor_state);
+            void SetBlendState(const BlendState *blend_state);
+            void SetDepthStencilState(const DepthStencilState *depth_stencil_state);
+            void SetRasterizerState(const RasterizerState *rasterizer_state);
+            void SetVertexState(const VertexState *vertex_state);
+            void SetViewportScissorState(const ViewportScissorState *viewport_scissor_state);
 
             void SetLineWidth(float line_width);
         public:

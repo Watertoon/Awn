@@ -16,6 +16,11 @@
 #pragma once
 
 #include <awn/gfx/gfx_nngfxinteroperation.h>
+#ifdef VP_TARGET_GRAPHICS_API_vk
+    #include <awn/gfx/gfx_memorypool.vk.h>
+#elifdef VP_TARGET_GRAPHICS_API_nvn
+    #include <awn/gfx/gfx_memorypool.nvn.h>
+#endif
 #include <awn/gfx/gfx_queueapi.h>
 
 #ifdef VP_TARGET_GRAPHICS_API_vk

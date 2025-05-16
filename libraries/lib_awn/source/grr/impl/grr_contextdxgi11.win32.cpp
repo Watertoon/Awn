@@ -15,7 +15,7 @@
  */
 #include <awn.hpp>
 
-namespace awn::render::impl {
+namespace awn::grr::impl {
 
     AWN_SINGLETON_TRAITS_IMPL(ContextDxgi11);
 
@@ -87,10 +87,10 @@ namespace awn::render::impl {
         IDCompositionDevice4 *dcmp_device4 = nullptr;
         const HRESULT hresult9 = dcmp_device_desktop->QueryInterface(IID_PPV_ARGS(std::addressof(dcmp_device4)));
         VP_ASSERT(hresult9 == S_OK);
-        BOOL is_support = false;
-        const HRESULT hresult10 = dcmp_device4->CheckCompositionTextureSupport(m_d3d11_device, std::addressof(is_support));
-        VP_ASSERT(hresult10 == S_OK);
-        VP_ASSERT(is_support);
+        //BOOL is_support = false;
+        //const HRESULT hresult10 = dcmp_device4->CheckCompositionTextureSupport(m_d3d11_device, std::addressof(is_support));
+        //VP_ASSERT(hresult10 == S_OK);
+        //VP_ASSERT(is_support);
         m_dcmp_device4 = dcmp_device4;
 
         //DCOMPOSITION_FRAME_STATISTICS frame_stats = {};
@@ -102,10 +102,18 @@ namespace awn::render::impl {
         //::printf("  timeFrequency: %lld\n", frame_stats.timeFrequency.QuadPart);
         //::printf("  nextEstimatedFrameTime: %lld\n", frame_stats.nextEstimatedFrameTime.QuadPart);
 
+        /* Create presentation factory */
+        IPresentationFactory *presentation_factory = nullptr;
+        const HRESULT hresult10 = ::CreatePresentationFactory(m_d3d11_device, IID_PPV_ARGS(std::addressof(presentation_factory)));
+        VP_ASSERT(hresult10 == S_OK);
+        const bool is_present = presentation_factory->IsPresentationSupported();
+        VP_ASSERT(is_present);
+
 		/* Set DirectX interfaces */
 		m_dxgi_factory = factory_7;
 		m_dxgi_adapter = adapter_4;
 		m_dcmp_device = dcmp_device_desktop;
+        m_presentation_factory = presentation_factory;
 
 		return;
 	}

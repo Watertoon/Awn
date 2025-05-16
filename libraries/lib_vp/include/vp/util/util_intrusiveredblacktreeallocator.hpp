@@ -24,8 +24,8 @@ namespace vp::util {
             using ParentType = RBTraits::Parent;
             using KeyType    = RBTraits::Key;
         private:
-            TreeType                        m_tree;
-            HeapObjectAllocator<ParentType> m_allocator;
+            TreeType                    m_tree;
+            ObjectAllocator<ParentType> m_allocator;
         public:
             constexpr IntrusiveRedBlackTreeAllocator()  : m_tree(), m_allocator() {/*...*/}
             constexpr ~IntrusiveRedBlackTreeAllocator() {/*...*/}

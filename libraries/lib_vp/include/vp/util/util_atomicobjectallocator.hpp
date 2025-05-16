@@ -40,13 +40,13 @@ namespace vp::util {
             constexpr  AtomicObjectAllocator() : m_array(), m_state() {/*...*/}
             constexpr ~AtomicObjectAllocator() {/*...*/}
 
-            bool Initialize(vp::imem::IHeap *heap, u32 count) {
+            bool Initialize(vp::imem::IHeap *heap, u32 max_object_count) {
 
                 /* Ensure count */
-                if (count == 0 || count == cInvalidOffset) { return false; }
+                if (max_object_count == 0 || max_object_count == cInvalidOffset) { return false; }
 
                 /* Allocate uninitialized array of objects */
-                void *allocation = ::operator new(sizeof(T) * count, heap, alignof(T));
+                void *allocation = ::operator new(sizeof(T) * max_object_count, heap, alignof(T));
                 if (allocation == nullptr) { return false; }
 
                 /* Set free list and start address */
@@ -55,11 +55,10 @@ namespace vp::util {
                 m_state              = 0;
 
                 /* Construct object free list */
-                for (u32 i = 0; i < (count - 1); ++i) {
-                    /* Remember we are adding to a pointer */
+                for (u32 i = 0; i < (max_object_count - 1); ++i) {
                     list_array[i].next = i + 1;
                 }
-                list_array[count - 1] = cInvalidOffset;
+                list_array[max_object_count - 1] = cInvalidOffset;
 
                 return true;
             }

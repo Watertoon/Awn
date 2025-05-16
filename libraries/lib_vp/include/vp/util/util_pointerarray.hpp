@@ -174,14 +174,17 @@ namespace vp::util {
             }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return m_max_count; }
-            
-            constexpr void SetUsedCount(u32 count) { m_used_count = count; }
+
+            constexpr bool IsValid() const { return m_array != nullptr; }
+        public:
+            constexpr void SetUsedCount(u32 count) {
+                m_used_count = count;
+            }
+
             constexpr void SetPointer(u32 index, T *pointer) {
                 VP_ASSERT(index < m_used_count);
                 m_array[index] = pointer;
             }
-
-            constexpr bool IsValid() const { return m_array != nullptr; }
         private:
             struct DefaultCompareLess {
                 constexpr bool operator()(const T *&lhs, const T *&rhs) {

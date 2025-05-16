@@ -63,6 +63,54 @@ namespace awn::gfx::impl {
                 if (lhs.lod_bias < rhs.lod_bias) { return std::strong_ordering::less; }
                 return std::strong_ordering::equal;
             }
+            
+            struct TextureViewKey {
+                union {
+                    u32 packed_state;
+                    struct {
+                        u32 image_dimension : 4;
+                        u32 swizzle_x : 3;
+                        u32 swizzle_y : 3;
+                        u32 swizzle_z : 3;
+                        u32 swizzle_w : 3;
+                        u32 base_mip_level : 7;
+                        u32 mip_count : 7;
+                        u32 depth_stencil_mode : 1;
+                        u32 reserve0 : 1;
+                    };
+                };
+                u16 base_array_layer;
+                u16 array_layer_count;
+                u32 image_format;
+
+                constexpr void SetFromInfo(const gfx::TextureViewInfo *info) {
+                    this->image_format = info->image_format;
+                    this->base_array_layer = info->base_array_layer;
+                    this->array_layer_count = info->array_layer_count;
+                    this->base_mip_level = info->base_mip_level;
+                    this->mip_count = info->mip_level_count;
+                    this->image_dimension = info->image_dimension;
+                    this->depth_stencil_mode = info->depth_stencil_mode;
+                    this->swizzle_x = info->swizzle_x;
+                    this->swizzle_y = info->swizzle_y;
+                    this->swizzle_z = info->swizzle_z;
+                    this->swizzle_w = info->swizzle_w;
+                }
+            };
+            static constexpr ALWAYS_INLINE bool IsSameInfo(const TextureViewKey &key, const gfx::TextureViewInfo *info) {
+                if (key.image_format != info->image_format) { return false; }
+                if (key.base_array_layer != info->base_array_layer) { return false; }
+                if (key.array_layer_count != info->array_layer_count) { return false; }
+                if (key.base_mip_level != info->base_mip_level) { return false; }
+                if (key.mip_count != info->mip_level_count) { return false; }
+                if (key.image_dimension != info->image_dimension) { return false; }
+                if (key.depth_stencil_mode != info->depth_stencil_mode) { return false; }
+                if (key.swizzle_x != info->swizzle_x) { return false; }
+                if (key.swizzle_y != info->swizzle_y) { return false; }
+                if (key.swizzle_z != info->swizzle_z) { return false; }
+                if (key.swizzle_w != info->swizzle_w) { return false; }
+                return true;
+            }
         public:
             struct SamplerUnit {
                 vp::util::IntrusiveRedBlackTreeNode<SamplerKey> rb_node;
@@ -101,10 +149,11 @@ namespace awn::gfx::impl {
             };
 
             struct TextureViewUnit {
+                TextureViewKey key;
                 u32 reference_count;
                 u16 free_count;
                 VkImageView vk_image_view;
-                TextureBinder reference_texture_binder;
+                //TextureBinder reference_texture_binder;
                 char descriptor_memory[Context::cTargetMaxSeparateTextureDescriptorSize];
 
                 static constexpr inline size_t cInvalidMemoryOffset = 0xffff'ffff'ffff'ffff;
@@ -189,6 +238,7 @@ namespace awn::gfx::impl {
             }
             constexpr VkImageView GetVkImageView(DescriptorSlot texture_view_slot) const { return (this->IsTextureViewSlotValid(texture_view_slot)) ? m_texture_view_unit_array[texture_view_slot.index].vk_image_view : VK_NULL_HANDLE; }
             constexpr const void *GetSeparateTextureDescriptor(DescriptorSlot texture_view_slot) const { return (this->IsTextureViewSlotValid(texture_view_slot)) ? m_texture_view_unit_array[texture_view_slot.index].descriptor_memory : nullptr; }
+            constexpr bool IsSameInfo(DescriptorSlot texture_view_slot, const gfx::TextureViewInfo *texture_view_info) const { return (this->IsTextureViewSlotValid(texture_view_slot)) ? IsSameInfo(m_texture_view_unit_array[texture_view_slot.index].key, texture_view_info) : false; }
 
             constexpr bool IsSamplerSlotValid(DescriptorSlot sampler_slot) const {
 

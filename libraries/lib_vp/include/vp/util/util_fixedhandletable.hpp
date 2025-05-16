@@ -21,16 +21,16 @@ namespace vp::util {
         return handle & 0x7fff;
     }
 
-    template <size_t HandleCount>
+    template <s32 HandleCount>
         requires (HandleCount <= 0x7fff)
     class FixedHandleTable {
         public:
-            static constexpr s32    cMaxHandles             = HandleCount;
+            static constexpr s32    cMaxHandleCount             = HandleCount;
             static constexpr size_t cCounterBitOffset       = 0xf;
             static constexpr size_t cHandleReserveBitOffset = 0x1e;
         private:
-            s16        m_counter_array[cMaxHandles];
-            void      *m_object_array[cMaxHandles];
+            s16        m_counter_array[cMaxHandleCount];
+            void      *m_object_array[cMaxHandleCount];
             s32        m_indice_iter;
             u16        m_active_handles;
             u16        m_counter_value;
@@ -43,7 +43,7 @@ namespace vp::util {
                 /* Initialize handle table to valid state */
                 m_active_handles = 0;
                 m_counter_value  = 1;
-                for (s32 i = 0; i < cMaxHandles; ++i) {
+                for (s32 i = 0; i < cMaxHandleCount; ++i) {
                     m_object_array[i]  = nullptr;
                     m_counter_array[i] = i - 1;
                     m_indice_iter      = i;
@@ -53,7 +53,7 @@ namespace vp::util {
             bool ReserveHandle(u32 *out_handle, void *object) {
 
                 /* Integrity check handle count */
-                if (cMaxHandles <= m_active_handles) { return false; }
+                if (cMaxHandleCount <= m_active_handles) { return false; }
 
                 /* Get the next indice from the free counter_array */
                 const u16 index = m_indice_iter;
@@ -85,7 +85,7 @@ namespace vp::util {
 
                 /* Get the handle index and integrity check that the handle is currently valid */
                 const u32 index = (handle & 0x7fff);
-                if (cMaxHandles < index || m_object_array[index] == nullptr || (handle >> cCounterBitOffset) != static_cast<u32>(m_counter_array[index])) { return false; }
+                if (cMaxHandleCount < index || m_object_array[index] == nullptr || (handle >> cCounterBitOffset) != static_cast<u32>(m_counter_array[index])) { return false; }
 
                 /* Clear and free the handle state */
                 m_object_array[index] = nullptr;
@@ -103,7 +103,7 @@ namespace vp::util {
 
                 /* Get the handle index and integrity check that the handle is currently valid */
                 const u32 index = (handle & 0x7fff);
-                if ((cMaxHandles < index) || ((handle >> cCounterBitOffset) != static_cast<u32>(m_counter_array[index]))) { return nullptr; }
+                if ((cMaxHandleCount < index) || ((handle >> cCounterBitOffset) != static_cast<u32>(m_counter_array[index]))) { return nullptr; }
 
                 /* Get object */
                 return m_object_array[index];

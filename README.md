@@ -2,14 +2,14 @@
 Awn is a personal C++ library designed to power low-latency multi-threaded real-time applications.
 
 # Awn Features
-* awn::mem; Provides virtual and heap-based CPU and GPU memory management
-* awn::sys; Provides thread and system environment management (managing Win32 or Horizon)
-* awn::async; Provides asynchronous task management and dependency-based job graphs
-* awn::res; Provides synchronous and asynchronous file resource management
-* awn::gfx; Provides a high-level graphics api (managing Vulkan or NVN), designed to interoperate with reverse-engineered NintendoWare gfx formats
-* awn::render; Provides display and layer management (managing Win32 windows, DXGI, DirectComposition, and DirectX12, or nn::vi)
-* awn::para; Provides serializable parameter class autogen, databases, blackboards, pause management, variable framerate management, etc
-* awn::hid; Provides host input device management for keyboards and mice
+* awn::mem; Memory management library, provides heap data structures and virtual memory management
+* awn::sys; Underlying operating environment library, manages threading and other common OS operations across supported platforms (Win32 or NX)
+* awn::async; Multithreaded work scheduling library, provides asynchronous task management and dependency-based job graphs
+* awn::res; File resource library; provides an asynchronous resource loader for allocating, loading, decompressing, and initializing file data
+* awn::gfx; High-level graphics api, abstracts platform graphics api (Vulkan or NVN), interoperates with reverse-engineered NintendoWare gfx formats
+* awn::grr; Graphics rendering library, Provides display management (Win32 Composition Swapchain or nn::vi)
+* awn::para; Parameterization library, class autogen for general byaml parsing, blackboards, pause management, variable framerate management, etc
+* awn::hid; Host input device management, preliminary supports keyboard and mice
 * awn::frm; Provides a bootstrap for libraries
 
 # Vp
@@ -17,9 +17,8 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
 
 # Vp Features
 * vp::codec; compression (zstd), encryption (nisasyst, aes128cbc)
-* vp::image; a png decoder and encoder utility on top of libpng
-* vp::imem; a base heap interface for memory allocators
-* vp::res; Reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
+* vp::imem; Heap interface
+* vp::res; Resource library, reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
   * Ainb (AI Node Binary)
   * Bea (Bezel Engine Archive)
   * Bffnt (Binary Cafe Font)
@@ -33,14 +32,15 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
   * Exb (Expression Binary)
   * Rsizetable (Resource Size Table)
   * Sarc (sead Archive?)
-* vp::resbui, serializers for select file formats
-  * Bnsh (Binary Nintendo Shader)
-  * Byaml (Binary Yet Another Markup Language)
-  * Rsizetable (Resource Size Table)
-  * Sarc (sead Archive?)
-* vp::util, Data structures, algorithms, traits
+* vp::resbui, Resource serialization library, serializers for:
+  * Bnsh (Binary shader format)
+  * Bntx (Binary texture archive format)
+  * Byaml (Binary YAML)
+  * Rsizetable (Resource size table)
+  * Sarc (Archive format)
+* vp::util, General utility library:
   * Hash algorithms, crc32b, murmur3, and murmur64
-  * x86_64 avx2 SIMD linear algebra
+  * x86_64 avx2 SIMD math
   * Scope Guard
   * Result-based Structured Error Handling
   * Custom Runtime Type Info
@@ -62,18 +62,9 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
   * Fixed Strings
   * IFunction
 
-# Wrapping up development (Finalizing)
-* A multi-threaded main loop based on dependency graphs
-* Acpcm to Pcm16 decoding and Pcm16 to Pcm24 and Pcm Float conversion
-* Audio device management, input, and output
-
-# In Development (Prototyping)
-* An audio renderer for mixing, applying effects, and outputing pcm16, adpcm, and opus encoded audio
-* An Actor and Scene system
-* An AI behavior tree system for scripting actor and scene behavior
-* A model scene system for managing the rendering of 3d models
-* A UI and Font system implementing the reverse engineered bflyt format
-* Wiimote, Npad (Nintendo Switch), PS4, and XInput controller support
+# In Development
+* An immediate mode style draw api
+* 3d model and animation support
 
 # System Requirements
 * The user's Vulkan implementation must conform to all the limits and features enforced by awn::gfx::Context which include but are not limited to:
@@ -93,6 +84,6 @@ Build instructions:
 
 I'm informed by reverse engineering, text books, free online resources, word on the street, and api documentation. I believe to be conformant with respect to my references.
 
-This repo is currently not all of the project but irregular snapshots of passable parts.
+This repo is currently not all of the project but irregular snapshots.
 
-If there are problems of any kind please file an issue or contact me and I'll do my best to resolve the issue.
+Feel free to contact me or file an issue.

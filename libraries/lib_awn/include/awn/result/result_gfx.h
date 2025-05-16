@@ -37,7 +37,7 @@ namespace awn::gfx {
     DECLARE_RESULT(InvalidShaderCodeType,                   17);
     DECLARE_RESULT(InitializedByDifferentProgram,           18);
     DECLARE_RESULT(NullArgument,                            19);
-    DECLARE_RESULT(InvalidGpuMemoryHandle,                  20);
+    DECLARE_RESULT(InvalidMemoryPool,                       20);
     DECLARE_RESULT(InvalidGpuAddress,                       21);
 
     DECLARE_RESULT(UnknownApiError,                         50);

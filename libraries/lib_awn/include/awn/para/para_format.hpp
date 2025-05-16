@@ -70,7 +70,7 @@ namespace awn::para {
 
         /* Copy output directories */
         u32 iter     = 0;
-        u32 end_iter = ::strlen(file_path);
+        u32 end_iter = vp::util::StringLength(file_path);
         char copy_buffer[0x80] = {};
         while (iter < end_iter) {
 
@@ -96,7 +96,7 @@ namespace awn::para {
             }
 
             /* Append directory to file path */
-            if (out_path->IsNullString() == true) {
+            if (out_path->IsEmpty()) {
                 *out_path = copy_buffer;
             } else {
                 out_path->AppendFormat("\%s", copy_buffer);

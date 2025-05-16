@@ -71,6 +71,9 @@ namespace awn::sys {
         if (sSystemManagerInitGuard) { return; }
         sSystemManagerInitGuard = true;
 
+        /* Increase interrupt timer for process */
+        //::timeBeginPeriod(4);
+
         /* Construct system manager */
         vp::util::ConstructAt(sSystemManagerStorage);
 
@@ -97,9 +100,22 @@ namespace awn::sys {
         const bool is_dpi_aware = ::SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
         VP_ASSERT(is_dpi_aware);
 
-        /* Negotiate large page */
+        /* Negotiate large page; TODO; ensure this works post finalize */
         sys_mgr->is_enable_large_page = NegotiateLargePageRights();
         sys_mgr->large_page_size = ::GetLargePageMinimum();
+
+        return;
+    }
+
+    void FinalizeSystem() {
+
+        /* Check init guard */
+        VP_ASSERT(sSystemManagerInitGuard);
+        sSystemManagerInitGuard = false;
+
+        //::timeEndPeriod(4);
+        SystemManager *sys_mgr = vp::util::GetPointer(sSystemManagerStorage);
+        ::CloseHandle(sys_mgr->process_handle);
 
         return;
     }

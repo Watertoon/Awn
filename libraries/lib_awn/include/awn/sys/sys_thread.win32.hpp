@@ -17,12 +17,12 @@
 
 namespace awn::sys {
 
-    constexpr s32 ConvertAwnPriorityToWin32(s32 priority) {
+    constexpr s32 ConvertAwnPriorityToWin32(u32 priority) {
         if (priority <= 0x12) {
             if (0xe <= priority) { return THREAD_PRIORITY_NORMAL; }
             if (0x8 <= priority) { return THREAD_PRIORITY_ABOVE_NORMAL; }
             if (0x1 <= priority) { return THREAD_PRIORITY_HIGHEST; }
-            if (0x0 <= priority) { return THREAD_PRIORITY_TIME_CRITICAL; }
+            if (0x0 == priority) { return THREAD_PRIORITY_TIME_CRITICAL; }
         } else if (priority <= 0x18) {
             return THREAD_PRIORITY_BELOW_NORMAL;
         } else if (priority <= 0x1e) {
@@ -30,8 +30,7 @@ namespace awn::sys {
         } else if (priority <= 0x1f) {
             return THREAD_PRIORITY_IDLE;
         }
-        VP_ASSERT(false);
-        return THREAD_PRIORITY_NORMAL;
+        VP_UNEXPECTED_DEFAULT();
     }
 
     static constexpr u32 cMaxThreadNameLength = 0x40;
@@ -46,9 +45,14 @@ namespace awn::sys {
         public:
             VP_RTTI_DERIVED(SystemThread, ThreadBase);
         public:
-			Thread(const char *name, mem::Heap *thread_heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, s32 priority);
-			Thread(mem::Heap *thread_heap);
-            virtual ~Thread() override;
+			constexpr Thread() : ThreadBase(), m_handle(), m_waitable_timer_for_sleep(), m_win32_thread_id() {
+                m_name[0] = '\0';
+                m_name_utf16[0] = L'\0';
+            }
+            virtual ~Thread() override {/*...*/}
+
+            Result Initialize(mem::Heap *thread_heap, const ThreadInfo *info);
+            void Finalize();
 
             virtual void StartThread() override;
             virtual void ExitThread(ExitType exit_type) override;
@@ -60,7 +64,7 @@ namespace awn::sys {
             virtual void SleepThread(vp::TimeSpan timeout_ns) override;
             virtual void YieldThread() override;
 
-            virtual void SetPriority(s32 priority) override;
+            virtual void SetPriority(u32 priority) override;
             virtual void SetCoreMask(CoreMask core_mask) override;
 
             constexpr HANDLE GetWin32Handle() const { return m_handle; }

@@ -39,15 +39,20 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfresTexturePatternAnim) == 0x10);
 
+    struct ResBfresConstantEntry {
+        u32 field_offset;
+        u32 value;
+    };
+
     struct ResBfresPerMaterialAnim {
-        const char                 *model_name;
+        const char                 *material_name;
         ResBfresShaderParamAnim    *shader_param_anim_array;
         ResBfresTexturePatternAnim *texture_pattern_anim_array;
         ResBfresAnimCurve          *anim_curve_array;
-        void                       *constant_array;
-        u16                         base_shader_param_curve_index;
-        u16                         base_texture_pattern_curve_index;
-        u16                         base_visibility_curve_index;
+        ResBfresConstantEntry      *constant_array;
+        u16                         base_result_offset_shader_param;
+        u16                         base_result_offset_texture_pattern;
+        u16                         base_result_offset_visibility_curve;
         u16                         visibility_curve_index;
         u16                         visibility_constant_index;
         u16                         shader_param_anim_count;
@@ -56,19 +61,177 @@ namespace vp::res {
         u16                         anim_curve_count;
         u16                         reserve0;
         u32                         reserve1;
+
+        static constexpr u16 cInvalidEntryIndex = 0xffff;
+        static constexpr u16 cInvalidResultOffset = 0xffff;
+
+        void EvaluateShaderParamAnim(void *out_result, const u16 *bind_table, float frame, BfresAnimFrameCache *cache_array) const {
+
+            /* Calculate shader param anim values */
+            const u32 anim_count = this->shader_param_anim_count;
+            for (u32 i = 0; i < anim_count; ++i) {
+
+                /* Ensure param bound */
+                ResBfresShaderParamAnim *param_anim = std::addressof(this->shader_param_anim_array[i]);
+                if (bind_table[i] == cInvalidEntryIndex) { continue; }
+
+                /* Calculate int and float value curves */
+                const u32 base_curve = param_anim->base_curve;
+                ResBfresAnimCurve *curve_array = std::addressof(this->anim_curve_array[base_curve]);
+                const u32 count_int = param_anim->curve_count_int;
+                const u32 count_float = param_anim->curve_count_float;
+                s32 *result_array_int = reinterpret_cast<s32*>(reinterpret_cast<uintptr_t>(out_result) + sizeof(s32) * base_curve);
+                for (u32 i = 0; i < count_int; ++i) {
+                    const s32 result = curve_array->EvaluateInt(cache_array, frame);
+                    ++cache_array;
+                    *result_array_int = result;
+                    ++result_array_int;
+                    ++curve_array;
+                }
+                float *result_array_float = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(out_result) + sizeof(s32) * (base_curve + count_int));
+                for (u32 i = 0; i < count_float; ++i) {
+                    const float result = curve_array->EvaluateFloat(cache_array, frame);
+                    ++cache_array;
+                    *result_array_float = result;
+                    ++result_array_float;
+                    ++curve_array;
+                }
+            }
+
+            return;
+        }
+
+        void EvaluateTexturePatternAnim(void *out_result, const u16 *bind_table, float frame, BfresAnimFrameCache *cache_array) const {
+
+            /* Calculate texture pattern anim texture indices for sampler */
+            const u32 anim_count = this->texture_pattern_anim_count;
+            s32 *result_array = reinterpret_cast<s32*>(out_result);
+            for (u32 i = 0; i < anim_count; ++i) {
+
+                /* Ensure sampler bound */
+                ResBfresTexturePatternAnim *pattern_anim = std::addressof(this->texture_pattern_anim_array[i]);
+                if (bind_table[i] == cInvalidEntryIndex) { continue; }
+
+                /* Ensure valid curve */
+                const u16 base_curve = pattern_anim->base_curve;
+                if (base_curve == cInvalidEntryIndex) { continue; }
+
+                /* Calculate texture index curve */
+                const s32 result = this->anim_curve_array[base_curve].EvaluateInt(cache_array, frame);
+                ++cache_array;
+                *result_array = result;
+                ++result_array;
+            }
+
+            return;
+        }
+
+        void EvaluateVisibilityAnim(void *out_result, float frame, BfresAnimFrameCache *cache) const {
+
+            /* Calculate visibilty curve */
+            const u16 base_curve = this->visibility_curve_index;
+            if (base_curve == cInvalidEntryIndex) { return; }
+            s32 *result_array = reinterpret_cast<s32*>(out_result);
+            const s32 result = this->anim_curve_array[base_curve].EvaluateInt(cache, frame);
+            *result_array = result;
+
+            return;
+        }
+
+        void EvaluateShaderParamAnim(void *out_result, const u16 *bind_table, float frame) const {
+
+            /* Calculate shader param anim values */
+            BfresAnimFrameCache cache;
+            const u32 anim_count = this->shader_param_anim_count;
+            for (u32 i = 0; i < anim_count; ++i) {
+
+                /* Ensure material bound */
+                ResBfresShaderParamAnim *param_anim = std::addressof(this->shader_param_anim_array[i]);
+                if (bind_table[i] == cInvalidEntryIndex) { continue; }
+
+                /* Calculate int and float value curves */
+                const u32 base_curve = param_anim->base_curve;
+                ResBfresAnimCurve *curve_array = std::addressof(this->anim_curve_array[base_curve]);
+                const u32 count_int = param_anim->curve_count_int;
+                const u32 count_float = param_anim->curve_count_float;
+                s32 *result_array_int = reinterpret_cast<s32*>(reinterpret_cast<uintptr_t>(out_result) + sizeof(s32) * base_curve);
+                for (u32 i = 0; i < count_int; ++i) {
+                    cache.SetDefaults();
+                    const s32 result = curve_array->EvaluateInt(std::addressof(cache), frame);
+                    *result_array_int = result;
+                    ++result_array_int;
+                    ++curve_array;
+                }
+                float *result_array_float = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(out_result) + sizeof(s32) * (base_curve + count_int));
+                for (u32 i = 0; i < count_float; ++i) {
+                    cache.SetDefaults();
+                    const float result = curve_array->EvaluateFloat(std::addressof(cache), frame);
+                    *result_array_float = result;
+                    ++result_array_float;
+                    ++curve_array;
+                }
+            }
+
+            return;
+        }
+
+        void EvaluateTexturePatternAnim(void *out_result, const u16 *bind_table, float frame) const {
+
+            /* Calculate texture pattern anim texture indices for sampler */
+            BfresAnimFrameCache cache;
+            const u32 anim_count = this->texture_pattern_anim_count;
+            s32 *result_array = reinterpret_cast<s32*>(out_result);
+            for (u32 i = 0; i < anim_count; ++i) {
+
+                /* Ensure material bound */
+                ResBfresTexturePatternAnim *pattern_anim = std::addressof(this->texture_pattern_anim_array[i]);
+                if (bind_table[i] == cInvalidEntryIndex) { continue; }
+
+                /* Ensure valid curve */
+                const u16 base_curve = pattern_anim->base_curve;
+                if (base_curve == cInvalidEntryIndex) { continue; }
+
+                /* Calculate texture index curve */
+                cache.SetDefaults();
+                const s32 result = this->anim_curve_array[base_curve].EvaluateInt(std::addressof(cache), frame);
+                *result_array = result;
+                ++result_array;
+            }
+
+            return;
+        }
+
+        void EvaluateVisibilityAnim(void *out_result, float frame) const {
+
+            /* Calculate visibilty curve */
+            const u16 base_curve = this->visibility_curve_index;
+            if (base_curve == cInvalidEntryIndex) { return; }
+            BfresAnimFrameCache cache;
+            s32 *result_array = reinterpret_cast<s32*>(out_result);
+            cache.SetDefaults();
+            const s32 result = this->anim_curve_array[base_curve].EvaluateInt(std::addressof(cache), frame);
+            *result_array = result;
+
+            return;
+        }
     };
     static_assert(sizeof(ResBfresPerMaterialAnim) == 0x40);
 
     struct ResBfresMaterialAnim  {
         u32                         magic;
-        u32                         is_baked        : 1;
-        u32                         reserve0        : 1;
-        u32                         is_looping      : 1;
-        u32                         reserve1        : 29;
-        const char                 *animation_name;
+        union {
+            u32 flags;
+            struct {
+                u32 is_baked   : 1;
+                u32 reserve0   : 1;
+                u32 is_looping : 1;
+                u32 reserve1   : 29;                
+            };
+        };
+        const char                 *name;
         const char                 *reserve2;
         ResBfresModel              *runtime_bound_model;
-        u16                        *bind_fast_table;
+        u16                        *fast_bind_table;
         ResBfresPerMaterialAnim    *per_material_anim_array;
         void                      **runtime_texture_view_array;
         const char                **texture_name_array;
@@ -76,7 +239,7 @@ namespace vp::res {
         ResNintendoWareDictionary  *user_data_dictionary;
         u64                        *runtime_texture_descriptor_slot_array;
         u32                         frame_count;
-        u32                         bake_size;
+        u32                         baked_size;
         u16                         user_data_count;
         u16                         per_material_anim_count;
         u16                         total_anim_curve_count;
@@ -89,11 +252,11 @@ namespace vp::res {
         static constexpr u32    cMagic = util::TCharCode32("FMAA");
         static constexpr size_t cInvalidDescriptorSlot = 0xffff'ffff'ffff'ffff;
 
-        void BindTextures(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
+        void BindTextures(GfxBindTextureCallback bind_callback, void *user_data) {
             for (u32 i = 0; i < texture_count; ++i) {
                 if (runtime_texture_view_array[i] != nullptr && runtime_texture_descriptor_slot_array[i] != cInvalidDescriptorSlot) { continue; }
         
-                GfxBindTextureView bind_texture_view  = (bind_callback)(res_bntx, texture_name_array[i] + 2);
+                GfxBindTextureView bind_texture_view  = (bind_callback)(texture_name_array[i] + 2, user_data);
                 runtime_texture_view_array[i] = bind_texture_view.texture_view;
                 runtime_texture_descriptor_slot_array[i] = bind_texture_view.texture_view_decriptor_slot;
             }

@@ -22,8 +22,8 @@ namespace vp::res {
         ResNintendoWareDictionary *choice_dictionary;
         s32                       *choice_array;
         u16                        choice_count;
-        u16                        default_value;
-        u16                        base_index;
+        u16                        default_choice_index;
+        u16                        struct_offset;
         union {
             u8                     flags;
             struct {
@@ -41,6 +41,10 @@ namespace vp::res {
         static constexpr u16 cInvalidBaseIndex = 0;
 
         u32 ReadStaticKey(const void *static_key) const;
+        void WriteStaticKey(void *static_key, u32 choice_index) const;
+
+        u32 ReadDynamicKey(const void *dynamic_key) const;
+        void WriteDynamicKey(void *dynamic_key, u32 choice_index) const;
     };
     static_assert(sizeof(ResBfshaShaderOption) == 0x28);
 
@@ -59,10 +63,18 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfshaTextureSampler) == 0x10);
 
+    struct ResBfshaImage {
+        u8          location;
+        u8          reserve0;
+        u16         reserve1;
+        u32         reserve2;
+    };
+    static_assert(sizeof(ResBfshaImage) == 0x8);
+
     struct ResBfshaBufferParam {
-        const char *name;
+        const char *convert_name;
         u32         index;
-        u16         offset;
+        u16         struct_offset;
         u16         buffer_index;
     };
     static_assert(sizeof(ResBfshaBufferParam) == 0x10);
@@ -76,47 +88,47 @@ namespace vp::res {
     };
 
     struct ResBfshaBuffer{
-        ResBfshaBufferParam       *buffer_param_array;
-        ResNintendoWareDictionary *buffer_param_dictionary;
+        ResBfshaBufferParam       *param_array;
+        ResNintendoWareDictionary *param_dictionary;
         void                      *default_value_array;
         u8                         location;
         u8                         buffer_type;
         u16                        size;
-        u32                        buffer_param_count;
+        u32                        param_count;
     };
     static_assert(sizeof(ResBfshaBuffer) == 0x20);
 
     struct ResBfshaShadingModel;
 
     struct ResBfshaShaderProgram {
-        u32                    *sampler_location_array;
-        u32                    *image_location_array;
-        u32                    *uniform_buffer_location_array;
-        u32                    *storage_buffer_location_array;
+        u32                    *location_array_texture_sampler;
+        u32                    *location_array_image;
+        u32                    *location_array_uniform_buffer;
+        u32                    *location_array_storage_buffer;
         ResBnshShaderVariation *bnsh_shader_variation;
         ResBfshaShadingModel   *parent_shading_model;
-        u32                     reserve0;
+        u32                     reserve0; /* Unknown */
         union {
             u16 runtime_flags;
             struct {
-                u16 runtime_is_require_update     : 1;
-                u16 runtime_is_fail_to_initialize : 1;
+                u16 runtime_is_setup              : 1;
+                u16 runtime_is_any                : 1;
                 u16 runtime_is_binary             : 1;
                 u16 runtime_is_source             : 1;
                 u16 runtime_is_intermediate       : 1;
                 u16 reserve1                      : 11;
             };
         };
-        u16                     static_key_size;
+        u16                     texture_sampler_count;
+        u16                     image_count;
+        u16                     uniform_buffer_count;
+        u16                     storage_buffer_count;
         u16                     reserve2;
-        u16                     dynamic_key_size;
-        u16                     shader_stage_count;
-        u16                     reserve4;
     };
     static_assert(sizeof(ResBfshaShaderProgram) == 0x40);
 
     struct ResBfshaResourceNameTable {
-        const char **sampler_name_array;
+        const char **texture_sampler_name_array;
         const char **image_name_array;
         const char **uniform_buffer_name_array;
         const char **storage_buffer_name_array;
@@ -140,26 +152,30 @@ namespace vp::res {
         ResNintendoWareDictionary *input_attribute_dictionary;
         ResBfshaTextureSampler    *texture_sampler_array;
         ResNintendoWareDictionary *texture_sampler_dictionary;
-        u64                       *image_array;
+        ResBfshaImage             *image_array;
         ResNintendoWareDictionary *image_dictionary;
         ResBfshaBuffer            *uniform_buffer_array;
         ResNintendoWareDictionary *uniform_buffer_dictionary;
-        ResBfshaBufferParam       *uniform_array;
+        ResBfshaBufferParam       *uniform_param_array;
         ResBfshaBuffer            *storage_buffer_array;
         ResNintendoWareDictionary *storage_buffer_dictionary;
-        ResBfshaBufferParam       *storage_array;
+        ResBfshaBufferParam       *storage_param_array;
         ResBfshaShaderProgram     *program_array;
         u32                       *option_key_array;
         ResBfshaShaderArchive     *parent_archive;
         ResBfshaResourceNameTable *resource_name_table;
         ResBnsh                   *bnsh;
         void                      *runtime_mutex;
-        u8                        *reserve0; /* byte array? */
-        u64                        reserve1; /* size of byte array? */
+        u8                        *base_location_array;
+        u8                         base_location_count;
+        u8                         reserve0;
+        u16                        reserve1;
+        u32                        reserve2;
         void                      *runtime_user_pointer;
-        u64                        reserve2;
         u64                        reserve3;
-        u32                        default_key_index;
+        u32                        uniform_param_count;
+        u32                        storage_param_count;
+        u32                        default_program_index;
         u16                        static_option_count;
         u16                        dynamic_option_count;
         u16                        program_count;
@@ -174,21 +190,17 @@ namespace vp::res {
         u8                         skeleton_uniform_buffer_index;
         u8                         option_uniform_buffer_index;
         u8                         storage_buffer_count;
-        u8                         reserve4;
-        u8                         reserve5;
-        u8                         reserve6;
+        u8                         material_storage_buffer_index;
+        u8                         shape_storage_buffer_index;
+        u8                         skeleton_storage_buffer_index;
         u8                         option_storage_buffer_index;
-        u8                         base_location_vertex;
-        u8                         base_location_geometry;
-        u8                         base_location_fragment;
-        u8                         base_location_compute;
-        u8                         base_location_tessellation_control;
-        u8                         base_location_tessellation_evaluation;
+        u8                         base_location_array_old[6]; /* Vertex, Geometry, Fragment, Compute, Tess Control, Tess Eval, use if base_location_array is nullptr */
         u8                         shader_stage_count;
 
         static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
         static_assert(cInvalidEntryIndex == ResNintendoWareDictionary::cInvalidEntryIndex);
         static constexpr u32 cInvalidDefaultKeyIndex = 0xffff'ffff;
+        static constexpr u8 cInvalidBufferIndex = 0xff;
         static constexpr u8 cInvalidBaseLocation = 0xff;
 
         constexpr bool IsAppliedStaticOption() const {
@@ -232,21 +244,36 @@ namespace vp::res {
         ResBfshaShadingModel           *shading_model_array;
         ResNintendoWareDictionary      *shading_model_dictionary;
         void                           *runtime_user_pointer;
-        BfshaProgramInitializeCallback  runtime_user_program_initialize_callback;
-        void                           *runtime_user_work_memory;
+        BfshaProgramInitializeCallback  runtime_program_initialize_callback;
+        void                           *runtime_work_memory;
         u64                             reserve1;
         u16                             shading_model_count;
-        u16                             runtime_flags;
-        u32                             reserve2;
+        union {
+            u16 flags;
+            struct {
+                u16 reserve2 : 1;
+                u16 is_reserve : 1; /* Unknown */
+                u16 reserve3 : 1;
+                u16 is_binary_available : 1;
+                u16 is_baked_options : 1;
+                u16 reserve5 : 2;
+                u16 runtime_is_setup : 1;
+                u16 reserve6 : 8;
+            };
+        };
+        u32                             reserve7;
     };
     static_assert(sizeof(ResBfshaShaderArchive) == 0x48);
 
-    struct ResBfshaShaderFile : public ResNintendoWareFileHeader {
+    struct ResBfsha : public ResNintendoWareFileHeader {
         ResBfshaShaderArchive     *shader_archive;
         ResNintendoWareStringPool *string_pool;
         u64                        string_pool_size;
 
-        static constexpr inline u64 Magic = util::TCharCode64("FSHA    ");
+        static constexpr inline u64 cMagic = util::TCharCode64("FSHA    ");
+        static constexpr inline u32 cTargetMajorVersion = 9;
+        static constexpr inline u32 cTargetMinorVersion = 1;
+        static constexpr inline u32 cTargetMicroVersion = 1;
     };
-    static_assert(sizeof(ResBfshaShaderFile) == 0x38);
+    static_assert(sizeof(ResBfsha) == 0x38);
 }

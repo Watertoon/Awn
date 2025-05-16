@@ -17,13 +17,13 @@
 
 namespace vp::util {
 
-	template <auto HashMemberPtr>
-        requires (std::is_integral<vp::util::MemberType<HashMemberPtr>>::value == true) && (std::is_standard_layout<vp::util::ParentType<HashMemberPtr>>::value == true)
+	template <typename RP, auto HashMemberPtr>
+        requires (std::is_integral<vp::util::MemberType<HashMemberPtr>>::value) && (std::is_standard_layout<RP>::value)
 	class HashMap {
         public:
             static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
         public:
-            using Parent   = vp::util::ParentType<HashMemberPtr>;
+            using Parent   = RP;
             using HashType = vp::util::MemberType<HashMemberPtr>;
         private:
             u32     m_count;
@@ -40,7 +40,7 @@ namespace vp::util {
                 return base_index;
             }
 		public:
-            constexpr ALWAYS_INLINE  HashMap() : m_count(0), m_max(0), m_array(nullptr) {/*...*/}
+            constexpr ALWAYS_INLINE  HashMap() : m_count(), m_max(), m_array() {/*...*/}
             constexpr ALWAYS_INLINE ~HashMap() {/*...*/}
 
             void Initialize(vp::imem::IHeap *heap, u32 max_count) {
@@ -71,7 +71,7 @@ namespace vp::util {
                 return;
             }
 
-            constexpr ALWAYS_INLINE Parent *AddEntry(HashType hash) {
+            constexpr Parent *AddEntry(HashType hash) {
 
                 /* Integrity check */
                 VP_ASSERT(m_count < m_max);
@@ -94,7 +94,7 @@ namespace vp::util {
                 return nullptr;
             }
 
-            constexpr ALWAYS_INLINE Parent *TryGetParentByHash(HashType hash) {
+            constexpr Parent *TryGetParentByHash(HashType hash) {
 
                 /* Ensure initialized */
                 if (m_max < 1) { return nullptr; }
@@ -110,7 +110,7 @@ namespace vp::util {
                 return nullptr;
             }
 
-            constexpr ALWAYS_INLINE const Parent *TryGetParentByHash(HashType hash) const {
+            constexpr const Parent *TryGetParentByHash(HashType hash) const {
 
                 /* Ensure initialized */
                 if (m_max < 1) { return nullptr; }
@@ -126,7 +126,7 @@ namespace vp::util {
                 return nullptr;
             }
 
-            constexpr ALWAYS_INLINE void Clear() {
+            constexpr void Clear() {
 
                 /* Destroy all */
                 for (u32 i = 0; i < m_max; ++i) {
@@ -139,94 +139,33 @@ namespace vp::util {
 
                 return;
             }
-	};
-
-	template <auto HashMemberPtr, u32 Size>
-        requires (std::is_integral<vp::util::MemberType<HashMemberPtr>>::value == true) && (std::is_standard_layout<vp::util::ParentType<HashMemberPtr>>::value == true)
-	class FixedHashMap {
         public:
-            static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
-        public:
-            using Parent   = vp::util::ParentType<HashMemberPtr>;
-            using HashType = vp::util::MemberType<HashMemberPtr>;
-        private:
-            u32    m_count;
-            Parent m_array[Size];
-        private:
-            constexpr ALWAYS_INLINE u32 GetBaseIndex(HashType hash) const {
+            constexpr u32 CountMaxIterationsPerKey() const {
 
-                /* Calculate base index */
-                const u32 max_count  = Size;
-                const u32 base_div   = (max_count != 0) ? hash / max_count : 0;
-                const u32 base_index = hash - (base_div * max_count);
+                /* Iterate hash map */
+                u32 count = 0;
+                HashType current_hash;
+                for (u32 i = 0; i < m_max; ++i) {
 
-                return base_index;
-            }
-		public:
-            constexpr ALWAYS_INLINE  FixedHashMap() : m_count(0), m_array() {/*...*/}
-            constexpr ALWAYS_INLINE ~FixedHashMap() {/*...*/}
+                    /* Check valid slot */
+                    current_hash = m_array[i].*HashMemberPtr;
+                    if (current_hash == 0) { continue; }
+                    
+                    /* Find offset from hash's base index */
+                    const u32 base_index = this->GetBaseIndex(current_hash);
+                    u32 sub_count = 0;
+                    u32 iter = base_index;
+                    do {
+                        if (current_hash == m_array[iter].*HashMemberPtr) { break; }
+                        ++sub_count;
+                        iter = ((iter + 1) < m_max) ? iter + 1 : 0;
+                    } while (iter != base_index);
 
-            constexpr ALWAYS_INLINE Parent *AddEntry(HashType hash) {
-
-                /* Integrity check */
-                VP_ASSERT(m_count < Size);
-                VP_ASSERT(hash != 0);
-
-                /* Insert entry */
-                const u32 base_index = this->GetBaseIndex(hash);
-                u32 i = base_index;
-                do {
-                    if (m_array[i].*HashMemberPtr == 0) {
-                        ++m_count;
-                        m_array[i].*HashMemberPtr = hash;
-                        return std::addressof(m_array[i]);
-                    }
-                    i = ((i + 1) < Size) ? i + 1 : 0;
-                } while (i != base_index);
-
-                VP_ASSERT(false);
-
-                return nullptr;
-            }
-
-            constexpr ALWAYS_INLINE Parent *TryGetParentByHash(HashType hash) {
-        
-                /* Find actual index linearly from base */
-                const u32 base_index = this->GetBaseIndex(hash);
-                u32 i = base_index;
-                do {
-                    if (hash == m_array[i].*HashMemberPtr) { return std::addressof(m_array[i]); }
-                    i = ((i + 1) < Size) ? i + 1 : 0;
-                } while (i != base_index);
-
-                return nullptr;
-            }
-
-            constexpr ALWAYS_INLINE const Parent *TryGetParentByHash(HashType hash) const {
-        
-                /* Find actual index linearly from base */
-                const u32 base_index = this->GetBaseIndex(hash);
-                u32 i = base_index;
-                do {
-                    if (hash == m_array[i].*HashMemberPtr) { return std::addressof(m_array[i]); }
-                    i = ((i + 1) < Size) ? i + 1 : 0;
-                } while (i != base_index);
-
-                return nullptr;
-            }
-
-            constexpr ALWAYS_INLINE void Clear() {
-
-                /* Destroy all */
-                for (u32 i = 0; i < Size; ++i) {
-                    if (m_array[i].*HashMemberPtr == 0) { continue; }
-                    m_array[i].*HashMemberPtr = 0;
-                    std::destroy_at(std::addressof(m_array[i]));
+                    /* Set max iteration count */
+                    count = vp::util::Max(count, sub_count);
                 }
 
-                m_count = 0;
-
-                return;
+                return count;
             }
 	};
 }

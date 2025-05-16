@@ -17,26 +17,30 @@
 
 namespace awn::sys {
 
-    using ThreadIDelegate = vp::util::IDelegate<size_t>;
+    using ThreadFunction = vp::util::IFunction<void(size_t)>;
 
-    class DelegateThread : public Thread {
+    class FunctionThread : public Thread {
         private:
-            ThreadIDelegate *m_delegate;
+            ThreadFunction *m_function;
         public:
-            VP_RTTI_DERIVED(DelegateThread, Thread);
+            VP_RTTI_DERIVED(FunctionThread, Thread);
         private:
             virtual void ThreadMain(size_t message) override {
-                m_delegate->Invoke(message);
+                m_function->Invoke(message);
             }
         public:
-            explicit DelegateThread(ThreadIDelegate *delegate, const char *name, mem::Heap *heap, ThreadRunMode run_mode, size_t exit_code, u32 max_messages, u32 stack_size, u32 priority) : Thread(name, heap, run_mode, exit_code, max_messages, stack_size, priority), m_delegate(delegate) {
-                VP_ASSERT(delegate != nullptr);
+            constexpr FunctionThread() : Thread(), m_function() {}
+            virtual ~FunctionThread() override {/*...*/}
+
+            Result Initialize(mem::Heap *heap, const ThreadInfo *thread_info, ThreadFunction *function) {
+                m_function = function;
+                RESULT_TRY(this->Thread::Initialize(heap, thread_info));
+                RESULT_RETURN_SUCCESS;
             }
-            virtual ~DelegateThread() override {/*...*/}
     };
 
     template <typename T>
-    using ThreadDelegate = vp::util::Delegate<T, size_t>;
+    using ThreadMemberFunction = vp::util::MemberFunction<T, void(size_t)>;
 
-    using ThreadDelegateFunction = vp::util::DelegateFunction<size_t>;
+    using ThreadStaticFunction = vp::util::StaticFunction<void(size_t)>;
 }

@@ -23,6 +23,60 @@ namespace vp::util {
             IntrusiveTreeNode *m_child;
             IntrusiveTreeNode *m_sibling_next;
             IntrusiveTreeNode *m_sibling_prev;
+        public:
+            template <bool IsConst>
+            class Iterator {
+                public:
+                    using value_type      = IntrusiveTreeNode;
+                    using reference       = IntrusiveTreeNode&;
+                    using const_reference = const IntrusiveTreeNode&;
+                    using pointer         = IntrusiveTreeNode*;
+                    using const_pointer   = const IntrusiveTreeNode*;
+                private:
+                    IntrusiveTreeNode *m_node;
+                public:
+                    constexpr ALWAYS_INLINE Iterator() : m_node() {/*...*/}
+                    constexpr ALWAYS_INLINE Iterator(IntrusiveTreeNode *node) : m_node(node) {/*...*/}
+                    constexpr ALWAYS_INLINE Iterator(const IntrusiveTreeNode *node) : m_node(const_cast<IntrusiveTreeNode*>(node)) {/*...*/}
+                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
+
+                    constexpr ALWAYS_INLINE reference operator*() {
+                        return *m_node;
+                    }
+                    constexpr ALWAYS_INLINE const_reference operator*() const {
+                        return *m_node;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator<IsConst> &rhs) const {
+                        return m_node == rhs.m_node;
+                    }
+
+                    constexpr ALWAYS_INLINE bool operator!=(const Iterator<IsConst> &rhs) const {
+                        return m_node != rhs.m_node;
+                    }
+
+                    constexpr ALWAYS_INLINE Iterator<IsConst> &operator++() {
+                        IntrusiveTreeNode *child = m_node->GetChild();
+                        if (child != nullptr) {
+                            m_node = child;
+                        } else {                            
+                            m_node = m_node->GetNextSibling();
+                        }
+                        return *this;
+                    }
+                    //constexpr ALWAYS_INLINE Iterator<IsConst> &operator--() {
+                    //    IntrusiveTreeNode *parent = m_node->GetParent();
+                    //    if (parent != nullptr) {
+                    //        m_node = parent;
+                    //    } else {                            
+                    //        m_node = m_node->GetPrevSibling();
+                    //    }
+                    //    return *this;
+                    //}
+            };
+        public:
+            using iterator = Iterator<false>;
+            using const_iterator = Iterator<true>;
         private:
             constexpr void ClearChildrenRecursive() {
                 IntrusiveTreeNode *iter = m_child;
@@ -35,6 +89,19 @@ namespace vp::util {
         public:
             constexpr IntrusiveTreeNode() : m_parent(), m_child(), m_sibling_next(), m_sibling_prev() {/*...*/}
             constexpr ~IntrusiveTreeNode() {/*...*/}
+
+            constexpr iterator begin() {
+                return iterator(this);
+            }
+            constexpr iterator end() {
+                return iterator();
+            }
+            constexpr const_iterator begin() const {
+                return const_iterator(this);
+            }
+            constexpr const_iterator end() const {
+                return const_iterator();
+            }
 
             constexpr void Clear() {
                 m_parent = nullptr;
@@ -151,6 +218,14 @@ namespace vp::util {
                 return root;
             }
 
+            constexpr u32 GetCount() const {
+                u32 count = 0;
+                for ([[maybe_unused]] const IntrusiveTreeNode &node : *this) {
+                    ++count;
+                }
+                return count;
+            }
+
             constexpr IntrusiveTreeNode *GetChild()       { return m_child; }
             constexpr IntrusiveTreeNode *GetParent()      { return m_parent; }
             constexpr IntrusiveTreeNode *GetNextSibling() { return m_sibling_next; }
@@ -164,19 +239,20 @@ namespace vp::util {
 
     template<class RP, auto M>
     struct IntrusiveTreeNodeMemberTraits {
+        static constexpr uintptr_t cOffset = OffsetOf<M>();
 
         static ALWAYS_INLINE RP *GetParent(IntrusiveTreeNode *node) {
-            return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+            return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
         }
         static ALWAYS_INLINE RP &GetParentReference(IntrusiveTreeNode *node) {
-            return *reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+            return *reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
         }
 
         static ALWAYS_INLINE const RP *GetParent(const IntrusiveTreeNode *node) {
-            return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+            return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
         }
         static ALWAYS_INLINE const RP &GetParentReference(const IntrusiveTreeNode *node) {
-            return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+            return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
         }
 
         static constexpr ALWAYS_INLINE IntrusiveTreeNode *GetTreeNode(RP *parent) {

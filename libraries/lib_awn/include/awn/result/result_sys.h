@@ -18,6 +18,9 @@
 namespace awn::sys {
 
     DECLARE_RESULT_MODULE(11);
-    DECLARE_RESULT(Timeout,          1);
-    DECLARE_RESULT(InvalidCoreMask, 21);
+    DECLARE_RESULT(Timeout,              1);
+    DECLARE_RESULT(FailedToCreateThread, 2);
+    DECLARE_RESULT(InvalidPriority,      3);
+    DECLARE_RESULT(InvalidThreadName,    4);
+    DECLARE_RESULT(InvalidCoreMask,      5);
 }

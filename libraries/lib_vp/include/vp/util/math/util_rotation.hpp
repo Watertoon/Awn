@@ -2,6 +2,39 @@
 
 namespace vp::util {
 
+    template <typename Ret, typename V>
+        requires (Ret::cIsMatrixType && V::cIsVectorType)
+    constexpr Ret EulerXYZToMatrix(const V &rotation_euler) {
+
+        const V mod_eu = ModuloPi(rotation_euler);
+        const V sin_eu = CoefficientsSin(mod_eu);
+        const V cos_eu = CoefficientsCos(mod_eu);
+        Ret ret;
+        const V row0 = V{  cos_eu[0] * cos_eu[1],                                         sin_eu[2] * cos_eu[1],                                        -sin_eu[1], };
+        const V row1 = V{ (cos_eu[0] * sin_eu[0] * sin_eu[1]) - (sin_eu[2] * cos_eu[2]), (sin_eu[0] * sin_eu[1] * sin_eu[2]) + (cos_eu[0] * cos_eu[2]),  sin_eu[0] * cos_eu[1], };
+        const V row2 = V{ (sin_eu[1] * cos_eu[0] * cos_eu[2]) + (sin_eu[2] * sin_eu[1]), (sin_eu[1] * sin_eu[2] * cos_eu[2]) - (cos_eu[0] * sin_eu[1]),  cos_eu[1] * cos_eu[2], };
+        StoreRow(std::addressof(ret), row0, 0);
+        StoreRow(std::addressof(ret), row1, 1);
+        StoreRow(std::addressof(ret), row2, 2);
+
+        return ret;
+    }
+
+    template <typename Ret, typename T>
+        requires (Ret::cIsVectorType && T::cIsMatrixType)
+    constexpr Ret GetScale(const T &trans_matrix) {
+        using Type = typename T::UnderlyingType;
+        using V = TVector<Type, T::cColumnCount>;
+        const V row0 = LoadRow(trans_matrix, 0);
+        const V row1 = LoadRow(trans_matrix, 1);
+        const V row2 = LoadRow(trans_matrix, 2);
+        const Type m_row0 = Magnitude(row0);
+        const Type m_row1 = Magnitude(row1);
+        const Type m_row2 = Magnitude(row2);
+        const Ret ret = { m_row0, m_row1, m_row2, };
+        return ret;
+    }
+
     template <typename T>
         requires (T::cIsVectorType)
     constexpr T Parallelize(const T &base, const T &to_parallelize) {
@@ -15,7 +48,7 @@ namespace vp::util {
 
     template <typename T>
         requires (T::cIsVectorType && std::is_same_v<typename T::UnderlyingType, float> && (T::cVectorCount == 3 || T::cVectorCount == 4))
-    constexpr T RotateVectorAxisX(const T &vector, float angle) {
+    constexpr T RotateEulerAxisX(const T &vector, float angle) {
         const Float2 sin_cos = MethodSinCos(TrigMethod::Sample, angle);
         /*  | x                       |
          *  | y*sin(ang) - z*cos(ang) |
@@ -31,7 +64,7 @@ namespace vp::util {
 
     template <typename T>
         requires (T::cIsVectorType && std::is_same_v<typename T::UnderlyingType, float> && (T::cVectorCount == 3 || T::cVectorCount == 4))
-    constexpr T RotateVectorAxisY(const T &vector, float angle) {
+    constexpr T RotateEulerAxisY(const T &vector, float angle) {
         const Float2 sin_cos = MethodSinCos(TrigMethod::Sample, angle);
         /*  | z*cos(ang) + x*sin(ang) |
          *  | y                       |
@@ -47,7 +80,7 @@ namespace vp::util {
 
     template <typename T>
         requires (T::cIsVectorType && std::is_same_v<typename T::UnderlyingType, float> && (T::cVectorCount == 3 || T::cVectorCount == 4))
-    constexpr T RotateVectorAxisZ(const T &vector, float angle) {
+    constexpr T RotateEulerAxisZ(const T &vector, float angle) {
         const Float2 sin_cos = MethodSinCos(TrigMethod::Sample, angle);
         /*  | x*sin(ang) - y*cos(ang) |
          *  | x*cos(ang) + y*sin(ang) |

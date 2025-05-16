@@ -23,6 +23,7 @@
     #include <awn/sys/sys_event.win32.hpp>
     #include <awn/sys/sys_readerwriterlock.win32.h>
     #include <awn/sys/sys_messagequeue.win32.h>
+    #include <awn/sys/sys_systemevent.win32.hpp>
 #elif VP_TARGET_PLATFORM_nx
     #include <awn/sys/sys_event.nx.hpp>
     #include <awn/sys/sys_messagequeue.nx.hpp>
@@ -41,4 +42,4 @@
     #include <awn/sys/sys_threadmanager.nx.hpp>
 #endif
 
-#include <awn/sys/sys_delegatethread.hpp>
+#include <awn/sys/sys_functionthread.hpp>

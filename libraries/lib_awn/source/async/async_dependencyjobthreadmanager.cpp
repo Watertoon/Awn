@@ -40,28 +40,28 @@ namespace awn::async {
 
         /* Add thread controls to queue */
         const u32 current_core = sys::GetCurrentCoreNumber();
-        for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
+        for (u32 i = 0; i < m_thread_array.GetUsedCount(); ++i) {
             
             /* Skip unactive threads */
-            const u64 thread_core_mask = m_thread_array[i].thread->GetCoreMask();
-            if ((m_is_process_in_mainthread == true && thread_core_mask == (1ull << current_core)) || (m_all_core_mask & thread_core_mask) == 0) { continue; }
+            const u64 thread_core_mask = m_thread_array[i]->GetCoreMask();
+            if ((m_is_process_in_mainthread && thread_core_mask == (1ull << current_core)) || (m_all_core_mask & thread_core_mask) == 0) { continue; }
 
             /* Add thread control to queue */
-            m_queue->m_thread_control_array.PushPointer(std::addressof(m_thread_array[i].thread->m_thread_control));
+            m_queue->m_thread_control_array.PushPointer(std::addressof(m_thread_array[i]->m_thread_control));
 
             /* Set active mask */
             m_active_core_mask |= (1 << i);
         }
 
         /* Clear thread control state */
-        for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
+        for (u32 i = 0; i < m_thread_array.GetUsedCount(); ++i) {
             if (((m_active_core_mask >> i) & 1) == 0) { continue; }
             vp::util::MemoryBarrierInnerReadWrite();
 
-            m_thread_array[i].thread->m_thread_control.m_next_job = nullptr;
-            m_thread_array[i].thread->m_thread_control.m_out_of_jobs_event.Clear();
-            m_thread_array[i].thread->m_finish_event.Clear();
-            m_thread_array[i].thread->m_queue = m_queue;
+            m_thread_array[i]->m_thread_control.m_next_job = nullptr;
+            m_thread_array[i]->m_thread_control.m_out_of_jobs_event.Clear();
+            m_thread_array[i]->m_finish_event.Clear();
+            m_thread_array[i]->m_queue = m_queue;
 
             vp::util::MemoryBarrierInnerReadWrite();
         }
@@ -72,12 +72,11 @@ namespace awn::async {
     void DependencyJobThreadManager::StartThreads() {
 
         /* Start threads for job processing */
-        for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
+        for (u32 i = 0; i < m_thread_array.GetUsedCount(); ++i) {
             if (((m_active_core_mask >> i) & 1) == 0) { continue; }
 
-            vp::util::InterlockedOr(std::addressof(m_thread_array[i].thread->m_thread_control.m_is_ready_to_exit), 1u);
-
-            m_thread_array[i].thread->SendMessage(1);
+            vp::util::InterlockedOr(std::addressof(m_thread_array[i]->m_thread_control.m_is_ready_to_exit), 1u);
+            m_thread_array[i]->SendMessage(1);
         }
 
         return;
@@ -89,7 +88,7 @@ namespace awn::async {
         const u32 current_core = sys::GetCurrentCoreNumber();
 
         /* Set mainthread state */
-        if (m_is_process_in_mainthread == true) {
+        if (m_is_process_in_mainthread) {
 
             /* Setup main thread control */
             m_main_thread_control.m_core_number = current_core;
@@ -120,13 +119,21 @@ namespace awn::async {
         m_active_core_mask = 0;
 
         /* Setup threads */
-        for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
+        vp::util::FixedString<0x10> thread_name;
+        DependencyJobThreadInfo thread_info = {
+            .name = thread_name.GetString(),
+            .thread_manager = this,
+            .stack_size = 0x20000,
+            .priority = sys::cPriorityNormal,
+        };
+        for (u32 i = 0; i < m_thread_array.GetMaxCount(); ++i) {
 
-            m_thread_array[i].thread_name.Format("DepWorker%d", i);
-            m_thread_array[i].thread = new DependencyJobThread(this, m_thread_array[i].thread_name.GetString(), heap, 0x20000, sys::cPriorityNormal);
-
-            m_thread_array[i].thread->SetCoreMask((1 << i));
-            m_thread_array[i].thread->StartThread();
+            thread_name.Format("DepWorker%d", i);
+            DependencyJobThread *thread = new DependencyJobThread();
+            RESULT_ABORT_UNLESS(thread->Initialize(heap, std::addressof(thread_info)));
+            m_thread_array.PushPointer(thread);
+            thread->SetCoreMask((1 << i));
+            thread->StartThread();
 
             m_all_core_mask |= (1 << i);
         }
@@ -137,10 +144,11 @@ namespace awn::async {
     void DependencyJobThreadManager::Finalize() {
 
         /* Exit threads */
-        for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
-            m_thread_array[i].thread->SendMessage(0);
-            delete m_thread_array[i].thread;
+        for (DependencyJobThread *&thread : m_thread_array) {
+            thread->ExitThread(sys::ExitType::Jam);
+            delete thread;
         }
+        m_thread_array.Clear();
         m_thread_array.Finalize();
 
         return;
@@ -175,11 +183,11 @@ namespace awn::async {
             const u32 current_core = sys::GetCurrentCoreNumber();
 
             /* Try to abort any workers on the same core */
-            for (u32 i = 0 ; i < m_thread_array.GetCount(); ++i) {
-                if (m_thread_array[i].thread->GetCoreMask() != (1ull << current_core)) { continue; }
+            for (DependencyJobThread *&thread : m_thread_array) {
+                if (thread->GetCoreMask() != (1ull << current_core)) { continue; }
 
                 /* Signal thread control to exit */
-                vp::util::InterlockedOr(std::addressof(m_thread_array[i].thread->m_thread_control.m_is_ready_to_exit), (1u << 1));
+                vp::util::InterlockedOr(std::addressof(thread->m_thread_control.m_is_ready_to_exit), (1u << 1));
             }
 
             /* Update main core */
@@ -190,9 +198,9 @@ namespace awn::async {
         }
 
         /* Wait for all threads to complete */
-        for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
+        for (u32 i = 0; i < m_thread_array.GetUsedCount(); ++i) {
             if (((m_active_core_mask >> i) & 1) == 0) { continue; }
-            m_thread_array[i].thread->m_finish_event.Wait();
+            m_thread_array[i]->m_finish_event.Wait();
         }
 
         return;

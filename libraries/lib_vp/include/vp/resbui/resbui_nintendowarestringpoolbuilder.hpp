@@ -63,8 +63,7 @@ namespace vp::resbui {
 
             Result AddString(StringPoolStringBase *pool_string);
 
-            void Serialize(const NintendoWareStringPoolBuilderMemoryInfo *memory_info, void *output_buffer, size_t buffer_size);
-
             void CalculateMemoryInfo(NintendoWareStringPoolBuilderMemoryInfo *memory_info);
+            void Serialize(const NintendoWareStringPoolBuilderMemoryInfo *memory_info, void *output_buffer, size_t buffer_size);
     };
 }

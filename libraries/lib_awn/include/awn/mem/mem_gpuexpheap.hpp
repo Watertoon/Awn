@@ -37,7 +37,7 @@ namespace awn::mem {
                 first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
                 first_block->block_size  = size - (sizeof(ExpHeapMemoryBlock));
 
-                new_heap->m_free_block_list.PushBack(*first_block);
+                new_heap->m_free_list.PushBack(*first_block);
 
                 return new_heap;
             }
@@ -79,7 +79,7 @@ namespace awn::mem {
                 first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
                 first_block->block_size = size - (sizeof(ExpHeapMemoryBlock));
 
-                new_heap->m_free_block_list.PushBack(*first_block);
+                new_heap->m_free_list.PushBack(*first_block);
 
                 /* Add to parent heap child list */
                 parent_gpu_heap->PushBackChild(new_heap);

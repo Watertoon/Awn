@@ -77,6 +77,6 @@ namespace vp::util {
     }
 
     constexpr ALWAYS_INLINE u32 HashMurmur3(const char *string) {
-        return HashMurmur3WithSeed(string, 0xffff'ffff);
+        return HashMurmur3WithSeed(string, 0x0);
     }
 }

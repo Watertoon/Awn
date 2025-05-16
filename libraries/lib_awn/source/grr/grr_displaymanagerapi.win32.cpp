@@ -15,43 +15,60 @@
  */
 #include <awn.hpp>
 
-namespace awn::render {
+namespace awn::grr {
 
     namespace {
-        constinit bool cNativeVideoInitGuard = false;
+        constinit bool cDisplayManagerInitGuard = false;
     }
 
-    void InitializeNativeVideo(mem::Heap *heap) {
-        VP_ASSERT(!cNativeVideoInitGuard);
-        cNativeVideoInitGuard = true;
+    void InitializeDisplayManager(mem::Heap *heap) {
+
+        /* Set guard */
+        VP_ASSERT(!cDisplayManagerInitGuard);
+        cDisplayManagerInitGuard = true;
+
+        /* Create Direct3d11, DirectComposition, and Composition Swapchain context */
         impl::ContextDxgi11 *context = impl::ContextDxgi11::CreateInstance(heap);
         VP_ASSERT(context != nullptr);
         context->Initialize();
-        impl::NativeVideoManager *manager = impl::NativeVideoManager::CreateInstance(heap);
+
+        /* Create Display manager */
+        impl::DisplayManager *manager = impl::DisplayManager::CreateInstance(heap);
         VP_ASSERT(manager != nullptr);
         manager->Initialize(heap);
+
+        return;
     }
 
-    void FinalizeNativeVideo() {
-        VP_ASSERT(cNativeVideoInitGuard);
-        impl::NativeVideoManager *manager = impl::NativeVideoManager::GetInstance();
+    void FinalizeDisplayManager() {
+
+        /* Clear guard */
+        VP_ASSERT(cDisplayManagerInitGuard);
+        cDisplayManagerInitGuard = false;
+
+        /* Destroy Display manager */
+        impl::DisplayManager *manager = impl::DisplayManager::GetInstance();
         VP_ASSERT(manager != nullptr);
         manager->Finalize();
-        impl::NativeVideoManager::DeleteInstance();
+        impl::DisplayManager::DeleteInstance();
+
+        /* Destroy Direct3d11, DirectComposition, and Composition Swapchain context */
         impl::ContextDxgi11 *context = impl::ContextDxgi11::GetInstance();
         VP_ASSERT(context != nullptr);
         context->Finalize();
         impl::ContextDxgi11::DeleteInstance();
-    }
 
+        return;
+    }
+    
     void SubmitAndPresentAsync(gfx::CommandList *command_list_array, u32 command_list_count) {
-        impl::NativeVideoManager *manager = impl::NativeVideoManager::GetInstance();
+        impl::DisplayManager *manager = impl::DisplayManager::GetInstance();
         VP_ASSERT(manager != nullptr);
         manager->SubmitAndPresentAsync(command_list_array, command_list_count);
     }
 
     void WaitAndCompletePresent() {
-        impl::NativeVideoManager *manager = impl::NativeVideoManager::GetInstance();
+        impl::DisplayManager *manager = impl::DisplayManager::GetInstance();
         VP_ASSERT(manager != nullptr);
         manager->WaitAndCompletePresent();
     }

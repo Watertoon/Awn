@@ -228,7 +228,7 @@ namespace vp::res {
 
         static constexpr u64 cMagic              = util::TCharCode32("BNSH");
         static constexpr u16 cTargetVersionMajor = 2;
-        static constexpr u8  cTargetVersionMinor = 2;
+        static constexpr u8  cTargetVersionMinor = 3;
         static constexpr u8  cTargetVersionMicro = 1;
 
         static ResBnsh *ResCast(void *file) {

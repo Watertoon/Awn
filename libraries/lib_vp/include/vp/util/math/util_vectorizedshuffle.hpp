@@ -184,4 +184,52 @@ namespace vp::util {
         temp[7] = a[swizzle_mask[7]];
         return temp;
     }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cCount == 4)
+    constexpr ALWAYS_INLINE T InterleaveLow16(const T &a, const T &b) {
+        using v16t = T;
+        using Type = T::UnderlyingType;
+        if(!std::is_constant_evaluated()) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            if constexpr (std::is_same_v<Type, u16> || std::is_same_v<Type, s16>) {
+                return v16t{ __builtin_ia32_punpcklwd256(a.v, b.v), };
+            }
+#endif
+        }
+        v16t temp;
+        temp[0] = a[0];
+        temp[1] = b[0];
+        temp[2] = a[1];
+        temp[3] = b[1];
+        temp[4] = a[2];
+        temp[5] = b[2];
+        temp[6] = a[3];
+        temp[7] = b[3];
+        return temp;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType && T::cCount == 4)
+    constexpr ALWAYS_INLINE T InterleaveHigh16(const T &a, const T &b) {
+        using v16t = T;
+        using Type = T::UnderlyingType;
+        if(!std::is_constant_evaluated()) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            if constexpr (std::is_same_v<Type, u16> || std::is_same_v<Type, s16>) {
+                return v16t{ __builtin_ia32_punpckhwd256(a.v, b.v), };
+            }
+#endif
+        }
+        v16t temp;
+        temp[0] = a[3];
+        temp[1] = b[3];
+        temp[2] = a[4];
+        temp[3] = b[4];
+        temp[4] = a[5];
+        temp[5] = b[5];
+        temp[6] = a[6];
+        temp[7] = b[6];
+        return temp;
+    }
 }

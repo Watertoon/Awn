@@ -262,7 +262,7 @@ namespace awn::gfx {
         constexpr void SetBufferBinding(u32 binding) {
             this->binding = binding;
         }
-        constexpr void SetMemoryOffset(u32 offset) {
+        constexpr void SetAttributeOffset(u32 offset) {
             this->offset = offset;
         }
         constexpr void SetAttributeFormat(AttributeFormat attribute_format) {
@@ -270,6 +270,10 @@ namespace awn::gfx {
         }
         constexpr void SetName(const char *name) {
             this->name = name;
+        }
+        
+        constexpr u32 GetLocation() const {
+            return this->interface_slot;
         }
     };
 
@@ -286,12 +290,12 @@ namespace awn::gfx {
             this->vertex_buffer_state_array = nullptr;
         }
 
-        constexpr void SetVertexAttributeStates(u32 state_count, VertexAttributeState *vertex_attribute_state_array) {
-            this->vertex_attribute_state_count = state_count;
+        constexpr void SetVertexAttributeStateArray(VertexAttributeState *vertex_attribute_state_array, u32 count) {
+            this->vertex_attribute_state_count = count;
             this->vertex_attribute_state_array = vertex_attribute_state_array;
         }
-        constexpr void SetVertexBufferStates(u32 state_count, VertexBufferState *vertex_buffer_state_array) {
-            this->vertex_buffer_state_count = state_count;
+        constexpr void SetVertexBufferStateArray(VertexBufferState *vertex_buffer_state_array, u32 count) {
+            this->vertex_buffer_state_count = count;
             this->vertex_buffer_state_array = vertex_buffer_state_array;
         }
 

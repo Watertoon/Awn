@@ -867,83 +867,85 @@ namespace awn::res::impl {
         auto load_task_create_function = vp::util::MakeLambdaFunction<async::AsyncTaskForAllocator*(async::AsyncTaskAllocator*, mem::Heap*)>(load_task_create_lambda);
         m_async_task_allocator_load.Initialize(system_heap, std::addressof(load_task_create_function), manager_info->load_task_count);
 
-        /* Initialize control queue */
-        const async::AsyncQueuePerSetCount per_set_count = {
-            .thread_count_primary = 1,
-        };
-        const async::AsyncQueueInfo control_queue_info = {
-            .priority_level_count = cControlPriorityLevelCount,
-            .thread_set_count = 1,
-            .per_set_count_array = std::addressof(per_set_count),
-        };
-        m_queue_control.Initialize(system_heap, std::addressof(control_queue_info));
-
-        /* Initialize control thread with user settings */
-        async::AsyncQueueThreadInfo control_queue_thread_info = {
-            .queue = std::addressof(m_queue_control),
-        };
-        m_thread_control = (manager_info->control_thread_create_function.IsValid()) ? manager_info->control_thread_create_function.Invoke(system_heap, std::addressof(m_queue_control), std::addressof(manager_info->control_thread_info)) : new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(control_queue_thread_info), manager_info->control_thread_info.name, system_heap, manager_info->control_thread_info.stack_size, manager_info->control_thread_info.priority);
-        VP_ASSERT(m_thread_control != nullptr);
-        VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(m_thread_control->GetRuntimeTypeInfo()) == true);
-
-        m_thread_control->SetCoreMask((1 << (manager_info->control_thread_info.core_number & 0x3f)));
-        m_thread_control->StartThread();
-
-        /* Initialize memory queue */
-        const async::AsyncQueueInfo memory_queue_info = {
-            .priority_level_count = cMemoryPriorityLevelCount,
-            .thread_set_count = 1,
-            .per_set_count_array = std::addressof(per_set_count),
-        };
-        m_queue_memory.Initialize(system_heap, std::addressof(memory_queue_info));
-
-        /* Initialize memory thread with user settings */
-        async::AsyncQueueThreadInfo memory_queue_thread_info = {
-            .queue = std::addressof(m_queue_memory),
-        };
-        m_thread_memory = (manager_info->memory_thread_create_function.IsValid() == true) ? manager_info->memory_thread_create_function.Invoke(system_heap, std::addressof(m_queue_memory), std::addressof(manager_info->memory_thread_info)) : new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(memory_queue_thread_info), manager_info->memory_thread_info.name, system_heap, manager_info->memory_thread_info.stack_size, manager_info->memory_thread_info.priority);
-        VP_ASSERT(m_thread_memory != nullptr);
-        VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(m_thread_memory->GetRuntimeTypeInfo()));
-
-        m_thread_memory->SetCoreMask((1 << (manager_info->memory_thread_info.core_number & 0x3f)));
-        m_thread_memory->StartThread();
-
-        /* Initialize load async queue with user thread count */
-        const async::AsyncQueuePerSetCount per_set_count_load = {
-            .thread_count_primary = static_cast<u8>(manager_info->load_thread_count),
-        };
-        const async::AsyncQueueInfo load_queue_info = {
-            .priority_level_count = cLoadPriorityLevelCount,
-            .thread_set_count = 1,
-            .per_set_count_array = std::addressof(per_set_count_load),
-        };
-        m_queue_load.Initialize(system_heap, std::addressof(load_queue_info));
-
-        /* Initialize load async threads with user thread settings */
-        m_load_thread_array.Initialize(system_heap, manager_info->load_thread_count);
-        if (manager_info->load_thread_create_function.IsValid()) {
-            for (u32 i = 0; i < manager_info->load_thread_count; ++i) {
-                async::AsyncQueueThread *thread = manager_info->load_thread_create_function.Invoke(system_heap, std::addressof(m_queue_load), std::addressof(manager_info->load_thread_info_array[i]));
-                VP_ASSERT(thread != nullptr);
-                VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(thread->GetRuntimeTypeInfo()));
-                m_load_thread_array.PushPointer(thread);
-    
-                thread->SetCoreMask((1 << (manager_info->load_thread_info_array[i].core_number & 0x3f)));
-                thread->StartThread();
-            }
-        } else {
-            async::AsyncQueueThreadInfo memory_queue_thread_info = {
-                .queue = std::addressof(m_queue_load),
+        /* Initialize queue and thread impl */
+        auto init_queue = [&](async::AsyncQueue *queue, u32 priority_level_count, u32 thread_count) { 
+            const async::AsyncQueuePerSetCount per_set_count = {
+                .thread_count_primary = static_cast<u8>(thread_count),
             };
-            for (u32 i = 0; i < manager_info->load_thread_count; ++i) {
-                async::AsyncQueueThread *thread = new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(memory_queue_thread_info), manager_info->load_thread_info_array[i].name, system_heap, manager_info->load_thread_info_array[i].stack_size, manager_info->load_thread_info_array[i].priority);
-                VP_ASSERT(thread != nullptr);
-                m_load_thread_array.PushPointer(thread);
+            const async::AsyncQueueInfo control_queue_info = {
+                .priority_level_count = priority_level_count,
+                .thread_set_count = 1,
+                .per_set_count_array = std::addressof(per_set_count),
+            };
+            queue->Initialize(system_heap, std::addressof(control_queue_info));
+        };
+        auto init_thread = [&](async::AsyncQueue *queue, AsyncResourceThreadCreateAnyFunction *create_function, AsyncResourceThreadInfo *info) {
 
-                thread->SetCoreMask((1 << (manager_info->load_thread_info_array[i].core_number & 0x3f)));
-                thread->StartThread();
+            async::AsyncQueueThread *thread;
+            if (create_function->IsValid()) {
+                thread = create_function->Invoke(system_heap, queue, info);
+            } else {
+                async::AsyncQueueThreadInfo thread_info = {
+                    .name = info->name,
+                    .queue = queue,
+                    .stack_size = info->stack_size,
+                    .priority = info->priority,
+                };
+                thread = new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread();
+                RESULT_ABORT_UNLESS(thread->Initialize(system_heap, std::addressof(thread_info)));
             }
-        }
+            VP_ASSERT(thread != nullptr);
+            VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(thread->GetRuntimeTypeInfo()));
+            thread->SetCoreMask((1 << (info->core_number & 0x3f)));
+            thread->StartThread();
+            return thread;
+        };
+        auto init_thread_array = [&](async::AsyncQueue *queue, AsyncResourceThreadCreateAnyFunction *create_function, AsyncQueueThreadArray *thread_array, AsyncResourceThreadInfo *info_array, u32 info_count) {
+
+            thread_array->Initialize(system_heap, info_count);
+            if (create_function->IsValid()) {
+                for (u32 i = 0; i < info_count; ++i) {
+                    async::AsyncQueueThread *thread = create_function->Invoke(system_heap, queue, std::addressof(info_array[i]));
+                    VP_ASSERT(thread != nullptr);
+                    VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(thread->GetRuntimeTypeInfo()));
+                    thread_array->PushPointer(thread);
+        
+                    thread->SetCoreMask((1 << (info_array[i].core_number & 0x3f)));
+                    thread->StartThread();
+                }
+            } else {
+                for (u32 i = 0; i < info_count; ++i) {
+                    async::AsyncQueueThreadInfo thread_info = {
+                        .name = info_array[i].name,
+                        .queue = queue,
+                        .stack_size = info_array[i].stack_size,
+                        .priority = info_array[i].priority,
+                    };
+                    async::AsyncQueueThread *thread = new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread();
+                    VP_ASSERT(thread != nullptr);
+                    RESULT_ABORT_UNLESS(thread->Initialize(system_heap, std::addressof(thread_info)));
+                    thread_array->PushPointer(thread);
+
+                    thread->SetCoreMask((1 << (info_array[i].core_number & 0x3f)));
+                    thread->StartThread();
+                }
+            }
+            return;
+        };
+
+        /* Initialize control queue and thread */
+        init_queue(std::addressof(m_queue_control), cControlPriorityLevelCount, 1);
+        m_thread_control = init_thread(std::addressof(m_queue_control), std::addressof(manager_info->control_thread_create_function), std::addressof(manager_info->control_thread_info));
+
+        /* Initialize memory queue and thread */
+        init_queue(std::addressof(m_queue_memory), cMemoryPriorityLevelCount, 1);
+        m_thread_memory = init_thread(std::addressof(m_queue_memory), std::addressof(manager_info->memory_thread_create_function), std::addressof(manager_info->memory_thread_info));
+
+        /* Initialize load queue and threads */
+        init_queue(std::addressof(m_queue_load), cLoadPriorityLevelCount, manager_info->load_thread_count);
+        init_thread_array(std::addressof(m_queue_load), std::addressof(manager_info->load_thread_create_function), std::addressof(m_load_thread_array), manager_info->load_thread_info_array, manager_info->load_thread_count);
+
+        /* TODO; Initialize compose */
 
         /* Initialize system tasks */
         m_task_for_calculate                = new (system_heap, alignof(LoadTask)) LoadTask();
@@ -1041,17 +1043,21 @@ namespace awn::res::impl {
 
         /* Finalize threads and queues */
         if (m_thread_control != nullptr) {
+            m_thread_control->ExitThread(sys::ExitType::Jam);
             delete m_thread_control;
             m_thread_control = nullptr;
         }
         if (m_thread_memory != nullptr) {
+            m_thread_memory->ExitThread(sys::ExitType::Jam);
             delete m_thread_memory;
             m_thread_memory = nullptr;
         }
         for (u32 i = 0; i < m_load_thread_array.GetUsedCount(); ++i) {
+            m_load_thread_array[i]->ExitThread(sys::ExitType::Jam);
             delete m_load_thread_array[i];
         }
         for (u32 i = 0; i < m_compose_thread_array.GetUsedCount(); ++i) {
+            m_compose_thread_array[i]->ExitThread(sys::ExitType::Jam);
             delete m_compose_thread_array[i];
         }
         m_compose_thread_array.Finalize();

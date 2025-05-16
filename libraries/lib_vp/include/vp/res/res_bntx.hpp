@@ -20,11 +20,11 @@ namespace vp::res {
     struct ResBntxTextureData : public ResNintendoWareSubHeader {
         static constexpr u32 cMagic = util::TCharCode32("BRTD");
 
-        constexpr ALWAYS_INLINE size_t GetGpuMemoryRegionSize() {
+        constexpr ALWAYS_INLINE size_t GetGpuRegionSize() {
             return this->GetBlockSize() - sizeof(ResBntxTextureData);
         }
 
-        ALWAYS_INLINE void *GetGpuMemoryRegion() {
+        ALWAYS_INLINE void *GetGpuRegion() {
             return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + sizeof(ResBntxTextureData));
         }
     };
@@ -43,13 +43,14 @@ namespace vp::res {
         s32                         base_memory_pool_offset;
         u32                         reserve0;
 
-        static constexpr u32 cMagicNX   = util::TCharCode32("NX  ");
+        static constexpr u32 cMagicNX = util::TCharCode32("NX  ");
+        static constexpr u32 cMagicVpVk = util::TCharCode32("VPVK");
 
         ResBntxTextureInfo *TryGetTextureInfo(const char *texture_name) {
-            if (texture_dictionary == nullptr) { return nullptr; }
-            const u32 entry_id = texture_dictionary->TryGetEntryIndexByKey(texture_name);
+            if (this->texture_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = this->texture_dictionary->TryGetEntryIndexByKey(texture_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
-            return texture_info_array[entry_id];
+            return this->texture_info_array[entry_id];
         }
     };
     static_assert(sizeof(ResBntxTextureContainer) == 0x38);
@@ -75,10 +76,10 @@ namespace vp::res {
         static constexpr u32 cMagic = util::TCharCode32("BRTI");
 
         ResGfxUserData *TryGetUserData(const char *user_data_name) {
-            if (user_data_dictionary == nullptr) { return nullptr; }
-            const u32 entry_id = user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
+            if (this->user_data_dictionary == nullptr) { return nullptr; }
+            const u32 entry_id = this->user_data_dictionary->TryGetEntryIndexByKey(user_data_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }
-            return std::addressof(user_data_array[entry_id]);
+            return std::addressof(this->user_data_array[entry_id]);
         }
     };
     static_assert(sizeof(ResBntxTextureInfo) == 0xa0);
@@ -88,10 +89,14 @@ namespace vp::res {
 
         static constexpr u64 cMagic = static_cast<u64>(util::TCharCode32("BNTX"));
 
+        static constexpr u32 cTargetVersionMajor = 4;
+        static constexpr u32 cTargetVersionMinor = 1;
+        static constexpr u32 cTargetVersionMicro = 0;
+
         ResBntxTextureInfo *FindTexture(const char *name) {
-            u32 entry_index = texture_container.texture_dictionary->TryGetEntryIndexByKey(name);
+            u32 entry_index = this->texture_container.texture_dictionary->TryGetEntryIndexByKey(name);
             if (entry_index == static_cast<u32>(-1)) { return nullptr; }
-            return texture_container.texture_info_array[entry_index];
+            return this->texture_container.texture_info_array[entry_index];
         }
 
         static ResBntx *ResCast(void *file) {

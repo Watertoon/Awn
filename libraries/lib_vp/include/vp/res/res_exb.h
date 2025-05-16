@@ -89,8 +89,8 @@ namespace vp::res {
     };
 
     struct ResExbCommandInfo {
-        u32 base_index_pre_command;
-        u32 count_pre_command;
+        u32 base_index_setup_command;
+        u32 count_setup_command;
         u32 base_index_main_command;
         u32 count_main_command;
         u32 static_memory_usage;

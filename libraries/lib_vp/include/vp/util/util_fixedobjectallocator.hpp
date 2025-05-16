@@ -37,7 +37,6 @@ namespace vp::util {
 
                 /* Construct a free list of objects */
                 for (u32 i = 0; i < (Count - 1); ++i) {
-                    /* Remember we are adding to a pointer */
                     m_free_node_array[i].next = m_free_node_array + i + 1;
                 }
             }

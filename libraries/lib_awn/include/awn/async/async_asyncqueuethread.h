@@ -18,7 +18,10 @@
 namespace awn::async {
 
     struct AsyncQueueThreadInfo {
+        const char *name;
         AsyncQueue *queue;
+        u32 stack_size;
+        u32 priority;
         u32 requests_per_yield;
         u32 thread_set;
         bool is_boost_thread;
@@ -56,11 +59,32 @@ namespace awn::async {
             AsyncQueue *m_queue;
             sys::Event  m_execute_event;
             sys::Event  m_suspend_event;
+            size_t      m_message_array[8];
         public:
             VP_RTTI_BASE(AsyncQueueThread);
         public:
-            AsyncQueueThread(const AsyncQueueThreadInfo *queue_thread_info, const char *name, mem::Heap *thread_heap, u32 stack_size, s32 priority);
-            virtual ~AsyncQueueThread() override;
+            constexpr AsyncQueueThread() : Thread(), m_status(), m_state(), m_requests_per_yield(), m_current_task(), m_queue(), m_execute_event(sys::SignalState::Signaled, sys::ResetMode::Manual), m_suspend_event(sys::SignalState::Signaled, sys::ResetMode::Manual), m_message_array{} {/*...*/}
+            virtual ~AsyncQueueThread() override {/*...*/}
+
+            Result Initialize(mem::Heap *heap, const AsyncQueueThreadInfo *info) {
+                const sys::ThreadInfo thread_info = {
+                    .name = info->name,
+                    .exit_code = 0x7fff'ffff,
+                    .run_mode = sys::ThreadRunMode::WaitForMessage,
+                    .message_count = 8,
+                    .message_memory = m_message_array,
+                    .stack_size = info->stack_size,
+                    .priority = info->priority,
+                };
+                RESULT_TRY(this->Thread::Initialize(heap, std::addressof(thread_info)));
+                AsyncQueue *queue = info->queue;
+                if (queue != nullptr) {
+                    queue->AddThread(this, info->thread_set, info->is_boost_thread);
+                }
+                m_requests_per_yield = info->requests_per_yield;
+                m_status = Status::Active;
+                RESULT_RETURN_SUCCESS;
+            }
 
             virtual void ThreadMain(size_t message) override;
 

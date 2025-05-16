@@ -19,7 +19,7 @@ namespace awn::res::impl {
     
     class AsyncSaveManager {
         public:
-            using ThreadDelegate = vp::util::Delegate<AsyncSaveManager, size_t>;
+            using ThreadDelegate = sys::ThreadMemberFunction<AsyncSaveManager>;
         public:
             enum class Message : size_t {
                 Read   = vp::util::TCharCode32("Read"),
@@ -31,7 +31,7 @@ namespace awn::res::impl {
         private:
             SaveFileDevice      *m_save_file_device;
             FileDeviceBase      *m_user_file_device;
-            sys::DelegateThread *m_save_thread;
+            sys::FunctionThread *m_save_thread;
             ThreadDelegate       m_delegate;
             void                *m_output;
             size_t               m_output_size;

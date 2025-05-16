@@ -35,7 +35,7 @@ namespace awn::gfx::impl {
         m_descriptor_buffer_address = gfx::impl::GetGpuAddress(m_descriptor_vk_buffer);
 
         /* Create descriptor heap */
-        const size_t management_size = sizeof(mem::SeparateHeap) + mem::SeparateHeap::CalculateManagementAreaSize(mgr_info->max_command_buffer_count);
+        const size_t management_size = mem::SeparateHeap::GetManagementSize(mgr_info->max_command_buffer_count);
         void *management_memory = ::operator new(management_size, heap, alignof(mem::SeparateHeap));
         VP_ASSERT(management_memory != nullptr);
         m_per_stage_heap = mem::SeparateHeap::Create("awn::gfx::PerStageDescriptorHeap", management_memory, management_size, mgr_info->per_stage_memory_size, true);

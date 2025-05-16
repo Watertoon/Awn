@@ -19,7 +19,7 @@ namespace vp::util {
     
     template <class T>
         requires (sizeof(void*) <= sizeof(T))
-    class HeapObjectAllocator {
+    class ObjectAllocator {
         private:
             struct FreeList {
                 FreeList *next;
@@ -30,8 +30,8 @@ namespace vp::util {
             FreeList *m_free_list;
             void     *m_start_address;
         public:
-            constexpr ALWAYS_INLINE HeapObjectAllocator() : m_free_list(nullptr), m_start_address(nullptr) {/*...*/}
-            constexpr ~HeapObjectAllocator() {/*...*/}
+            constexpr ALWAYS_INLINE ObjectAllocator() : m_free_list(nullptr), m_start_address(nullptr) {/*...*/}
+            constexpr ~ObjectAllocator() {/*...*/}
             
             ALWAYS_INLINE bool Initialize(imem::IHeap *alloc_heap, u32 element_count) {
                 

@@ -75,6 +75,7 @@ namespace awn::sys {
 #endif
 
     void InitializeSystem();
+    void FinalizeSystem();
     bool IsSystemInitialized();
 
     NativeHandle GetProcessHandle();

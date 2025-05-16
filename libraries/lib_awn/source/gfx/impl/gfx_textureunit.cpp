@@ -21,45 +21,50 @@ namespace awn::gfx::impl {
     bool TextureUnit::InitializeForPlatform(const TextureUnitInfo *texture_unit_info) {
 
         /* Initialize texture */
+        auto fail_guard = SCOPE_GUARD {
+            this->Finalize();
+            m_status = Status::Error;
+        };
         const Result is_init_api = m_texture.InitializeForDedicatedAllocation(texture_unit_info->texture_info, 0, nullptr);
         if (RESULT_FAILED(is_init_api)) {
             m_is_fail_create_api_resource = true;
-            m_status = Status::Error;
             return false;
         }
 
         /* Allocate dedicated memory */
-        mem::Heap *meta_data_heap = AsyncGpuResourceManager::GetInstance()->GetMetaDataHeap();
         Context *context = Context::GetInstance();
         VkImage vk_image = m_texture.GetVkImage();
         const VkMemoryDedicatedAllocateInfo dedicated_info = {
             .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
             .image = vk_image,
         };
-        const Result result = mem::AllocateGpuMemoryHandle(std::addressof(m_memory_handle), meta_data_heap, texture_unit_info->memory_property_flags, m_memory_requirements.size, std::addressof(dedicated_info));
+        MemoryPoolInfo pool_info;
+        pool_info.SetDefaults();
+        pool_info.SetMemoryPropertyFlags(texture_unit_info->memory_property_flags);
+        pool_info.SetSize(m_memory_requirements.size);
+        const Result result = m_memory_pool.InitializeImpl(std::addressof(pool_info), std::addressof(dedicated_info));
         if (RESULT_FAILED(result)) {
-            this->Finalize();
             m_is_fail_memory_allocation = true;
-            m_status = Status::Error;
             return false;
         }
-        const VkResult is_bind = ::pfn_vkBindImageMemory(context->GetVkDevice(), vk_image, m_memory_handle.vk_device_memory, 0);
+        const VkResult is_bind = ::pfn_vkBindImageMemory(context->GetVkDevice(), vk_image, m_memory_pool.GetVkDeviceMemory(), 0);
         if (is_bind != VK_SUCCESS) {
-            this->Finalize();
             m_is_fail_memory_allocation = true;
-            m_status = Status::Error;
             return false;
         }
 
+        fail_guard.Cancel();
         return true;
     }
 #elif VP_TARGET_GRAPHICS_API_nvn
     bool TextureUnit::InitializeForPlatform(const TextureUnitInfo *texture_unit_info) {
 
         /* Allocate dedicated memory */
-        mem::Heap *meta_data_heap = AsyncGpuResourceManager::GetInstance()->GetMetaDataHeap();
-        m_memory_handle = mem::AllocateGpuMemoryHandle(meta_data_heap, texture_unit_info->memory_property_flags, m_memory_requirements.size);
-        if (!m_memory_handle.IsValid()) {
+        pool_info.SetDefaults();
+        pool_info.SetMemoryPropertyFlags(texture_unit_info->memory_property_flags);
+        pool_info.SetSize(m_memory_requirements.size);
+        const Result result = m_memory_pool.InitializeImpl(std::addressof(pool_info), std::addressof(dedicated_info));
+        if (RESULT_FAILED(result)) {
             this->Finalize();
             m_is_fail_memory_allocation = true;
             m_status = Status::Error;
@@ -109,8 +114,7 @@ namespace awn::gfx::impl {
 
     void TextureUnit::Finalize() {
         m_texture.Finalize();
-        mem::FreeGpuMemoryHandle(m_memory_handle);
-        m_memory_handle = mem::cInvalidGpuMemoryHandle;
+        m_memory_pool.Finalize();
     }
 
     void TextureUnit::RequestFinalize() {

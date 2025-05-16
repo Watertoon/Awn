@@ -24,7 +24,7 @@ namespace awn::sys {
         /* Ensure all threads exit */
         std::scoped_lock l(m_list_cs);
         for (ThreadBase &thread : m_thread_list) {
-            if (std::addressof(thread) == vp::util::GetPointer(m_main_thread)) { continue; }
+            if (std::addressof(thread) == std::addressof(m_main_thread)) { continue; }
             thread.WaitForThreadExit();
         }
 
@@ -39,13 +39,14 @@ namespace awn::sys {
 
         /* Initialize the main thread */
         this->InitializeMainThread(heap);
-        this->SetCurrentThread(vp::util::GetPointer(m_main_thread));
 
         return;
     }
 
     void ThreadManager::InitializeMainThread(mem::Heap *heap) {
-        vp::util::ConstructAt(m_main_thread, heap);
+        m_main_thread.InitializeForMainThread(heap);
+        this->SetCurrentThread(std::addressof(m_main_thread));
+        this->PushBackThreadSafe(std::addressof(m_main_thread));
     }
 
     void ThreadManager::PushBackThreadSafe(ThreadBase *thread) {
@@ -79,7 +80,7 @@ namespace awn::sys {
         VP_ASSERT(result);
     }
 
-    bool ThreadManager::IsMainThread() { return this->GetCurrentThread() == reinterpret_cast<ThreadBase*>(vp::util::GetPointer(m_main_thread)); }
+    bool ThreadManager::IsMainThread() { return this->GetCurrentThread() == reinterpret_cast<ThreadBase*>(std::addressof(m_main_thread)); }
 
     bool ThreadManager::AllocateTlsSlot(TlsSlot *out_slot, TlsDestructor destructor, bool is_internal) {
 

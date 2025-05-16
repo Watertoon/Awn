@@ -23,10 +23,11 @@ namespace awn::sys {
         public:
             friend class ConditionVariable;
         private:
-            impl::InternalCriticalSection m_cs;
+            SRWLOCK m_srwlock;
+            u32 m_tag;
             u32 m_lock_count;
         public:
-            constexpr ALWAYS_INLINE Mutex() : m_cs(), m_lock_count() {/*...*/}
+            constexpr ALWAYS_INLINE Mutex() : m_srwlock(SRWLOCK_INIT), m_tag(), m_lock_count() {/*...*/}
             constexpr ~Mutex() {/*...*/}
 
             void Enter();
@@ -44,7 +45,5 @@ namespace awn::sys {
             }
 
             bool IsLockedByCurrentThread();
-        private:
-            constexpr impl::InternalCriticalSection *GetInternalCriticalSection() { return std::addressof(m_cs); }
     };
 }

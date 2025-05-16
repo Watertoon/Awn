@@ -21,7 +21,13 @@
 #elif VP_TARGET_PLATFORM_nx
     #include <awn/sys/sys_mutex.nx.hpp>
 #endif
+
 #include <awn/gfx/gfx_nngfxinteroperation.h>
+#ifdef VP_TARGET_GRAPHICS_API_vk
+    #include <awn/gfx/gfx_memorypool.vk.h>
+#elif VP_TARGET_GRAPHICS_API_nvn
+    #include <awn/gfx/gfx_memorypool.nvn.h>
+#endif
 
 #include <awn/mem/mem_heapmanager.h>
 #include <awn/mem/mem_idisposer.h>
@@ -40,5 +46,5 @@
 #include <awn/mem/mem_gpuexpheap.hpp>
 
 #include <awn/mem/mem_gpuheapmanager.hpp>
-#include <awn/mem/mem_gpuvirtualmemory.h>
+//#include <awn/mem/mem_gpuvirtualmemory.h>
 

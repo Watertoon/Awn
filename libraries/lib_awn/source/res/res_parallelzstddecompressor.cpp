@@ -17,13 +17,6 @@
 
 namespace awn::res {
 
-    ParallelZstdDecompressor::DecompressorThread::DecompressorThread(mem::Heap *heap) : Thread("ZstdDecompressorThread", heap, sys::ThreadRunMode::WaitForMessage, 0x7fff'ffff'ffff'ffff, 0x20, 0x4000, sys::cPriorityNormal + 3), m_current_stream_context(), m_decompress_finish_event(sys::SignalState::Signaled, sys::ResetMode::Auto), m_stream_finish_event(sys::SignalState::Cleared, sys::ResetMode::Manual) {/*...*/}
-
-    ParallelZstdDecompressor::DecompressorThread::~DecompressorThread() {
-        m_decompress_finish_event.Finalize();
-        m_stream_finish_event.Finalize();
-    }
-
     void ParallelZstdDecompressor::DecompressorThread::ThreadMain(size_t stream_size) {
 
         /* Integrity checks */
@@ -58,7 +51,16 @@ namespace awn::res {
         VP_ASSERT(m_work_memory != nullptr);
 
         /* Create thread */
-        m_decompressor_thread = new (heap, alignof(DecompressorThread)) DecompressorThread(heap);
+        m_decompressor_thread = new (heap, alignof(DecompressorThread)) DecompressorThread();
+        sys::ThreadInfo thread_info = {
+            .name = "ZstdDecompressorThread",
+            .exit_code = 0x7fff'ffff'ffff'ffff,
+            .run_mode = sys::ThreadRunMode::WaitForMessage,
+            .message_count = 0x20,
+            .stack_size = 0x4000,
+            .priority = sys::cPriorityNormal + 3,
+        };
+        RESULT_ABORT_UNLESS(m_decompressor_thread->Initialize(heap, std::addressof(thread_info)));
         m_decompressor_thread->StartThread();
 
         /* Clear ZsDic */

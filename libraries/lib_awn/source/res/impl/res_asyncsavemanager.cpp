@@ -143,7 +143,16 @@ namespace awn::res::impl {
         m_save_file_device = new (heap, alignof(SaveFileDevice)) SaveFileDevice();
 
         /* Initialize thread */
-        m_save_thread = new (heap, alignof(sys::DelegateThread)) sys::DelegateThread(std::addressof(m_delegate), thread_name, heap, sys::ThreadRunMode::WaitForMessage, 0, 4, 0x4000, priority);
+        m_save_thread = new (heap, alignof(sys::FunctionThread)) sys::FunctionThread();
+        sys::ThreadInfo thread_info = {
+            .name = thread_name,
+            .exit_code = 0,
+            .run_mode = sys::ThreadRunMode::WaitForMessage,
+            .message_count = 4,
+            .stack_size = 0x4000,
+            .priority = priority,
+        };
+        RESULT_ABORT_UNLESS(m_save_thread->Initialize(heap, std::addressof(thread_info), std::addressof(m_delegate)));
         m_save_thread->SetCoreMask(core_mask);
         m_save_thread->StartThread();
 

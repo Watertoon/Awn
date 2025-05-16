@@ -28,11 +28,11 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("_STR");
 
-        const char *FindString(const char *string) {
+        const char *FindString(const char *string) const {
 
             /* Handle empty string */
             if (string == nullptr || *string == '\0') {
-                return reinterpret_cast<char*>(std::addressof(empty_string));
+                return reinterpret_cast<const char*>(std::addressof(empty_string));
             }
 
             /* Find string by string */
@@ -46,7 +46,7 @@ namespace vp::res {
                 string_iter = vp::util::AlignUp(string_iter + table_size + 1, alignof(u16));
             }
 
-            return reinterpret_cast<char*>(std::addressof(empty_string));
+            return reinterpret_cast<const char*>(std::addressof(empty_string));
         }
     };
     static_assert(sizeof(ResNintendoWareStringPool) == 0x18);

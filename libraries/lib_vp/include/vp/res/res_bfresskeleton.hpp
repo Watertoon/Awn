@@ -17,6 +17,10 @@
 
 namespace vp::res {
 
+    enum class BfresBoneRotationType : u8 {
+        Quaternion = 0,
+        EulerXYZ = 1,
+    };
     enum class BfresBoneBillboardMode : u8 {
         None             = 0,
         Child            = 1,
@@ -35,19 +39,25 @@ namespace vp::res {
         NoRotation              = (1 << 3),
         NoTranslation           = (1 << 4),
     };
+    VP_ENUM_FLAG_TRAITS(BfresBoneLocalTransformMode);
     enum class BfresBoneHierarchyTransformMode : u8 {
-        None                    = 0,
-        ScaleUniform            = (1 << 0),
-        ScaleVolumeOne          = (1 << 1),
-        NoRotation              = (1 << 2),
-        NoTranslation           = (1 << 3),
+        None           = 0,
+        ScaleUniform   = (1 << 0),
+        ScaleVolumeOne = (1 << 1),
+        NoRotation     = (1 << 2),
+        NoTranslation  = (1 << 3),
     };
-    enum class BfresBonePosture : u8 {
-        
+    VP_ENUM_FLAG_TRAITS(BfresBoneHierarchyTransformMode);
+    enum class BfresBoneMirrorMode : u8 {
+        ReflectYZ = 0,
+        TransYZInvertAxes = 1,
+        ReflectAxes = 2,
+        InvertAxes = 3,
+        TransXYZ = 4,
     };
 
     struct ResBfresBone {
-        const char                *bone_name;
+        const char                *name;
         ResGfxUserData            *user_data_array;
         ResNintendoWareDictionary *user_data_dictionary;
         void                      *reserve0;
@@ -63,18 +73,34 @@ namespace vp::res {
                 u32 is_visible               : 1;
                 u32 reserve1                 : 7;
                 u32 unknown0                 : 4;
-                u32 unknown1                 : 3;
+                u32 rotation_type            : 3;
                 u32 reserve2                 : 1;
                 u32 billboard_mode           : 3;
                 u32 reserve3                 : 1;
-                u32 mirror_posture           : 3;
+                u32 mirror_mode              : 3;
                 u32 local_transform_mode     : 5;
-                u32 hierarchy_transform_mode : 4;                
+                u32 hierarchy_transform_mode : 4;
             };
         };
         util::Float3               scale;
-        util::Float4               rotate;
-        util::Float3               translate;
+        util::Float4               rotation;
+        util::Float3               translation;
+
+        constexpr BfresBoneRotationType GetRotationType() const {
+            return static_cast<BfresBoneRotationType>(this->rotation_type);
+        }
+        constexpr BfresBoneBillboardMode GetBillboardMode() const {
+            return static_cast<BfresBoneBillboardMode>(this->billboard_mode);
+        }
+        constexpr BfresBoneMirrorMode GetMirrorMode() const {
+            return static_cast<BfresBoneMirrorMode>(this->mirror_mode);
+        }
+        constexpr BfresBoneLocalTransformMode GetLocalTransformMode() const {
+            return static_cast<BfresBoneLocalTransformMode>(this->local_transform_mode);
+        }
+        constexpr BfresBoneHierarchyTransformMode GetHierarchyTransformMode() const {
+            return static_cast<BfresBoneHierarchyTransformMode>(this->hierarchy_transform_mode);
+        }
 
         constexpr ResGfxUserData *TryGetUserData(const char *user_data_name) {
             if (user_data_dictionary == nullptr) { return nullptr; }
@@ -85,10 +111,10 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfresBone) == 0x58);
 
-    enum class BfresSkeletonMirrorMode : u8 {
-        X  = 0,
-        XY = 1,
-        XZ = 2,
+    enum class BfresSkeletonMirrorAxes : u8 {
+        YZAxes = 0,
+        XZAxes = 1,
+        XYAxes = 2,
     };
     enum class BfresSkeletonScaleMode : u8 {
         None      = 0,
@@ -97,7 +123,7 @@ namespace vp::res {
         //SoftImage = 3, /* Deprecated */
     };
     enum class BfresSkeletonRotationMode : u8 {
-        Quarternion = 0,
+        Quaternion = 0,
         EulerXYZ = 1,
         PerBoneRotationMode = 2,
     };
@@ -109,7 +135,7 @@ namespace vp::res {
             struct {
                 u32 has_user_pointer : 2;
                 u32 reserve0         : 4;
-                u32 mirror_mode      : 2;
+                u32 mirror_axes      : 2;
                 u32 scale_mode       : 2;
                 u32 reserve1         : 2;
                 u32 rotation_mode    : 3;
@@ -118,7 +144,7 @@ namespace vp::res {
         };
         ResNintendoWareDictionary *bone_dictionary;
         ResBfresBone              *bone_array;
-        u16                       *bone_index_array;
+        u16                       *skin_bone_index_array;
         util::FloatColumnMajor4x3 *inverse_transformation_matrix_array;
         void                      *runtime_user_pointer;
         u16                       *mirrored_bone_index_array;
@@ -130,12 +156,22 @@ namespace vp::res {
         static constexpr u32 cMagic = util::TCharCode32("FSKL");
         static constexpr u32 cInvalidBoneIndex = 0xffff'ffff;
 
+        constexpr BfresSkeletonMirrorAxes GetMirrorAxes() const {
+            return static_cast<BfresSkeletonMirrorAxes>(this->mirror_axes);
+        }
+        constexpr BfresSkeletonScaleMode GetScaleMode() const {
+            return static_cast<BfresSkeletonScaleMode>(this->scale_mode);
+        }
+        constexpr BfresSkeletonRotationMode GetRotationMode() const {
+            return static_cast<BfresSkeletonRotationMode>(this->rotation_mode);
+        }
+
         constexpr const u16 *GetSmoothBoneIndexArray() const {
-            return this->bone_index_array;
+            return this->skin_bone_index_array;
         }
 
         constexpr const u16 *GetRigidBoneIndexArray() const {
-            return std::addressof(this->bone_index_array[this->bone_count_smooth]);
+            return std::addressof(this->skin_bone_index_array[this->bone_count_smooth]);
         }
 
         constexpr u32 FindBoneIndexAtEndOfBranch(u32 bone_index) const {

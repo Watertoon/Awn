@@ -34,13 +34,14 @@ namespace awn::gfx {
         public:
             friend class CommandBuffer;
         private:
-            VkImage     m_vk_image;
+            VkImage m_vk_image;
             TextureInfo m_texture_info;
+            size_t m_memory_offset;
         public:
-            constexpr ALWAYS_INLINE Texture() : m_vk_image(VK_NULL_HANDLE), m_texture_info() {/*...*/}
+            constexpr ALWAYS_INLINE Texture() : m_vk_image(VK_NULL_HANDLE), m_texture_info(), m_memory_offset() {/*...*/}
             constexpr ALWAYS_INLINE ~Texture() {/*...*/}
 
-            Result Initialize(mem::GpuMemoryHandle gpu_memory_handle, size_t memory_offset, const TextureInfo *texture_info);
+            Result Initialize(MemoryPool *memory_pool, size_t memory_offset, const TextureInfo *texture_info);
             Result Initialize(void *gpu_memory_address, const TextureInfo *texture_info);
             void Finalize();
 
@@ -56,6 +57,12 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE u32 GetDepth() const {
                 return m_texture_info.depth;
             }
+            constexpr ALWAYS_INLINE vp::util::Int2 GetSize2d() const {
+                return vp::util::Int2 { static_cast<s32>(m_texture_info.width), static_cast<s32>(m_texture_info.height), };
+            }
+            constexpr ALWAYS_INLINE vp::util::Int3 GetSize3d() const {
+                return vp::util::Int3 { static_cast<s32>(m_texture_info.width), static_cast<s32>(m_texture_info.height), static_cast<s32>(m_texture_info.depth), };
+            }
             constexpr ALWAYS_INLINE u32 GetMipLevelCount() const {
                 return m_texture_info.mip_level_count;
             }
@@ -66,6 +73,9 @@ namespace awn::gfx {
                 return static_cast<gfx::ImageFormat>(m_texture_info.image_format);
             }
 
+            constexpr uintptr_t GetMemoryPoolOffset() const {
+                return m_memory_offset;
+            }
         public:
             static GpuMemoryRequirements GetGpuMemoryRequirements(const TextureInfo *texture_info);
         public:

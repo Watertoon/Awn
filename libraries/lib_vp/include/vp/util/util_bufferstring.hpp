@@ -348,6 +348,13 @@ namespace vp::util {
                 ::memcpy(m_string_array, string, length);
                 m_length = length;
                 this->AssureTermination();
+                return;
+            }
+
+            constexpr void SetLength(u32 length) {
+                m_length = length;
+                this->AssureTermination();
+                return;
             }
 
             constexpr void ReplaceAllChar(char target, char replace) {
@@ -364,7 +371,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE void AssureTermination() {
                 m_string_array[m_length] = '\0';
             }
-            constexpr ALWAYS_INLINE bool IsNullString() {
+            constexpr ALWAYS_INLINE bool IsEmpty() const {
                 return m_string_array[0] == '\0';
             }
 

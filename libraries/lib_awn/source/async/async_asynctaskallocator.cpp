@@ -20,7 +20,7 @@ namespace awn::async {
     AsyncTaskForAllocator *AsyncTaskAllocator::AcquireTaskImpl() {
 
         /* Fail if list is empty */
-        if (m_task_list[m_list_index].IsEmpty() == true) { return nullptr; }
+        if (m_task_list[m_list_index].IsEmpty()) { return nullptr; }
 
         /* Loop until acquiring task */
         for (;;) {
@@ -29,7 +29,7 @@ namespace awn::async {
             AsyncTaskList &list = m_task_list[m_list_index];
 
             for (AsyncTaskForAllocator &task : list) {
-                if (task.m_is_free_for_allocator == false) { continue; }
+                if (!task.m_is_free_for_allocator) { continue; }
 
                 /* Acquire task */
                 task.SetAllocator(this);

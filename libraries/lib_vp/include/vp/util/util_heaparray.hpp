@@ -58,10 +58,10 @@ namespace vp::util {
             T   *m_object_array;
             u32  m_array_count;
         public:
-            constexpr ALWAYS_INLINE HeapArray() : m_object_array(nullptr), m_array_count(0) {/*...*/}
+            constexpr ALWAYS_INLINE HeapArray() : m_object_array(), m_array_count() {/*...*/}
             constexpr ALWAYS_INLINE ~HeapArray() {/*...*/}
 
-            ALWAYS_INLINE bool Initialize(imem::IHeap *alloc_heap, u32 element_count) {
+            bool Initialize(imem::IHeap *alloc_heap, u32 element_count) {
 
                 /* Fail on invalid element count */
                 if (element_count == 0) { return false; }
@@ -83,7 +83,7 @@ namespace vp::util {
                 return true;
             }
 
-            ALWAYS_INLINE void Finalize() {
+            void Finalize() {
 
                 /* Bail if there's no buffer */
                 if (m_object_array == nullptr) { return; }
@@ -110,20 +110,20 @@ namespace vp::util {
                 return Iterator(m_object_array + m_array_count);
             }
 
-            constexpr ALWAYS_INLINE T &operator[](u32 index) {
+            constexpr T &operator[](u32 index) {
                 VP_ASSERT(m_array_count > index);
                 return m_object_array[index];
             }
 
-            constexpr ALWAYS_INLINE T &operator[](u32 index) const {
+            constexpr T &operator[](u32 index) const {
                 VP_ASSERT(m_array_count > index);
                 return m_object_array[index];
             }
 
-            constexpr ALWAYS_INLINE T *GetArray() { return m_object_array; }
-            constexpr ALWAYS_INLINE u32 GetCount() const { return m_array_count; }
+            constexpr T *GetArray() { return m_object_array; }
+            constexpr u32 GetCount() const { return m_array_count; }
 
-            constexpr ALWAYS_INLINE u32 IndexOf(T *element) const {
+            constexpr u32 IndexOf(T *element) const {
                 return element - m_object_array;
             }
 

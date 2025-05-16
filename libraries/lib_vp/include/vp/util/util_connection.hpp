@@ -21,14 +21,24 @@ namespace vp::util {
         requires (std::is_integral<T>::value && std::is_unsigned<T>::value)
     class Connection {
         public:
+            static constexpr T cHeadBit = static_cast<T>(1) << (BITSIZEOF(T) - 1);
+        public:
             class Iterator {
                 private:
                     const T *m_mask_array;
+                    T        m_mask;
+                    u32      m_max_count;
+                    u32      m_max_bit;
+                    u32      m_iter;
                     u32      m_index;
-                    u32      m_bit_max;
                 public:
-                    constexpr Iterator(u32 base_index, u32 bit_max) : m_mask_array(), m_index(base_index), m_bit_max(bit_max) {/*...*/}
-                    constexpr Iterator(const Connection *connection, u32 base_index, u32 bit_max) : m_mask_array(connection->m_mask_array), m_index(base_index), m_bit_max(bit_max) {/*...*/}
+                    constexpr Iterator(u32 max_array, u32 max_bit) : m_mask(), m_max_count(max_array), m_iter(max_array), m_index(max_bit) {/*...*/}
+                    constexpr Iterator(const Connection *connection, T mask, u32 base_index) : m_mask_array(connection->m_mask_array), m_max_count(connection->m_array_count), m_max_bit(connection->m_bit_count), m_iter(base_index) {
+                        const u32 lz = vp::util::CountRightZeroBits(mask);
+                        const u32 clear = static_cast<T>(1) << lz;
+                        m_index = (m_iter * BITSIZEOF(T)) + lz;
+                        m_mask = clear ^ mask;
+                    }
                     constexpr ~Iterator() {/*...*/}
 
                     constexpr ALWAYS_INLINE u32 operator*() {
@@ -38,32 +48,29 @@ namespace vp::util {
                         return m_index;
                     }
 
-                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
-                        return m_index == rhs.m_index;
+                    constexpr bool operator==(const Iterator &rhs) const {
+                        return m_iter == rhs.m_iter && m_index == rhs.m_index;
                     }
 
-                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
-                        return m_index != rhs.m_index;
+                    constexpr bool operator!=(const Iterator &rhs) const {
+                        return m_iter != rhs.m_iter || m_index != rhs.m_index;
                     }
 
-                    constexpr ALWAYS_INLINE Iterator &operator++() {
-
-                        /* Linearly iterate bits until next one bit for small T sizes */
-                        u32 bit_i = m_index + 1;
-                        u32 arr_i = bit_i / BITSIZEOF(T);
-                        T mask = m_mask_array[arr_i];
-                        u32 shift = (bit_i & (BITSIZEOF(T) - 1));
-                        while (bit_i < m_bit_max && !((mask >> shift) & 1)) {
-                            ++bit_i;
-                            shift = (bit_i & (BITSIZEOF(T) - 1));
-                            if (shift == 0) { 
-                                const u32 next_arr = arr_i + 1; 
-                                mask = m_mask_array[next_arr];
-                                arr_i = next_arr;
+                    constexpr Iterator &operator++() {
+                        while (m_mask == 0) {
+                            m_iter += 1;
+                            if (m_max_count <= m_iter) {
+                                m_iter = m_max_count;
+                                m_index = m_max_bit;
+                                return *this;
                             }
+                            m_mask = m_mask_array[m_iter];
                         }
-                        m_index = bit_i;
-        
+                        const T mask = m_mask;
+                        const u32 lz = vp::util::CountRightZeroBits(mask);
+                        const u32 clear = static_cast<T>(1) << lz;
+                        m_index = (m_iter * BITSIZEOF(T)) + lz;
+                        m_mask = clear ^ mask;
                         return *this;
                     }
             };
@@ -76,25 +83,20 @@ namespace vp::util {
             constexpr ~Connection() {/*...*/}
 
             constexpr Iterator begin() const {
-
-                u32 bit_i = 0;
-                u32 arr_i = 0;
-                T mask = m_mask_array[arr_i];
-                u32 shift = 0;
-                while (bit_i < m_bit_count && !((mask >> shift) & 1)) {
-                    ++bit_i;
-                    shift = (bit_i & (BITSIZEOF(T) - 1));
-                    if (shift == 0) { 
-                        const u32 next_arr = arr_i + 1; 
-                        mask = m_mask_array[next_arr];
-                        arr_i = next_arr;
+                const u32 arr_count = m_array_count;
+                u32 iter = 0;
+                T mask = m_mask_array[iter];
+                while (mask == 0) {
+                    iter += 1;
+                    if (arr_count <= iter) {
+                        return Iterator(m_array_count, m_bit_count);
                     }
+                    mask = m_mask_array[iter];
                 }
-
-                return Iterator(this, bit_i, m_bit_count);
+                return Iterator(this, mask, iter);
             }
             constexpr Iterator end() const {
-                return Iterator(m_bit_count, m_bit_count);
+                return Iterator(m_array_count, m_bit_count);
             }
 
             void Initialize(vp::imem::IHeap *heap, u32 bit_count) {
@@ -103,6 +105,7 @@ namespace vp::util {
                 const u32 array_count = (bit_count / BITSIZEOF(T)) + ((bit_count % BITSIZEOF(T)) != 0);
                 m_mask_array = new (heap, alignof(T)) T[bit_count];
                 VP_ASSERT(m_mask_array != nullptr);
+                ::memset(m_mask_array, 0, array_count * sizeof(T));
 
                 /* Set counts */
                 m_array_count = array_count;
@@ -120,9 +123,15 @@ namespace vp::util {
                 }
             }
 
-            constexpr void Clear() { ::memset(m_mask_array, 0, sizeof(T) * m_array_count); }
+            constexpr void Clear() {
+                ::memset(m_mask_array, 0, sizeof(T) * m_array_count);
+                return;
+            }
 
-            constexpr bool GetBit(u32 bit_index) const { return (m_mask_array[bit_index / BITSIZEOF(T)] >> (bit_index & (BITSIZEOF(T) - 1))) & 1; }
+            constexpr bool GetBit(u32 bit_index) const {
+                return (m_mask_array[bit_index / BITSIZEOF(T)] >> (bit_index & (BITSIZEOF(T) - 1))) & 1;
+            }
+
             constexpr bool SetBit(u32 bit_index) {
                 const u32 index = bit_index / BITSIZEOF(T);
                 const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
@@ -131,6 +140,7 @@ namespace vp::util {
                 const bool ret = (mask >> shift) & 1;
                 return ret;
             }
+
             constexpr bool ClearBit(u32 bit_index) {
                 const u32 index = bit_index / BITSIZEOF(T);
                 const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
@@ -139,6 +149,7 @@ namespace vp::util {
                 const bool ret = (mask >> shift) & 1;
                 return ret;
             }
+
             constexpr bool XorBit(u32 bit_index) {
                 const u32 index = bit_index / BITSIZEOF(T);
                 const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
@@ -148,8 +159,13 @@ namespace vp::util {
                 return ret;
             }
 
-            constexpr T GetBitMask(u32 mask_index) const { return m_mask_array[mask_index]; }
-            constexpr void SetBitMask(u32 mask_index, T mask) { m_mask_array[mask_index] = mask; }
+            constexpr T GetBitMask(u32 mask_index) const {
+                return m_mask_array[mask_index];
+            }
+
+            constexpr void SetBitMask(u32 mask_index, T mask) {
+                m_mask_array[mask_index] = mask;
+            }
 
             constexpr u32 CountOneBits() const {
                 u32 count = 0;

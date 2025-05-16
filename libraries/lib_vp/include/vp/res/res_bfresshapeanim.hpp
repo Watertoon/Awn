@@ -18,37 +18,64 @@
 namespace vp::res {
 
     struct ResBfresKeyShapeAnim {
-        const char *name;
+        const char *key_shape_name;
         u8          anim_curve_index;
-        u8          reserve0;
-        u16         reserve1;
-        u32         reserve2;
+        u8          unknown0;
+        u16         reserve0;
+        u32         reserve1;
     };
     static_assert(sizeof(ResBfresKeyShapeAnim) == 0x10);
 
     struct ResBfresVertexShapeAnim {
-        const char           *name;
+        const char           *shape_name;
         ResBfresAnimCurve    *anim_curve_array;
         float                *default_result_array;
         ResBfresKeyShapeAnim *key_shape_anim_array;
         u16                   anim_curve_count;
         u16                   key_shape_anim_count;
-        u32                   base_curve;
-        u32                   base_key_shape_anim;
+        u32                   base_cache_index;
+        u32                   base_result_index;
         u32                   reserve0;
 
         constexpr void SetResultDefaults(float *out_default_array) const {
             for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
                 out_default_array[i] = this->default_result_array[i];
             }
+            return;
+        }
+
+        void Evaluate(float *out_result_array, const u8 *key_shape_index_array, float frame) const {
+            for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
+                if (key_shape_index_array[i] == 0xff) { continue; }
+                const ResBfresKeyShapeAnim *key_shape_anim = std::addressof(this->key_shape_anim_array[i]);
+                const u8 curve_index = key_shape_anim->anim_curve_index;
+                if (curve_index == 0xff) { continue; }
+                BfresAnimFrameCache cache = {};
+                const float result = this->anim_curve_array[curve_index].EvaluateFloat(std::addressof(cache), frame);
+                out_result_array[i] = result;
+            }
+            return;
+        }
+
+        void Evaluate(float *out_result_array, const u8 *key_shape_index_array, float frame, BfresAnimFrameCache *cache_array) const {
+            for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
+                if (key_shape_index_array[i] == 0xff) { continue; }
+                const ResBfresKeyShapeAnim *key_shape_anim = std::addressof(this->key_shape_anim_array[i]);
+                const u8 curve_index = key_shape_anim->anim_curve_index;
+                if (curve_index == 0xff) { continue; }
+                BfresAnimFrameCache *cache = std::addressof(cache_array[curve_index]);
+                const float result = this->anim_curve_array[curve_index].EvaluateFloat(cache, frame);
+                out_result_array[i] = result;
+            }
+            return;
         }
 
         constexpr bool BuildKeyShapeIndices(u8 *out_key_shape_index_array, ResBfresShape *shape) const {
             if (shape->key_shape_count < 1) { return false; }
             bool result = false;
             for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
-                const u32 entry_id = (shape->key_shape_dictionary != nullptr) ? shape->key_shape_dictionary->TryGetEntryIndexByKey(key_shape_anim_array[i].name + 2) : ResNintendoWareDictionary::cInvalidEntryIndex;
-                out_key_shape_index_array[i + this->base_key_shape_anim] = (entry_id != ResNintendoWareDictionary::cInvalidEntryIndex) ? entry_id : 0xff;
+                const u32 entry_id = (shape->key_shape_dictionary != nullptr) ? shape->key_shape_dictionary->TryGetEntryIndexByKey(key_shape_anim_array[i].key_shape_name + 2) : ResNintendoWareDictionary::cInvalidEntryIndex;
+                out_key_shape_index_array[i + this->base_result_index] = (entry_id != ResNintendoWareDictionary::cInvalidEntryIndex) ? entry_id : 0xff;
                 result |= (entry_id != ResNintendoWareDictionary::cInvalidEntryIndex);
             }
             return result;
@@ -58,14 +85,19 @@ namespace vp::res {
 
     struct ResBfresShapeAnim {
         u32                        magic;
-        u32                        is_baked        : 1;
-        u32                        reserve0        : 1;
-        u32                        is_looping      : 1;
-        u32                        reserve1        : 29;
-        const char                *animation_name;
+        union {
+            u32 flags;
+            struct {                
+                u32 is_baked   : 1;
+                u32 reserve0   : 1;
+                u32 is_looping : 1;
+                u32 reserve1   : 29;
+            };
+        };
+        const char                *name;
         const char                *reserve2;
         ResBfresModel             *runtime_bound_model;
-        u16                       *bind_table;
+        u16                       *fast_bind_table;
         ResBfresVertexShapeAnim   *vertex_shape_anim_array;
         ResGfxUserData            *user_data_array;
         ResNintendoWareDictionary *user_data_dictionary;

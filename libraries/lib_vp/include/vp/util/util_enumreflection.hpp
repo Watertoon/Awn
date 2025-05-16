@@ -205,7 +205,7 @@ namespace vp::util {
 
             template <typename T>
             constexpr const EnumDictionary<T> *GetEnumDictionary(const char *class_name) const {
-                const u64                 class_hash = vp::util::HashMurmur64(class_name);
+                const u64 class_hash = vp::util::HashMurmur64(class_name);
                 const EnumDictionaryNode *dic_node   = m_tree.Find(class_hash);
                 if (dic_node == nullptr) { return nullptr; }
                 if (!EnumDictionary<T>::CheckRuntimeTypeInfoStatic(dic_node->m_dictionary)) { return nullptr; }

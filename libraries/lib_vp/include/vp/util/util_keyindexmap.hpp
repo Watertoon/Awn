@@ -27,7 +27,7 @@ namespace vp::util {
                 IndexType index;
             };
         private:
-            HashMap<&Index::hash> m_hash_map;
+            HashMap<Index, &Index::hash> m_hash_map;
         public:
             constexpr ALWAYS_INLINE  KeyIndexMap() : m_hash_map() {/*...*/}
             constexpr ALWAYS_INLINE ~KeyIndexMap() {/*...*/}
@@ -52,5 +52,9 @@ namespace vp::util {
             }
 
             constexpr ALWAYS_INLINE void Clear() { m_hash_map.Clear(); }
+        public:
+            constexpr u32 CountMaxIterationsPerKey() const {
+                return m_hash_map.CountMaxIterationsPerKey();
+            }
     };
 }

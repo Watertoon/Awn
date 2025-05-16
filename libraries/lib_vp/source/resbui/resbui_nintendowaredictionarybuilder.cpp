@@ -17,6 +17,34 @@
 
 namespace vp::resbui {
 
+    bool NintendoWareDictionaryBuilder::IsSame(vp::res::ResNintendoWareDictionary *res_dic) {
+        if (res_dic->node_count != static_cast<s32>(m_node_count)) { return false; }
+        u32 i = 0;
+        for (DictionaryStringBase &string : m_node_list) {
+            const char *other_string = std::addressof(res_dic->root_node)[1 + i].key + 2;
+            ++i;
+            if (!vp::util::StringCompare(string.GetString(), other_string)) { return false; }
+        }
+        return true;
+    }
+
+    bool NintendoWareDictionaryBuilder::IsSame(NintendoWareDictionaryBuilder *builder) {
+        if (builder->m_node_count != m_node_count) { return false; }
+        auto iter = m_node_list.begin();
+        auto iter_end = m_node_list.end();
+        auto other_iter = builder->m_node_list.begin();
+        auto other_end = builder->m_node_list.end();
+        while (iter != iter_end && other_iter != other_end) {
+            const char *string = (*iter).GetString();
+            const char *other_string = (*other_iter).GetString();
+            ++iter;
+            ++other_iter;
+            if (!vp::util::StringCompare(string, other_string)) { return false; }
+        }
+        if (iter != iter_end || other_iter != other_end) { return false; }
+        return true;
+    }
+
     Result NintendoWareDictionaryBuilder::AddNode(DictionaryStringBase *dictionary_string) {
 
         /* Integrity checks */
@@ -26,16 +54,23 @@ namespace vp::resbui {
 
         for (DictionaryStringBase &string : m_node_list) {
             const char *other_string = string.GetString();
-            RESULT_RETURN_IF(::strcmp(new_string, other_string) == 0, ResultDuplicateString);
+            RESULT_RETURN_IF(vp::util::StringCompare(new_string, other_string), ResultDuplicateString);
         }
 
         /* Insert new node */
         m_node_list.PushBack(*dictionary_string);
+        ++m_node_count;
 
         RESULT_RETURN_SUCCESS;
     }
 
-    void NintendoWareDictionaryBuilder::Serialize(NintendoWareDictionaryBuilderMemoryInfo *memory_info, NintendoWareRelocationTableStream *relocation_table_stream, vp::res::ResNintendoWareStringPool *string_pool, void *output_buffer, size_t buffer_size) {
+    void NintendoWareDictionaryBuilder::Remove(DictionaryStringBase *dictionary_string) {
+        if (!dictionary_string->m_dictionary_builder_node.IsLinked()) { return; }
+        dictionary_string->m_dictionary_builder_node.Unlink();
+        --m_node_count;
+    }
+
+    void NintendoWareDictionaryBuilder::Serialize(NintendoWareDictionaryBuilderMemoryInfo *memory_info, NintendoWareRelocationTableStream *relocation_table_stream, const vp::res::ResNintendoWareStringPool *string_pool, void *output_buffer, size_t buffer_size) {
         VP_UNUSED(buffer_size);
 
         /* Calculate locations */

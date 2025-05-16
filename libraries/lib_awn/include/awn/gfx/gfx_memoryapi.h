@@ -48,6 +48,8 @@ namespace awn::gfx {
     };
     static_assert(sizeof(DescriptorSlot) <= sizeof(u64));
 
+    constexpr inline DescriptorSlot cInvalidDescriptorSlot = DescriptorSlot{};
+
     struct TextureSamplerHandle {
         u64 handle = 0xffff'ffff'ffff'ffff;
     };
@@ -75,6 +77,8 @@ namespace awn::gfx {
     static constexpr SeparateSamplerHandle cInvalidSeparateSamplerHandle = SeparateSamplerHandle{};
 
     SeparateSamplerHandle GetSeparateSamplerHandle(DescriptorSlot sampler_slot);
+
+    bool IsUnifiedMemory();
 
     void FlushCpuCache(void *gpu_address, size_t size);
     void InvalidateCpuCache(void *gpu_address, size_t size);

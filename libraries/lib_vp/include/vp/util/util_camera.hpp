@@ -80,10 +80,10 @@ namespace vp::util {
                 };
 
                 /* Set matrix */
-                StoreColumn(out_view_matrix, norm_right.v, 0);
-                StoreColumn(out_view_matrix, up.v, 1);
-                StoreColumn(out_view_matrix, inv_dir.v, 2);
-                StoreColumn(out_view_matrix, pos.v, 3);
+                StoreRow(out_view_matrix, norm_right, 0);
+                StoreRow(out_view_matrix, up, 1);
+                StoreRow(out_view_matrix, inv_dir, 2);
+                StoreRow(out_view_matrix, pos, 3);
 
                 return;
             }
@@ -112,31 +112,33 @@ namespace vp::util {
 
             constexpr Vector3f GetPosition() const { return CastVector3f(m_pos); }
             constexpr Vector3f GetInverseDirection() const {
-                Vector3f dir = CastVector3f(m_pos - m_at);
-                dir = Normalize(dir);
-                return dir;
+                const Vector3d d_inv_dir = m_pos - m_at;
+                const Vector3f inv_dir = CastVector3f(d_inv_dir);
+                const Vector3f ret = Normalize(inv_dir);
+                return ret;
             }
             constexpr Vector3f GetDirection() const {
-                Vector3f dir = CastVector3f(m_at - m_pos);
-                dir = Normalize(dir);
-                return dir;
+                const Vector3d d_dir = m_at - m_pos;
+                const Vector3f dir = CastVector3f(d_dir);
+                const Vector3f ret = Normalize(dir);
+                return ret;
             }
             constexpr Vector3f GetAt() const {  return CastVector3f(m_at); }
             constexpr Vector3f GetUp() const {  return m_up; }
 
             constexpr Vector3f GetRightByMatrix() const {
                 const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
-                return Vector3f { (*camera_mtx)[1,0], (*camera_mtx)[2,0], (*camera_mtx)[3,0], };
+                return Vector3f { (*camera_mtx)[0,0], (*camera_mtx)[1,0], (*camera_mtx)[2,0], };
             }
 
             constexpr Vector3f GetAtByMatrix() const {
                 const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
-                return Vector3f { (*camera_mtx)[1,1], (*camera_mtx)[2,1], (*camera_mtx)[3,1], };
+                return Vector3f { (*camera_mtx)[0,1], (*camera_mtx)[1,1], (*camera_mtx)[2,1], };
             }
 
             constexpr Vector3f GetUpByMatrix() const {
                 const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
-                return Vector3f { (*camera_mtx)[1,2], (*camera_mtx)[2,2], (*camera_mtx)[3,2], };
+                return Vector3f { (*camera_mtx)[0,2], (*camera_mtx)[1,2], (*camera_mtx)[2,2], };
             }
 
             constexpr Vector3f GetWorldPositionByMatrix() const {

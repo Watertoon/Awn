@@ -21,56 +21,60 @@ namespace awn::gfx::impl {
     bool BufferUnit::InitializeForPlatform(const BufferUnitInfo *buffer_unit_info) {
 
         /* Initialize buffer */
-        const bool result_api = m_buffer.InitializeForDedicatedAllocation(buffer_unit_info->buffer_info);
-        if (!result_api) {
-            m_is_fail_create_api_resource = true;
+        auto fail_exit = SCOPE_GUARD {
+            this->Finalize();
             m_status = Status::Error;
+        };
+        const Result result_api = m_buffer.InitializeForDedicatedAllocation(buffer_unit_info->buffer_info);
+        if (RESULT_FAILED(result_api)) {
+            m_is_fail_create_api_resource = true;
             return false;
         }
 
         /* Allocate dedicated memory */
-        mem::Heap *meta_data_heap = AsyncGpuResourceManager::GetInstance()->GetMetaDataHeap();
         Context *context = Context::GetInstance();
         VkBuffer vk_buffer = m_buffer.GetVkBuffer();
         const VkMemoryDedicatedAllocateInfo dedicated_info = {
             .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
             .buffer = vk_buffer,
         };
-        const Result result = mem::AllocateGpuMemoryHandle(std::addressof(m_memory_handle), meta_data_heap, buffer_unit_info->memory_property_flags, m_memory_requirements.size, std::addressof(dedicated_info));
+        MemoryPoolInfo pool_info;
+        pool_info.SetDefaults();
+        pool_info.SetMemoryPropertyFlags(buffer_unit_info->memory_property_flags);
+        pool_info.SetSize(m_memory_requirements.size);
+        const Result result = m_memory_pool.InitializeImpl(std::addressof(pool_info), std::addressof(dedicated_info));
         if (RESULT_FAILED(result)) {
-            this->Finalize();
             m_is_fail_memory_allocation = true;
-            m_status = Status::Error;
             return false;
         }
-        const VkResult is_bind = ::pfn_vkBindBufferMemory(context->GetVkDevice(), vk_buffer, m_memory_handle.vk_device_memory, 0);
+        const VkResult is_bind = ::pfn_vkBindBufferMemory(context->GetVkDevice(), vk_buffer, m_memory_pool.GetVkDeviceMemory(), 0);
         if (is_bind != VK_SUCCESS) {
-            this->Finalize();
             m_is_fail_memory_allocation = true;
-            m_status = Status::Error;
             return false;
         }
 
         /* Map memory */
         void *mapping = nullptr;
-        const VkResult result_mapping = ::pfn_vkMapMemory(context->GetVkDevice(), m_memory_handle.vk_device_memory, 0, VK_WHOLE_SIZE, 0, std::addressof(mapping));
+        const VkResult result_mapping = ::pfn_vkMapMemory(context->GetVkDevice(), m_memory_pool.GetVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, std::addressof(mapping));
         if (result_mapping != VK_SUCCESS) {
-            this->Finalize();
             m_is_fail_memory_mapping = true;
-            m_status = Status::Error;
             return false;
         }
         m_buffer.SetAddressForDedicatedAllocation(mapping);
 
+        fail_exit.Cancel();
         return true;
     }
 #elif VP_TARGET_GRAPHICS_API_nvn
     bool BufferUnit::InitializeForPlatform(const BufferUnitInfo *buffer_unit_info) {
 
         /* Allocate memory */
-        mem::Heap *meta_data_heap = AsyncGpuResourceManager::GetInstance()->GetMetaDataHeap();
-        m_memory_handle = mem::AllocateGpuMemoryHandle(meta_data_heap, buffer_unit_info->memory_property_flags, m_memory_requirements.size);
-        if (!m_memory_handle.IsValid()) {
+        MemoryPoolInfo pool_info;
+        pool_info.SetDefaults();
+        pool_info.SetMemoryPropertyFlags(buffer_unit_info->memory_property_flags);
+        pool_info.SetSize(m_memory_requirements.size);
+        const Result result = m_memory_pool.InitializeImpl(std::addressof(pool_info));
+        if (RESULT_FAILED(result)) {
             this->Finalize();
             m_is_fail_memory_allocation = true;
             m_status = Status::Error;
@@ -78,7 +82,7 @@ namespace awn::gfx::impl {
         }
 
         /* Create buffer */
-        m_buffer.Initialize(m_memory_handle, buffer_unit_info->buffer_info);
+        m_buffer.Initialize(std::addressof(m_memory_pool), 0, buffer_unit_info->buffer_info);
 
         return true;
     }
@@ -118,8 +122,7 @@ namespace awn::gfx::impl {
 
     void BufferUnit::Finalize() {
         m_buffer.Finalize();
-        mem::FreeGpuMemoryHandle(m_memory_handle);
-        m_memory_handle = mem::cInvalidGpuMemoryHandle;
+        m_memory_pool.Finalize();
     }
 
     void BufferUnit::RequestFinalize() {

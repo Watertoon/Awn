@@ -28,9 +28,9 @@ namespace vp::util {
 		private:
 			uintptr_t m_pointer;
 		public:
-			constexpr PointerBitFlag() : m_pointer(0) {/*...*/}
+			constexpr PointerBitFlag() = default;
 			ALWAYS_INLINE  PointerBitFlag(T *pointer) : m_pointer(reinterpret_cast<uintptr_t>(pointer)) {/*...*/}
-			constexpr ~PointerBitFlag() {/*...*/}
+			constexpr ~PointerBitFlag() = default;
 
             ALWAYS_INLINE T &operator->() {
                 return *reinterpret_cast<T*>(m_pointer & cPointerMask);
@@ -50,8 +50,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE u32 GetBit(u32 bit_offset) const { return (m_pointer >> bit_offset) & 1; }
             constexpr ALWAYS_INLINE u32 GetBitMask()           const { return (m_pointer & cValueMask); }
 
-            ALWAYS_INLINE       T *GetPointer()       { return reinterpret_cast<T*>(m_pointer & cPointerMask); }
-            ALWAYS_INLINE const T *GetPointer() const { return reinterpret_cast<const T*>(m_pointer & cPointerMask); }
+            ALWAYS_INLINE T *GetPointer() const { return reinterpret_cast<T*>(m_pointer & cPointerMask); }
 
             constexpr ALWAYS_INLINE void SetBitMask(u32 bit_mask)              { m_pointer = (m_pointer & cPointerMask) | (bit_mask & cValueMask); }
             constexpr ALWAYS_INLINE void SetFlagsAndClearPointer(u32 bit_mask) { m_pointer = bit_mask; }
@@ -59,4 +58,6 @@ namespace vp::util {
             ALWAYS_INLINE void SetPointerAndClearFlags(T *pointer)             { m_pointer = reinterpret_cast<uintptr_t>(pointer); }
             ALWAYS_INLINE void SetPointerAndFlags(T *pointer, u32 bit_mask)    { m_pointer = reinterpret_cast<uintptr_t>(pointer) | bit_mask; }
 	};
+    static_assert(std::is_trivially_constructible_v<PointerBitFlag<void*,1>>);
+    static_assert(std::is_trivially_destructible_v<PointerBitFlag<void*,1>>);
 }

@@ -47,8 +47,8 @@ namespace awn::gfx {
         /* Initialize vertex buffer */
         float *vertex_buffer_iter = reinterpret_cast<float*>(vertex_buffer);
 
-        constexpr float half_round      = vp::util::AngleHalfRound(1.0f);
-        const float     segment_count_f = static_cast<float>(primitive_shape_info->segment_count);
+        constexpr float half_round = vp::util::AngleHalfRound(1.0f);
+        const float segment_count_f = static_cast<float>(primitive_shape_info->segment_count);
         for (u32 i = 0; i < primitive_shape_info->segment_count; ++i) {
 
             /* Calculate location of vertex on circle */

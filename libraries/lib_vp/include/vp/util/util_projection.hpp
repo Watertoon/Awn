@@ -70,15 +70,15 @@ namespace vp::util {
                 const float reciprocal_c = 1.0f / (m_far - m_near);
                 const float near2 = (m_near + m_near);
 
-                const v4f row0 = { near2 *  reciprocal_a,             0.0f,                               0.0f,                                       0.0f, };
-                const v4f row1 = { 0.0f,                              near2 * reciprocal_b,               0.0f,                                       0.0f, };
-                const v4f row2 = { (m_right + m_left) * reciprocal_a, (m_top + m_bottom) * reciprocal_b, -(m_near + m_far) * reciprocal_c,           -1.0f, };
-                const v4f row3 = { 0.0f,                              0.0f,                              -((m_far + m_far) * m_near) * reciprocal_c,  0.0f, };
+                const Vector4f row0 = { near2 *  reciprocal_a,             0.0f,                               0.0f,                                       0.0f, };
+                const Vector4f row1 = { 0.0f,                              near2 * reciprocal_b,               0.0f,                                       0.0f, };
+                const Vector4f row2 = { (m_right + m_left) * reciprocal_a, (m_top + m_bottom) * reciprocal_b, -(m_near + m_far) * reciprocal_c,           -1.0f, };
+                const Vector4f row3 = { 0.0f,                              0.0f,                              -((m_far + m_far) * m_near) * reciprocal_c,  0.0f, };
 
-                StoreColumn(out_proj_matrix, row0, 0);
-                StoreColumn(out_proj_matrix, row1, 1);
-                StoreColumn(out_proj_matrix, row2, 2);
-                StoreColumn(out_proj_matrix, row3, 3);
+                StoreRow(out_proj_matrix, row0, 0);
+                StoreRow(out_proj_matrix, row1, 1);
+                StoreRow(out_proj_matrix, row2, 2);
+                StoreRow(out_proj_matrix, row3, 3);
             }
     };
 
@@ -131,15 +131,15 @@ namespace vp::util {
                 /* | 0,           2n/(t-b),     0,              0, | */
                 /* | (r+l)/(r-l), (t+b)/(t-b), -((f+n)/(f-n)), -1, | */
                 /* | 0,           0,           -(2fn/(f-n)),    0, | */
-                const v4f row0 = { near2 * reciprocal_a,   0.0f,                    0.0f,                                  0.0f, };
-                const v4f row1 = { 0.0f,                   near2 * reciprocal_b,    0.0f,                                  0.0f, };
-                const v4f row2 = { r_add_l * reciprocal_a, t_add_b * reciprocal_b, -(m_near + m_far) * reciprocal_c,      -1.0f, };
-                const v4f row3 = { 0.0f,                   0.0f,                   -2.0f * m_far * m_near * reciprocal_c,  0.0f, };
+                const Vector4f row0 = { near2 * reciprocal_a,   0.0f,                    0.0f,                                  0.0f, };
+                const Vector4f row1 = { 0.0f,                   near2 * reciprocal_b,    0.0f,                                  0.0f, };
+                const Vector4f row2 = { r_add_l * reciprocal_a, t_add_b * reciprocal_b, -(m_near + m_far) * reciprocal_c,      -1.0f, };
+                const Vector4f row3 = { 0.0f,                   0.0f,                   -2.0f * m_far * m_near * reciprocal_c,  0.0f, };
 
-                StoreColumn(out_proj_matrix, row0, 0);
-                StoreColumn(out_proj_matrix, row1, 1);
-                StoreColumn(out_proj_matrix, row2, 2);
-                StoreColumn(out_proj_matrix, row3, 3);
+                StoreRow(out_proj_matrix, row0, 0);
+                StoreRow(out_proj_matrix, row1, 1);
+                StoreRow(out_proj_matrix, row2, 2);
+                StoreRow(out_proj_matrix, row3, 3);
             }
 
             constexpr void SetAspect(float new_aspect) {
@@ -177,15 +177,15 @@ namespace vp::util {
                 const float rec_fn = 1.0f / (m_far - m_near);
                 const float neg_fn = -(m_near + m_far);
 
-                const v4f row0 = { 1.0f / r_sub_l,    0.0f,               0.0f,            0.0f, };
-                const v4f row1 = { 0.0f,              1.0f / t_sub_b,     0.0f,            0.0f, };
-                const v4f row2 = { 0.0f,              0.0f,              -2.0f * rec_fn,   0.0f, };
-                const v4f row3 = { r_add_l / r_sub_l, t_add_b / t_sub_b,  neg_fn * rec_fn, 1.0f, };
+                const Vector4f row0 = { 1.0f / r_sub_l,    0.0f,               0.0f,            0.0f, };
+                const Vector4f row1 = { 0.0f,              1.0f / t_sub_b,     0.0f,            0.0f, };
+                const Vector4f row2 = { 0.0f,              0.0f,              -2.0f * rec_fn,   0.0f, };
+                const Vector4f row3 = { r_add_l / r_sub_l, t_add_b / t_sub_b,  neg_fn * rec_fn, 1.0f, };
 
-                StoreColumn(out_proj_matrix, row0, 0);
-                StoreColumn(out_proj_matrix, row1, 1);
-                StoreColumn(out_proj_matrix, row2, 2);
-                StoreColumn(out_proj_matrix, row3, 3);
+                StoreRow(out_proj_matrix, row0, 0);
+                StoreRow(out_proj_matrix, row1, 1);
+                StoreRow(out_proj_matrix, row2, 2);
+                StoreRow(out_proj_matrix, row3, 3);
             }
     };
 }

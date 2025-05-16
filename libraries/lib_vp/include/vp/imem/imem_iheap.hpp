@@ -51,7 +51,7 @@ namespace vp::imem {
             VP_RTTI_BASE(IHeap);
         public:
             explicit IHeap(const char *name, IHeap *parent_heap, void *start_address, size_t size) : m_start_address(start_address), m_end_address(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(start_address) +  size)), m_parent_heap(parent_heap), m_child_list_node(), m_child_list(), m_name(name) {/*...*/}
-            constexpr virtual ~IHeap() {/*...*/}
+            virtual constexpr ~IHeap() {/*...*/}
 
             virtual void Finalize() {/*...*/}
 
@@ -66,11 +66,11 @@ namespace vp::imem {
             virtual IHeap *FindHeapFromAddress(void *address) {
 
                 /* Check if address is in this IHeap */
-                if (this->IsAddressInHeap(address) == false) { return nullptr; }
+                if (!this->IsAddressInHeap(address)) { return nullptr; }
 
                 /* Search for address in child IHeaps */
                 for (IHeap &child : m_child_list) {
-                    if (child.IsAddressInHeap(address) == false) { continue; }
+                    if (!child.IsAddressInHeap(address)) { continue; }
 
                     /* Continue the search in child IHeap */
                     return child.FindHeapFromAddress(address);

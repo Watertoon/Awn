@@ -382,21 +382,23 @@ namespace vp::util {
     template<class RP, typename K, auto M>
     class IntrusiveRedBlackTreeMemberTraits {
         public:
+            static constexpr uintptr_t cOffset = OffsetOf<M>();
+        public:
             using ComparisonFunction = std::strong_ordering(*)(const K&, const K&);
             using CollisionFunction  = void(*)(RP*,RP*);
         public:
             static ALWAYS_INLINE RP *GetParent(IntrusiveRedBlackTreeNode<K> *node) {
-                return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+                return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
             }
             static ALWAYS_INLINE RP &GetParentReference(IntrusiveRedBlackTreeNode<K> *node) {
-                return *reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+                return *reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
             }
 
             static ALWAYS_INLINE const RP *GetParent(const IntrusiveRedBlackTreeNode<K> *node) {
-                return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+                return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
             }
             static ALWAYS_INLINE const RP &GetParentReference(const IntrusiveRedBlackTreeNode<K> *node) {
-                return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+                return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
             }
 
             static constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNode<K> *GetTreeNode(RP *parent) {

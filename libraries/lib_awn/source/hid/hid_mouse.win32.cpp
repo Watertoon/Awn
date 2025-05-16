@@ -287,8 +287,17 @@ namespace awn::hid {
                 return nullptr;
             }
         public:
-            MouseThread(mem::Heap *heap, u32 max_mice) : Thread("awn::hid::MouseThread", heap, sys::ThreadRunMode::Looping, 0, 1, 0x1000, sys::cPriorityNormal + 5), m_window_handle(), m_mouse_device_array(), m_device_cs(), m_is_exceed_mouse_limit_warning() {
+            MouseThread(mem::Heap *heap, u32 max_mice) : Thread(), m_window_handle(), m_mouse_device_array(), m_device_cs(), m_is_exceed_mouse_limit_warning() {
                 m_mouse_device_array.Initialize(heap, max_mice);
+                sys::ThreadInfo thread_info = {
+                    .name = "awn::hid::MouseThread",
+                    .exit_code = 0,
+                    .run_mode = sys::ThreadRunMode::Looping,
+                    .message_count = 1,
+                    .stack_size = 0x1000,
+                    .priority = sys::cPriorityNormal - 3,
+                };
+                RESULT_ABORT_UNLESS(this->Thread::Initialize(heap, std::addressof(thread_info)));
             }
             virtual ~MouseThread() override {
                 ::PostThreadMessage(this->GetWin32ThreadId(), WM_QUIT, 0, 0);

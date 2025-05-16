@@ -17,7 +17,9 @@
 
 #include <vp/image/image_pixelformat.h>
 
-#define VP_IMAGE_ENABLE_PNG
+#ifdef VP_TARGET_PLATFORM_win32
+    #define VP_IMAGE_ENABLE_PNG
+#endif
 
 #ifdef VP_IMAGE_ENABLE_PNG
     #include <vp/image/impl/image_pngimpl.h>

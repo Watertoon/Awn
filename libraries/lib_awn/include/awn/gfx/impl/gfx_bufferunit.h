@@ -55,18 +55,17 @@ namespace awn::gfx::impl {
             u32                    m_priority;
             MemoryPropertyFlags    m_memory_property_flags;
             const void            *m_import_memory;
-            mem::GpuMemoryHandle   m_memory_handle;
+            MemoryPool             m_memory_pool;
             GpuMemoryRequirements  m_memory_requirements;
             Buffer                 m_buffer;
             async::AsyncTask       m_transfer_task;
         private:
             bool InitializeForPlatform(const BufferUnitInfo *buffer_unit_info);
         public:
-             BufferUnit() : m_status(), m_state(), m_reference_count(), m_priority(), m_import_memory(), m_memory_handle(), m_memory_requirements{}, m_buffer(), m_transfer_task() {/*...*/}
+             BufferUnit() : m_status(), m_state(), m_reference_count(), m_priority(), m_import_memory(), m_memory_pool(), m_memory_requirements{}, m_buffer(), m_transfer_task() {/*...*/}
             ~BufferUnit() {/*...*/}
 
             bool Initialize(const BufferUnitInfo *buffer_unit_info);
-
             void Finalize();
 
             void RequestFinalize();

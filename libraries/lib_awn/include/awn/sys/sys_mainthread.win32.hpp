@@ -21,7 +21,10 @@ namespace awn::sys {
         public:
             VP_RTTI_DERIVED(MainThread, Thread);
         public:
-            MainThread(mem::Heap *thread_heap) : Thread(thread_heap) {
+            constexpr MainThread() : Thread() {/*...*/}
+            virtual ~MainThread() override {/*...*/}
+
+            void InitializeForMainThread(mem::Heap *thread_heap) {
 
                 /* Create win32 thread */
                 HANDLE main_thread_handle;
@@ -38,15 +41,20 @@ namespace awn::sys {
                 ::wcscpy(reinterpret_cast<wchar_t*>(m_name_utf16), reinterpret_cast<const wchar_t*>(u"MainThread"));
                 ::SetThreadDescription(main_thread_handle, reinterpret_cast<wchar_t*>(m_name_utf16));
 
+                m_thread_heap = thread_heap;
+
                 return;
             }
-            virtual ~MainThread() override {/*...*/}
 
             virtual void StartThread() override {
-                VP_ASSERT(false);
+                VP_NOT_IMPLEMENTED();
+            }
+            virtual void ExitThread(ExitType exit_type) override {
+                VP_UNUSED(exit_type);
+                VP_NOT_IMPLEMENTED();
             }
             virtual void WaitForThreadExit() override {
-                VP_ASSERT(false);
+                VP_NOT_IMPLEMENTED();
             }
     };
 }

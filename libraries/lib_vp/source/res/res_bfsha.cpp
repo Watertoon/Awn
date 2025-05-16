@@ -8,6 +8,29 @@ namespace vp::res {
         return (base >> (this->key_bit_offset & (BITSIZEOF(u32) - 1)));
     }
 
+    void ResBfshaShaderOption::WriteStaticKey(void *static_key, u32 choice_index) const {
+        u32 *key_array = reinterpret_cast<u32*>(static_key);
+        const u32 prev = key_array[this->key_index] & (~this->key_mask);
+        const u32 next = prev | (choice_index << (this->key_bit_offset & (BITSIZEOF(u32) - 1)));
+        key_array[this->key_index] = next;
+        return;
+    }
+
+    u32 ResBfshaShaderOption::ReadDynamicKey(const void *dynamic_key) const {
+        const u32 *key_array = reinterpret_cast<const u32*>(dynamic_key);
+        const u32 base = key_array[this->key_index] & this->key_mask;
+        return (base >> (this->key_bit_offset & (BITSIZEOF(u32) - 1)));
+    }
+
+    void ResBfshaShaderOption::WriteDynamicKey(void *dynamic_key, u32 choice_index) const {
+        u32 *key_array = reinterpret_cast<u32*>(dynamic_key);
+        const u32 index = this->key_index - this->base_key_index_dynamic;
+        const u32 prev = key_array[index] & (~this->key_mask);
+        const u32 next = prev | (choice_index << (this->key_bit_offset & (BITSIZEOF(u32) - 1)));
+        key_array[index] = next;
+        return;
+    }
+
     u32 ResBfshaShadingModel::FindStaticShaderOptionIndex(const char *option_name) const {
         return (this->static_option_dictionary != nullptr) ? this->static_option_dictionary->TryGetEntryIndexByKey(option_name) : cInvalidEntryIndex;
     }
@@ -224,10 +247,10 @@ namespace vp::res {
 
         /* Copy specific default static key if it exists */
         const u32 s_key_size = this->static_key_size * sizeof(u32);
-        if (this->default_key_index != cInvalidDefaultKeyIndex) {
+        if (this->default_program_index != cInvalidDefaultKeyIndex) {
             const u32 d_key_size = this->dynamic_key_size * sizeof(u32);
             const u32 key_size = s_key_size + d_key_size;
-            const u32 *default_static_key = reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(this->option_key_array) + (key_size * this->default_key_index));
+            const u32 *default_static_key = reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(this->option_key_array) + (key_size * this->default_program_index));
             ::memmove(out_default_static_key, default_static_key, s_key_size);
             return;
         }
@@ -239,7 +262,7 @@ namespace vp::res {
             ResBfshaShaderOption *s_option = std::addressof(this->dynamic_option_array[i]);
             const u32 key_index = s_option->key_index - s_option->base_key_index_dynamic;
             const u32 mask_prev = out_key[key_index] & (~s_option->key_mask);
-            const u32 value = s_option->default_value << (s_option->key_bit_offset & (BITSIZEOF(u32) - 1));
+            const u32 value = s_option->default_choice_index << (s_option->key_bit_offset & (BITSIZEOF(u32) - 1));
             out_key[key_index] = value | mask_prev;
         }
 
@@ -253,10 +276,10 @@ namespace vp::res {
 
         /* Copy specific default dynamic key if it exists */
         const u32 d_key_size = this->dynamic_key_size * sizeof(u32);
-        if (this->default_key_index != cInvalidDefaultKeyIndex) {
+        if (this->default_program_index != cInvalidDefaultKeyIndex) {
             const u32 s_key_size = this->static_key_size * sizeof(u32);
             const u32 key_size = s_key_size + d_key_size;
-            const u32 *default_dynamic_key = reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(this->option_key_array) + (key_size * this->default_key_index) + s_key_size);
+            const u32 *default_dynamic_key = reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(this->option_key_array) + (key_size * this->default_program_index) + s_key_size);
             ::memmove(out_default_dynamic_key, default_dynamic_key, d_key_size);
             return;
         }
@@ -268,7 +291,7 @@ namespace vp::res {
             ResBfshaShaderOption *dyn_option = std::addressof(this->dynamic_option_array[i]);
             const u32 key_index = dyn_option->key_index - dyn_option->base_key_index_dynamic;
             const u32 mask_prev = out_key[key_index] & (~dyn_option->key_mask);
-            const u32 value = dyn_option->default_value << (dyn_option->key_bit_offset & (BITSIZEOF(u32) - 1));
+            const u32 value = dyn_option->default_choice_index << (dyn_option->key_bit_offset & (BITSIZEOF(u32) - 1));
             out_key[key_index] = value | mask_prev;
         }
 

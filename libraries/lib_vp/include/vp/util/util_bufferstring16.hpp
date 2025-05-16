@@ -279,13 +279,21 @@ namespace vp::util {
             }
 
             ALWAYS_INLINE void Print() const {
+#ifdef VP_TARGET_PLATFORM_win32
                 ::_putws(reinterpret_cast<wchar_t*>(m_string_array));
+#endif
+            }
+
+            constexpr void SetLength(u32 length) {
+                m_length = length;
+                this->AssureTermination();
+                return;
             }
 
             constexpr ALWAYS_INLINE void AssureTermination() {
                 m_string_array[m_length] = u'\0';
             }
-            constexpr ALWAYS_INLINE bool IsNullString() {
+            constexpr ALWAYS_INLINE bool IsEmpty() const {
                 return m_string_array[0] == u'\0';
             }
 

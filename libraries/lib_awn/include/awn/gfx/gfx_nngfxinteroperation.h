@@ -77,6 +77,7 @@ namespace awn::gfx {
     using ShaderInterfaceType = vp::res::GfxShaderInterfaceType;
 
     /* Infos */
+    using MemoryPoolInfo  = vp::res::ResGfxMemoryPoolInfo;
     using BufferInfo      = vp::res::ResGfxBufferInfo;
     using TextureInfo     = vp::res::ResGfxTextureInfo;
     class Texture;

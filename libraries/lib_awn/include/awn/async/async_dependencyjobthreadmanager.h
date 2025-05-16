@@ -19,19 +19,45 @@ namespace awn::async {
 
     class DependencyJobThreadManager;
 
+    struct DependencyJobThreadInfo {
+        const char *name;
+        DependencyJobThreadManager *thread_manager;
+        u32 stack_size;
+        u32 priority;
+    };
+
     class DependencyJobThread : public sys::Thread {
         public:
             friend class DependencyJobThreadManager;
+        public:
+            static constexpr size_t cExitCode = 0;
+            static constexpr size_t cMessageCount = 8;
         private:
             DependencyJobThreadControl  m_thread_control;
             sys::Event                  m_finish_event;
             DependencyJobQueue         *m_queue;
             DependencyJobThreadManager *m_thread_manager;
+            size_t                      m_message_array[cMessageCount];
         public:
             VP_RTTI_DERIVED(DependencyJobThread, sys::Thread);
         public:
-             DependencyJobThread(DependencyJobThreadManager *thread_manager, const char *name, mem::Heap *heap, u32 stack_size, u32 priority) : Thread(name, heap, sys::ThreadRunMode::WaitForMessage, 0, 8, stack_size, priority), m_thread_control(), m_finish_event(), m_queue(), m_thread_manager(thread_manager) {/*...*/}
-            ~DependencyJobThread() {/*...*/}
+            constexpr DependencyJobThread() : Thread(), m_thread_control(), m_finish_event(), m_queue(), m_thread_manager(), m_message_array{} {/*...*/}
+            virtual ~DependencyJobThread() override {/*...*/}
+
+            Result Initialize(mem::Heap *heap, const DependencyJobThreadInfo *info) {
+                sys::ThreadInfo thread_info = {
+                    .name = info->name,
+                    .exit_code = cExitCode,
+                    .run_mode = sys::ThreadRunMode::WaitForMessage,
+                    .message_count = cMessageCount,
+                    .message_memory = m_message_array,
+                    .stack_size = info->stack_size,
+                    .priority = info->priority,
+                };
+                RESULT_TRY(this->Thread::Initialize(heap, std::addressof(thread_info)));
+                m_thread_manager = info->thread_manager;
+                RESULT_RETURN_SUCCESS;
+            }
 
             virtual void ThreadMain(size_t message) override;
 
@@ -41,12 +67,7 @@ namespace awn::async {
 
     class DependencyJobThreadManager {
         public:
-            struct WorkerContainer {
-                vp::util::FixedString<0x10>  thread_name;
-                DependencyJobThread         *thread;
-            };
-        public:
-            using DependencyJobThreadArray = vp::util::HeapArray<WorkerContainer>;
+            using DependencyJobThreadArray = vp::util::PointerArray<DependencyJobThread>;
         private:
             DependencyJobThreadArray    m_thread_array;
             DependencyJobThreadControl  m_main_thread_control;

@@ -45,7 +45,7 @@ namespace vp::res {
 
     template <typename T>
         requires(TIsAinbParameter<T>())
-    constexpr u32 TGetAinbImmediateEntryIndex() {
+    constexpr u32 TGetAinbPropertyEntryIndex() {
         if constexpr (std::is_same<s32, T>::value) {
             return 0;
         }
@@ -66,7 +66,7 @@ namespace vp::res {
         }
     }
 
-    struct ResAinbLocalParameterImmediateEntry {
+    struct ResAinbLocalParameterPropertyEntry {
         union {
             ResAinbLocalParameterEntry entry_array[6];
             struct {                
@@ -204,8 +204,8 @@ namespace vp::res {
     struct ResAinbNodeParameterInlineEntry {
         ResAinbParameterInlineEntry entry_reserve0;
         ResAinbParameterInlineEntry entry_reserve1;
-        ResAinbParameterInlineEntry entry_child_node;
-        ResAinbParameterInlineEntry entry_active_node_update;
+        ResAinbParameterInlineEntry entry_child;
+        ResAinbParameterInlineEntry entry_root_change;
         ResAinbParameterInlineEntry entry_reserve2;
         ResAinbParameterInlineEntry entry_reserve3;
         ResAinbParameterInlineEntry entry_reserve4;
@@ -215,7 +215,7 @@ namespace vp::res {
     };
 
     struct ResAinbNodeParameter {
-        ResAinbLocalParameterImmediateEntry immediate_parameter;
+        ResAinbLocalParameterPropertyEntry property_parameter;
         ResAinbLocalParameterInputOutputEntry input_output_parameter;
         ResAinbNodeParameterInlineEntry inline_parameter;
         u32 inline_offset_array[];
@@ -259,10 +259,10 @@ namespace vp::res {
         union {
             u8 node_flags;
             struct {
-                u8 is_prerequisite_node : 1;
+                u8 is_query_node : 1;
                 u8 is_module_caller : 1;
                 u8 is_resident_initialized : 1;
-                u8 is_prerequisite_multi_param : 1;
+                u8 is_query_multi_param : 1;
                 u8 reserve0 : 4;
             };
         };
@@ -276,8 +276,8 @@ namespace vp::res {
         u16 multi_param_count;
         u16 reserve3;
         u32 base_attachment;
-        u16 base_prerequisite_node;
-        u16 prerequisite_node_count;
+        u16 base_query_node;
+        u16 query_node_count;
         u16 reserve4;
         u16 reserve5;
         util::Guid guid;
@@ -285,6 +285,14 @@ namespace vp::res {
     static_assert(sizeof(ResAinbNode) == 0x3c);
 
     /* Local blackboard */
+    struct ResAinbLocalBlackboardParameterPath {
+        u32 path_offset;
+        u32 path_murmur3_hash;
+        u32 hash1;
+        u32 hash2;
+    };
+    static_assert(sizeof(ResAinbLocalBlackboardParameterPath) == 0x10);
+
     template <typename T>
         requires(TIsAinbParameter<T>())
     consteval u32 TGetAinbLocalBBTypeIndex() {
@@ -310,20 +318,20 @@ namespace vp::res {
 
     struct ResAinbLocalBlackboardParameter {
         union {
-            s32 info_bitpack;
+            u32 info_bitpack;
             struct {
-                u32 offset_name : 22;
+                u32 name_offset : 22;
                 u32 reserve0 : 1;
                 u32 reserve1 : 1;
                 u32 bgyml_index : 7;
                 u32 is_valid_index : 1;
             };
         };
-        u32 null_string_offset;
+        u32 description_offset;
 
         static constexpr u32 cNoLinkMask = 0x80c0'0000;
 
-        constexpr bool IsNoLink() {
+        constexpr bool IsNoLink() const {
             return (info_bitpack & cNoLinkMask) != 0;
         }
     };
@@ -351,20 +359,49 @@ namespace vp::res {
         };
         ResAinbLocalBlackboardParameter parameter_array[];
 
+        const vp::res::ResAinbLocalBlackboardParameter *GetParameter(u32 entry_index, u32 param_index) const {
+            const vp::res::ResAinbLocalBlackboardParameterEntry *param_entry = std::addressof(this->entry_array[entry_index]);
+            const u32 index = param_entry->base_index + param_index;
+            const vp::res::ResAinbLocalBlackboardParameter *param = std::addressof(this->parameter_array[index]);
+            return param;
+        }
+
+        constexpr u32 GetDefaultArrayOffset() const {
+            return sizeof(ResAinbLocalBlackboardParameterTable) + (this->entry_pointer.base_offset + this->entry_pointer.count) * sizeof(ResAinbLocalBlackboardParameter);
+        }
+
         u32 *GetDefaultStringOffsetArray() const {
-            return reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(this) + entry_string.base_offset + sizeof(ResAinbLocalBlackboardParameterTable) + (entry_pointer.base_offset + entry_pointer.count) * sizeof(ResAinbLocalBlackboardParameter));
+            u32 *offset_array = reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(this) + this->entry_string.base_offset + this->GetDefaultArrayOffset());
+            return offset_array;
         }
         s32 *GetDefaultS32Array() const {
-            return reinterpret_cast<s32*>(reinterpret_cast<uintptr_t>(this) + entry_s32.base_offset + sizeof(ResAinbLocalBlackboardParameterTable) + (entry_pointer.base_offset + entry_pointer.count) * sizeof(ResAinbLocalBlackboardParameter));
+            s32 *default_array = reinterpret_cast<s32*>(reinterpret_cast<uintptr_t>(this) + this->entry_s32.base_offset + this->GetDefaultArrayOffset());
+            return default_array;
         }
         float *GetDefaultFloatArray() const {
-            return reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(this) + entry_float.base_offset + sizeof(ResAinbLocalBlackboardParameterTable) + (entry_pointer.base_offset + entry_pointer.count) * sizeof(ResAinbLocalBlackboardParameter));
+            float *default_array = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(this) + this->entry_float.base_offset + this->GetDefaultArrayOffset());
+            return default_array;
         }
         bool *GetDefaultBoolArray() const {
-            return reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(this) + entry_bool.base_offset + sizeof(ResAinbLocalBlackboardParameterTable) + (entry_pointer.base_offset + entry_pointer.count) * sizeof(ResAinbLocalBlackboardParameter));
+            bool *default_array = reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(this) + this->entry_bool.base_offset + this->GetDefaultArrayOffset());
+            return default_array;
         }
         vp::util::Float3 *GetDefaultVector3fArray() const {
-            return reinterpret_cast<vp::util::Float3*>(reinterpret_cast<uintptr_t>(this) + entry_vector3f.base_offset + sizeof(ResAinbLocalBlackboardParameterTable) + (entry_pointer.base_offset + entry_pointer.count) * sizeof(ResAinbLocalBlackboardParameter));
+            vp::util::Float3 *default_array = reinterpret_cast<vp::util::Float3*>(reinterpret_cast<uintptr_t>(this) + this->entry_vector3f.base_offset + this->GetDefaultArrayOffset());
+            return default_array;
+        }
+
+        constexpr u32 GetPathArrayOffset() const {
+            return this->GetDefaultArrayOffset() + this->entry_vector3f.base_offset + (this->entry_vector3f.count * sizeof(vp::util::Float3));
+        }
+
+        ResAinbLocalBlackboardParameterPath *GetParameterPathArray() const {
+            return reinterpret_cast<ResAinbLocalBlackboardParameterPath*>(reinterpret_cast<uintptr_t>(this) + this->GetPathArrayOffset());
+        }
+
+        ResAinbLocalBlackboardParameterPath *GetParameterPath(const vp::res::ResAinbLocalBlackboardParameter *parameter) const {
+            if (!parameter->is_valid_index) { return nullptr; }
+            return reinterpret_cast<ResAinbLocalBlackboardParameterPath*>(reinterpret_cast<uintptr_t>(this) + this->GetPathArrayOffset() + parameter->bgyml_index * sizeof(ResAinbLocalBlackboardParameterPath));
         }
     };
     static_assert(sizeof(ResAinbLocalBlackboardParameterTable) == 0x30);
@@ -384,7 +421,7 @@ namespace vp::res {
 
     template <typename T>
         requires(TIsAinbParameter<T>())
-    consteval u32 TGetAinbImmediateOffsetIndex() {
+    consteval u32 TGetAinbPropertyOffsetIndex() {
         if constexpr (std::is_same<s32, T>::value) {
             return 0;
         }
@@ -405,7 +442,7 @@ namespace vp::res {
         }
     }
 
-    struct ResAinbParameterImmediateTable {
+    struct ResAinbParameterPropertyTable {
         union {
             u32 offset_array[6];
             struct {                
@@ -418,7 +455,7 @@ namespace vp::res {
             };
         };
     };
-    static_assert(sizeof(ResAinbParameterImmediateTable) == 0x18);
+    static_assert(sizeof(ResAinbParameterPropertyTable) == 0x18);
 
     struct ResAinbActiveUpdate {
         u32 is_valid            : 8;
@@ -500,10 +537,10 @@ namespace vp::res {
     static_assert(sizeof(ResAinbMultiParam) == 0x8);
 
     struct ResAinbAttachmentParameter {
-        u8 is_updatable;
+        u8 is_update_multi;
         u8 reserve0;
         u16 reserve1;
-        ResAinbLocalParameterImmediateEntry immediate_parameter;
+        ResAinbLocalParameterPropertyEntry property_parameter;
     };
     static_assert(sizeof(ResAinbAttachmentParameter) == 0x34);
 
@@ -517,9 +554,9 @@ namespace vp::res {
     static_assert(sizeof(ResAinbAttachment) == 0x10);
 
     enum class AinbReplacementType : u8 {
-        RemoveChildParameter  = 0,
-        ReplaceChildParameter = 1,
-        RemoveAttachment      = 2,
+        RemoveChild = 0,
+        ReplaceChild = 1,
+        RemoveAttachment = 2,
     };
 
     struct ResAinbChildReplacement {
@@ -534,13 +571,13 @@ namespace vp::res {
         u8 runtime_init_guard;
         u8 reserve0;
         u16 child_replacement_count;
-        s16 override_node_count;
-        s16 override_attachment_count;
+        u16 override_node_count;
+        u16 override_attachment_count;
         ResAinbChildReplacement child_replacement_array[];
     };
 
-    struct ResAinbPrerequisiteNode {
-        s16 prerequisite_node_index;
+    struct ResAinbQueryNode {
+        s16 query_node_index;
         u16 reserve0;
     };
 
@@ -577,30 +614,30 @@ namespace vp::res {
         u32 file_name_offset;
         u32 command_count;
         u32 node_count;
-        u32 prerequisite_node_count;
+        u32 query_node_count;
         u32 attachment_count;
         u32 output_node_count;
-        u32 local_blackboard_parameter_offset;
+        u32 local_blackboard_parameter_table_offset;
         u32 string_pool_offset;
-        u32 enum_relocation_array_offset;
-        u32 immediate_parameter_offset;
-        u32 resident_update_array_offset;
-        u32 input_output_parameter_offset;
+        u32 enum_relocation_table_offset;
+        u32 property_parameter_table_offset;
+        u32 root_change_offset_array_offset;
+        u32 input_output_parameter_table_offset;
         u32 multi_param_array_offset;
         u32 attachment_array_offset;
         u32 attachment_index_array_offset;
         u32 exb_offset;
         u32 child_replacement_table_offset;
-        u32 prerequisite_node_array_offset;
+        u32 query_node_array_offset;
         u32 reserve0;
         u32 reserve1;
         u32 reserve2;
         u32 embed_ainb_array_offset;
-        u32 category_offset;
-        u32 reserve3;
+        u32 file_category_offset;
+        u32 file_category;
         u32 custom_action_table_offset;
         u32 reserve4;
-        u32 reserve5;
+        u32 module_caller_link_offset;
         ResAinbCommand command_array[];
 
         static constexpr u32 cMagic = vp::util::TCharCode32("AIB ");
@@ -617,22 +654,22 @@ namespace vp::res {
             return reinterpret_cast<ResAinbNode*>(reinterpret_cast<uintptr_t>(this) + sizeof(ResAinb) + sizeof(ResAinbCommand) * command_count);
         }
         ResAinbLocalBlackboardParameterTable *GetLocalBlackboardParameterTable() {
-            return reinterpret_cast<ResAinbLocalBlackboardParameterTable*>(reinterpret_cast<uintptr_t>(this) + this->local_blackboard_parameter_offset);
+            return reinterpret_cast<ResAinbLocalBlackboardParameterTable*>(reinterpret_cast<uintptr_t>(this) + this->local_blackboard_parameter_table_offset);
         }
         const char *GetStringPool() {
             return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) + this->string_pool_offset);
         }
         ResAinbEnumRelocationTable *GetEnumRelocationTable() {
-            return reinterpret_cast<ResAinbEnumRelocationTable*>(reinterpret_cast<uintptr_t>(this) + this->enum_relocation_array_offset);
+            return reinterpret_cast<ResAinbEnumRelocationTable*>(reinterpret_cast<uintptr_t>(this) + this->enum_relocation_table_offset);
         }
-        ResAinbParameterImmediateTable *GetParameterImmediateTable() {
-            return reinterpret_cast<ResAinbParameterImmediateTable*>(reinterpret_cast<uintptr_t>(this) + this->immediate_parameter_offset);
+        ResAinbParameterPropertyTable *GetParameterPropertyTable() {
+            return reinterpret_cast<ResAinbParameterPropertyTable*>(reinterpret_cast<uintptr_t>(this) + this->property_parameter_table_offset);
         }
-        u32 *GetResidentUpdateOffsetArray() {
-            return reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(this) + this->resident_update_array_offset);
+        u32 *GetRootChangeOffsetArray() {
+            return reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(this) + this->root_change_offset_array_offset);
         }
         ResAinbParameterInputOutputTable *GetParameterInputOutputTable() {
-            return reinterpret_cast<ResAinbParameterInputOutputTable*>(reinterpret_cast<uintptr_t>(this) + this->input_output_parameter_offset);
+            return reinterpret_cast<ResAinbParameterInputOutputTable*>(reinterpret_cast<uintptr_t>(this) + this->input_output_parameter_table_offset);
         }
         ResAinbMultiParam *GetMultiParamArray() {
             return reinterpret_cast<ResAinbMultiParam*>(reinterpret_cast<uintptr_t>(this) + this->multi_param_array_offset);
@@ -647,22 +684,22 @@ namespace vp::res {
             return (exb_offset != 0) ? reinterpret_cast<ResExb*>(reinterpret_cast<uintptr_t>(this) + this->exb_offset) : nullptr;
         }
         ResAinbChildReplacementTable *GetChildReplacementTable() {
-            return reinterpret_cast<ResAinbChildReplacementTable*>(reinterpret_cast<uintptr_t>(this) + this->child_replacement_table_offset);
+            return (this->child_replacement_table_offset != 0) ? reinterpret_cast<ResAinbChildReplacementTable*>(reinterpret_cast<uintptr_t>(this) + this->child_replacement_table_offset) : nullptr;
         }
-        ResAinbPrerequisiteNode *GetPrerequisiteNodeArray() {
-            return reinterpret_cast<ResAinbPrerequisiteNode*>(reinterpret_cast<uintptr_t>(this) + this->prerequisite_node_array_offset);
+        ResAinbQueryNode *GetQueryNodeArray() {
+            return reinterpret_cast<ResAinbQueryNode*>(reinterpret_cast<uintptr_t>(this) + this->query_node_array_offset);
         }
         ResAinbEmbedAinb *GetEmbedAinbArray() {
             return reinterpret_cast<ResAinbEmbedAinb*>(reinterpret_cast<uintptr_t>(this) + this->embed_ainb_array_offset);
         }
         ResAinbCustomActionTable *GetCustomActionTable() {
-            return reinterpret_cast<ResAinbCustomActionTable*>(reinterpret_cast<uintptr_t>(this) + this->custom_action_table_offset);
+            return (this->custom_action_table_offset != 0) ? reinterpret_cast<ResAinbCustomActionTable*>(reinterpret_cast<uintptr_t>(this) + this->custom_action_table_offset) : nullptr;
         }
-        const char *GetName() {
+        const char *GetName() const {
             return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) + this->file_name_offset + this->string_pool_offset);
         }
-        const char *GetCategory() {
-            return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) + this->category_offset + this->string_pool_offset);
+        const char *GetFileCategoryName() const {
+            return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) + this->file_category_offset + this->string_pool_offset);
         }
 
         template <typename T>
@@ -677,7 +714,7 @@ namespace vp::res {
         }
     };
     static_assert(sizeof(ResAinb) == 0x74);  
-    
+
     enum class AinbFloatBBLocation : u32 {
         Float = 0,
         Vector3fX = 1,
@@ -722,75 +759,75 @@ namespace vp::res {
             return this->is_ptr_flag_0;
         }
         constexpr bool IsPointerFlags() const {
-            return this->is_set_output_dirty || this->is_ptr_flag_0;
+            return this->is_set_output_dirty | this->is_ptr_flag_0;
         }
     };
 
-    /* Immediate parameter */
-    struct ResAinbParameterImmediateS32 {
-        u32 offset_name;
+    /* Property parameter */
+    struct ResAinbParameterPropertyS32 {
+        u32 name_offset;
         ResAinbParamFlags param_flags;
         s32 value;
 
-        constexpr s32 *GetImmediate(ResAinb *ainb) {
+        constexpr s32 *GetProperty(ResAinb *ainb) {
             VP_UNUSED(ainb);
             return std::addressof(this->value);
         }
     };
 
-    struct ResAinbParameterImmediateFloat {
-        u32 offset_name;
+    struct ResAinbParameterPropertyFloat {
+        u32 name_offset;
         ResAinbParamFlags param_flags;
         float value;
 
-        constexpr float *GetImmediate(ResAinb *ainb) {
+        constexpr float *GetProperty(ResAinb *ainb) {
             VP_UNUSED(ainb);
             return std::addressof(this->value);
         }
     };
 
-    struct ResAinbParameterImmediateBool {
-        u32 offset_name;
+    struct ResAinbParameterPropertyBool {
+        u32 name_offset;
         ResAinbParamFlags param_flags;
         union {
             bool value;
             u32 storage;
         };
 
-        constexpr bool *GetImmediate(ResAinb *ainb) {
+        constexpr bool *GetProperty(ResAinb *ainb) {
             VP_UNUSED(ainb);
             return std::addressof(this->value);
         }
     };
 
-    struct ResAinbParameterImmediateString {
-        u32 offset_name;
+    struct ResAinbParameterPropertyString {
+        u32 name_offset;
         ResAinbParamFlags param_flags;
         u32 string_offset;
 
-        const char *GetImmediate(ResAinb *ainb) {
+        const char *GetProperty(ResAinb *ainb) {
             const char *string = ainb->GetString(this->string_offset);
             return string;
         }
     };
 
-    struct ResAinbParameterImmediateVector3f {
-        u32 offset_name;
+    struct ResAinbParameterPropertyVector3f {
+        u32 name_offset;
         ResAinbParamFlags param_flags;
         vp::util::Float3 value;
 
-        constexpr vp::util::Float3 *GetImmediate(ResAinb *ainb) {
+        constexpr vp::util::Float3 *GetProperty(ResAinb *ainb) {
             VP_UNUSED(ainb);
             return std::addressof(this->value);
         }
     };
 
-    struct ResAinbParameterImmediatePointer {
-        u32 offset_name;
-        u32 offset_class_name;
+    struct ResAinbParameterPropertyPointer {
+        u32 name_offset;
+        u32 class_name_offset;
         ResAinbParamFlags param_flags;
 
-        constexpr void *GetImmediate(ResAinb *ainb) {
+        constexpr void *GetProperty(ResAinb *ainb) {
             VP_UNUSED(ainb);
             return nullptr;
         }
@@ -798,28 +835,28 @@ namespace vp::res {
 
     template <typename T>
         requires (TIsAinbParameter<T>())
-    struct TResAinbParameterImmediateAuto {
-        using Type = ResAinbParameterImmediatePointer;
+    struct TResAinbParameterPropertyAuto {
+        using Type = ResAinbParameterPropertyPointer;
     };
     template<>
-    struct TResAinbParameterImmediateAuto<s32> {
-        using Type = ResAinbParameterImmediateS32;
+    struct TResAinbParameterPropertyAuto<s32> {
+        using Type = ResAinbParameterPropertyS32;
     };
     template<>
-    struct TResAinbParameterImmediateAuto<float> {
-        using Type = ResAinbParameterImmediateFloat;
+    struct TResAinbParameterPropertyAuto<float> {
+        using Type = ResAinbParameterPropertyFloat;
     };
     template<>
-    struct TResAinbParameterImmediateAuto<bool> {
-        using Type = ResAinbParameterImmediateBool;
+    struct TResAinbParameterPropertyAuto<bool> {
+        using Type = ResAinbParameterPropertyBool;
     };
     template<>
-    struct TResAinbParameterImmediateAuto<const char*> {
-        using Type = ResAinbParameterImmediateString;
+    struct TResAinbParameterPropertyAuto<const char*> {
+        using Type = ResAinbParameterPropertyString;
     };
     template<>
-    struct TResAinbParameterImmediateAuto<vp::util::Float3> {
-        using Type = ResAinbParameterImmediateVector3f;
+    struct TResAinbParameterPropertyAuto<vp::util::Float3> {
+        using Type = ResAinbParameterPropertyVector3f;
     };
 
     /* Input parameter */
@@ -848,7 +885,7 @@ namespace vp::res {
     };
 
     struct ResAinbParameterInputFloat {
-        u32 offset_name;
+        u32 name_offset;
         s16 input_index_or_multi_base_index;
         s16 output_index_or_multi_count;
         ResAinbParamFlags param_flags;
@@ -870,7 +907,7 @@ namespace vp::res {
     };
 
     struct ResAinbParameterInputBool {
-        u32 offset_name;
+        u32 name_offset;
         s16 input_index_or_multi_base_index;
         s16 output_index_or_multi_count;
         ResAinbParamFlags param_flags;
@@ -895,7 +932,7 @@ namespace vp::res {
     };
 
     struct ResAinbParameterInputString {
-        u32 offset_name;
+        u32 name_offset;
         s16 input_index_or_multi_base_index;
         s16 output_index_or_multi_count;
         ResAinbParamFlags param_flags;
@@ -917,7 +954,7 @@ namespace vp::res {
     };
 
     struct ResAinbParameterInputVector3f {
-        u32 offset_name;
+        u32 name_offset;
         s16 input_index_or_multi_base_index;
         s16 output_index_or_multi_count;
         ResAinbParamFlags param_flags;
@@ -939,8 +976,8 @@ namespace vp::res {
     };
 
     struct ResAinbParameterInputPointer {
-        u32 offset_name;
-        u32 offset_class_name;
+        u32 name_offset;
+        u32 class_name_offset;
         s16 input_index_or_multi_base_index;
         s16 output_index_or_multi_count;
         ResAinbParamFlags param_flags;
@@ -991,7 +1028,7 @@ namespace vp::res {
         union {
             u32 output_flags;
             struct {
-                u32 offset_name : 30;
+                u32 name_offset : 30;
                 u32 is_ptr_flag_0 : 1;
             };
         };
@@ -1005,11 +1042,11 @@ namespace vp::res {
         union {
             u32 output_flags;
             struct {
-                u32 offset_name : 30;
+                u32 name_offset : 30;
                 u32 is_ptr_flag_0 : 1;
             };
         };
-        u32 offset_class_name;
+        u32 class_name_offset;
 
         constexpr bool IsSetPointerFlag0() const {
             return this->is_ptr_flag_0;

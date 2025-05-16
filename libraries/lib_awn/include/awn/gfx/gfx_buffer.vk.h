@@ -27,7 +27,6 @@ namespace awn::gfx {
         size_t offset;
 
         constexpr GpuAddress GetGpuAddress();
-
         constexpr VkBuffer GetVkBuffer();
     };
 
@@ -42,17 +41,26 @@ namespace awn::gfx {
             VkBuffer    m_vk_buffer;
             GpuAddress  m_gpu_address;
             void       *m_address;
+            MemoryPool *m_memory_pool;
+            size_t      m_memory_offset;
 		public:
-			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(), m_gpu_address(), m_address() {/*...*/}
+			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(), m_gpu_address(), m_address(), m_memory_pool(), m_memory_offset() {/*...*/}
             constexpr ALWAYS_INLINE ~Buffer() {/*...*/}
 
-			Result Initialize(mem::GpuMemoryHandle memory_handle, size_t memory_offset, const BufferInfo *buffer_info);
+			Result Initialize(MemoryPool *memory_pool, size_t memory_offset, const BufferInfo *buffer_info);
 			Result Initialize(void *gpu_memory_address, const BufferInfo *buffer_info);
             void Finalize();
 
             constexpr ALWAYS_INLINE void *GetAddress() const { return m_address; }
             constexpr ALWAYS_INLINE GpuAddress GetGpuAddress() const { return m_gpu_address; }
-            constexpr ALWAYS_INLINE BufferAddress GetBufferAddress(size_t offset = 0) const { return { this, offset, }; } 
+            constexpr ALWAYS_INLINE BufferAddress GetBufferAddress(size_t offset = 0) const { return { this, offset, }; }
+
+            void FlushMappedRange(size_t offset, size_t size);
+            void InvalidateMappedRange(size_t offset, size_t size);
+
+            constexpr uintptr_t GetMemoryPoolOffset() const {
+                return m_memory_offset;
+            }
 		public:
             static GpuMemoryRequirements GetGpuMemoryRequirements(const BufferInfo *buffer_info);
         public:

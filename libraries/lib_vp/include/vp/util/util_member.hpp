@@ -15,10 +15,15 @@
  */
 #pragma once
 
-/* While the initial idea of some elements were inspired by Atmosphère-NX (https://github.com/Atmosphere-NX/Atmosphere), for this implementation I only used cppreference and vague mental notes from months ago */
-/* If you can make a case for infringement please let me know and I'll correct it */
-
 namespace vp::util {
+
+    template<typename T>
+    using UnderlyingTypeOf = typename std::remove_reference<decltype( std::declval<T>()[0] )>::type;
+
+    template <typename T>
+    consteval int GetCountOf(const T&) {
+        return sizeof(T) / sizeof(UnderlyingTypeOf<T>);
+    }
 
     template<class T>
     using element_type = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
@@ -63,8 +68,8 @@ namespace vp::util {
                 Parent parent;
                 _UnionPadding<Member, Size> pad;
 
-                constexpr ALWAYS_INLINE Impl() : c{} {};
-                constexpr ALWAYS_INLINE ~Impl() {};
+                constexpr Impl() : c{} {};
+                constexpr ~Impl() {};
             };
             constexpr inline static Impl impl{};
         };
@@ -72,29 +77,30 @@ namespace vp::util {
         template <typename Parent, typename Member>
         struct _OffsetOfImpl {
 
-            template<size_t Size, auto Union = &_OffsetOfUnion<Parent, Member, Size>::impl>
-            static constexpr ALWAYS_INLINE size_t GetOffset(Member Parent::* member) {
-                if constexpr(sizeof(Parent) > Size) {
-                    const     auto parent_member_offset = std::addressof((static_cast<const Parent*>(std::addressof(Union->parent)))->*member);
-                    constexpr auto union_member_offset  = std::addressof(Union->pad.member);
+            template<auto MemberPtr, size_t Low, size_t High, auto Union = &_OffsetOfUnion<Parent, Member, (Low + High) / 2>::impl>
+            static constexpr size_t GetOffset() {
 
-                    if (parent_member_offset > union_member_offset) {
-                        constexpr auto min = sizeof(Member) < alignof(Parent) ? sizeof(Member) : alignof(Parent);
-                        return GetOffset<Size + min>(member);
-                    } else {
-                        return Size;
-                    }
+                constexpr size_t cNext = (Low + High) / 2;
+
+                constexpr auto *parent_member_offset = std::addressof(Union->parent.*MemberPtr);
+                constexpr auto *union_member_offset  = std::addressof(Union->pad.member);
+
+                if constexpr (parent_member_offset < union_member_offset) {
+                    return GetOffset<MemberPtr, Low, cNext - 1>();
+                } else if constexpr (parent_member_offset > union_member_offset) {
+                    return GetOffset<MemberPtr, cNext + 1, High>();
                 } else {
-                    return Size;
+                    return cNext;
                 }
             }
         };
     }
 
-    constexpr ALWAYS_INLINE size_t OffsetOf(auto member) {
-        using Parent = typename ParentOfMemberTraits<decltype(member)>::Parent;
-        using Member = typename ParentOfMemberTraits<decltype(member)>::Member;
-        return _OffsetOfImpl<Parent, Member>::template GetOffset<0>(member);
+    template <auto M>
+    constexpr size_t OffsetOf() {
+        using Parent = typename ParentOfMemberTraits<decltype(M)>::Parent;
+        using Member = typename ParentOfMemberTraits<decltype(M)>::Member;
+        return _OffsetOfImpl<Parent, Member>::template GetOffset<M, 0, sizeof(Parent)>();
     }
 
     //constexpr size_t OffsetOfElementAfter(auto member) {
@@ -104,16 +110,16 @@ namespace vp::util {
     //}
 
     /* Only use on virtual functions */
-    template <class T>
-        requires std::is_member_function_pointer<T>::value
-    ALWAYS_INLINE int GetVTableOffset(T function) {
-        union
-        {
-            T pointer;
-            int i;
-        };
-        pointer = function;
-
-        return i - 1;
-    }
+    //template <class T>
+    //    requires std::is_member_function_pointer<T>::value
+    //ALWAYS_INLINE int GetVTableOffset(T function) {
+    //    union
+    //    {
+    //        T pointer;
+    //        int i;
+    //    };
+    //    pointer = function;
+    //
+    //    return i - 1;
+    //}
 }

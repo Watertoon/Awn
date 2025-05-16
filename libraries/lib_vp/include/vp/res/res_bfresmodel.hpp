@@ -42,10 +42,10 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("FMDL");
 
-        void BindTextures(GfxBindTextureCallback bind_callback, ResBntx *res_bntx) {
+        void BindTextures(GfxBindTextureCallback bind_callback, void *user_data) {
             const u32 mat_count = material_count;
             for (u32 i = 0; i < mat_count; ++i) {
-                material_array[i].BindTextures(bind_callback, res_bntx);
+                material_array[i].BindTextures(bind_callback, user_data);
             }
         }
         constexpr void ReleaseTextures() {

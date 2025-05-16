@@ -67,6 +67,7 @@ namespace vp::resbui {
                 m_code = code;
                 m_code_size = code_size;
             }
+
             constexpr void SetControl(const void *control, u32 control_size) {
                 m_control = control;
                 m_control_size = control_size;
@@ -202,7 +203,6 @@ namespace vp::resbui {
             }
 
             void Serialize(void *out_bnsh, size_t output_size, const BnshBuilderMemoryInfo *memory_info);
-
             Result CalculateMemoryInfo(BnshBuilderMemoryInfo *out_memory_info);
     };
 }

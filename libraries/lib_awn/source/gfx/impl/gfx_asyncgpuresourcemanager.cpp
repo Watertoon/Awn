@@ -21,13 +21,6 @@ namespace awn::gfx::impl {
 
     void AsyncGpuResourceManager::Initialize(mem::Heap *heap, const AsyncGpuResourceManagerInfo *mgr_info) {
 
-        /* Initialize meta data heap */
-        if constexpr (0 < mem::cGpuMemoryHandleMetaDataSize) {
-            const size_t block_size = mem::cGpuMemoryHandleMetaDataSize;
-            const size_t memory_size = block_size * (mgr_info->texture_unit_count + mgr_info->buffer_unit_count);
-            m_meta_data_heap = mem::UnitHeap::TryCreate("awn::gfx::GpuMemoryHandleMetaDataHeap", heap, memory_size, block_size, mem::cGpuMemoryHandleMetaDataAlignment);
-        }
-
         /* Initialize unit arrays */
         m_texture_unit_index_allocator.Initialize(heap, mgr_info->texture_unit_count);
         m_texture_unit_array.Initialize(heap, mgr_info->texture_unit_count);
@@ -47,9 +40,13 @@ namespace awn::gfx::impl {
         };
         m_memory_queue.Initialize(heap, std::addressof(queue_info_memory));
         const async::AsyncQueueThreadInfo memory_thread_info = {
+            .name = "AwnGfxMemoryThread",
             .queue = std::addressof(m_memory_queue),
+            .stack_size = vp::util::c16KB,
+            .priority = mgr_info->memory_thread_priority,
         };
-        m_memory_thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(memory_thread_info), "AwnGfxMemoryThread", heap, vp::util::c16KB, mgr_info->memory_thread_priority);
+        m_memory_thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread();
+        RESULT_ABORT_UNLESS(m_memory_thread->Initialize(heap, std::addressof(memory_thread_info)));
 
         const async::AsyncQueueInfo queue_info_transfer = {
             .priority_level_count = 3,
@@ -58,9 +55,13 @@ namespace awn::gfx::impl {
         };
         m_transfer_queue.Initialize(heap, std::addressof(queue_info_transfer));
         const async::AsyncQueueThreadInfo transfer_thread_info = {
+            .name = "AwnGfxTransferThread",
             .queue = std::addressof(m_transfer_queue),
+            .stack_size = vp::util::c32KB,
+            .priority = mgr_info->transfer_thread_priority,
         };
-        m_transfer_thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread(std::addressof(transfer_thread_info), "AwnGfxTransferThread", heap, vp::util::c32KB, mgr_info->transfer_thread_priority);
+        m_transfer_thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread();
+        RESULT_ABORT_UNLESS(m_transfer_thread->Initialize(heap, std::addressof(transfer_thread_info)));
 
         const auto task_create_lambda = [](async::AsyncTaskAllocator *allocator, mem::Heap *heap) {
             VP_UNUSED(allocator);

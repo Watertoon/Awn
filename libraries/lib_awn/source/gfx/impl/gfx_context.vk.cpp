@@ -122,110 +122,6 @@ namespace awn::gfx::impl {
 
         void FindMissingFeatures(MissingFeatures *missing_features, VkPhysicalDevice vk_physical_device, const ContextInfo *context_info) {
 
-            /* Property structs */
-            VkPhysicalDeviceMeshShaderPropertiesEXT mesh_shader_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
-                .pNext = nullptr,
-            };
-            VkPhysicalDeviceRobustness2PropertiesEXT robustness_2_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT,
-                .pNext = std::addressof(mesh_shader_properties),
-            };
-            VkPhysicalDeviceNestedCommandBufferPropertiesEXT nested_command_buffer_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
-                .pNext = std::addressof(robustness_2_properties),
-            };
-            VkPhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
-                .pNext = std::addressof(nested_command_buffer_properties),
-            };
-            VkPhysicalDeviceShaderObjectPropertiesEXT shader_object_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
-                .pNext = std::addressof(descriptor_buffer_properties),
-            };
-            VkPhysicalDeviceVulkan14Properties properties_14 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
-                .pNext = std::addressof(shader_object_properties),
-            };
-            VkPhysicalDeviceVulkan13Properties properties_13 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
-                .pNext = std::addressof(properties_14),
-            };
-            VkPhysicalDeviceVulkan12Properties properties_12 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
-                .pNext = std::addressof(properties_13),
-            };
-            VkPhysicalDeviceVulkan11Properties properties_11 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
-                .pNext = std::addressof(properties_12),
-            };
-            VkPhysicalDeviceProperties2 properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
-                .pNext = std::addressof(properties_11),
-            };
-
-            /* Feature structs */
-            VkPhysicalDevicePerStageDescriptorSetFeaturesNV per_stage_descriptor_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
-                .pNext = nullptr,
-            };
-            VkPhysicalDeviceCommandBufferInheritanceFeaturesNV command_buffer_inheritance_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
-                .pNext = std::addressof(per_stage_descriptor_features),
-            };
-            VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
-                .pNext = std::addressof(command_buffer_inheritance_features),
-            };
-            VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT vertex_attribute_robustness_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
-                .pNext = std::addressof(mesh_shader_features),
-            };
-            VkPhysicalDeviceRobustness2FeaturesEXT robustness_2_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
-                .pNext = std::addressof(vertex_attribute_robustness_features),
-            };
-            VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
-                .pNext = std::addressof(robustness_2_features),
-            };
-            VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutable_descriptor_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
-                .pNext = std::addressof(nested_command_buffer_features),
-            };
-            VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptor_buffer_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-                .pNext = std::addressof(mutable_descriptor_features),
-            };
-            VkPhysicalDeviceShaderObjectFeaturesEXT shader_object_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-                .pNext = std::addressof(descriptor_buffer_features),
-            };
-            VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
-                .pNext = std::addressof(shader_object_features),
-            };
-            VkPhysicalDeviceVulkan14Features features_14 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
-                .pNext = std::addressof(shader_maximal_reconvergence_features),
-            };
-            VkPhysicalDeviceVulkan13Features features_13 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-                .pNext = std::addressof(features_14),
-            };
-            VkPhysicalDeviceVulkan12Features features_12 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-                .pNext = std::addressof(features_13),
-            };
-            VkPhysicalDeviceVulkan11Features features_11 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-                .pNext = std::addressof(features_12),
-            };
-            VkPhysicalDeviceFeatures2 features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-                .pNext = std::addressof(features_11),
-            };
-
             /* Query supported extensions */
             u32 property_count = 0;
             const VkResult result0 = ::pfn_vkEnumerateDeviceExtensionProperties(vk_physical_device, nullptr, std::addressof(property_count), nullptr);
@@ -305,21 +201,21 @@ namespace awn::gfx::impl {
                     .optional_feature = OptionalFeature::SupportsMeshShaders,
                     .is_optional = true,
                 },
-                {
-                    .extension = VK_NV_PER_STAGE_DESCRIPTOR_SET_EXTENSION_NAME,
-                    .optional_feature = OptionalFeature::SupportsPerStageDescriptorSets,
-                    .is_optional = true,
-                },
+                //{
+                //    .extension = VK_NV_PER_STAGE_DESCRIPTOR_SET_EXTENSION_NAME,
+                //    .optional_feature = OptionalFeature::SupportsPerStageDescriptorSets,
+                //    .is_optional = true,
+                //},
                 {
                     .extension = VK_NV_COMMAND_BUFFER_INHERITANCE_EXTENSION_NAME,
                     .optional_feature = OptionalFeature::SupportsCommandBufferInheritance,
                     .is_optional = true,
                 },
-                {
-                    .extension = VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
-                    .optional_feature = OptionalFeature::SupportsNvBindlessTexture,
-                    .is_optional = true,
-                },
+                //{
+                //    .extension = VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
+                //    .optional_feature = OptionalFeature::SupportsNvBindlessTexture,
+                //    .is_optional = true,
+                //},
             };
             static constexpr const u32 cAllDeviceExtensionCount = sizeof(cAllDeviceExtensionArray) / sizeof(DeviceExtensionEntry);
             for (u32 j = 0; j < cAllDeviceExtensionCount; ++j) {
@@ -340,6 +236,121 @@ namespace awn::gfx::impl {
                     }
                 }
             }
+
+            /* Property structs */
+            void *prev_property = nullptr;
+            VkPhysicalDeviceMeshShaderPropertiesEXT mesh_shader_properties = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
+                .pNext = prev_property,
+            };
+            prev_property = (missing_features->IsOptionalFeature(OptionalFeature::SupportsMeshShaders)) ? std::addressof(mesh_shader_properties) : prev_property;
+            VkPhysicalDeviceRobustness2PropertiesEXT robustness_2_properties = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT,
+                .pNext = prev_property,
+            };
+            prev_property = (missing_features->IsOptionalFeature(OptionalFeature::SupportsRobustness2)) ? std::addressof(robustness_2_properties) : prev_property;
+
+            VkPhysicalDeviceNestedCommandBufferPropertiesEXT nested_command_buffer_properties = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
+                .pNext = prev_property,
+            };
+            VkPhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
+                .pNext = std::addressof(nested_command_buffer_properties),
+            };
+            VkPhysicalDeviceShaderObjectPropertiesEXT shader_object_properties = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
+                .pNext = std::addressof(descriptor_buffer_properties),
+            };
+            VkPhysicalDeviceVulkan14Properties properties_14 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
+                .pNext = std::addressof(shader_object_properties),
+            };
+            VkPhysicalDeviceVulkan13Properties properties_13 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
+                .pNext = std::addressof(properties_14),
+            };
+            VkPhysicalDeviceVulkan12Properties properties_12 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
+                .pNext = std::addressof(properties_13),
+            };
+            VkPhysicalDeviceVulkan11Properties properties_11 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
+                .pNext = std::addressof(properties_12),
+            };
+            VkPhysicalDeviceProperties2 properties = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+                .pNext = std::addressof(properties_11),
+            };
+
+            /* Feature structs */
+            void *prev_feature = nullptr;
+            //VkPhysicalDevicePerStageDescriptorSetFeaturesNV per_stage_descriptor_features = {
+            //    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
+            //    .pNext = prev_feature,
+            //};
+            //prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? std::addressof(per_stage_descriptor_features) : prev_feature;
+            VkPhysicalDeviceCommandBufferInheritanceFeaturesNV command_buffer_inheritance_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
+                .pNext = prev_feature,
+            };
+            prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsCommandBufferInheritance)) ? std::addressof(command_buffer_inheritance_features) : prev_feature;
+            VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+                .pNext = prev_feature,
+            };
+            prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsMeshShaders)) ? std::addressof(mesh_shader_features) : prev_feature;
+            VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT vertex_attribute_robustness_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
+                .pNext = prev_feature,
+            };
+            prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsVertexAttributeRobustness)) ? std::addressof(vertex_attribute_robustness_features) : prev_feature;
+            VkPhysicalDeviceRobustness2FeaturesEXT robustness_2_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+                .pNext = prev_feature,
+            };
+            prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsRobustness2)) ? std::addressof(robustness_2_features) : prev_feature;
+
+            VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+                .pNext = prev_feature,
+            };
+            VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutable_descriptor_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
+                .pNext = std::addressof(nested_command_buffer_features),
+            };
+            VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptor_buffer_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+                .pNext = std::addressof(mutable_descriptor_features),
+            };
+            VkPhysicalDeviceShaderObjectFeaturesEXT shader_object_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+                .pNext = std::addressof(descriptor_buffer_features),
+            };
+            VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
+                .pNext = std::addressof(shader_object_features),
+            };
+            VkPhysicalDeviceVulkan14Features features_14 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+                .pNext = std::addressof(shader_maximal_reconvergence_features),
+            };
+            VkPhysicalDeviceVulkan13Features features_13 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+                .pNext = std::addressof(features_14),
+            };
+            VkPhysicalDeviceVulkan12Features features_12 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+                .pNext = std::addressof(features_13),
+            };
+            VkPhysicalDeviceVulkan11Features features_11 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+                .pNext = std::addressof(features_12),
+            };
+            VkPhysicalDeviceFeatures2 features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+                .pNext = std::addressof(features_11),
+            };
 
             /* Query Physical Device */
             ::pfn_vkGetPhysicalDeviceProperties2(vk_physical_device, std::addressof(properties));
@@ -379,7 +390,8 @@ namespace awn::gfx::impl {
             }
 
             /* TargetMaxSamplerCount checks */
-            const bool is_nv_bindless_texture = !missing_features->missing_optional_feature_mask.GetBit(static_cast<u32>(OptionalFeature::SupportsNvBindlessTexture));
+            //const bool is_nv_bindless_texture = !missing_features->missing_optional_feature_mask.GetBit(static_cast<u32>(OptionalFeature::SupportsNvBindlessTexture));
+            const bool is_nv_bindless_texture = false;
             if (properties.properties.limits.maxSamplerAllocationCount < context_info->sampler_descriptor_count) { missing_features->SetMissing(RequiredFeature::TargetMaxSamplerCount); }
             if (!is_nv_bindless_texture && properties_12.maxDescriptorSetUpdateAfterBindSamplers < context_info->sampler_descriptor_count) { missing_features->SetMissing(RequiredFeature::TargetMaxSamplerCount); }
             if (!is_nv_bindless_texture && properties_12.maxDescriptorSetUpdateAfterBindSampledImages < context_info->texture_view_descriptor_count) { missing_features->SetMissing(RequiredFeature::TargetMaxTextureViewCount); }
@@ -488,8 +500,8 @@ namespace awn::gfx::impl {
             if (!mesh_shader_features.meshShader) { missing_features->SetMissing(OptionalFeature::SupportsMeshShaders); }
 
             /* SupportsPerStageDescriptorSets checks */
-            if (!per_stage_descriptor_features.perStageDescriptorSet) { missing_features->SetMissing(OptionalFeature::SupportsPerStageDescriptorSets); missing_features->SetMissing(OptionalFeature::SupportsNvBindlessTexture); }
-            if (!per_stage_descriptor_features.dynamicPipelineLayout) { missing_features->SetMissing(OptionalFeature::SupportsPerStageDescriptorSets); missing_features->SetMissing(OptionalFeature::SupportsNvBindlessTexture); }
+            //if (!per_stage_descriptor_features.perStageDescriptorSet) { missing_features->SetMissing(OptionalFeature::SupportsPerStageDescriptorSets); missing_features->SetMissing(OptionalFeature::SupportsNvBindlessTexture); }
+            //if (!per_stage_descriptor_features.dynamicPipelineLayout) { missing_features->SetMissing(OptionalFeature::SupportsPerStageDescriptorSets); missing_features->SetMissing(OptionalFeature::SupportsNvBindlessTexture); }
 
             /* SupportsCommandBufferInheritance checks */
             if (!command_buffer_inheritance_features.commandBufferInheritance) { missing_features->SetMissing(OptionalFeature::SupportsCommandBufferInheritance); }
@@ -653,7 +665,8 @@ namespace awn::gfx::impl {
         FindMissingFeatures(std::addressof(m_missing_features), vk_physical_device, context_info);
         ::pfn_vkGetPhysicalDeviceProperties2(vk_physical_device, std::addressof(m_vk_physical_device_properties));
         ::pfn_vkGetPhysicalDeviceMemoryProperties(vk_physical_device, std::addressof(m_vk_physical_device_memory_properties));
-        m_is_ext_bindless_nv = (this->GetTextureSamplerDescriptorSize() == sizeof(size_t));
+        m_is_unified_memory = (m_vk_physical_device_memory_properties.memoryHeapCount == 1);
+        //m_is_ext_bindless_nv = (this->GetTextureSamplerDescriptorSize() == sizeof(size_t));
 
         /* Get queue family indices in enum order */
         const QueueType queue_type_array[] = {
@@ -721,19 +734,19 @@ namespace awn::gfx::impl {
                 .extension = VK_EXT_MESH_SHADER_EXTENSION_NAME,
                 .optional_feature = OptionalFeature::SupportsMeshShaders,
             },
-            {
-                .extension = VK_NV_PER_STAGE_DESCRIPTOR_SET_EXTENSION_NAME,
-                .optional_feature = OptionalFeature::SupportsCommandBufferInheritance,
-            },
+            //{
+            //    .extension = VK_NV_PER_STAGE_DESCRIPTOR_SET_EXTENSION_NAME,
+            //    .optional_feature = OptionalFeature::SupportsPerStageDescriptorSets,
+            //},
             {
                 .extension = VK_NV_COMMAND_BUFFER_INHERITANCE_EXTENSION_NAME,
                 .optional_feature = OptionalFeature::SupportsCommandBufferInheritance,
             },
-            {
-                .extension = VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
-                .optional_feature = OptionalFeature::SupportsNvBindlessTexture,
-                .is_enable_by_default = false,
-            },
+            //{
+            //    .extension = VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
+            //    .optional_feature = OptionalFeature::SupportsNvBindlessTexture,
+            //    .is_enable_by_default = false,
+            //},
         };
         static constexpr u32 cRequiredExtensionCount = sizeof(cRequiredExtensionArray) / sizeof(const char*);
         static constexpr u32 cOptionalExtensionCount = sizeof(cOptionalExtensionArray) / sizeof(DeviceOptionalExtension);
@@ -782,54 +795,61 @@ namespace awn::gfx::impl {
         }
 
         /* VkDevice feature enables */
+        void *pnext = nullptr;
         const bool is_command_buffer_inheritance = this->IsOptionalFeature(OptionalFeature::SupportsCommandBufferInheritance);
         VkPhysicalDeviceCommandBufferInheritanceFeaturesNV command_buffer_inheritance_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
-            .pNext = nullptr,
-            .commandBufferInheritance = is_command_buffer_inheritance,
+            .pNext = pnext,
+            .commandBufferInheritance = true,
         };
-        const bool is_per_stage_desc = this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets);
-        VkPhysicalDevicePerStageDescriptorSetFeaturesNV per_stage_descriptor_features = {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
-            .pNext = std::addressof(command_buffer_inheritance_features),
-            .perStageDescriptorSet = is_per_stage_desc,
-            .dynamicPipelineLayout = is_per_stage_desc,
-        };
+        pnext = (is_command_buffer_inheritance) ? std::addressof(command_buffer_inheritance_features) : pnext;
+        //const bool is_per_stage_desc = this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets);
+        //VkPhysicalDevicePerStageDescriptorSetFeaturesNV per_stage_descriptor_features = {
+        //    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
+        //    .pNext = pnext,
+        //    .perStageDescriptorSet = true,
+        //    .dynamicPipelineLayout = true,
+        //};
+        //pnext = (is_per_stage_desc) ? std::addressof(per_stage_descriptor_features) : pnext;
         const bool is_mesh_shaders = this->IsOptionalFeature(OptionalFeature::SupportsMeshShaders);
         VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
-            .pNext = std::addressof(per_stage_descriptor_features),
-            .taskShader = is_mesh_shaders,
-            .meshShader = is_mesh_shaders,
+            .pNext = pnext,
+            .taskShader = true,
+            .meshShader = true,
             //.multiviewMeshShader = is_mesh_shaders,
             //.primitiveFragmentShadingRateMeshShader = is_mesh_shaders,
             //.meshShaderQueries = is_mesh_shaders,
         };
+        pnext = (is_mesh_shaders) ? std::addressof(mesh_shader_features) : pnext;
         const bool is_vertex_attribute_robustness = this->IsOptionalFeature(OptionalFeature::SupportsVertexAttributeRobustness);
         VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT vertex_attribute_robustness_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
-            .pNext = std::addressof(mesh_shader_features),
-            .vertexAttributeRobustness = is_vertex_attribute_robustness,
+            .pNext = pnext,
+            .vertexAttributeRobustness = true,
         };
+        pnext = (is_vertex_attribute_robustness) ? std::addressof(vertex_attribute_robustness_features) : pnext;
         const bool is_robustness2 = this->IsOptionalFeature(OptionalFeature::SupportsRobustness2);
         VkPhysicalDeviceRobustness2FeaturesEXT robustness_2_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
-            .pNext = std::addressof(vertex_attribute_robustness_features),
-            .robustBufferAccess2 = is_robustness2,
-            .robustImageAccess2 = is_robustness2,
-            .nullDescriptor = is_robustness2,
+            .pNext = pnext,
+            .robustBufferAccess2 = true,
+            .robustImageAccess2 = true,
+            .nullDescriptor = true,
         };
+        pnext = (is_robustness2) ? std::addressof(robustness_2_features) : pnext;
         const bool is_maximal_reconvergance = this->IsOptionalFeature(OptionalFeature::SupportsShaderMaximalReconvergence);
         VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
-            .pNext = std::addressof(robustness_2_features),
-            .shaderMaximalReconvergence = is_maximal_reconvergance,
+            .pNext = pnext,
+            .shaderMaximalReconvergence = true,
         };
+        pnext = (is_maximal_reconvergance) ? std::addressof(shader_maximal_reconvergence_features) : pnext;
         
 #ifdef AWN_VK_DEBUG
         VkPhysicalDeviceFaultFeaturesEXT fault_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
-            .pNext = std::addressof(shader_maximal_reconvergence_features),
+            .pNext = pnext,
             .deviceFault = VK_TRUE,
         };
 #endif
@@ -838,7 +858,7 @@ namespace awn::gfx::impl {
 #ifdef AWN_VK_DEBUG
             .pNext = std::addressof(fault_features),
 #else
-            .pNext = std::addressof(shader_maximal_reconvergence_features),
+            .pNext = pnext,
 #endif
             .nestedCommandBuffer = VK_TRUE,
             .nestedCommandBufferRendering = VK_TRUE,
@@ -907,7 +927,7 @@ namespace awn::gfx::impl {
             .pNext = std::addressof(target_1_2_features),
             .multiview = VK_TRUE,
             .variablePointersStorageBuffer = VK_TRUE,
-            .variablePointers              = VK_TRUE,
+            .variablePointers = VK_TRUE,
         };
         const VkPhysicalDeviceFeatures2 target_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
@@ -1007,7 +1027,8 @@ namespace awn::gfx::impl {
                     .stageFlags      = stage,
                 },
             };
-            const u32 ext_flags = (!this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? 0 : VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV;
+            //const u32 ext_flags = (!this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? 0 : VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV;
+            const u32 ext_flags = 0;
             const VkDescriptorSetLayoutCreateInfo bindless_set_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
                 .pNext = std::addressof(bindless_set_binding_info),
@@ -1019,11 +1040,8 @@ namespace awn::gfx::impl {
             RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
 
             return;
-        };
-        const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
-        if (!is_nv_bindless) {            
-            init_2_binding_multi_desc_desc_layout_lambda(std::addressof(m_vk_bindless_descriptor_set_layout), VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, context_info->texture_view_descriptor_count, VK_DESCRIPTOR_TYPE_SAMPLER, context_info->sampler_descriptor_count);
-        }
+        };      
+        init_2_binding_multi_desc_desc_layout_lambda(std::addressof(m_vk_bindless_descriptor_set_layout), VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, context_info->texture_view_descriptor_count, VK_DESCRIPTOR_TYPE_SAMPLER, context_info->sampler_descriptor_count);
 
         /* Build per stage descriptor set layout arrays */
         struct MultiBindInfo {
@@ -1070,7 +1088,8 @@ namespace awn::gfx::impl {
                 .bindingCount = total_count,
                 .pBindingFlags = bindless_set_binding_flag_array,
             };
-            const u32 ext_flags = (!this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? 0 : VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV;
+            //const u32 ext_flags = (!this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? 0 : VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV;
+            const u32 ext_flags = 0;
             const VkDescriptorSetLayoutCreateInfo bindless_set_layout_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
                 .pNext = std::addressof(bindless_set_binding_info),
@@ -1121,18 +1140,16 @@ namespace awn::gfx::impl {
 
             /* Set pipeline layout info */
             layout->vk_pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            layout->vk_pipeline_layout_create_info.setLayoutCount = cMaxPerStageSetCount - is_nv_bindless;
+            layout->vk_pipeline_layout_create_info.setLayoutCount = cMaxPerStageSetCount;
             layout->vk_pipeline_layout_create_info.pSetLayouts = layout->vk_descriptor_set_layout_array;
             //layout->vk_pipeline_layout_create_info.pushConstantRangeCount = 1;
             //layout->vk_pipeline_layout_create_info.pPushConstantRanges = std::addressof(layout->vk_push_constant_range);
 
             /* Create descriptor sets */
             VkShaderStageFlags vk_stage_flags = vp::res::GfxShaderStageToVkShaderStageFlags(shader_stage);
-            if (!is_nv_bindless) {                
-                layout->vk_descriptor_set_layout_array[cTargetBindlessLayoutSet] = m_vk_bindless_descriptor_set_layout;
-            }
-            init_multi_binding_single_desc_desc_layout_lambda(std::addressof(layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet - is_nv_bindless]), vk_stage_flags, cTsIStSSBindInfoArray, cTsIStSSBindInfoCount);
-            init_multi_binding_single_desc_desc_layout_lambda(std::addressof(layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet - is_nv_bindless]), vk_stage_flags, cUboSboBindInfoArray, cUboSboBindInfoCount);
+            layout->vk_descriptor_set_layout_array[cTargetBindlessLayoutSet] = m_vk_bindless_descriptor_set_layout;
+            init_multi_binding_single_desc_desc_layout_lambda(std::addressof(layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet]), vk_stage_flags, cTsIStSSBindInfoArray, cTsIStSSBindInfoCount);
+            init_multi_binding_single_desc_desc_layout_lambda(std::addressof(layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet]), vk_stage_flags, cUboSboBindInfoArray, cUboSboBindInfoCount);
 
             /* Set pipeline layout */
             //layout->vk_push_constant_range.stageFlags = vk_stage_flags;
@@ -1153,43 +1170,38 @@ namespace awn::gfx::impl {
             set_desc_layout_lambda(std::addressof(m_per_stage_descriptor_layout_mesh), ShaderStage::Mesh);
         }
 
-        if (!this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) {
-
-            /* Build combined descriptor layout arrays */
-            if (!is_nv_bindless) {
-                m_vk_combined_descriptor_set_layout_graphics[cTargetBindlessLayoutSet] = m_vk_bindless_descriptor_set_layout;
-                m_vk_combined_descriptor_set_layout_compute[cTargetBindlessLayoutSet] = m_vk_bindless_descriptor_set_layout;
-            }
-            const u32 stage_count = (is_mesh_shader) ? cTargetMaxShaderStageCount : cTargetMaxShaderStageCount - 2;
-            for (u32 i = 0; i < stage_count; ++i) {
-                if (i == 5) { continue; }
-                PerStageDescriptorLayout *per_stage_layout = std::addressof(m_per_stage_descriptor_layout_array[i]);
-                const gfx::ShaderStage stage = static_cast<ShaderStage>(i);
-                m_vk_combined_descriptor_set_layout_graphics[this->GetPerStageSetCombinedTextureSampler(stage)] = per_stage_layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet - is_nv_bindless];
-                m_vk_combined_descriptor_set_layout_graphics[this->GetPerStageSetCombinedBuffer(stage)] = per_stage_layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet - is_nv_bindless];
-            }
-            PerStageDescriptorLayout *per_stage_layout = std::addressof(m_per_stage_descriptor_layout_array[5]);
-            m_vk_combined_descriptor_set_layout_compute[this->GetPerStageSetCombinedTextureSampler(ShaderStage::Compute)] = per_stage_layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet - is_nv_bindless];
-            m_vk_combined_descriptor_set_layout_compute[this->GetPerStageSetCombinedBuffer(ShaderStage::Compute)] = per_stage_layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet - is_nv_bindless];
-
-            /* Create combined pipeline layouts */
-            const u32 layout_count_graphics = cMaxCombinedSetCountGraphics - (is_mesh_shader * 4) - is_nv_bindless;
-            const VkPipelineLayoutCreateInfo layout_info_graphics = {
-                .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-                .setLayoutCount = layout_count_graphics,
-                .pSetLayouts = m_vk_combined_descriptor_set_layout_graphics,
-            };
-            const VkResult result0 = ::pfn_vkCreatePipelineLayout(this->GetVkDevice(), std::addressof(layout_info_graphics), this->GetVkAllocationCallbacks(), std::addressof(m_vk_combined_pipeline_layout_graphics));
-            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
-
-            const VkPipelineLayoutCreateInfo layout_info_compute = {
-                .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-                .setLayoutCount = static_cast<u32>(cMaxCombinedSetCountCompute) - is_nv_bindless,
-                .pSetLayouts = m_vk_combined_descriptor_set_layout_compute,
-            };
-            const VkResult result1 = ::pfn_vkCreatePipelineLayout(this->GetVkDevice(), std::addressof(layout_info_compute), this->GetVkAllocationCallbacks(), std::addressof(m_vk_combined_pipeline_layout_compute));
-            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
+        /* Build combined descriptor layout arrays */
+        m_vk_combined_descriptor_set_layout_graphics[cTargetBindlessLayoutSet] = m_vk_bindless_descriptor_set_layout;
+        m_vk_combined_descriptor_set_layout_compute[cTargetBindlessLayoutSet] = m_vk_bindless_descriptor_set_layout;
+        const u32 stage_count = (is_mesh_shader) ? cTargetMaxShaderStageCount : cTargetMaxShaderStageCount - 2;
+        for (u32 i = 0; i < stage_count; ++i) {
+            if (i == 5) { continue; }
+            PerStageDescriptorLayout *per_stage_layout = std::addressof(m_per_stage_descriptor_layout_array[i]);
+            const gfx::ShaderStage stage = static_cast<ShaderStage>(i);
+            m_vk_combined_descriptor_set_layout_graphics[this->GetPerStageSetCombinedTextureSampler(stage)] = per_stage_layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet];
+            m_vk_combined_descriptor_set_layout_graphics[this->GetPerStageSetCombinedBuffer(stage)] = per_stage_layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet];
         }
+        PerStageDescriptorLayout *per_stage_layout = std::addressof(m_per_stage_descriptor_layout_array[5]);
+        m_vk_combined_descriptor_set_layout_compute[this->GetPerStageSetCombinedTextureSampler(ShaderStage::Compute)] = per_stage_layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet];
+        m_vk_combined_descriptor_set_layout_compute[this->GetPerStageSetCombinedBuffer(ShaderStage::Compute)] = per_stage_layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet];
+
+        /* Create combined pipeline layouts */
+        const u32 layout_count_graphics = cMaxCombinedSetCountGraphics - (is_mesh_shader * 4);
+        const VkPipelineLayoutCreateInfo layout_info_graphics = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            .setLayoutCount = layout_count_graphics,
+            .pSetLayouts = m_vk_combined_descriptor_set_layout_graphics,
+        };
+        const VkResult result0 = ::pfn_vkCreatePipelineLayout(this->GetVkDevice(), std::addressof(layout_info_graphics), this->GetVkAllocationCallbacks(), std::addressof(m_vk_combined_pipeline_layout_graphics));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
+
+        const VkPipelineLayoutCreateInfo layout_info_compute = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            .setLayoutCount = static_cast<u32>(cMaxCombinedSetCountCompute),
+            .pSetLayouts = m_vk_combined_descriptor_set_layout_compute,
+        };
+        const VkResult result1 = ::pfn_vkCreatePipelineLayout(this->GetVkDevice(), std::addressof(layout_info_compute), this->GetVkAllocationCallbacks(), std::addressof(m_vk_combined_pipeline_layout_compute));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
 
         return;
     }
@@ -1197,15 +1209,13 @@ namespace awn::gfx::impl {
     void Context::FinalizePipelineLayout() {
 
         /* Destroy combined pipeline layouts */
-        if (!this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) {
-            if (m_vk_combined_pipeline_layout_graphics != VK_NULL_HANDLE) {
-                ::pfn_vkDestroyPipelineLayout(this->GetVkDevice(), m_vk_combined_pipeline_layout_graphics, this->GetVkAllocationCallbacks());
-                m_vk_combined_pipeline_layout_graphics = VK_NULL_HANDLE;
-            }
-            if (m_vk_combined_pipeline_layout_compute != VK_NULL_HANDLE) {
-                ::pfn_vkDestroyPipelineLayout(this->GetVkDevice(), m_vk_combined_pipeline_layout_compute, this->GetVkAllocationCallbacks());
-                m_vk_combined_pipeline_layout_compute = VK_NULL_HANDLE;
-            }
+        if (m_vk_combined_pipeline_layout_graphics != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyPipelineLayout(this->GetVkDevice(), m_vk_combined_pipeline_layout_graphics, this->GetVkAllocationCallbacks());
+            m_vk_combined_pipeline_layout_graphics = VK_NULL_HANDLE;
+        }
+        if (m_vk_combined_pipeline_layout_compute != VK_NULL_HANDLE) {
+            ::pfn_vkDestroyPipelineLayout(this->GetVkDevice(), m_vk_combined_pipeline_layout_compute, this->GetVkAllocationCallbacks());
+            m_vk_combined_pipeline_layout_compute = VK_NULL_HANDLE;
         }
 
         /* Destroy descriptor set layouts */
@@ -1213,14 +1223,12 @@ namespace awn::gfx::impl {
             ::pfn_vkDestroyDescriptorSetLayout(this->GetVkDevice(), m_vk_bindless_descriptor_set_layout, this->GetVkAllocationCallbacks());
             m_vk_bindless_descriptor_set_layout = VK_NULL_HANDLE;
         }
-
-        const bool is_nv_bindless = this->IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture);
-        const auto finalize_per_stage_desc_lambda = [this, is_nv_bindless](PerStageDescriptorLayout *layout) {
-            if (layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet - is_nv_bindless] != VK_NULL_HANDLE) {
-                ::pfn_vkDestroyDescriptorSetLayout(this->GetVkDevice(), layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet - is_nv_bindless], this->GetVkAllocationCallbacks());
+        const auto finalize_per_stage_desc_lambda = [this](PerStageDescriptorLayout *layout) {
+            if (layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet] != VK_NULL_HANDLE) {
+                ::pfn_vkDestroyDescriptorSetLayout(this->GetVkDevice(), layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet], this->GetVkAllocationCallbacks());
             }
-            if (layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet - is_nv_bindless] != VK_NULL_HANDLE) {
-                ::pfn_vkDestroyDescriptorSetLayout(this->GetVkDevice(), layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet - is_nv_bindless], this->GetVkAllocationCallbacks());
+            if (layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet] != VK_NULL_HANDLE) {
+                ::pfn_vkDestroyDescriptorSetLayout(this->GetVkDevice(), layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet], this->GetVkAllocationCallbacks());
             }
             ::memset(layout, 0, sizeof(PerStageDescriptorLayout));
         };

@@ -18,24 +18,38 @@
 namespace vp::util {
 
     template <typename T>
-    constexpr TVectorType<T, 4> Broadcast4(const T *value) {
+    constexpr TVectorType<T, 4> Broadcast4(const T value) {
         using v4t = TVectorType<T, 4>;
         using Type = v4t::UnderlyingType;
-        if (!std::is_constant_evaluated() && std::is_same_v<Type, float>) {
-            return v4t{ .v = reinterpret_cast<float __attribute__((vector_size(16)))>(__builtin_ia32_vbroadcastss(value)), };
+        if (!std::is_constant_evaluated()) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            if constexpr (std::is_same_v<Type, double>) {
+                return v4t{ .v = reinterpret_cast<double __attribute__((vector_size(32)))>(_mm256_set1_pd(value)), };
+            } else if constexpr (std::is_same_v<Type, s32> || std::is_same_v<Type, u32>) {
+                return v4t{ .v = reinterpret_cast<s32 __attribute__((vector_size(16)))>(_mm_set1_epi32(value)), };
+            } else if constexpr (std::is_same_v<Type, float>) {
+                return v4t{ .v = reinterpret_cast<float __attribute__((vector_size(16)))>(_mm_set1_ps(value)), };
+            }
+#endif
         }
-        const Type v = *value;
+        const Type v = value;
         return v4t{v,v,v,v,};
     }
 
     template <typename T>
-    constexpr TVectorType<T, 8> Broadcast8(const T *value) {
+    constexpr TVectorType<T, 8> Broadcast8(const T value) {
         using v8t = TVectorType<T, 8>;
         using Type = v8t::UnderlyingType;
         if (!std::is_constant_evaluated() && std::is_same_v<Type, float>) {
-            return v8t{ .v = reinterpret_cast<float __attribute__((vector_size(32)))>(__builtin_ia32_vbroadcastss256(value)), };
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            if constexpr (std::is_same_v<Type, s32> || std::is_same_v<Type, u32>) {
+                return v8t{ .v = reinterpret_cast<long long int __attribute__((vector_size(16)))>(_mm256_set1_epi32(value)), };
+            } else if constexpr (std::is_same_v<Type, float>) {
+                return v8t{ .v = reinterpret_cast<float __attribute__((vector_size(16)))>(_mm256_set1_ps(value)), };
+            }
+#endif
         }
-        const Type v = *value;
+        const Type v = value;
         return v8t{v,v,v,v,v,v,v,v,};
     }
 

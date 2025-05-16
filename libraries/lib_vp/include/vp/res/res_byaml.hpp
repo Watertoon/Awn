@@ -161,21 +161,21 @@ namespace vp::res {
             return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + offset);
         }
 
-        ALWAYS_INLINE bool IsValid() const {
+        bool IsValid() const {
 
             /* Endianess check */
             const bool is_reverse_endian = this->IsReverseEndian();
 
             /* Header checks */
-            const u32 r_magic   = (!is_reverse_endian) ? magic : vp::util::SwapEndian(magic);
-            const u32 r_version = (!is_reverse_endian) ? version : vp::util::SwapEndian(version);
+            const u32 r_magic   = (!is_reverse_endian) ? this->magic : vp::util::SwapEndian(this->magic);
+            const u32 r_version = (!is_reverse_endian) ? this->version : vp::util::SwapEndian(this->version);
             if (r_magic != cMagic || cTargetVersion < r_version) { return false; }
 
             /* String table checks */
-            const u32 r_key_table_offset    = (!is_reverse_endian) ? key_table_offset : vp::util::SwapEndian(key_table_offset);
-            const u32 r_string_table_offset = (!is_reverse_endian) ? string_table_offset : vp::util::SwapEndian(string_table_offset);
-            if (r_key_table_offset != 0    && !VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_key_table_offset), is_reverse_endian))       { return false; }
-            if (r_string_table_offset != 0 && !VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_string_table_offset), is_reverse_endian)) { return false; }
+            const u32 r_key_table_offset    = (!is_reverse_endian) ? this->key_table_offset : vp::util::SwapEndian(this->key_table_offset);
+            const u32 r_string_table_offset = (!is_reverse_endian) ? this->string_table_offset : vp::util::SwapEndian(this->string_table_offset);
+            if (r_key_table_offset != 0    && !this->VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_key_table_offset), is_reverse_endian)) { return false; }
+            if (r_string_table_offset != 0 && !this->VerifyStringTable(reinterpret_cast<const unsigned char*>(reinterpret_cast<uintptr_t>(this) + r_string_table_offset), is_reverse_endian)) { return false; }
 
             /* Table offset checks */
             const ResByamlContainer *string_table = reinterpret_cast<ResByamlContainer*>(reinterpret_cast<uintptr_t>(this) + r_string_table_offset);
@@ -188,13 +188,13 @@ namespace vp::res {
             const u32 final_key_offset         = (r_key_table_offset != 0) ? *reinterpret_cast<u32*>(reinterpret_cast<uintptr_t>(key_table) + sizeof(u32) * (r_key_count + 1)) : 0;
             const u32 r_final_key_offset       = (!is_reverse_endian) ? final_key_offset : vp::util::SwapEndian(final_key_offset);
 
-            if ((r_string_table_offset | r_key_table_offset) != 0 && data_offset == 0) { return false; }
+            if ((r_string_table_offset | r_key_table_offset) != 0 && this->data_offset == 0) { return false; }
             if (r_key_table_offset != 0) {
                 if (r_string_table_offset != 0 && r_string_table_offset < r_final_key_offset) { return false; }
-                if (data_offset != 0 && data_offset < r_final_key_offset) { return false; }
+                if (this->data_offset != 0 && this->data_offset < r_final_key_offset) { return false; }
             }
 
-            return (r_final_string_offset <= data_offset) | (r_string_table_offset == 0) | (data_offset == 0);
+            return (r_final_string_offset <= this->data_offset) | (r_string_table_offset == 0) | (this->data_offset == 0);
         }
 
         constexpr bool IsReverseEndian() const {

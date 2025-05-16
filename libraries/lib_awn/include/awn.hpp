@@ -33,5 +33,5 @@ namespace awn {
 #include <awn/para.h>
 #include <awn/gfx.h>
 #include <awn/hid.h>
+#include <awn/grr.h>
 #include <awn/frm.h>
-#include <awn/render.h>

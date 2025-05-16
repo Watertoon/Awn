@@ -37,8 +37,8 @@ namespace awn::res {
                     sys::Event                    m_decompress_finish_event;
                     sys::Event                    m_stream_finish_event;
                 public:
-                    DecompressorThread(mem::Heap *heap);
-                    virtual ~DecompressorThread() override;
+                    constexpr DecompressorThread() : Thread(), m_current_stream_context(), m_decompress_finish_event(sys::SignalState::Signaled, sys::ResetMode::Auto), m_stream_finish_event(sys::SignalState::Cleared, sys::ResetMode::Manual) {/*...*/}
+                    virtual ~DecompressorThread() override {/*...*/}
 
                     virtual void ThreadMain(size_t stream_size) override;
             };

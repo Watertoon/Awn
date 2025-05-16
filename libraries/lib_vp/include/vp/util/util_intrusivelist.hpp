@@ -252,19 +252,20 @@ namespace vp::util {
 
     template<class RP, auto M>
     struct IntrusiveListMemberTraits {
+        static constexpr uintptr_t cOffset = OffsetOf<M>();
 
         static ALWAYS_INLINE RP *GetParent(IntrusiveListNode *node) {
-            return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+            return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
         }
         static ALWAYS_INLINE RP &GetParentReference(IntrusiveListNode *node) {
-            return *reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+            return *reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
         }
 
         static ALWAYS_INLINE const RP *GetParent(const IntrusiveListNode *node) {
-            return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+            return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
         }
         static ALWAYS_INLINE const RP &GetParentReference(const IntrusiveListNode *node) {
-            return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+            return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
         }
 
         static constexpr ALWAYS_INLINE IntrusiveListNode *GetListNode(RP *parent) {

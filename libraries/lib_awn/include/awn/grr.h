@@ -15,11 +15,23 @@
  */
 #pragma once
 
-namespace awn::render {
+#ifdef VP_TARGET_PLATFORM_win32
+    #include <dxgi1_6.h>
 
-    void InitializeNativeVideo(mem::Heap *heap);
-    void FinalizeNativeVideo();
+    #ifdef VP_DEBUG
+        #include <dxgidebug.h>
+    #endif
 
-    void SubmitAndPresentAsync(gfx::CommandList *command_list_array, u32 command_list_count);
-    void WaitAndCompletePresent();
-}
+    #include <d3d11_4.h>
+    #include <dcomp.h>
+    #include <awn/grr/impl/grr_dxgiinterfaceext.win32.h>
+    #include <awn/grr/impl/grr_dxgicontext11.win32.h>
+
+    #include <awn/grr/impl/grr_dragdrophandler.win32.h>
+    #include <awn/grr/grr_nativewindow.win32.h>
+    #include <awn/grr/grr_display.win32.h>
+    #include <awn/grr/impl/grr_displaymanager.win32.h>
+    #include <awn/grr/grr_displaymanagerapi.win32.h>
+
+#elif VP_TARGET_PLATFORM_nx
+#endif
