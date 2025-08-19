@@ -174,6 +174,7 @@ namespace awn::frm {
         /* Initialize descriptor memory manager */
         const gfx::impl::DescriptorMemoryManagerInfo desc_mgr_info = {
             .max_command_buffer_count = graphics_info->max_command_buffer_count,
+            .max_command_list_count = graphics_info->max_command_list_count,
             .per_stage_memory_size = graphics_info->per_stage_descriptor_memory_size,
         };
         gfx::impl::DescriptorMemoryManager *desc_memory_mgr = gfx::impl::DescriptorMemoryManager::CreateInstance(awn_graphics_heap);

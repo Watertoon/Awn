@@ -53,7 +53,6 @@ namespace awn::async {
             }
             constexpr bool IsPending() const {
                 if (m_async_task != nullptr && m_state == static_cast<u32>(State::Pending)) { return true; }
-                vp::util::MemoryBarrierInnerRead();
                 return false;
             }
             constexpr bool IsCancelled() const {

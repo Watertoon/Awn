@@ -27,15 +27,17 @@ namespace awn::res {
         Zstandard   = (1 << 2),
     };
     VP_ENUM_FLAG_TRAITS(CompressionType);
+    static constexpr const char cSzsExt[] = ".szs";
+    static constexpr const char cZstdExt[] = ".zs";
 
     using MaxExtensionString = vp::util::MaxExtensionString;
 
     constexpr CompressionType GetCompressionType(MaxExtensionString *extension) {
-        const MaxExtensionString zs_ext(".zs");
+        constexpr const MaxExtensionString zs_ext(cZstdExt);
         if (*extension == zs_ext) {
             return CompressionType::Zstandard;
         }
-        const MaxExtensionString szs_ext(".szs");
+        constexpr const MaxExtensionString szs_ext(cSzsExt);
         if (*extension == szs_ext) {
             return CompressionType::Szs;
         }

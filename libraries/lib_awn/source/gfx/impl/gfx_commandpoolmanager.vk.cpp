@@ -29,70 +29,72 @@ namespace awn::gfx::impl {
         m_unit_array.Finalize();
     }
 
-    CommandList CommandPoolManager::CreateCommandList(QueueType queue_type, CommandPoolId pool_id, bool is_primary) {
+    Result CommandPoolManager::CreateCommandPool(CommandPoolId *out_id, QueueType queue_type) {
 
-        /* Allocate new command pool unit if one doesn't exist */
+        const CommandPoolId handle = m_handle_allocator.Allocate();
+        VP_ASSERT(handle != HandleAllocator::cInvalidEntryIndex);
+        CommandPoolUnit *unit = std::addressof(m_unit_array[handle]);
+        unit->queue_type = queue_type;
+        unit->ref_count = 1;
         Context *context = Context::GetInstance();
-        {
-            std::scoped_lock l(m_command_pool_cs);
-            if (pool_id == cInvalidHandle) {
-                const u32 handle = m_handle_allocator.Allocate();
-                VP_ASSERT(handle != HandleAllocator::cInvalidEntryIndex);
-                CommandPoolUnit *unit = std::addressof(m_unit_array[handle]);
-                unit->queue_type = queue_type;
-                unit->ref_count = 1;
-                const VkCommandPoolCreateInfo command_pool_create_info = {
-                    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                    .queueFamilyIndex = context->GetQueueFamilyIndex(queue_type),
-                };
-                const VkResult vk_result = ::pfn_vkCreateCommandPool(context->GetVkDevice(), std::addressof(command_pool_create_info), context->GetVkAllocationCallbacks(), std::addressof(unit->vk_command_pool));
-                RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
-                pool_id = handle;
-            } else {
-                VP_ASSERT(m_unit_array[pool_id].vk_command_pool != VK_NULL_HANDLE);
-                VP_ASSERT(m_unit_array[pool_id].queue_type == queue_type);
-                m_unit_array[pool_id].ref_count += 1;
-            }
-        }
+        const VkCommandPoolCreateInfo command_pool_create_info = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            .queueFamilyIndex = context->GetQueueFamilyIndex(queue_type),
+        };
+        const VkResult vk_result = ::pfn_vkCreateCommandPool(context->GetVkDevice(), std::addressof(command_pool_create_info), context->GetVkAllocationCallbacks(), std::addressof(unit->vk_command_pool));
+        RESULT_TRY(impl::ConvertVkResultToResult(vk_result));
 
-        /* Get command pool */
-        VkCommandPool vk_command_pool = m_unit_array[pool_id].vk_command_pool;
+        *out_id = handle;
+
+        RESULT_RETURN_SUCCESS;
+    }
+
+    void CommandPoolManager::FreeCommandPool(CommandPoolId pool_id) {
+
+        /* Release ref */
+        CommandPoolUnit *unit = std::addressof(m_unit_array[pool_id]);
+        const u32 count = vp::util::InterlockedDecrement(std::addressof(unit->ref_count));
+        if (count != 0) { return; }
+
+        /* Release command pool */
+        Context *context = Context::GetInstance();
+        ::pfn_vkDestroyCommandPool(context->GetVkDevice(), unit->vk_command_pool, context->GetVkAllocationCallbacks());
+        unit->vk_command_pool = VK_NULL_HANDLE;
+        m_handle_allocator.Free(pool_id);
+
+        return;
+    }
+
+    Result CommandPoolManager::CreateCommandBuffer(VkCommandBuffer *out_vk_command_buffer, CommandPoolId pool_id, bool is_primary) {
+
+        /* Reference command pool */
+        VP_ASSERT(pool_id != cInvalidCommandPoolId);
+        CommandPoolUnit *unit = std::addressof(m_unit_array[pool_id]);
+        vp::util::InterlockedIncrement(std::addressof(unit->ref_count));
+        const VkCommandPool vk_command_pool = unit->vk_command_pool;
 
         /* Allocate command buffer */
+        Context *context = Context::GetInstance();
         const VkCommandBufferAllocateInfo allocate_info {
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .commandPool        = vk_command_pool,
             .level              = (is_primary) ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY,
             .commandBufferCount = 1,
         };
+        const VkResult vk_result = ::pfn_vkAllocateCommandBuffers(context->GetVkDevice(), std::addressof(allocate_info), out_vk_command_buffer);
+        RESULT_TRY(impl::ConvertVkResultToResult(vk_result));
 
-        VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
-        const VkResult vk_result = ::pfn_vkAllocateCommandBuffers(context->GetVkDevice(), std::addressof(allocate_info), std::addressof(vk_command_buffer));
-        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
-
-        return { vk_command_buffer, pool_id, };
+        RESULT_RETURN_SUCCESS;
     }
 
-    void CommandPoolManager::FinalizeCommandList(CommandList command_list) {
+    void CommandPoolManager::FreeCommandBuffer(VkCommandBuffer vk_command_buffer, CommandPoolId pool_id) {
 
-        VP_ASSERT(command_list.IsValid());
-
-        /* Free secondary command buffer */
+        /* Free command buffer */
+        VP_ASSERT(vk_command_buffer != VK_NULL_HANDLE);
         Context *context = Context::GetInstance();
-        CommandPoolUnit *unit = std::addressof(m_unit_array[command_list.pool_id]);
-        ::pfn_vkFreeCommandBuffers(context->GetVkDevice(), unit->vk_command_pool, 1, std::addressof(command_list.vk_command_buffer));
-
-        /* Free pool */
-        {            
-            std::scoped_lock l(m_command_pool_cs);
-            const u32 next_ref = unit->ref_count - 1;
-            unit->ref_count = next_ref;
-            if (next_ref == 0) {
-                ::pfn_vkDestroyCommandPool(context->GetVkDevice(), unit->vk_command_pool, context->GetVkAllocationCallbacks());
-                unit->vk_command_pool = VK_NULL_HANDLE;
-                m_handle_allocator.Free(command_list.pool_id);
-            }
-        }
+        CommandPoolUnit *unit = std::addressof(m_unit_array[pool_id]);
+        ::pfn_vkFreeCommandBuffers(context->GetVkDevice(), unit->vk_command_pool, 1, std::addressof(vk_command_buffer));
+        this->FreeCommandPool(pool_id);
 
         return;
     }

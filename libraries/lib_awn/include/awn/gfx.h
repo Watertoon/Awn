@@ -33,7 +33,7 @@
     #include <awn/gfx/impl/gfx_context.vk.hpp>
     #include <awn/gfx/gfx_buffer.vk.h>
     #include <awn/gfx/gfx_texture.vk.h>
-    #include <awn/gfx/gfx_rendertarget.vk.hpp>
+    //#include <awn/gfx/gfx_rendertarget.vk.hpp>
     #include <awn/gfx/gfx_shader.vk.h>
 
 #elifdef VP_TARGET_GRAPHICS_API_nvn
@@ -45,18 +45,18 @@
     #include <awn/gfx/impl/gfx_context.nvn.hpp>
     #include <awn/gfx/gfx_buffer.nvn.h>
     #include <awn/gfx/gfx_texture.nvn.h>
-    #include <awn/gfx/gfx_rendertarget.nvn.h>
+    //#include <awn/gfx/gfx_rendertarget.nvn.h>
     #include <awn/gfx/gfx_shader.nvn.h>
 #endif
 
-#include <awn/gfx/impl/gfx_registertask.hpp>
-#include <awn/gfx/gfx_texturebinder.h>
-#include <awn/gfx/gfx_bufferbinder.h>
-#include <awn/gfx/gfx_shaderarchivebinder.h>
-#include <awn/gfx/impl/gfx_textureunit.h>
-#include <awn/gfx/impl/gfx_bufferunit.h>
-#include <awn/gfx/impl/gfx_shaderarchiveunit.h>
-#include <awn/gfx/impl/gfx_asyncgpuresourcemanager.h>
+//#include <awn/gfx/impl/gfx_registertask.hpp>
+//#include <awn/gfx/gfx_texturebinder.h>
+//#include <awn/gfx/gfx_bufferbinder.h>
+//#include <awn/gfx/gfx_shaderarchivebinder.h>
+//#include <awn/gfx/impl/gfx_textureunit.h>
+//#include <awn/gfx/impl/gfx_bufferunit.h>
+//#include <awn/gfx/impl/gfx_shaderarchiveunit.h>
+//#include <awn/gfx/impl/gfx_asyncgpuresourcemanager.h>
 
 #ifdef VP_TARGET_GRAPHICS_API_vk
     #include <awn/gfx/impl/gfx_textureviewsamplermanager.vk.h>
@@ -70,8 +70,8 @@
 #include <awn/gfx/gfx_pipelinestate.h>
 
 #ifdef VP_TARGET_GRAPHICS_API_vk
-    #include <awn/gfx/impl/gfx_descriptormemorymanager.vk.h>
     #include <awn/gfx/impl/gfx_commandpoolmanager.vk.h>
+    #include <awn/gfx/impl/gfx_descriptormemorymanager.vk.h>
     #include <awn/gfx/gfx_commandbuffer.vk.hpp>
 #elifdef VP_TARGET_GRAPHICS_API_nvn
     #include <awn/gfx/gfx_commandbuffer.nvn.hpp>

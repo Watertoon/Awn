@@ -47,7 +47,7 @@ namespace awn::res {
         }
         return access_mask;
     }
-#elif VP_TARGET_PLATFORM_nx
+#elifdef VP_TARGET_PLATFORM_nx
     using NativeFileHandle = nn::fs::FileHandle;
     using NativeDirectoryHandle = nn::fs::DirectoryHandle;
 
@@ -97,7 +97,7 @@ namespace awn::res {
             open_mode           = static_cast<u32>(OpenMode::Read);
         }
 
-        ALWAYS_INLINE Result Close();
+        Result Close();
     };
 
     struct FileLoadContext {
@@ -122,12 +122,13 @@ namespace awn::res {
             static constexpr size_t cMaxAutoReadSize      = 0x20;
         protected:
             vp::util::IntrusiveRedBlackTreeNode<u32> m_manager_tree_node;
-            MaxDriveString                           m_drive;
+            MaxDriveString m_drive;
         public:
             VP_RTTI_BASE(FileDeviceBase);
         protected:
             virtual Result LoadFileImpl(const char *path, FileLoadContext *file_load_context);
             virtual Result SaveFileImpl(const char *path, FileSaveInfo *file_save_info);
+            virtual Result CreateFileImpl(FileHandle *out_file_handle, const char *path, size_t file_size) { VP_ASSERT(false); VP_UNUSED(out_file_handle, path, file_size); RESULT_RETURN_SUCCESS; }
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode)                                             { VP_ASSERT(false); VP_UNUSED(out_file_handle, path, open_mode); RESULT_RETURN_SUCCESS; }
             virtual Result CloseFileImpl(FileHandle *file_handle)                                                                                      { VP_ASSERT(false); VP_UNUSED(file_handle); RESULT_RETURN_SUCCESS; }
             virtual Result ReadFileImpl(void *read_buffer, size_t *out_read_size, FileHandle *file_handle, size_t read_size, size_t file_offset)       { VP_ASSERT(false); VP_UNUSED(read_buffer, out_read_size, file_handle, read_size, file_offset); RESULT_RETURN_SUCCESS; }
@@ -149,57 +150,44 @@ namespace awn::res {
 
             virtual Result CheckDirectoryExistsImpl(const char *path) { VP_ASSERT(false); VP_UNUSED(path); RESULT_RETURN_SUCCESS; }
 
-            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) { 
-                *out_formatted_path = path;
+            virtual Result FormatPath(MaxPathString *out_formatted_path, const char *path) { 
+                out_formatted_path->SetString(path);
                 RESULT_RETURN_SUCCESS;
             }
 
             virtual u32 GetDriveSize() const { return 0; }
         public:
-            explicit constexpr ALWAYS_INLINE FileDeviceBase() : m_manager_tree_node(), m_drive() {/*...*/}
-            explicit constexpr ALWAYS_INLINE FileDeviceBase(const char *drive_name) : m_manager_tree_node(), m_drive(drive_name) {
+            constexpr FileDeviceBase() : m_manager_tree_node(), m_drive() {/*...*/}
+            constexpr FileDeviceBase(const char *drive_name) : m_manager_tree_node(), m_drive(drive_name) {
                 const u32 hash = vp::util::HashCrc32b(drive_name);
                 m_manager_tree_node.SetKey(hash);
             }
             virtual ~FileDeviceBase();
 
-            ALWAYS_INLINE Result LoadFile(const char *path, FileLoadContext *file_load_context)                                                          { return this->LoadFileImpl(path, file_load_context); }
-            ALWAYS_INLINE Result SaveFile(const char *path, FileSaveInfo *file_save_info)                                                                { return this->SaveFileImpl(path, file_save_info); }
-            ALWAYS_INLINE Result OpenFile(FileHandle *out_file_handle, const char *path, OpenMode open_mode)                                             { return this->OpenFileImpl(out_file_handle, path, open_mode); }
-            ALWAYS_INLINE Result CloseFile(FileHandle *file_handle)                                                                                      { return this->CloseFileImpl(file_handle); }
-            ALWAYS_INLINE Result ReadFile(void *read_buffer, size_t *out_read_size, FileHandle *file_handle, size_t read_size, size_t file_offset)       { return this->ReadFileImpl(read_buffer, out_read_size, file_handle, read_size, file_offset); }
-            ALWAYS_INLINE Result WriteFile(size_t *out_written_size, FileHandle *file_handle, void *write_buffer, size_t write_size, size_t file_offset) { return this->WriteFileImpl(out_written_size, file_handle, write_buffer, write_size, file_offset); }
-            ALWAYS_INLINE Result CopyFile(const char *dest_path, const char *source_path, void *copy_buffer, size_t copy_size)                           { return this->CopyFileImpl(dest_path, source_path, copy_buffer, copy_size); }
-            ALWAYS_INLINE Result FlushFile(FileHandle *file_handle)                                                                                      { return this->FlushFileImpl(file_handle); }
+            Result LoadFile(const char *path, FileLoadContext *file_load_context)                                                          { return this->LoadFileImpl(path, file_load_context); }
+            Result SaveFile(const char *path, FileSaveInfo *file_save_info)                                                                { return this->SaveFileImpl(path, file_save_info); }
+            Result CreateFile(FileHandle *out_file_handle, const char *path, size_t size)                                                  { return this->CreateFileImpl(out_file_handle, path, size); }
+            Result OpenFile(FileHandle *out_file_handle, const char *path, OpenMode open_mode)                                             { return this->OpenFileImpl(out_file_handle, path, open_mode); }
+            Result CloseFile(FileHandle *file_handle)                                                                                      { return this->CloseFileImpl(file_handle); }
+            Result ReadFile(void *read_buffer, size_t *out_read_size, FileHandle *file_handle, size_t read_size, size_t file_offset)       { return this->ReadFileImpl(read_buffer, out_read_size, file_handle, read_size, file_offset); }
+            Result WriteFile(size_t *out_written_size, FileHandle *file_handle, void *write_buffer, size_t write_size, size_t file_offset) { return this->WriteFileImpl(out_written_size, file_handle, write_buffer, write_size, file_offset); }
+            Result CopyFile(const char *dest_path, const char *source_path, void *copy_buffer, size_t copy_size)                           { return this->CopyFileImpl(dest_path, source_path, copy_buffer, copy_size); }
+            Result FlushFile(FileHandle *file_handle)                                                                                      { return this->FlushFileImpl(file_handle); }
 
-            ALWAYS_INLINE Result Commit() { return this->CommitImpl(); }
+            Result Commit() { return this->CommitImpl(); }
     
-            ALWAYS_INLINE Result GetFileSize(size_t *out_size, FileHandle *file_handle) { return this->GetFileSizeImpl(out_size, file_handle); }
-            ALWAYS_INLINE Result GetFileSize(size_t *out_size, const char *path)        { return this->GetFileSizeImpl(out_size, path); }
+            Result GetFileSize(size_t *out_size, FileHandle *file_handle) { return this->GetFileSizeImpl(out_size, file_handle); }
+            Result GetFileSize(size_t *out_size, const char *path)        { return this->GetFileSizeImpl(out_size, path); }
 
-            ALWAYS_INLINE Result CheckFileExists(const char *path) { return CheckFileExistsImpl(path); }
+            Result CheckFileExists(const char *path) { return CheckFileExistsImpl(path); }
 
-            Result CreateDirectory(const char *path) { 
+            Result CreateDirectory(const char *path) { return this->CreateDirectoryImpl(path); }
+            Result OpenDirectory(DirectoryHandle *out_directory_handle, const char *path)                         { return this->OpenDirectoryImpl(out_directory_handle, path); }
+            Result CloseDirectory(DirectoryHandle *directory_handle)                                              { return this->CloseDirectoryImpl(directory_handle); }
+            Result ReadDirectory(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { return this->ReadDirectoryImpl(directory_handle, entry_array, entry_count); }
 
-                /* Nothing to do if directory already exists */
-                const Result check_dir_result = this->CheckDirectoryExists(path);
-                if (check_dir_result != ResultDirectoryNotFound) { return check_dir_result; }
+            Result CheckDirectoryExists(const char *path) { return this->CheckDirectoryExistsImpl(path); }
 
-                return this->CreateDirectoryImpl(path); 
-            }
-            ALWAYS_INLINE Result OpenDirectory(DirectoryHandle *out_directory_handle, const char *path)                         { return this->OpenDirectoryImpl(out_directory_handle, path); }
-            ALWAYS_INLINE Result CloseDirectory(DirectoryHandle *directory_handle)                                              { return this->CloseDirectoryImpl(directory_handle); }
-            ALWAYS_INLINE Result ReadDirectory(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { return this->ReadDirectoryImpl(directory_handle, entry_array, entry_count); }
-
-            ALWAYS_INLINE Result CheckDirectoryExists(const char *path) { return this->CheckDirectoryExistsImpl(path); }
-
-            constexpr ALWAYS_INLINE const char *GetDeviceName() const { return m_drive.GetString(); }
+            constexpr const char *GetDeviceName() const { return m_drive.GetString(); }
     };
-
-    ALWAYS_INLINE Result FileHandle::Close() {
-        if (file_device == nullptr) { RESULT_RETURN_SUCCESS; }
-        const Result result = file_device->CloseFile(this);
-        file_device         = nullptr;
-        return result;
-    }
 }

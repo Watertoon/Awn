@@ -113,7 +113,7 @@ namespace awn::para {
         const u32 count = m_enum_count;
         if (m_resolve_type == static_cast<u32>(ResolveType::ParentAndChildParent)) {
             for (u32 i = 0; i < count; ++i) {
-                vp::util::FixedString<0x100> field_string;
+                vp::util::FixedString8<0x100> field_string;
                 field_string.Format("%s{%s}", field_name, m_enum_array[i]);
                 m_typed_param_array[i].typed_param->ResolveParent(document, parent_typed_param, field_string.GetString());
             }

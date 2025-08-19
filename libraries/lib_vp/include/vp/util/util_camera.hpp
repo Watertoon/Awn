@@ -27,18 +27,18 @@ namespace vp::util {
             constexpr virtual ~Camera() {/*...*/}
 
             void UpdateMatrix() {
-                this->CalculateCameraMatrix(std::addressof(m_camera_mtx));
+                this->CalculateViewMatrix(std::addressof(m_camera_mtx));
             }
 
-            constexpr MatrixRowMajor4x3f *GetCameraMatrix() {
+            constexpr MatrixRowMajor4x3f *GetViewMatrix() {
                 return std::addressof(m_camera_mtx);
             }
 
-            constexpr const MatrixRowMajor4x3f *GetCameraMatrix() const {
+            constexpr const MatrixRowMajor4x3f *GetViewMatrix() const {
                 return std::addressof(m_camera_mtx);
             }
 
-            constexpr virtual void CalculateCameraMatrix(MatrixRowMajor4x3f *out_view_matrix) const = 0;
+            constexpr virtual void CalculateViewMatrix(MatrixRowMajor4x3f *out_view_matrix) const = 0;
     };
 
     class LookAtCamera : public Camera {
@@ -53,7 +53,7 @@ namespace vp::util {
             constexpr LookAtCamera(const Vector3f& pos, const Vector3f& at, const Vector3f& up) : Camera(), m_pos(CastVector3d(pos)), m_at(CastVector3d(at)), m_up(up) {/*...*/}
             constexpr virtual ~LookAtCamera() override {/*...*/}
 
-            constexpr virtual void CalculateCameraMatrix(MatrixRowMajor4x3f *out_view_matrix) const override {
+            constexpr virtual void CalculateViewMatrix(MatrixRowMajor4x3f *out_view_matrix) const override {
 
                 /* Calculate normalized direction */
                 const Vector3f inv_dir = this->GetInverseDirection();
@@ -127,22 +127,22 @@ namespace vp::util {
             constexpr Vector3f GetUp() const {  return m_up; }
 
             constexpr Vector3f GetRightByMatrix() const {
-                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
+                const MatrixRowMajor4x3f *camera_mtx = this->GetViewMatrix();
                 return Vector3f { (*camera_mtx)[0,0], (*camera_mtx)[1,0], (*camera_mtx)[2,0], };
             }
 
             constexpr Vector3f GetAtByMatrix() const {
-                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
+                const MatrixRowMajor4x3f *camera_mtx = this->GetViewMatrix();
                 return Vector3f { (*camera_mtx)[0,1], (*camera_mtx)[1,1], (*camera_mtx)[2,1], };
             }
 
             constexpr Vector3f GetUpByMatrix() const {
-                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
+                const MatrixRowMajor4x3f *camera_mtx = this->GetViewMatrix();
                 return Vector3f { (*camera_mtx)[0,2], (*camera_mtx)[1,2], (*camera_mtx)[2,2], };
             }
 
             constexpr Vector3f GetWorldPositionByMatrix() const {
-                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
+                const MatrixRowMajor4x3f *camera_mtx = this->GetViewMatrix();
                 const Vector3f world_pos = {
                     (-((*camera_mtx)[0,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[0,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[0,2] * (*camera_mtx)[3,2]),
                     (-((*camera_mtx)[1,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[1,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[1,2] * (*camera_mtx)[3,2]),
@@ -151,8 +151,8 @@ namespace vp::util {
                 return world_pos;
             }
 
-            constexpr Vector3f GetWorldPositionFromCameraPositionByMatrix(const Vector3f& camera_pos) const {
-                const MatrixRowMajor4x3f *camera_mtx = this->GetCameraMatrix();
+            constexpr Vector3f ConvertCameraPositionToWorldPositionByMatrix(const Vector3f& camera_pos) const {
+                const MatrixRowMajor4x3f *camera_mtx = this->GetViewMatrix();
                 const Vector3f world_pos = {
                     camera_pos[0] + camera_pos[1] + camera_pos[2] + (-((*camera_mtx)[0,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[0,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[0,2] * (*camera_mtx)[3,2]),
                     camera_pos[0] + camera_pos[1] + camera_pos[2] + (-((*camera_mtx)[1,0] * (*camera_mtx)[3,0]) - ((*camera_mtx)[1,1] * (*camera_mtx)[3,1])) - ((*camera_mtx)[1,2] * (*camera_mtx)[3,2]),

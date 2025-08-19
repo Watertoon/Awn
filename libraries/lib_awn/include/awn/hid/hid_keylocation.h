@@ -21,18 +21,32 @@ namespace awn::hid {
 
     /* From: https://switchbrew.org/wiki/HID_services#KeyboardModifierSet */
     enum class KeyboardModifier : u32 {
-        Invalid    = 0,
-        Control    = (1 << 0),
-        Shift      = (1 << 1),
-        LeftAlt    = (1 << 2),
-        RightAlt   = (1 << 3),
-        Gui        = (1 << 4),
-        CapsLock   = (1 << 8),
-        ScrollLock = (1 << 9),
-        NumLock    = (1 << 10),
-        Katakana   = (1 << 11),
-        Hiragana   = (1 << 12),
+        Control    = 0,
+        Shift      = 1,
+        LeftAlt    = 2,
+        RightAlt   = 3,
+        Gui        = 4,
+        CapsLock   = 8,
+        ScrollLock = 9,
+        NumLock    = 10,
+        Katakana   = 11,
+        Hiragana   = 12,
+        Invalid   = 0x20,
     };
+    VP_ENUM_TRAITSV(
+        awn::hid::KeyboardModifier, KeyboardModifier,
+        Control,
+        Shift,
+        LeftAlt,
+        RightAlt,
+        Gui,
+        CapsLock,
+        ScrollLock,
+        NumLock,
+        Katakana,
+        Hiragana,
+        Invalid
+    );
 
     /* From: https://switchbrew.org/wiki/HID_services#KeyboardKey */
     enum class KeyboardKey : u32 {
@@ -170,6 +184,142 @@ namespace awn::hid {
         RightAlt          = 230,
         RightGui          = 231,
     };
+    VP_ENUM_TRAITSV(
+        awn::hid::KeyboardKey, KeyboardKey,
+        Invalid,
+        A,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+        I,
+        J,
+        K,
+        L,
+        M,
+        N,
+        O,
+        P,
+        Q,
+        R,
+        S,
+        T,
+        U,
+        V,
+        W,
+        X,
+        Y,
+        Z,
+        D1,
+        D2,
+        D3,
+        D4,
+        D5,
+        D6,
+        D7,
+        D8,
+        D9,
+        D0,
+        Return,
+        Escape,
+        Backspace,
+        Tab,
+        Space,
+        Dash,
+        Equals,
+        OpenBracket,
+        CloseBracket,
+        Pipe,
+        Tilde,
+        Semicolon,
+        Quote,
+        Backquote,
+        Comma,
+        Period,
+        Slash,
+        CapsLock,
+        F1,
+        F2,
+        F3,
+        F4,
+        F5,
+        F6,
+        F7,
+        F8,
+        F9,
+        F10,
+        F11,
+        F12,
+        PrintScreen,
+        ScrollLock,
+        Pause,
+        Insert,
+        Home,
+        PageUp,
+        Delete,
+        End,
+        PageDown,
+        RightArrow,
+        LeftArrow,
+        DownArrow,
+        UpArrow,
+        NumLock,
+        NumPad_Divide,
+        NumPad_Multiply,
+        NumPad_Subtract,
+        NumPad_Add,
+        NumPad_Enter,
+        NumPad_1,
+        NumPad_2,
+        NumPad_3,
+        NumPad_4,
+        NumPad_5,
+        NumPad_6,
+        NumPad_7,
+        NumPad_8,
+        NumPad_9,
+        NumPad_0,
+        NumPad_Dot,
+        Backslash,
+        Application,
+        Power,
+        NumPad_Equals,
+        F13,
+        F14,
+        F15,
+        F16,
+        F17,
+        F18,
+        F19,
+        F20,
+        F21,
+        F22,
+        F23,
+        F24,
+        NumPad_Comma,
+        Ro,
+        KatakanaHiragana,
+        Yen,
+        Henkan,
+        Muhenkan,
+        NumPad_CommaPc98,
+        HangulEnglish,
+        Hanja,
+        Katakana,
+        Hiragana,
+        ZenkakuHankaku,
+        LeftControl,
+        LeftShift,
+        LeftAlt,
+        LeftGui,
+        RightControl,
+        RightShift,
+        RightAlt,
+        RightGui
+    );
 
     constexpr KeyboardKey ConvertScanCodeToKeyboardKey(u32 scan_code1) {
         switch (scan_code1) {
@@ -438,276 +588,6 @@ namespace awn::hid {
         };
         return false;
     }
-
-    constexpr const char *ConvertKeyboardKeyToString(KeyboardKey key_location) {
-        switch (key_location) {
-            case KeyboardKey::A:
-                return "A";
-            case KeyboardKey::B:
-                return "B";
-            case KeyboardKey::C:
-                return "C";
-            case KeyboardKey::D:
-                return "D";
-            case KeyboardKey::E:
-                return "E";
-            case KeyboardKey::F:
-                return "F";
-            case KeyboardKey::G:
-                return "G";
-            case KeyboardKey::H:
-                return "H";
-            case KeyboardKey::I:
-                return "I";
-            case KeyboardKey::J:
-                return "J";
-            case KeyboardKey::K:
-                return "K";
-            case KeyboardKey::L:
-                return "L";
-            case KeyboardKey::M:
-                return "M";
-            case KeyboardKey::N:
-                return "N";
-            case KeyboardKey::O:
-                return "O";
-            case KeyboardKey::P:
-                return "P";
-            case KeyboardKey::Q:
-                return "Q";
-            case KeyboardKey::R:
-                return "R";
-            case KeyboardKey::S:
-                return "S";
-            case KeyboardKey::T:
-                return "T";
-            case KeyboardKey::U:
-                return "U";
-            case KeyboardKey::V:
-                return "V";
-            case KeyboardKey::W:
-                return "W";
-            case KeyboardKey::X:
-                return "X";
-            case KeyboardKey::Y:
-                return "Y";
-            case KeyboardKey::Z:
-                return "Z";
-            case KeyboardKey::D1:
-                return "D1";
-            case KeyboardKey::D2:
-                return "D2";
-            case KeyboardKey::D3:
-                return "D3";
-            case KeyboardKey::D4:
-                return "D4";
-            case KeyboardKey::D5:
-                return "D5";
-            case KeyboardKey::D6:
-                return "D6";
-            case KeyboardKey::D7:
-                return "D7";
-            case KeyboardKey::D8:
-                return "D8";
-            case KeyboardKey::D9:
-                return "D9";
-            case KeyboardKey::D0:
-                return "D0";
-            case KeyboardKey::Return:
-                return "Return";
-            case KeyboardKey::Escape:
-                return "Escape";
-            case KeyboardKey::Backspace:
-                return "Backspace";
-            case KeyboardKey::Tab:
-                return "Tab";
-            case KeyboardKey::Space:
-                return "Space";
-            case KeyboardKey::Dash:
-                return "Dash";
-            case KeyboardKey::Equals:
-                return "Equals";
-            case KeyboardKey::OpenBracket:
-                return "OpenBracket";
-            case KeyboardKey::CloseBracket:
-                return "CloseBracket";
-            case KeyboardKey::Pipe:
-                return "Pipe";
-            case KeyboardKey::Tilde:
-                return "Tilde";
-            case KeyboardKey::Semicolon:
-                return "Semicolon";
-            case KeyboardKey::Quote:
-                return "Quote";
-            case KeyboardKey::Backquote:
-                return "Backquote";
-            case KeyboardKey::Comma:
-                return "Comma";
-            case KeyboardKey::Period:
-                return "Period";
-            case KeyboardKey::Slash:
-                return "Slash";
-            case KeyboardKey::CapsLock:
-                return "CapsLock";
-            case KeyboardKey::F1:
-                return "F1";
-            case KeyboardKey::F2:
-                return "F2";
-            case KeyboardKey::F3:
-                return "F3";
-            case KeyboardKey::F4:
-                return "F4";
-            case KeyboardKey::F5:
-                return "F5";
-            case KeyboardKey::F6:
-                return "F6";
-            case KeyboardKey::F7:
-                return "F7";
-            case KeyboardKey::F8:
-                return "F8";
-            case KeyboardKey::F9:
-                return "F9";
-            case KeyboardKey::F10:
-                return "F10";
-            case KeyboardKey::F11:
-                return "F11";
-            case KeyboardKey::F12:
-                return "F12";
-            case KeyboardKey::PrintScreen:
-                return "PrintScreen";
-            case KeyboardKey::ScrollLock:
-                return "ScrollLock";
-            case KeyboardKey::Pause:
-                return "Pause";
-            case KeyboardKey::Insert:
-                return "Insert";
-            case KeyboardKey::Home:
-                return "Home";
-            case KeyboardKey::PageUp:
-                return "PageUp";
-            case KeyboardKey::Delete:
-                return "Delete";
-            case KeyboardKey::End:
-                return "End";
-            case KeyboardKey::PageDown:
-                return "PageDown";
-            case KeyboardKey::RightArrow:
-                return "RightArrow";
-            case KeyboardKey::LeftArrow:
-                return "LeftArrow";
-            case KeyboardKey::DownArrow:
-                return "DownArrow";
-            case KeyboardKey::UpArrow:
-                return "UpArrow";
-            case KeyboardKey::NumLock:
-                return "NumLock";
-            case KeyboardKey::NumPad_Divide:
-                return "NumPad_Divide";
-            case KeyboardKey::NumPad_Multiply:
-                return "NumPad_Multiply";
-            case KeyboardKey::NumPad_Subtract:
-                return "NumPad_Subtract";
-            case KeyboardKey::NumPad_Add:
-                return "NumPad_Add";
-            case KeyboardKey::NumPad_Enter:
-                return "NumPad_Enter";
-            case KeyboardKey::NumPad_1:
-                return "NumPad_1";
-            case KeyboardKey::NumPad_2:
-                return "NumPad_2";
-            case KeyboardKey::NumPad_3:
-                return "NumPad_3";
-            case KeyboardKey::NumPad_4:
-                return "NumPad_4";
-            case KeyboardKey::NumPad_5:
-                return "NumPad_5";
-            case KeyboardKey::NumPad_6:
-                return "NumPad_6";
-            case KeyboardKey::NumPad_7:
-                return "NumPad_7";
-            case KeyboardKey::NumPad_8:
-                return "NumPad_8";
-            case KeyboardKey::NumPad_9:
-                return "NumPad_9";
-            case KeyboardKey::NumPad_0:
-                return "NumPad_0";
-            case KeyboardKey::NumPad_Dot:
-                return "NumPad_Dot";
-            case KeyboardKey::Backslash:
-                return "Backslash";
-            case KeyboardKey::Application:
-                return "Application";
-            case KeyboardKey::Power:
-                return "Power";
-            case KeyboardKey::NumPad_Equals:
-                return "NumPad_Equals";
-            case KeyboardKey::F13:
-                return "F13";
-            case KeyboardKey::F14:
-                return "F14";
-            case KeyboardKey::F15:
-                return "F15";
-            case KeyboardKey::F16:
-                return "F16";
-            case KeyboardKey::F17:
-                return "F17";
-            case KeyboardKey::F18:
-                return "F18";
-            case KeyboardKey::F19:
-                return "F19";
-            case KeyboardKey::F20:
-                return "F20";
-            case KeyboardKey::F21:
-                return "F21";
-            case KeyboardKey::F22:
-                return "F22";
-            case KeyboardKey::F23:
-                return "F23";
-            case KeyboardKey::F24:
-                return "F24";
-            case KeyboardKey::NumPad_Comma:
-                return "NumPad_Comma";
-            case KeyboardKey::Ro:
-                return "Ro";
-            case KeyboardKey::KatakanaHiragana:
-                return "KatakanaHiragana";
-            case KeyboardKey::Yen:
-                return "Yen";
-            case KeyboardKey::Henkan:
-                return "Henkan";
-            case KeyboardKey::Muhenkan:
-                return "Muhenkan";
-            case KeyboardKey::NumPad_CommaPc98:
-                return "NumPad_CommaPc98";
-            case KeyboardKey::HangulEnglish:
-                return "HangulEnglish";
-            case KeyboardKey::Hanja:
-                return "Hanja";
-            case KeyboardKey::Katakana:
-                return "Katakana";
-            case KeyboardKey::Hiragana:
-                return "Hiragana";
-            case KeyboardKey::ZenkakuHankaku:
-                return "ZenkakuHankaku";
-            case KeyboardKey::LeftControl:
-                return "LeftControl";
-            case KeyboardKey::LeftShift:
-                return "LeftShift";
-            case KeyboardKey::LeftAlt:
-                return "LeftAlt";
-            case KeyboardKey::LeftGui:
-                return "LeftGui";
-            case KeyboardKey::RightControl:
-                return "RightControl";
-            case KeyboardKey::RightShift:
-                return "RightShift";
-            case KeyboardKey::RightAlt:
-                return "RightAlt";
-            case KeyboardKey::RightGui:
-                return "RightGui";
-            default:
-                break;
-        };
-        return "Invalid";
-    }
 }
+VP_ENUM_TRAITS_AUTO(awn::hid::KeyboardKey);
+VP_ENUM_TRAITS_AUTO(awn::hid::KeyboardModifier);

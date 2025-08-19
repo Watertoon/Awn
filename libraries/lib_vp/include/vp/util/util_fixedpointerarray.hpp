@@ -61,7 +61,7 @@ namespace vp::util {
             u32  m_used_count;
             T   *m_array[Count];
         public:
-            constexpr ALWAYS_INLINE FixedPointerArray() : m_used_count(), m_array{} {/*...*/}
+            constexpr FixedPointerArray() : m_used_count(), m_array{} {/*...*/}
             constexpr ~FixedPointerArray() {/*...*/}
 
             constexpr Iterator begin() {
@@ -71,7 +71,7 @@ namespace vp::util {
                 return Iterator(m_array + m_used_count);
             }
 
-            constexpr ALWAYS_INLINE T *operator[](u32 index) {
+            constexpr T *operator[](u32 index) {
                 if (m_used_count <= index) {
                     VP_ASSERT(index < m_used_count);
                     index = 0;
@@ -80,7 +80,7 @@ namespace vp::util {
                 return m_array[index];
             }
 
-            constexpr ALWAYS_INLINE const T *operator[](u32 index) const {
+            constexpr const T *operator[](u32 index) const {
                 if (m_used_count <= index) {
                     VP_ASSERT(index < m_used_count);
                     index = 0;
@@ -89,46 +89,84 @@ namespace vp::util {
                 return m_array[index];
             }
 
-            constexpr ALWAYS_INLINE u32 PushPointer(T *pointer) {
-                VP_ASSERT(m_used_count < Count);
-                m_array[m_used_count] = pointer;
+            constexpr u32 PushPointer(T *pointer) {
+                VP_ASSERT(!this->IsFull());
                 const u32 index = m_used_count;
+                m_array[index] = pointer;
                 m_used_count = index + 1;
                 return index;
             }
 
-            constexpr ALWAYS_INLINE T *PopPointer() {
-                T *ret = m_array[m_used_count - 1];
-                m_array[m_used_count - 1] = nullptr;
-                --m_used_count;
-                return ret;
+            constexpr u32 PushPointerAtomic(T *pointer) {
+                const u32 id = vp::util::InterlockedFetchAddAcquire(std::addressof(m_used_count), 1u);
+                VP_ASSERT(id < Count);
+                m_array[id] = pointer;
+                return id;
             }
 
-            ALWAYS_INLINE void RemoveRange(u32 base_index, u32 number_of_elements) {
-
-                const u32 move_element_index = base_index + number_of_elements;
-                const u32 move_element_count = m_used_count - move_element_index;
-                VP_ASSERT(move_element_index <= m_used_count);
-
-                if (move_element_count != 0) {
-                    ::memmove(std::addressof(m_array[base_index]), std::addressof(m_array[move_element_index]), move_element_count * sizeof(T**));
-                }
-                m_used_count = m_used_count - number_of_elements;
-
-                return;
+            constexpr T *PopPointer() {
+                const u32 count = m_used_count;
+                VP_ASSERT(0 < count);
+                const u32 index = count - 1;
+                T *ret = m_array[index];
+                m_array[index] = nullptr;
+                m_used_count = index;
+                return ret;
             }
 
             constexpr void Clear() { m_used_count = 0; }
 
-            constexpr u32 FindIndexOf(const T *pointer) const {
-                for (u32 i = 0; i < m_used_count; ++i) {
-                    if (m_array[i] == pointer) { return i; }
+            bool RemoveRange(u32 base_index, u32 number_of_elements) {
+
+                /* Integrity check */
+                const u32 count = m_used_count;
+                const u32 end_i = base_index + number_of_elements;
+                if (count < end_i) { return false; }
+
+                /* Shift elements down from end to base of remove range */
+                const u32 elements_after = count - end_i;
+                if (elements_after != 0) {
+                    T **base = m_array + base_index;
+                    T **end = base + end_i;
+                    ::memmove(base, end, elements_after * sizeof(T**));
+                }
+
+                m_used_count = count - number_of_elements;
+
+                return true;
+            }
+
+            bool RemoveOrdered(T *iter) {
+                const u32 i = this->IndexOf(iter);
+                if (i == cInvalidEntryIndex) { return false; }
+                return this->RemoveRange(i, 1);
+            }
+
+            bool RemoveUnordered(T *iter) {
+                const u32 i = this->IndexOf(iter);
+                if (i == cInvalidEntryIndex) { return false; }
+                const u32 next_count = m_used_count - 1;
+                m_array[i] = m_array[next_count];
+                m_used_count = next_count;
+                return true;
+            }
+
+            constexpr u32 IndexOf(const T *pointer) const {
+                T **start = m_array;
+                T **iter = start;
+                T **end = start + m_used_count;
+                while (iter != end) {
+                    if (*iter != pointer) { ++iter; continue; }
+                    return start - iter;
                 }
                 return cInvalidEntryIndex;
             }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return Count; }
 
+            constexpr bool IsEmpty() const { return m_used_count == 0; }
+            constexpr bool IsFull() const { return (Count <= m_used_count); }
+        public:
             constexpr void SetUsedCount(u32 count) { m_used_count = count; }
             constexpr void SetPointer(u32 index, T *pointer) {
                 VP_ASSERT(index < m_used_count);

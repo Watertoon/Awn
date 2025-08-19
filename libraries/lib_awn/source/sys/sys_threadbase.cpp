@@ -62,7 +62,9 @@ namespace awn::sys {
     }
 
     long unsigned int ThreadBase::InternalServiceThreadMain(void *arg) {
+#ifdef VP_TARGET_PLATFORM_win32
         VP_ASSERT((::GetCurrentThreadId() & (~0xbfff'ffff)) == 0);
+#endif
 
         /* Recover Thread object */
         ThreadBase *thread = reinterpret_cast<ThreadBase*>(arg);

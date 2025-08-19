@@ -107,12 +107,11 @@ namespace awn::mem {
                 }
 
                 /* Remove parent heap */
-                if (m_parent_heap != nullptr) { 
-                    if (awn::mem::Heap::CheckRuntimeTypeInfoStatic(m_parent_heap) == true) {
-                        reinterpret_cast<awn::mem::Heap*>(m_parent_heap)->RemoveChild(this);                         
-                    } else {         
-                        std::scoped_lock l(*GetHeapManagerLock());               
-                        m_parent_heap->m_child_list.Remove(*this);
+                if (m_parent_heap != nullptr) {
+                    if (awn::mem::Heap::CheckRuntimeTypeInfoStatic(m_parent_heap)) {
+                        reinterpret_cast<awn::mem::Heap*>(m_parent_heap)->RemoveChild(this);
+                    } else {
+                        reinterpret_cast<awn::mem::Heap*>(m_parent_heap)->RemoveChildUnsafe(this);
                     }
                     m_parent_heap = nullptr;
                 }
@@ -122,10 +121,7 @@ namespace awn::mem {
         public:
             explicit Heap(const char *name, IHeap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : IHeap(name, parent_heap, start_address, size), m_disposer_list(), m_heap_cs(), m_is_thread_safe(is_thread_safe) {/*...*/}
             virtual ~Heap() override {
-
                 this->Destruct();
-
-                return;
             }
 
             constexpr ALWAYS_INLINE bool IsThreadSafe() { return m_is_thread_safe; }

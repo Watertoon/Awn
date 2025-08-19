@@ -17,7 +17,7 @@
 
 namespace awn::res {
 
-    DECLARE_RESULT_MODULE(14);
+    DECLARE_RESULT_MODULE(23);
     DECLARE_RESULT(UnknownOSError,              1);
     DECLARE_RESULT(FileNotFound,                2);
     DECLARE_RESULT(PathNotFound,                3);

@@ -434,6 +434,8 @@ DEFINE_VK_PROC(vkCmdSetSampleMaskEXT);
 DEFINE_VK_PROC(vkCmdSetVertexInputEXT);
 DEFINE_VK_PROC(vkCreateShadersEXT);
 DEFINE_VK_PROC(vkDestroyShaderEXT);
+DEFINE_VK_PROC(vkGetShaderBinaryDataEXT);
+
 /* + VK_EXT_conservative_rasterization */
 DEFINE_VK_PROC(vkCmdSetConservativeRasterizationModeEXT);
 DEFINE_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);
@@ -699,6 +701,8 @@ void LoadVkCProcsDevice(VkDevice device) {
     LOAD_DEVICE_VK_PROC(vkCmdSetVertexInputEXT);
     LOAD_DEVICE_VK_PROC(vkCreateShadersEXT);
     LOAD_DEVICE_VK_PROC(vkDestroyShaderEXT);
+    LOAD_DEVICE_VK_PROC(vkGetShaderBinaryDataEXT);
+
     /* + VK_EXT_conservative_rasterization */
     LOAD_DEVICE_VK_PROC(vkCmdSetConservativeRasterizationModeEXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);

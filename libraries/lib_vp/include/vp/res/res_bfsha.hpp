@@ -23,7 +23,7 @@ namespace vp::res {
         s32                       *choice_array;
         u16                        choice_count;
         u16                        default_choice_index;
-        u16                        struct_offset;
+        u16                        struct_index;
         union {
             u8                     flags;
             struct {
@@ -86,6 +86,15 @@ namespace vp::res {
         Skeleton = 3,
         Option = 4,
     };
+    
+    VP_ENUM_TRAITSV(
+        vp::res::BfshaBufferType, BfshaBufferType,
+        User,
+        Material,
+        Shape,
+        Skeleton,
+        Option
+    );
 
     struct ResBfshaBuffer{
         ResBfshaBufferParam       *param_array;
@@ -236,7 +245,7 @@ namespace vp::res {
     };                     
     static_assert(sizeof(ResBfshaShadingModel) == 0x100);
 
-    using BfshaProgramInitializeCallback = void(*)(ResBfshaShadingModel *shading_model, u32 program_index);
+    using BfshaProgramInitializeCallback = Result(*)(ResBfshaShadingModel *shading_model, u32 program_index);
 
     struct ResBfshaShaderArchive {
         const char                     *name;
@@ -271,9 +280,26 @@ namespace vp::res {
         u64                        string_pool_size;
 
         static constexpr inline u64 cMagic = util::TCharCode64("FSHA    ");
-        static constexpr inline u32 cTargetMajorVersion = 9;
-        static constexpr inline u32 cTargetMinorVersion = 1;
-        static constexpr inline u32 cTargetMicroVersion = 1;
+        static constexpr inline u32 cTargetVersionMajor = 9;
+        static constexpr inline u32 cTargetVersionMinor = 1;
+        static constexpr inline u32 cTargetVersionMicro = 1;
+
+        ResBfsha *ResCast(void *file) {
+            ResBfsha *bfsha = reinterpret_cast<ResBfsha*>(file);
+            if (bfsha == nullptr || !IsValid(file)) { return nullptr; }
+            bfsha->Relocate();
+            for (u32 i = 0; i < bfsha->shader_archive->shading_model_count; ++i) {
+                ResBnsh *bnsh = ResBnsh::ResCast(bfsha->shader_archive->shading_model_array[i].bnsh);
+                if (bnsh == nullptr) { return nullptr; }
+            }
+            return bfsha;
+        }
+
+        static bool IsValid(void *file) {
+            ResBfsha *bfsha = reinterpret_cast<ResBfsha*>(file);
+            return bfsha->ResNintendoWareFileHeader::IsValid(cMagic, cTargetVersionMajor, cTargetVersionMinor, cTargetVersionMicro);
+        }
     };
     static_assert(sizeof(ResBfsha) == 0x38);
 }
+VP_ENUM_TRAITS_AUTO(vp::res::BfshaBufferType);

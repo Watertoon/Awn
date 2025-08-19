@@ -53,7 +53,7 @@ namespace vp::resbui {
     template <size_t Size>
     class FixedDictionaryString : public DictionaryStringBase {
         public:
-            vp::util::FixedString<Size> m_string;
+            vp::util::FixedString8<Size> m_string;
         public:
             constexpr FixedDictionaryString() : DictionaryStringBase(), m_string() {/*...*/}
             constexpr FixedDictionaryString(const char *string) : DictionaryStringBase(), m_string(string) {/*...*/}

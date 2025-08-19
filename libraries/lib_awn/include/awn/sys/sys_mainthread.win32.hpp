@@ -37,9 +37,9 @@ namespace awn::sys {
                 VP_ASSERT(m_waitable_timer_for_sleep != nullptr);
 
                 /* Set thread name */
-                ::strcpy(m_name, "MainThread");
-                ::wcscpy(reinterpret_cast<wchar_t*>(m_name_utf16), reinterpret_cast<const wchar_t*>(u"MainThread"));
-                ::SetThreadDescription(main_thread_handle, reinterpret_cast<wchar_t*>(m_name_utf16));
+                m_name.SetString("MainThread");
+                m_name_utf16.SetString(u"MainThread");
+                ::SetThreadDescription(main_thread_handle, reinterpret_cast<wchar_t*>(m_name_utf16.GetString()));
 
                 m_thread_heap = thread_heap;
 

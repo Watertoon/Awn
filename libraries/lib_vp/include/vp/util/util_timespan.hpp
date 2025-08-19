@@ -52,6 +52,7 @@ namespace vp {
 
                 return time;
             }
+            static constexpr ALWAYS_INLINE TimeSpan FromHertz(s64 hertz)  { return TimeSpan(1'000'000'000 / hertz); }
             static constexpr ALWAYS_INLINE TimeSpan FromNanoSeconds(s64 time_ns)  { return TimeSpan(time_ns); }
             static constexpr ALWAYS_INLINE TimeSpan FromMicroSeconds(s64 time_us) { return TimeSpan(time_us  * 1'000); }
             static constexpr ALWAYS_INLINE TimeSpan FromMilliSeconds(s64 time_ms) { return TimeSpan(time_ms  * 1'000'000); }

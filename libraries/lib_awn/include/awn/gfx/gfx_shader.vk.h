@@ -91,6 +91,9 @@ namespace awn::gfx {
         public:
             constexpr VkShaderEXT *GetVkShaderArray() { return m_vk_shader_array; }
             constexpr const VkShaderEXT *GetVkShaderArray() const { return m_vk_shader_array; }
+
+            Result GetBinarySize(size_t *out_size, ShaderStage stage);
+            Result GetBinary(void *data, size_t data_size, ShaderStage stage);
     };
     static_assert(sizeof(Shader) <= cMaxGfxShaderSize);
 }

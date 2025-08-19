@@ -23,7 +23,7 @@ namespace awn::res {
             static constexpr size_t cReadSize           = 0xd'0000;
             static constexpr size_t cLeftoverSize       = vp::util::c128KB;
         public:
-            using DictionaryMap       = vp::util::FixedKeyIndexMap<cMaxDictionaryCount * 2>;
+            using DictionaryMap       = vp::util::FixedKeyIndexMap<u32, u8, cMaxDictionaryCount * 2>;
             using DictionaryAllocator = vp::util::FixedIndexAllocator<u8, cMaxDictionaryCount>;
         public:
             class DecompressorThread : public sys::Thread {

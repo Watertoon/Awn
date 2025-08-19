@@ -19,15 +19,21 @@ namespace awn::res::impl {
 
     class FileDeviceManager {
         private:
+            static constexpr u32 cCurrentDirectoryReserved = 110;
+        private:
             using FileDeviceTree = vp::util::IntrusiveRedBlackTreeTraits<FileDeviceBase, &FileDeviceBase::m_manager_tree_node>::Tree;
         private:
-            sys::Mutex m_device_tree_cs;
+            sys::ReaderWriterLock m_device_tree_rwlock;
             FileDeviceTree m_mounted_file_device_tree;
-            ContentFileDevice *m_main_file_device;
+            ContentFileDevice *m_content_file_device;
+            SaveFileDevice *m_save_file_device;
+            CacheFileDevice *m_cache_file_device;
+            MaxPathString m_current_directory;
         public:
             AWN_SINGLETON_TRAITS(FileDeviceManager);
         public:
-            constexpr ALWAYS_INLINE  FileDeviceManager() : m_device_tree_cs(), m_mounted_file_device_tree(), m_main_file_device() {/*...*/}
+            constexpr ALWAYS_INLINE  FileDeviceManager() : m_device_tree_rwlock(), m_mounted_file_device_tree(), m_content_file_device(), m_save_file_device(), m_cache_file_device(), m_current_directory()
+            {/*...*/}
             constexpr ALWAYS_INLINE ~FileDeviceManager() {/*...*/}
 
             void Initialize(mem::Heap *heap);
@@ -38,10 +44,14 @@ namespace awn::res::impl {
     
             Result LoadFile(const char *path, FileLoadContext *file_load_context);
             Result LoadFileWithDecompressor(const char *path, FileLoadContext *file_load_context, IDecompressor *decompressor);
+    
+            Result SaveFile(const char *path, FileSaveInfo *save_info);
+            Result SaveFileWithCompressor(const char *path, FileSaveInfo *save_info, ICompressor *compressor);
 
             FileDeviceBase *GetFileDeviceByDrive(const char *drive);
             FileDeviceBase *GetFileDeviceByPath(const char *path);
 
-            constexpr FileDeviceBase *GetDefaultFileDevice() { return m_main_file_device; }
+            constexpr FileDeviceBase *GetDefaultFileDevice() { return m_content_file_device; }
+            constexpr MaxPathString *GetCurrentDirectory() { return std::addressof(m_current_directory); }
     };
 }

@@ -17,6 +17,13 @@
 
 namespace awn::res {
 
+    Result FileHandle::Close() {
+        if (file_device == nullptr) { RESULT_RETURN_SUCCESS; }
+        const Result result = file_device->CloseFile(this);
+        file_device = nullptr;
+        return result;
+    }
+
     FileDeviceBase::~FileDeviceBase() {
         impl::FileDeviceManager *mgr = impl::FileDeviceManager::GetInstance();
         if (mgr == nullptr) { return; }
@@ -100,10 +107,10 @@ namespace awn::res {
         ON_SCOPE_EXIT {
             RESULT_ABORT_UNLESS(handle.Close());
         };
-        RESULT_TRY(this->OpenFile(std::addressof(handle), path, OpenMode::Write));
+        RESULT_TRY(this->CreateFile(std::addressof(handle), path, file_save_info->file_size));
 
         /* Write file */
-        size_t written_size       = 0;
+        size_t written_size = 0;
         RESULT_TRY(this->WriteFile(std::addressof(written_size), std::addressof(handle), file_save_info->file, file_save_info->file_size, 0));
 
         RESULT_RETURN_SUCCESS;

@@ -22,36 +22,54 @@ namespace vp::util {
         public:
             static constexpr IndexType cInvalidEntryIndex = static_cast<IndexType>(0xffff'ffff'ffff'ffff);
         public:
-            struct Index {
-                KeyType   hash;
-                IndexType index;
+            struct Key {
+                KeyType hash;
             };
         private:
-            HashMap<Index, &Index::hash> m_hash_map;
+            HashMap<Key, &Key::hash> m_hash_map;
+            IndexType *m_index_array;
         public:
-            constexpr ALWAYS_INLINE  KeyIndexMap() : m_hash_map() {/*...*/}
-            constexpr ALWAYS_INLINE ~KeyIndexMap() {/*...*/}
+            constexpr  KeyIndexMap() : m_hash_map(), m_index_array() {/*...*/}
+            constexpr ~KeyIndexMap() {/*...*/}
 
-            ALWAYS_INLINE void Initialize(vp::imem::IHeap *heap, u32 max_count) {
+            void Initialize(vp::imem::IHeap *heap, u32 max_count) {
                 m_hash_map.Initialize(heap, max_count);
-            }
-
-            ALWAYS_INLINE void Finalize() {
-                m_hash_map.Finalize();
-            }
-
-            constexpr ALWAYS_INLINE void AddEntry(u32 hash, u32 index) {
-                Index *entry = m_hash_map.AddEntry(hash);
-                entry->index = index;
+                m_index_array = new (heap, alignof(IndexType)) IndexType[max_count];
+                VP_ASSERT(m_index_array != nullptr);
                 return;
             }
 
-            constexpr ALWAYS_INLINE u32 TryGetIndexByKey(u32 hash) const {
-                const Index *entry = m_hash_map.TryGetParentByHash(hash);
-                return (entry != nullptr) ? entry->index : cInvalidEntryIndex;
+            void Finalize() {
+                m_hash_map.Finalize();
+                if (m_index_array != nullptr) {
+                    delete [] m_index_array;
+                    m_index_array = nullptr;
+                }
+                return;
             }
 
-            constexpr ALWAYS_INLINE void Clear() { m_hash_map.Clear(); }
+            constexpr void SetMemory(Key *key_array, IndexType *index_array, u32 count) {
+                m_hash_map.SetMemory(key_array, count);
+                m_index_array = index_array;
+                return;
+            }
+
+            constexpr void AddEntry(KeyType hash, IndexType index) {
+                Key *entry = m_hash_map.AddEntry(hash);
+                const u32 id = m_hash_map.IndexOf(entry);
+                m_index_array[id] = index;
+                return;
+            }
+
+            constexpr IndexType TryGetIndexByKey(KeyType hash) const {
+                const u32 id = m_hash_map.TryGetIndexByHash(hash);
+                return (id != HashMap<Key, &Key::hash>::cInvalidEntryIndex) ? m_index_array[id] : cInvalidEntryIndex;
+            }
+
+            constexpr void Clear() { m_hash_map.Clear(); }
+
+            constexpr u32 GetUsedCount() const { return m_hash_map.GetUsedCount(); }
+            constexpr u32 GetMaxCount() const { return m_hash_map.GetMaxCount(); }
         public:
             constexpr u32 CountMaxIterationsPerKey() const {
                 return m_hash_map.CountMaxIterationsPerKey();

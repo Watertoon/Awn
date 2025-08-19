@@ -17,8 +17,6 @@
 
 namespace vp::util {
 
-    constexpr bool StringCompare(const char *lhs, const char *rhs);
-
     template <typename T>
     class PointerArray {
         public:
@@ -64,7 +62,11 @@ namespace vp::util {
             u32   m_used_count;
             T   **m_array;
         public:
-            constexpr ALWAYS_INLINE PointerArray() : m_max_count(0), m_used_count(0), m_array(nullptr) {/*...*/}
+            static constexpr size_t GetWorkMemorySize(u32 count) {
+                return sizeof(T*) * count;
+            }
+        public:
+            constexpr ALWAYS_INLINE PointerArray() : m_max_count(), m_used_count(), m_array() {/*...*/}
             constexpr ~PointerArray() {/*...*/}
 
             constexpr Iterator begin() {
@@ -92,20 +94,20 @@ namespace vp::util {
                 return m_array[index];
             }
 
-            void Initialize(imem::IHeap *heap, u32 pointer_count, s32 alignment = 8) {
+            void Initialize(imem::IHeap *heap, u32 count) {
 
                 /* Integrity checks */
-                if (pointer_count == 0) { return; }
-                VP_ASSERT(pointer_count < 0xffff'ffff);
+                if (count == 0) { return; }
+                VP_ASSERT(count < 0xffff'ffff);
                 VP_ASSERT(m_array == nullptr && m_max_count == 0);
 
                 /* Allocate pointer array */
-                m_array = new (heap, alignment) T*[pointer_count];
+                m_array = new (heap, alignof(T*)) T*[count];
                 VP_ASSERT(m_array != nullptr);
 
                 /* Set state */
                 m_used_count = 0;
-                m_max_count  = pointer_count;
+                m_max_count  = count;
 
                 return;
             }
@@ -122,60 +124,102 @@ namespace vp::util {
                 return;
             }
 
-            constexpr void SetBuffer(void *pointer_buffer, u32 pointer_count) {
-
-                /* Integrity checks */
-                VP_ASSERT(pointer_buffer != nullptr && pointer_count != 0);
-
-                /* Set state */
-                m_array      = pointer_buffer;
+            constexpr void SetMemory(T **memory, u32 count) {
+                m_array = memory;
                 m_used_count = 0;
-                m_max_count  = pointer_count;
-            
+                m_max_count = count;
                 return;
             }
 
             constexpr u32 PushPointer(T *pointer) {
-                VP_ASSERT(m_used_count < m_max_count);
-                m_array[m_used_count] = pointer;
+                VP_ASSERT(!this->IsFull());
                 const u32 index = m_used_count;
+                m_array[index] = pointer;
                 m_used_count = index + 1;
                 return index;
             }
 
-            constexpr T *PopPointer() {
-                T *ret = m_array[m_used_count - 1];
-                m_array[m_used_count - 1] = nullptr;
-                --m_used_count;
-                return ret;
+            constexpr u32 PushPointerAtomic(T *pointer) {
+                const u32 id = vp::util::InterlockedFetchAddAcquire(std::addressof(m_used_count), 1u);
+                VP_ASSERT(id < m_max_count);
+                m_array[id] = pointer;
+                return id;
             }
 
-            void RemoveRange(u32 base_index, u32 number_of_elements) {
-
-                const u32 move_element_index = base_index + number_of_elements;
-                const u32 move_element_count = m_used_count - move_element_index;
-                VP_ASSERT(move_element_index <= m_used_count);
-
-                if (move_element_count != 0) {
-                    ::memmove(std::addressof(m_array[base_index]), std::addressof(m_array[move_element_index]), move_element_count * sizeof(T**));
-                }
-                m_used_count = m_used_count - number_of_elements;
-
-                return;
+            constexpr T *PopPointer() {
+                const u32 count = m_used_count;
+                VP_ASSERT(0 < count);
+                const u32 index = count - 1;
+                T *ret = m_array[index];
+                m_array[index] = nullptr;
+                m_used_count = index;
+                return ret;
             }
 
             constexpr void Clear() { m_used_count = 0; }
 
-            constexpr u32 FindIndexOf(const T *pointer) const {
-                for (u32 i = 0; i < m_used_count; ++i) {
-                    if (m_array[i] == pointer) { return i; }
+            bool RemoveRange(u32 base_index, u32 number_of_elements) {
+
+                /* Integrity check */
+                const u32 count = m_used_count;
+                const u32 end_i = base_index + number_of_elements;
+                if (count < end_i) { return false; }
+
+                /* Shift elements down from end to base of remove range */
+                const u32 elements_after = count - end_i;
+                if (elements_after != 0) {
+                    T **base = m_array + base_index;
+                    T **end = base + end_i;
+                    ::memmove(base, end, elements_after * sizeof(T**));
+                }
+
+                m_used_count = count - number_of_elements;
+
+                return true;
+            }
+
+            bool RemoveOrdered(T *iter) {
+                const u32 i = this->IndexOf(iter);
+                if (i == cInvalidEntryIndex) { return false; }
+                return this->RemoveRange(i, 1);
+            }
+
+            constexpr void Swap(u32 index0, u32 index1) {
+                VP_ASSERT(index0 < m_used_count);
+                VP_ASSERT(index1 < m_used_count);
+                T *l = m_array[index0];
+                T *r = m_array[index1];
+                m_array[index0] = r;
+                m_array[index1] = l;
+                return;
+            }
+
+            constexpr bool RemoveUnordered(T *iter) {
+                const u32 i = this->IndexOf(iter);
+                if (i == cInvalidEntryIndex) { return false; }
+                const u32 next_count = m_used_count - 1;
+                m_array[i] = m_array[next_count];
+                m_used_count = next_count;
+                return true;
+            }
+
+            constexpr u32 IndexOf(const T *pointer) const {
+                T **start = m_array;
+                T **iter = start;
+                T **end = start + m_used_count;
+                while (iter != end) {
+                    if (*iter != pointer) { ++iter; continue; }
+                    return start - iter;
                 }
                 return cInvalidEntryIndex;
             }
+            constexpr T **GetArray() { return m_array; }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return m_max_count; }
 
             constexpr bool IsValid() const { return m_array != nullptr; }
+            constexpr bool IsEmpty() const { return m_used_count == 0; }
+            constexpr bool IsFull() const { return (m_max_count <= m_used_count); }
         public:
             constexpr void SetUsedCount(u32 count) {
                 m_used_count = count;
@@ -187,28 +231,28 @@ namespace vp::util {
             }
         private:
             struct DefaultCompareLess {
-                constexpr bool operator()(const T *&lhs, const T *&rhs) {
+                constexpr bool operator()(T *&lhs, T *&rhs) {
                     return *lhs < *rhs;
                 }
-                constexpr bool operator()(const T *&lhs, const T *&rhs) requires std::is_same_v<std::add_cv_t<char>, std::add_cv_t<T>> {
+                constexpr bool operator()(T *&lhs, T *&rhs) requires std::is_same_v<std::add_cv_t<char>, std::add_cv_t<T>> {
                     const s32 cmp = ::strcmp(lhs, rhs);
                     return cmp < 0;
                 }
             };
             struct DefaultCompareEqual {
-                constexpr bool operator()(const T *&lhs, const T *&rhs) {
+                constexpr bool operator()(T *&lhs, T *&rhs) {
                     return *lhs == *rhs;
                 }
-                constexpr bool operator()(const T *&lhs, const T *&rhs) requires std::is_same_v<std::add_cv_t<char>, std::add_cv_t<T>> {
+                constexpr bool operator()(T *&lhs, T *&rhs) requires std::is_same_v<std::add_cv_t<char>, std::add_cv_t<T>> {
                     return vp::util::StringCompare(lhs, rhs);
                 }
             };
             template <auto Member>
             struct DefaultCompareLessMember {
-                constexpr bool operator()(const ParentType<Member> *&lhs, const ParentType<Member> *&rhs) {
-                    return *lhs->*Member < *rhs->*Member;
+                constexpr bool operator()(ParentType<Member> *&lhs, ParentType<Member> *&rhs) {
+                    return lhs->*Member < rhs->*Member;
                 }
-                constexpr bool operator()(const ParentType<Member> *&lhs, const ParentType<Member> *&rhs) requires std::is_same_v<std::add_cv_t<char>, std::add_cv_t<MemberType<Member>>> {
+                constexpr bool operator()(ParentType<Member> *&lhs, ParentType<Member> *&rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
                     const s32 cmp = ::strcmp(lhs->*Member, rhs->*Member);
                     return cmp < 0;
                 }

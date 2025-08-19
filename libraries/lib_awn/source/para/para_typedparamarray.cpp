@@ -202,7 +202,7 @@ namespace awn::para {
         for (u32 i = 0; i < count; ++i) {
 
             /* Try advance search string on element */
-            vp::util::FixedString<0x20> element_string;
+            vp::util::FixedString8<0x20> element_string;
             element_string.Format("%d", i);
             const bool is_advance = AdvanceCompositeSearchString(std::addressof(next_search), search_string, element_string.GetString());
             if (is_advance == false) { continue; }

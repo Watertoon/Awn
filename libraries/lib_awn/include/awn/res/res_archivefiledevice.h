@@ -35,7 +35,7 @@ namespace awn::res {
             virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) override;
             virtual Result CheckDirectoryExistsImpl(const char *path) override;
 
-            virtual Result FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) override;
+            virtual Result FormatPath(MaxPathString *out_formatted_path, const char *path) override;
 
             virtual Result GetFileReferenceImpl(void **out_file, size_t *out_size, const char *file_path);
         public:

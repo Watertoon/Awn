@@ -111,8 +111,8 @@ endif
 endif
 endif
 
-export ALL_COMPILER_FLAGS := $(ARCH_CXX_FLAGS) $(PLATFORM_C_FLAGS) $(PLATFORM_CXX_FLAGS) $(PLATFORM_INCLUDES) $(GFXAPI_INCLUDES) $(BINTYPE_CXX_FLAGS) $(PROJECT_C_FLAGS) $(PROJECT_CXX_FLAGS) $(PROJECT_INCLUDES)
-export ALL_LINKER_FLAGS := $(ARCH_CXX_FLAGS) $(PLATFORM_C_FLAGS) $(PLATFORM_CXX_FLAGS) $(PLATFORM_INCLUDES) $(PLATFORM_LIB_INCLUDES) $(GFXAPI_INCLUDES) $(GFXAPI_LIB_INCLUDES) $(BINTYPE_CXX_FLAGS) $(PROJECT_C_FLAGS) $(PROJECT_CXX_FLAGS) $(PROJECT_INCLUDES) $(PROJECT_LIB_INCLUDES)
+export ALL_COMPILER_FLAGS :=  $(PROJECT_C_FLAGS) $(PROJECT_CXX_FLAGS) $(PROJECT_INCLUDES) $(ARCH_CXX_FLAGS) $(PLATFORM_C_FLAGS) $(PLATFORM_CXX_FLAGS) $(PLATFORM_INCLUDES) $(GFXAPI_INCLUDES) $(BINTYPE_CXX_FLAGS)
+export ALL_LINKER_FLAGS :=  $(PROJECT_C_FLAGS) $(PROJECT_CXX_FLAGS) $(PROJECT_INCLUDES) $(PROJECT_LIB_INCLUDES) $(ARCH_CXX_FLAGS) $(PLATFORM_C_FLAGS) $(PLATFORM_CXX_FLAGS) $(PLATFORM_INCLUDES) $(PLATFORM_LIB_INCLUDES) $(GFXAPI_INCLUDES) $(GFXAPI_LIB_INCLUDES) $(BINTYPE_CXX_FLAGS)
 
 export ALL_LIBS := $(PLATFORM_LIBS) $(PROJECT_LIBS)
 
@@ -121,41 +121,6 @@ GLSLC ?= $(VULKAN_SDK)/bin/glslc.exe
 endif
 
 # Compile recipes
-
-# Vulkan shader build rules
-ifeq ($(GRAPHICS_API), vk)
-%.vert.spv : %.vert.sh
-	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.vert.d -DVP_VERTEX_SHADER                  -mfmt=bin --target-env=vulkan1.3 -fshader-stage=vert        -I$(CURDIR)/../shader/include -Werror -Os -c $< -o $(CURDIR)/../build/resource/shader/$*.vert.spv
-
-%.tsev.spv : %.tsev.sh
-	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.tsev.d -DVP_TESSELLATION_EVALUATION_SHADER -mfmt=bin --target-env=vulkan1.3 -fshader-stage=tesseval    -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.tsev.spv
-
-%.tsct.spv : %.tsct.sh
-	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.tsct.d -DVP_TESSELLATION_CONTROL_SHADER    -mfmt=bin --target-env=vulkan1.3 -fshader-stage=tesscontrol -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.tsct.spv
-
-%.geom.spv : %.geom.sh
-	@echo $(notdir $<)	
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.geom.d -DVP_GEOMETRY_SHADER                -mfmt=bin --target-env=vulkan1.3 -fshader-stage=geom        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.geom.spv
-
-%.frag.spv : %.frag.sh
-	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.frag.d -DVP_FRAGMENT_SHADER                -mfmt=bin --target-env=vulkan1.3 -fshader-stage=frag        -I$(CURDIR)/../shader/include -Werror -Os -c $< -o $(CURDIR)/../build/resource/shader/$*.frag.spv
-
-%.comp.spv : %.comp.sh
-	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.comp.d -DVP_COMPUTE_SHADER                 -mfmt=bin --target-env=vulkan1.3 -fshader-stage=comp        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.comp.spv
-
-%.task.spv : %.task.sh
-	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.comp.d -DVP_TASK_SHADER                    -mfmt=bin --target-env=vulkan1.3 -fshader-stage=task        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.task.spv
-
-%.mesh.spv : %.mesh.sh
-	@echo $(notdir $<)
-	@$(GLSLC) -MD -MF $(DEPSDIR)/$*.comp.d -DVP_MESH_SHADER                    -mfmt=bin --target-env=vulkan1.3 -fshader-stage=mesh        -I$(CURDIR)/../shader/include -werror -O -c $< -o $(CURDIR)/../build/resource/shader/$*.mesh.spv
-endif
 
 # Windows exe build rules
 ifeq ($(PLATFORM), win32)

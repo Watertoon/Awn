@@ -354,6 +354,8 @@ DEFINE_EXTERN_VK_PROC(vkCmdSetSampleMaskEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetVertexInputEXT);
 DEFINE_EXTERN_VK_PROC(vkCreateShadersEXT);
 DEFINE_EXTERN_VK_PROC(vkDestroyShaderEXT);
+DEFINE_EXTERN_VK_PROC(vkGetShaderBinaryDataEXT);
+
 /* + VK_EXT_conservative_rasterization */
 DEFINE_EXTERN_VK_PROC(vkCmdSetConservativeRasterizationModeEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);

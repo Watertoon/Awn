@@ -68,7 +68,7 @@ namespace awn::res::impl {
         }
 
         /* Release managed ref if last ref */
-        if (this->GetReferenceCount() != 1) {            
+        if (this->GetReferenceCount() != 1) {
             this->ReleasePersistantReference();
         }
 

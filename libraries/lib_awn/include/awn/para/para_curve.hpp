@@ -378,7 +378,7 @@ namespace awn::para {
                     const char *curve_type_name = "";
                     const bool result0 = iter.TryGetStringByKey(std::addressof(curve_type_name), "Type");
                     if (!result0 || !iter.TryGetStringByKey(std::addressof(curve_type_name), "type")) { return false; }
-                    const bool result1 = CurveTypeTraits::GetEnumValueByString(reinterpret_cast<CurveTypeTraits::UnderlyingType*>(std::addressof(m_curve_type)), curve_type_name);
+                    const bool result1 = CurveTypeTraits::GetValueByString(reinterpret_cast<CurveTypeTraits::UnderlyingType*>(std::addressof(m_curve_type)), curve_type_name);
                     if (!result1) { return false; }
                 }
 

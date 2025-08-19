@@ -34,7 +34,7 @@ namespace awn::sys {
         u32 message_count;
         size_t *message_memory;
         u32 stack_size;
-#ifdef VP_TARGET_PLATFORM_nx
+#ifndef VP_TARGET_PLATFORM_win32
         void *stack_memory;
 #endif
         u32 priority;

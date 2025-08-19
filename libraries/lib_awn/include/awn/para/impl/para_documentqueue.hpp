@@ -49,20 +49,14 @@ namespace awn::para::impl {
                 /* Set document binder */
                 m_user_data.document_binder = document_push_info->document_binder;
 
-                /* Set file path */
+                /* Remove "Work/" in path */
                 const char *path_no_work = AdvanceNoWorkExtension(document_push_info->file_path);
-                m_user_data.file_path    = path_no_work;
+                m_user_data.file_path.SetString(path_no_work);
 
-                /* Find file extension */
+                /* Clobber previous extension with bgyml and attempt to load the file */
                 const u32 index = m_user_data.file_path.FindCharFromBack(0, '.');
-                
-                /* Attempt to load file */
                 if (index != res::MaxPathString::cInvalidIndex) {
-
-                    /* Clobber previous extension with bgyml */
                     m_user_data.file_path.Insert(index + 1, "bgyml");
-
-                    /* Try to load bgyml async */
                     res::AsyncResourceLoadInfo load_info = {
                         .resource_factory = DocumentManager::GetInstance()->GetResourceFactory(),
                     };
@@ -70,7 +64,7 @@ namespace awn::para::impl {
                 }
 
                 /* Reference archive binder */
-                if (document_push_info->archive_binder.IsResourceInitialized() == true) {
+                if (document_push_info->archive_binder.IsCompleted()) {
                     m_user_data.archive_binder.ReferenceBinderSync(std::addressof(document_push_info->archive_binder));
                 }
 
@@ -95,36 +89,36 @@ namespace awn::para::impl {
                 
                 /* Set local archive of bgyml if initialized */
                 res::ScopedThreadLocalArchive local_archive_scope;
-                if (user_data->archive_binder.IsResourceInitialized() == true) { local_archive_scope.SetArchive(std::addressof(user_data->archive_binder)); }
+                if (user_data->archive_binder.IsCompleted()) { local_archive_scope.SetArchive(std::addressof(user_data->archive_binder)); }
                 
                 /* Reference local archive if requested */
-                if (user_data->is_reference_local_archive == true) { res::ReferenceThreadLocalArchive(); }
+                if (user_data->is_reference_local_archive) { res::ReferenceThreadLocalArchive(); }
 
                 /* Release thread local archive reference on exit */
                 ON_SCOPE_EXIT {
                     user_data->archive_binder.Release();
                     user_data->bgyml_binder.Release();
-                    if (user_data->is_reference_local_archive == true) { res::ReleaseThreadLocalArchive(); } 
+                    if (user_data->is_reference_local_archive) { res::ReleaseThreadLocalArchive(); } 
                 };
 
                 /* Parse out file name and */
                 const u32 extension_offset = user_data->file_path.FindCharFromBack(0, '.');
-                const u32 class_offset     = user_data->file_path.FindCharFromBack(extension_offset + 1, '.');
+                const u32 class_offset = user_data->file_path.FindCharFromBack(extension_offset + 1, '.');
 
                 /* Split file path string to separate file and class names */
                 char *file_path = user_data->file_path.m_string_array;
-                file_path[class_offset]     = '\0';
+                file_path[class_offset] = '\0';
                 file_path[extension_offset] = '\0';
 
                 /* Get file name and class name */
-                const char *file_name  = file_path;
+                const char *file_name = file_path;
                 const char *class_name = file_path + class_offset + 1;
 
                 /* Wait for document to load */
                 user_data->bgyml_binder.WaitForLoad();
 
                 /* Try initialize resource */
-                if (user_data->bgyml_binder.IsLoaded() == false) {
+                if (!user_data->bgyml_binder.IsLoaded()) {
                     ResourceDocument::CreateInfo document_create_info(file_name, class_name);
                     const Result result = user_data->bgyml_binder.Complete(std::addressof(document_create_info));
                     RESULT_ABORT_UNLESS(result);

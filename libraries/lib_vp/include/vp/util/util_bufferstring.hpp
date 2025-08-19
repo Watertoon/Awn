@@ -17,243 +17,118 @@
 
 namespace vp::util {
 
-#ifdef VP_TARGET_ARCHITECTURE_x86
-    constexpr u32 StringLength(const char *string) {
+    namespace impl {
 
-        /* Constexpr impl */
-        if (std::is_constant_evaluated()) {
-            const char *start = string;
-            while (*string != '\0') { ++string; }
-            return static_cast<u32>(string - start);
-        }
-
-        /* Handle unaligned string */
-        const u32 unaligned = 0x20 - (reinterpret_cast<uintptr_t>(string) & 0x1f);
-        for (u32 i = 0; i < unaligned; ++i) {
-            if (string[i] == '\0') { return i; }
-        }
-        string = string + unaligned;
-
-        /* Handle aligned string */
-        u32 i = unaligned;
-        u32 mask = 0;
-        const v32cc zero = {};
-        for (;;) {
-
-            /* Load 32 characters, compare if equal to zero, and convert result to a mask */
-            const v32cc characters = Load32Aligned(string);
-            const v32cc result     = CompareEqual32(zero, characters);
-            mask                   = MoveMask256(result);
-
-            /* Check if the mask has a bit set, meaning a character is non-zero */
-            if (mask != 0) {
-                const u32 offset = vp::util::CountRightZeroBits32(mask);
-                return i + offset;
-            }
-
-            /* Advance while mask is not empty */
-            i      = i + 0x20;
-            string = string + 0x20;
-        }
-    }
-
-    constexpr bool StringCompare(const char *lhs, const char *rhs) {
-        
-        /* Constexpr impl */
-        if (std::is_constant_evaluated()) {
-            while (*lhs != '\0' || *rhs != '\0') { 
-                if (*lhs != *rhs) { return false; }
-                lhs += 1;
-                rhs += 1;
-            }
-            return true;
-        }
-
-        /* Handle aligned string */
-        u32 i    = 0;
-        const u32 iter = 0x20;
-        const char *l_iter = lhs;
-        const char *r_iter = rhs;
-        const v32cc zero = {};
-        for (;;) {
-
-            /* Load 32 characters, compare if equal to zero, and convert result to a mask */
-            const v32cc lhs_char = Load32(l_iter);
-            const v32cc rhs_char = Load32(r_iter);
-            const v32cc result0 = CompareEqual32(lhs_char, zero);
-            const v32cc result1 = CompareEqual32(rhs_char, zero);
-            const v32cc result2 = CompareEqual32(lhs_char, rhs_char);
-            const u32 mask0 = MoveMask256(result0);
-            const u32 mask1 = MoveMask256(result1);
-            const u32 mask2 = MoveMask256(result2);
-
-            /* Check if the mask has a bit set, meaning a character is non-zero */
-            if (mask0 != 0 || mask1 != 0 || mask2 != 0) {
-                const u32 offset0 = vp::util::CountRightZeroBits32(mask0) + i;
-                const u32 offset1 = vp::util::CountRightZeroBits32(mask1) + i;
-                const u32 offset2 = vp::util::CountRightOneBits32(mask2) + i;
-                return offset0 == offset1 && offset0 <= offset2;
-            }
-
-            /* Advance while mask is not empty */
-            i = i + iter;
-            l_iter = std::addressof(lhs[i]);
-            r_iter = std::addressof(rhs[i]);
-        }
-
-        return true;
-    }
-#else
-    constexpr u32 StringLength(const char *string) {
-
-        /* Handle unaligned string */
-        u32 i = 0;
-        while (string[i] != '\0') { ++i; }
-
-        return i;
-    }
-
-    constexpr bool StringCompare(const char *lhs, const char *rhs) {
-        while (*lhs != '\0' || *rhs != '\0') { 
-            if (*lhs != *rhs) { return false; }
-            lhs += 1;
-            rhs += 1;
-        }
-        return true;
-    }
-#endif
-
-    template <size_t Size>
-        requires (Size < vp::util::c8MB) && (0 < Size)
-    class FixedString {
-        public:
-            static constexpr u32 cInvalidIndex = 0xffff'ffff;
-        public:
-            u32  m_length;
-            char m_string_array[Size];
-        public:
-            explicit constexpr ALWAYS_INLINE FixedString() : m_length() {
+        template <typename C, u32 Size>
+            requires (IsCharRaw<C>)
+        class FixedStringImpl {
+            public:
+                using UnderlyingType = C;
+            public:
+                static constexpr C cNullChar = static_cast<C>(0u);
+                static constexpr u32 cInvalidIndex = 0xffff'ffff;
+            public:
+                u32 m_length;
+                C m_string_array[Size];
+            public:
+            constexpr FixedStringImpl() : m_length() {
+                if (std::is_constant_evaluated()) {
+                    for (u32 i = 0; i < Size; ++i) {
+                        m_string_array[i] = 0;
+                    }
+                }
                 this->AssureTermination();
             }
-            explicit constexpr ALWAYS_INLINE FixedString(const char *string) : m_length() { 
-                if (string == nullptr) { return; }
-                const u32 len = StringLength(string);
-                const size_t clamp_len = vp::util::Min(len, static_cast<u32>(Size) - 1);
-                ::memcpy(m_string_array, string, clamp_len);
-                m_length = clamp_len; 
-                this->AssureTermination();
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,UnderlyingCharType<T>>))
+            constexpr FixedStringImpl(const T *string) : m_length() {
+                if (std::is_constant_evaluated()) {
+                    for (u32 i = 0; i < Size; ++i) {
+                        m_string_array[i] = 0;
+                    }
+                }
+                this->SetString(string);
             }
-            template <size_t RhsSize>
-            explicit constexpr FixedString(const FixedString<RhsSize> &rhs) : m_length() {
-                const size_t clamp_len = vp::util::Min(rhs.m_length, static_cast<u32>(Size) - 1);
-                ::memcpy(m_string_array, rhs.m_string_array, clamp_len);
+            constexpr ALWAYS_INLINE ~FixedStringImpl() {/*...*/}
+
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(C))
+            constexpr bool operator==(T &rhs) const {
+                const UnderlyingCharType<T> *str;
+                GetUnderlyingString(std::addressof(str), nullptr, std::addressof(rhs));
+                return StringCompare(m_string_array, str);
+            }
+
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(C))
+            constexpr ALWAYS_INLINE s32 operator<=>(const T &rhs) const {
+                const UnderlyingCharType<T> *str;
+                u32 len;
+                GetUnderlyingString(std::addressof(str), std::addressof(len), std::addressof(rhs));
+                if (m_length != len) { return false; }
+                return ::memcmp(m_string_array, str, len * sizeof(C));
+            }
+
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,UnderlyingCharType<T>>))
+            constexpr ALWAYS_INLINE FixedStringImpl &operator=(const T& rhs) {
+                this->SetString(std::addressof(rhs));
+                return *this;
+            }
+
+            template <typename T>
+                requires (IsStringRaw<T>) && ((sizeof(T) == sizeof(C)) || (IsCharEncodingConvertible<C,T>))
+            constexpr void SetStringImpl(const T *string, u32 len) {
+
+                /* Copy up to size, convert encoding if necessary */
+                u32 clamp_len = vp::util::Min(len, static_cast<u32>(Size-1));
+                if constexpr (sizeof(UnderlyingCharType<T>) == sizeof(C)) {
+                    for (u32 i = 0; i < clamp_len; ++i) {
+                        m_string_array[i] = string[i];
+                    }
+                } else if constexpr (IsCharEncodingConvertible<C,T>) {
+                    ConvertStringEncoding(std::addressof(clamp_len), m_string_array, Size-1, string, clamp_len);
+                } else {
+                    _consteval_fail();
+                }
                 m_length = clamp_len;
                 this->AssureTermination();
-            }
-
-            constexpr ALWAYS_INLINE ~FixedString() {/*...*/}
-
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE bool operator==(const FixedString<RhsSize>& rhs) {
-                if (m_length != rhs.m_length) { return false; }
-                return ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
-            }
-
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE bool operator==(const FixedString<RhsSize>& rhs) const {
-                if (m_length != rhs.m_length) { return false; }
-                return ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
-            }
-
-            constexpr ALWAYS_INLINE bool operator==(const char *rhs) {
-                const u32 length =  StringLength(rhs);
-                if (m_length != length) { return false; }
-                return ::memcmp(m_string_array, rhs, length) == 0;
-            }
-
-            constexpr ALWAYS_INLINE bool operator==(const char *rhs) const {
-                const u32 length =  StringLength(rhs);
-                if (m_length != length) { return false; }
-                return ::memcmp(m_string_array, rhs, length) == 0;
-            }
-
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE bool operator!=(const FixedString<RhsSize>& rhs) {
-                return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
-            }
-
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE bool operator!=(const FixedString<RhsSize>& rhs) const {
-                return (m_length != rhs.m_length) || ::memcmp(m_string_array, rhs.m_string_array, m_length) == 0;
-            }
-
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE bool operator>(const FixedString<RhsSize>& rhs) {
-                if (m_length != rhs.m_length) { return false; }
-                return ::memcmp(m_string_array, rhs.m_string_array, m_length) < 0;
-            }
-    
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE bool operator>(const FixedString<RhsSize>& rhs) const {
-                if (m_length != rhs.m_length) { return false; }
-                return ::memcmp(m_string_array, rhs.m_string_array, m_length) < 0;
-            }
-
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE bool operator<(const FixedString<RhsSize>& rhs) {
-                if (m_length != rhs.m_length) { return false; }
-                return ::memcmp(m_string_array, rhs.m_string_array, m_length) > 0;
-            }
-
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE bool operator<(const FixedString<RhsSize>& rhs) const {
-                if (m_length != rhs.m_length) { return false; }
-                return ::memcmp(m_string_array, rhs.m_string_array, m_length) > 0;
-            }
-
-            constexpr void RecomputeLength() {
-                m_length = vp::util::Min(StringLength(m_string_array), Size - 1);
-                this->AssureTermination();
-            }
-
-            constexpr ALWAYS_INLINE bool IsSame(const char *string) const {
-                return StringCompare(m_string_array, string);
-            }
-
-            constexpr ALWAYS_INLINE void Clear() {
-                m_length = 0;
-                m_string_array[0] = '\0';
                 return;
             }
 
-            template <size_t RhsSize>
-            constexpr ALWAYS_INLINE FixedString &operator=(const FixedString<RhsSize>& rhs) {
-                const size_t len = vp::util::Min(rhs.m_length, static_cast<u32>(Size) - 1);
-                ::memcpy(m_string_array, rhs.m_string_array, len);
-                m_length = len;
-                this->AssureTermination();
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,UnderlyingCharType<T>>))
+            constexpr void SetString(const T *string) {
 
-                return *this;
+                /* Get string */
+                const UnderlyingCharType<T> *str;
+                u32 len;
+                GetUnderlyingString(std::addressof(str), std::addressof(len), string);
+
+                /* Set string impl */
+                this->SetStringImpl(str, len);
+                return;
             }
 
-            constexpr ALWAYS_INLINE FixedString &operator=(const char *rhs) {
-                if (rhs == nullptr) { 
-                    m_string_array[0] = '\0';
-                    m_length          = 0;
-                    return *this; 
-                }
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,UnderlyingCharType<T>>))
+            constexpr void SetString(const T *string, u32 length) {
 
-                const size_t len = vp::util::Min(StringLength(rhs), static_cast<u32>(Size) - 1);
-                ::memcpy(m_string_array, rhs, len);
-                m_length = len;
-                this->AssureTermination();
-                return *this;
+                /* Get string */
+                const UnderlyingCharType<T> *str;
+                GetUnderlyingString(std::addressof(str), nullptr, string);
+
+                /* Set string impl */
+                this->SetStringImpl(str, length);
+                return;
             }
 
-            size_t Format(const char *format, ...) {
+            template <typename T>
+                requires (IsStringRaw<T>) && (sizeof(T) == sizeof(C))
+            size_t Format(const T *format, ...) {
                 va_list args;
                 ::va_start(args, format);
-                s32 length = ::vsnprintf(m_string_array, Size, format, args);
+                s32 length = ::vsnprintf(reinterpret_cast<char*>(m_string_array), Size-1, reinterpret_cast<const char*>(format), args);
                 VP_ASSERT(0 <= length);
                 ::va_end(args);
 
@@ -263,10 +138,12 @@ namespace vp::util {
                 return m_length;
             }
 
-            size_t AppendFormat(const char *format, ...) {
+            template <typename T>
+                requires (IsStringRaw<T>) && (sizeof(T) == sizeof(C))
+            size_t AppendFormat(const T *format, ...) {
                 va_list args;
                 ::va_start(args, format);
-                s32 appended_length = ::vsnprintf(m_string_array + m_length, Size - m_length, format, args);
+                const s32 appended_length = ::vsnprintf(reinterpret_cast<char*>(m_string_array) + m_length, Size - m_length - 1, reinterpret_cast<const char*>(format), args);
                 VP_ASSERT(0 <= appended_length);
                 ::va_end(args);
 
@@ -276,6 +153,51 @@ namespace vp::util {
                 return m_length;
             }
 
+            template <typename T>
+                requires (IsStringRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,T>))
+            constexpr size_t AppendImpl(const T *string, u32 len) {
+
+                /* Append */
+                const u32 prev_length = m_length;
+                size_t append_length = vp::util::Min(len, (Size-1) - prev_length);
+                if constexpr (sizeof(UnderlyingCharType<T>) == sizeof(C)) {
+                    for (u32 i = 0; i < append_length; ++i) {
+                        m_string_array[i + prev_length] = string[i];
+                    }
+                } else if constexpr (IsCharEncodingConvertible<C,T>) {
+                    ConvertStringEncoding(std::addressof(append_length), m_string_array + prev_length, (Size-1) - prev_length, string, append_length);
+                } else {
+                    _consteval_fail();
+                }
+                m_length += append_length;
+                this->AssureTermination();
+
+                return m_length;
+            }
+
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,T>))
+            constexpr size_t Append(const T *append) {
+
+                /* Get string */
+                const UnderlyingCharType<T> *str;
+                u32 len;
+                GetUnderlyingString(std::addressof(str), std::addressof(len), append);
+
+                return this->AppendImpl(str, len);
+            }
+
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,T>))
+            constexpr size_t Append(const T *append, u32 len) {
+
+                /* Get string */
+                const UnderlyingCharType<T> *str;
+                GetUnderlyingString(std::addressof(str), nullptr, append);
+
+                return this->AppendImpl(str, len);
+            }
+    
             void TruncateStart(u32 offset_from_start) {
 
                 /* Truncate whole string */
@@ -287,7 +209,7 @@ namespace vp::util {
 
                 /* Move string */
                 const u32 new_length = m_length - offset_from_start;
-                ::memmove(m_string_array, m_string_array + offset_from_start, new_length);
+                ::memmove(m_string_array, m_string_array + offset_from_start, new_length * sizeof(C));
                 m_length = new_length;
 
                 this->AssureTermination();
@@ -311,73 +233,135 @@ namespace vp::util {
                 return;
             }
 
-            constexpr ALWAYS_INLINE size_t Append(const char *append) {
-                size_t append_length = vp::util::Min(StringLength(append), static_cast<u32>(Size) - m_length - 1);
-                ::memcpy(m_string_array + m_length, append, append_length);
-                m_length += append_length;
-                this->AssureTermination();
-
-                return m_length;
-            }
-
-            constexpr u32 FindCharFromBack(u32 base_reverse_index, char target) {
-                for (u32 i = m_length - base_reverse_index - 1; cInvalidIndex != i; --i) {
-                    if (m_string_array[i] == target) { return i; }
-                }
-                return cInvalidIndex;
-            }
-            
-            constexpr void Insert(u32 base_index, const char *string) {
-                
-                /* Ensure valid base index */
-                const u32 prev_length = m_length;
-                VP_ASSERT(base_index <= prev_length)
-
-                /* Append string with overwrite */
-                const u32 insert_length = StringLength(string);
-                const u32 final_length  = base_index + insert_length;
-                const u32 append_length = (Size < final_length) ? Size - base_index : insert_length;
-                ::memcpy(m_string_array + base_index, string, append_length);
-                m_length = final_length;
-                this->AssureTermination();
-
-                return;
-            }
-
-            constexpr void SetString(const char *string, u32 length) {
-                ::memcpy(m_string_array, string, length);
-                m_length = length;
-                this->AssureTermination();
-                return;
-            }
-
             constexpr void SetLength(u32 length) {
                 m_length = length;
                 this->AssureTermination();
                 return;
             }
 
-            constexpr void ReplaceAllChar(char target, char replace) {
-                for (u32 i = 0; i < m_length; ++i) {
+            constexpr void RecomputeLength() {
+                m_length = vp::util::Min(StringLength(m_string_array), Size - 1);
+                this->AssureTermination();
+            }
+
+            template <typename C1>
+                requires (IsFixedStringOrRaw<C1>) && (sizeof(UnderlyingCharType<C1>) == sizeof(C))
+            constexpr bool IsSame(const C1 *string) const {
+                return StringCompare(m_string_array, string);
+            }
+
+            constexpr void Clear() {
+                m_length = 0;
+                m_string_array[0] = '\0';
+                return;
+            }
+
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && (sizeof(C) == sizeof(UnderlyingCharType<T>))
+            constexpr void Insert(u32 base_index, const T *string) {
+                
+                /* Ensure valid base index */
+                const u32 prev_length = m_length;
+                VP_ASSERT(base_index <= prev_length)
+
+                /* Get string */
+                const UnderlyingCharType<T> *str;
+                u32 len;
+                GetUnderlyingString(std::addressof(str), std::addressof(len), string);
+
+                /* Append string with overwrite */
+                const u32 insert_length = len;
+                const u32 final_length  = base_index + insert_length;
+                const u32 append_length = (Size < final_length) ? Size - base_index : insert_length;
+                ::memcpy(m_string_array + base_index, str, append_length);
+                m_length = final_length;
+                this->AssureTermination();
+
+                return;
+            }
+
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && (sizeof(C) == sizeof(UnderlyingCharType<T>))
+            constexpr void CopyStringTo(T *out_string, u32 max_length) const {
+                const u32 clamp_len = vp::util::Min(max_length-1, m_length);
+                ::memcpy(out_string, m_string_array, clamp_len);
+                out_string[clamp_len] = '\0';
+                return;
+            }
+
+            template <typename T>
+                requires (IsCharRaw<T>) && (sizeof(C) == sizeof(T))
+            constexpr u32 FindCharFromBack(u32 base_reverse_index, T target) {
+                for (u32 i = m_length - base_reverse_index - 1; cInvalidIndex != i; --i) {
+                    if (m_string_array[i] == static_cast<C>(target)) { return i; }
+                }
+                return cInvalidIndex;
+            }
+
+            template <typename T>
+                requires (IsChar8Raw<T>)
+            constexpr void ReplaceAllChar(T target, T replace) {
+                const u32 len = m_length;
+                for (u32 i = 0; i < len; ++i) {
                     if (m_string_array[i] == target) { m_string_array[i] = replace; }
                 }
                 return;
             }
 
-            ALWAYS_INLINE void Print() const {
+            void Print() const requires (IsChar8Raw<C>) {
                 ::puts(m_string_array);
             }
 
-            constexpr ALWAYS_INLINE void AssureTermination() {
-                m_string_array[m_length] = '\0';
+            constexpr void AssureTermination() {
+                m_string_array[m_length] = cNullChar;
             }
-            constexpr ALWAYS_INLINE bool IsEmpty() const {
-                return m_string_array[0] == '\0';
+            constexpr bool IsEmpty() const {
+                return m_string_array[0] == cNullChar;
             }
 
-            constexpr ALWAYS_INLINE size_t GetLength() const { return m_length; }
-            constexpr ALWAYS_INLINE char *GetString() { return m_string_array; }
-            constexpr ALWAYS_INLINE const char *GetString() const { return m_string_array; }
+            constexpr size_t GetLength() const { return m_length; }
+            constexpr C *GetString() { return m_string_array; }
+            constexpr const C *GetString() const { return m_string_array; }
+        };
+    }
+
+    template <u32 Len>
+        requires (Len < 0xffff'ffff) && (0 < Len)
+    class FixedString8 : public impl::FixedStringImpl<char,Len> {
+        public:
+            static constexpr bool cIsFixedString8 = true;
+        public:
+            constexpr FixedString8() : impl::FixedStringImpl<char,Len>() {/*...*/}
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char)) || (IsCharEncodingConvertible<char,UnderlyingCharType<T>>))
+            constexpr FixedString8(const T *string) : impl::FixedStringImpl<char,Len>(string) {/*...*/}
+            constexpr ALWAYS_INLINE ~FixedString8() {/*...*/}
+    };
+
+    template <u32 Len>
+        requires (Len < 0xffff'ffff) && (0 < Len)
+    class FixedString16 : public impl::FixedStringImpl<char16_t,Len> {
+        public:
+            static constexpr bool cIsFixedString16 = true;
+        public:
+            constexpr FixedString16() : impl::FixedStringImpl<char16_t,Len>() {/*...*/}
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char)) || (IsCharEncodingConvertible<char,UnderlyingCharType<T>>))
+            constexpr FixedString16(const T *string) : impl::FixedStringImpl<char16_t,Len>(string) {/*...*/}
+            constexpr ALWAYS_INLINE ~FixedString16() {/*...*/}
+    };
+
+    template <u32 Len>
+        requires (Len < 0xffff'ffff) && (0 < Len)
+    class FixedString32 : public impl::FixedStringImpl<char32_t,Len> {
+        public:
+            static constexpr bool cIsFixedString32 = true;
+        public:
+            constexpr FixedString32() : impl::FixedStringImpl<char32_t,Len>() {/*...*/}
+            template <typename T>
+                requires (IsFixedStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char)) || (IsCharEncodingConvertible<char,UnderlyingCharType<T>>))
+            constexpr FixedString32(const T *string) : impl::FixedStringImpl<char32_t,Len>(string) {/*...*/}
+            constexpr ALWAYS_INLINE ~FixedString32() {/*...*/}
     };
 
     class HeapString {

@@ -17,125 +17,139 @@
 
 namespace awn::mem {
 
-    SeparateHeap::SeparateHeap(const char *name, void *heap_start, u64 heap_size, void *management_start, u64 management_size, bool is_thread_safe) : Heap(name, nullptr, reinterpret_cast<void*>(heap_start), heap_size, is_thread_safe), m_used_block_list(), m_management_free_list_start(reinterpret_cast<SeparateFreeListHelper*>(management_start)), m_used_management_block_count(0), m_total_management_block_count(management_size/ sizeof(SeparateMemoryBlock)), m_management_area_size(management_size), m_management_area_start(management_start) {
+    SeparateHeap *SeparateHeap::Create(const char *name, void *management_area, size_t management_size, void *start_address, size_t size, bool is_thread_safe) {
 
-        /* Initialize managment free list */
-        SeparateFreeListHelper *block_list = reinterpret_cast<SeparateFreeListHelper*>(management_start);
-        for (u32 i = 0; i < m_total_management_block_count - 1; ++i) {
-            block_list[i].next = std::addressof(block_list[i + 1]);
-        }
+        /* Construct new seperate heap */
+        SeparateHeap *heap = reinterpret_cast<SeparateHeap*>(management_area);
+        std::construct_at(heap, name, start_address, size, is_thread_safe);
+
+        /* Construct free list */
+        SeparateMemoryBlock *block_start = reinterpret_cast<SeparateMemoryBlock*>(reinterpret_cast<uintptr_t>(management_area) + sizeof(SeparateHeap));
+        const u32 block_count = (management_size - sizeof(SeparateHeap)) / sizeof(SeparateMemoryBlock);
+        heap->m_block_allocator.SetMemoryAndClear(block_start, block_count);
+        heap->m_total_count = block_count;
+
+        return heap;
     }
-    SeparateHeap::~SeparateHeap() {/*...*/}
-
-    void SeparateHeap::Finalize() {/*...*/}
-
-    MemoryRange SeparateHeap::AdjustHeap() {
-        const uintptr_t size = reinterpret_cast<uintptr_t>(m_end_address) - reinterpret_cast<uintptr_t>(m_start_address);
-        return MemoryRange{ m_start_address, size, };
-    }
-    size_t SeparateHeap::AdjustAllocation([[maybe_unused]] void *byte_offset_of_allocation, [[maybe_unused]] size_t new_size) { return 0; }
 
     void *SeparateHeap::TryAllocate(size_t size, s32 alignment) {
 
-        /* Integrity checks */
-        VP_ASSERT(m_management_free_list_start != nullptr);
+        /* Integrity check existing free block */
+        auto fail_guard = SCOPE_GUARD {
+            /* Fail callback */
+            OutOfMemoryInfo out_of_memory = {
+                .out_of_memory_heap      = this,
+                .allocation_size         = size,
+                .alignment               = alignment,
+            };
+            mem::OutOfMemoryImpl(std::addressof(out_of_memory));
+        };
+        if (!vp::util::IsAligned(alignment, alignment)) { return nullptr; }
 
-        /* Conditional heap lock */
-        alignment = vp::util::Max(alignment, cMinimumAlignment);
-        ScopedHeapLock l(this);
-        const size_t aligned_size = (size != Heap::cWholeSize) ? vp::util::AlignUp(size, alignment) : this->GetMaximumAllocatableSize(alignment);
+        /* Granularity */
+        const size_t gran_size = vp::util::Max(size, cMinimumAllocationGranularity);
+        alignment = vp::util::Max(alignment, static_cast<s32>(alignof(size_t)));
 
-        /* Find new offset */
-        SeparateMemoryBlock *prev_block = std::addressof(m_used_block_list.Back());
-        uintptr_t free_start = vp::util::AlignUp(reinterpret_cast<uintptr_t>(m_start_address), alignment);
-        for (SeparateMemoryBlock &block : m_used_block_list) {
-            const size_t free_size = static_cast<size_t>(block.block_offset - free_start);
-            if (aligned_size <= free_size) {
-                prev_block = std::addressof(block);
-                break;
-            }
-            free_start = vp::util::AlignUp(block.block_size + block.block_offset, alignment);
+        /* Ensure block */
+        ScopedHeapLock lock(this);
+        if (m_block_allocator.IsEmpty()) { return nullptr; }
+
+        /* Find free range */
+        const uintptr_t start_address = reinterpret_cast<uintptr_t>(m_start_address);
+        uintptr_t addr = start_address;
+        uintptr_t iter = 0;
+        BlockList::iterator b_iter = m_block_list.begin();
+        BlockList::iterator b_end = m_block_list.end();
+        while (b_iter != b_end) {
+            SeparateMemoryBlock &block = *b_iter;
+            iter = vp::util::AlignUp(addr, alignment);
+            if (gran_size <= block.address - iter) { break; }
+            ++b_iter;
+            addr = block.address + block.size;
         }
-        if (prev_block == std::addressof(m_used_block_list.Back())) {
-            const size_t end_free_size = reinterpret_cast<uintptr_t>(m_end_address) - free_start;
-            if (end_free_size < aligned_size) {
-                return nullptr;
-            }
+        if (iter == 0 || b_iter == b_end) {
+            iter = vp::util::AlignUp(addr, alignment);
+            if (iter == 0 || reinterpret_cast<uintptr_t>(m_end_address) - iter < gran_size) { return nullptr; }
         }
 
-        /* Create new separate heap block with offset */
-        SeparateMemoryBlock *new_block = reinterpret_cast<SeparateMemoryBlock*>(m_management_free_list_start);
-        std::construct_at(new_block);
-        m_management_free_list_start = m_management_free_list_start->next;
+        /* Add used block */
+        const uintptr_t base_address = iter;
+        SeparateMemoryBlock *block = m_block_allocator.Allocate();
+        (*b_iter).list_node.LinkPrev(std::addressof(block->list_node));
+        ++m_used_count;
+        block->address = base_address;
+        block->size = gran_size;
 
-        /* Ordered insert to used list */
-        if (prev_block == std::addressof(m_used_block_list.Back())) {
-            m_used_block_list.PushBack(*new_block);
-        } else {
-            prev_block->used_list_node.LinkNext(std::addressof(new_block->used_list_node));
-        }
-
-        /* Set block state */
-        new_block->block_offset = free_start;
-        new_block->block_size   = aligned_size;
-
-        return reinterpret_cast<void*>(free_start);
+        fail_guard.Cancel();
+        return reinterpret_cast<void*>(base_address);
     }
 
-    void SeparateHeap::Free(void *byte_offset_of_allocation) {
+    void SeparateHeap::Free(void *address) {
 
-        /* Conditional heap lock */
-        ScopedHeapLock l(this);
+        /* Ensure valid address */
+        VP_ASSERT(address != nullptr);
 
-        /* Find block */
-        for (SeparateMemoryBlock &used_block : m_used_block_list) {
-            if (used_block.block_offset != reinterpret_cast<size_t>(byte_offset_of_allocation)) { continue; }
-            /* Free used block to free list */
-            used_block.used_list_node.Unlink();
-            reinterpret_cast<SeparateFreeListHelper&>(used_block).next = m_management_free_list_start;
-            m_management_free_list_start = reinterpret_cast<SeparateFreeListHelper*>(std::addressof(used_block));
-            break;
+        /* Free block */
+        ScopedHeapLock lock(this);
+        for (SeparateMemoryBlock &block : m_block_list) {
+            if (block.address != reinterpret_cast<uintptr_t>(address)) { continue; }
+            block.list_node.Unlink();
+            m_block_allocator.Free(std::addressof(block));
+            --m_used_count;
+            return;
         }
+
+        return;
+    }
+
+    void SeparateHeap::FreeAll() {
+
+        /* Dispose */
+        ScopedHeapLock lock(this);
+        this->DisposeAll();
+
+        /* Free block */
+        m_block_list.ForceClear();
+        m_block_allocator.Clear(m_total_count);
 
         return;
     }
 
     size_t SeparateHeap::GetTotalFreeSize() {
 
-        ScopedHeapLock l(this);
-
-        /* Add up used block sizes */
-        size_t used_size = reinterpret_cast<size_t>(m_start_address);
-        for (SeparateMemoryBlock &used_block : m_used_block_list) {
-            used_size = used_size + used_block.block_size;
+        /* Tally */
+        ScopedHeapLock lock(this);
+        uintptr_t used_size = 0;
+        for (SeparateMemoryBlock &block : m_block_list) {
+            used_size += block.size;
         }
 
-        /* Return difference of total memory */
-        const size_t diff_size = reinterpret_cast<size_t>(m_end_address) - used_size;
-        return diff_size;
+        return (reinterpret_cast<uintptr_t>(m_end_address) - reinterpret_cast<uintptr_t>(m_start_address)) - used_size;
     }
 
     size_t SeparateHeap::GetMaximumAllocatableSize(s32 alignment) {
 
-        alignment = vp::util::Max(alignment, cMinimumAlignment);
-        ScopedHeapLock l(this);
-        if (m_management_free_list_start == nullptr) { return 0; }
+        /* Integrity checks */
+        if (!vp::util::IsAligned(alignment, alignment)) { return 0; }
+        /* Granularity */
+        alignment = vp::util::Max(alignment, static_cast<s32>(alignof(size_t)));
 
-        size_t max_free_size = 0;
-        uintptr_t free_start = vp::util::AlignUp(reinterpret_cast<uintptr_t>(m_start_address), alignment);
-        for (const SeparateMemoryBlock &block : m_used_block_list) {
-
-            const uintptr_t block_start = block.block_offset;
-            const uintptr_t block_end   = block_start + block.block_size;
-            const uintptr_t align_start = vp::util::AlignUp(free_start, alignment);
-            const size_t    size        = static_cast<size_t>(block_start - align_start);
-            free_start = block_end;
-            max_free_size = vp::util::Max(size, max_free_size);
+        const uintptr_t start_address = reinterpret_cast<uintptr_t>(m_start_address);
+        uintptr_t addr = start_address;
+        uintptr_t iter = 0;
+        uintptr_t max = 0;
+        uintptr_t prev_max = 0;
+        for (SeparateMemoryBlock &block : m_block_list) {
+            iter = vp::util::AlignUp(addr, alignment);
+            const uintptr_t free = block.address - iter;
+            max = vp::util::Max(prev_max, free);
+            max = (block.address <= iter) ? prev_max : max;
+            addr = block.address + block.size;
         }
-        const uintptr_t align_start = vp::util::AlignUp(free_start, alignment);
-        const size_t end_free_size = reinterpret_cast<uintptr_t>(m_end_address) - align_start;
-        max_free_size = vp::util::Max(end_free_size, max_free_size);
-
-        return max_free_size;
+        iter = vp::util::AlignUp(addr, alignment);
+        const uintptr_t end = reinterpret_cast<uintptr_t>(m_end_address);
+        max = vp::util::Max(prev_max, end - iter);
+        max = (end <= iter) ? prev_max : max;
+        return max;
     }
 }

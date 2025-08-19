@@ -338,6 +338,26 @@ namespace vp::util {
     }
 
     template <typename T>
+        requires (T::cIsVectorType && std::is_same_v<typename T::UnderlyingType, double>)
+    constexpr T Normalize(const T &vector) {
+        T temp = vector;  
+        const double mag0 = Magnitude(vector);
+        if (cDoubleNormalizeEpsilon < mag0) {
+            if (mag0 == cFloatInfinity) {
+                temp = ScalarMultiply(temp, 4.306075028866389e-155);
+                const double mag1 = Magnitude(temp);
+                temp = ScalarMultiply(temp, mag1);
+            } else {
+                const double reciprocal_mag = 1.0f / mag0;
+                temp = ScalarMultiply(temp, reciprocal_mag);
+            }
+        } else {
+            temp = T::cZero;
+        }
+        return temp;
+    }
+
+    template <typename T>
         requires (T::cIsVectorType && T::cVectorCount == 3)
     constexpr T Cross(const T &left, const T &right) {
 #ifdef VP_TARGET_ARCHITECTURE_x86

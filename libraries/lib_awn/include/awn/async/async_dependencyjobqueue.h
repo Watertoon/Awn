@@ -42,12 +42,12 @@ namespace awn::async {
         DependentJobList  dependent_list;
 
         constexpr void SetDefaults() {
-            job             = nullptr;
-            core_number     = cJobAnyCore;
-            priority        = cJobNormalPriority;
-            parent_count    = 0;
-            multi_run_state = 1;
-            dependent_list.Clear();
+            this->job             = nullptr;
+            this->core_number     = cJobAnyCore;
+            this->priority        = cJobNormalPriority;
+            this->parent_count    = 0;
+            this->multi_run_state = 1;
+            this->dependent_list.Clear();
         }
     };
 

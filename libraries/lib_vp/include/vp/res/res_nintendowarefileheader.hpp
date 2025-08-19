@@ -60,21 +60,21 @@ namespace vp::res {
         constexpr ALWAYS_INLINE bool IsSignatureValid(u64 magic)                          const { return this->magic == magic; }
         constexpr ALWAYS_INLINE bool IsVersionValid(s32 major_version, s32 minor_version) const { return this->major_version == major_version && this->minor_version <= minor_version; }
 
-        ALWAYS_INLINE bool IsValid(u64 magic, s32 major_version, s32 minor_version, [[maybe_unused]] s32 micro_version = 0) const {
+        bool IsValid(u64 magic, s32 major_version, s32 minor_version, [[maybe_unused]] s32 micro_version = 0) const {
             return this->IsVersionValid(major_version, minor_version) && this->IsSignatureValid(magic) && this->IsEndianValid() && this->IsAlignmentValid();
         }
 
-        ALWAYS_INLINE ResNintendoWareSubHeader *GetFirstBlock() {
+        ResNintendoWareSubHeader *GetFirstBlock() {
             return (this->first_block_offset == 0) ? nullptr : reinterpret_cast<ResNintendoWareSubHeader*>(reinterpret_cast<uintptr_t>(this) + this->first_block_offset);
         }
 
-        ALWAYS_INLINE ResNintendoWareRelocationTable *GetRelocationTable() {
+        ResNintendoWareRelocationTable *GetRelocationTable() {
             return (this->relocation_table_offset == 0) ? nullptr : reinterpret_cast<ResNintendoWareRelocationTable*>(reinterpret_cast<uintptr_t>(this) + this->relocation_table_offset); 
         }
 
-        ALWAYS_INLINE void SetRelocated(bool is_relocated) { this->is_relocated = (this->is_relocated & 0xFFFE) | is_relocated; }
+        constexpr void SetRelocated(bool is_relocated) { this->is_relocated = (this->is_relocated & 0xfffe) | is_relocated; }
 
-        ALWAYS_INLINE void Relocate() {
+        void Relocate() {
             if (is_relocated) { return; }
             ResNintendoWareRelocationTable *relocation_table = this->GetRelocationTable();
             if (relocation_table != nullptr) {
@@ -83,12 +83,20 @@ namespace vp::res {
             is_relocated = true;
         }
 
-        ALWAYS_INLINE void Unrelocate() {
+        void Unrelocate() {
             if (!is_relocated) { return; }
             is_relocated = false;
             ResNintendoWareRelocationTable *relocation_table = this->GetRelocationTable();
             if (relocation_table != nullptr) {
                 relocation_table->Unrelocate();
+            }
+        }
+        void UnrelocateFromBase(void *base) {
+            if (!is_relocated) { return; }
+            is_relocated = false;
+            ResNintendoWareRelocationTable *relocation_table = this->GetRelocationTable();
+            if (relocation_table != nullptr) {
+                relocation_table->UnrelocateFromBase(base);
             }
         }
     };

@@ -21,6 +21,7 @@ namespace awn::res {
 
     class SystemFileDevice : public FileDeviceBase {
         protected:
+            virtual Result CreateFileImpl(FileHandle *out_file_handle, const char *path, size_t file_size) override;
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) override;
             virtual Result CloseFileImpl(FileHandle *file_handle) override;
             virtual Result ReadFileImpl(void *read_buffer, size_t *out_read_size, FileHandle *file_handle, size_t read_size, size_t file_offset) override;
@@ -41,38 +42,29 @@ namespace awn::res {
     };
 
     class ContentFileDevice : public SystemFileDevice {
-        private:
-            u32 m_drive_size;
         protected:
             virtual Result FormatPath(MaxPathString *out_formatted_path, const char *path_no_drive) override;
             virtual u32 GetDriveSize() const override;
         public:
-            ALWAYS_INLINE ContentFileDevice() : SystemFileDevice("content"), m_drive_size() {
-
-                /* Obtain size of process working dir */
-                m_drive_size = ::GetCurrentDirectory(0, nullptr);
-                VP_ASSERT(m_drive_size != 0);
-
-                return;
-            }
+            ALWAYS_INLINE ContentFileDevice() : SystemFileDevice("content") {/*...*/}
             virtual constexpr ALWAYS_INLINE ~ContentFileDevice() override {/*...*/}
     };
 
     class SaveFileDevice : public SystemFileDevice {
-        private:
-            u32 m_drive_size;
         protected:
             virtual Result FormatPath(MaxPathString *out_formatted_path, const char *path_no_drive) override;
             virtual u32 GetDriveSize() const override;
         public:
-            ALWAYS_INLINE SaveFileDevice() : SystemFileDevice("save"), m_drive_size() {
-
-                /* Obtain size of process working dir */
-                m_drive_size = ::GetCurrentDirectory(0, nullptr);
-                VP_ASSERT(m_drive_size != 0);
-
-                return;
-            }
+            ALWAYS_INLINE SaveFileDevice() : SystemFileDevice("save") {/*...*/}
             virtual constexpr ALWAYS_INLINE ~SaveFileDevice() override {/*...*/}
+    };
+
+    class CacheFileDevice : public SystemFileDevice {
+        protected:
+            virtual Result FormatPath(MaxPathString *out_formatted_path, const char *path_no_drive) override;
+            virtual u32 GetDriveSize() const override;
+        public:
+            ALWAYS_INLINE CacheFileDevice() : SystemFileDevice("cache") {/*...*/}
+            virtual constexpr ALWAYS_INLINE ~CacheFileDevice() override {/*...*/}
     };
 }

@@ -40,19 +40,10 @@ namespace awn::sys {
         bool result0 = ::SetThreadPriority(m_handle, win_priority);
         RESULT_RETURN_UNLESS(result0, ResultInvalidPriority);
 
-        /* Set local thread name */
-        const u32 name_length = vp::util::StringLength(info->name);
-        RESULT_RETURN_UNLESS((cMaxThreadNameLength - 1) > name_length, ResultInvalidThreadName);
-        ::memcpy(m_name, info->name, name_length);
-        m_name[name_length] = '\0';
-
         /* Set thread name for system */
-        u32 size_utf16;
-        const u32 name_result = vp::util::ConvertStringUtf8ToUtf16(std::addressof(size_utf16), m_name_utf16, 0x20, m_name, name_length);
-        RESULT_RETURN_UNLESS(name_result == 0, ResultInvalidThreadName);
-        RESULT_RETURN_UNLESS((cMaxThreadNameLength - 1) > size_utf16, ResultInvalidThreadName);
-        m_name_utf16[size_utf16] = u'\0';
-        ::SetThreadDescription(m_handle, reinterpret_cast<wchar_t*>(m_name_utf16));
+        m_name.SetString(info->name);
+        m_name_utf16.SetString(std::addressof(m_name));
+        ::SetThreadDescription(m_handle, reinterpret_cast<wchar_t*>(m_name_utf16.GetString()));
 
         /* Initialize base */
         this->ThreadBase::Initialize(thread_heap, info);

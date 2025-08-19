@@ -598,7 +598,7 @@ namespace vp::util {
     constexpr T operator/(const T &vec, const typename T::UnderlyingType &scalar) {
         T out;
         for (u32 i = 0; i < T::cCount; ++i) {
-            out[i] = vec[i] * scalar;
+            out[i] = vec[i] / scalar;
         }
         return out;
     }

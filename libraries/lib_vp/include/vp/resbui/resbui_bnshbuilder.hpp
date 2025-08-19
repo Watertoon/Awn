@@ -43,29 +43,37 @@ namespace vp::resbui {
             friend class BnshShaderProgramNode;
             friend class BnshBuilder;
         public:
+            struct CodeUnit {
+                vp::util::IntrusiveListNode list_node;
+                u64 hash;
+                const void *code;
+                u32 code_size;
+                size_t code_offset;
+                CodeUnit *collision;
+            };
+        public:
             static constexpr u32 cInterfaceTableCount = vp::res::cMaxBnshInputAttributeCount + vp::res::cMaxBnshOutputAttributeCount + vp::res::cMaxBnshTextureSamplerCount + vp::res::cMaxBnshUniformBufferCount + vp::res::cMaxBnshStorageBufferCount + vp::res::cMaxBnshImageCount;
             static constexpr u32 cInterfaceTableCountExt = vp::res::cMaxBnshSeparateTextureCount + vp::res::cMaxBnshSeparateSamplerCount;
             static constexpr u32 cTotalInterfaceNodeCount = cInterfaceTableCount + cInterfaceTableCountExt;
         public:
             using InterfaceArray = vp::util::FixedPointerArrayAllocator<BnshShaderInterfaceNode, cTotalInterfaceNodeCount>;
         private:
-            const void *m_code;
+            CodeUnit    m_code_unit;
             const void *m_control;
-            u32         m_code_size;
             u32         m_control_size;
-            u32         m_code_offset;
             u32         m_control_offset;
             u32         m_workgroup_x;
             u32         m_workgroup_y;
             u32         m_workgroup_z;
             InterfaceArray m_interface_array;
         public:
-            constexpr BnshShaderNode() : m_code(), m_control(), m_code_size(), m_control_size(), m_code_offset(), m_control_offset(), m_workgroup_x(), m_workgroup_y(), m_workgroup_z(), m_interface_array() {/*...*/}
+            constexpr BnshShaderNode() : m_code_unit(), m_control(), m_control_size(), m_control_offset(), m_workgroup_x(), m_workgroup_y(), m_workgroup_z(), m_interface_array() {/*...*/}
             constexpr ~BnshShaderNode() {/*...*/}
 
             constexpr void SetCode(const void *code, u32 code_size) {
-                m_code = code;
-                m_code_size = code_size;
+                m_code_unit.code = code;
+                m_code_unit.code_size = code_size;
+                m_code_unit.hash = (0 < code_size) ? 0 : vp::util::HashDataMurmur64(code, code_size);
             }
 
             constexpr void SetControl(const void *control, u32 control_size) {
@@ -164,6 +172,14 @@ namespace vp::resbui {
     class BnshBuilder {
         public:
             using VariationList = vp::util::IntrusiveListTraits<BnshShaderVariationNode, &BnshShaderVariationNode::m_builder_node>::List;
+            using CodeList = vp::util::IntrusiveListTraits<BnshShaderNode::CodeUnit, &BnshShaderNode::CodeUnit::list_node>::List;
+        private:
+            struct Cache {
+                CodeList code_list;
+                CodeList collision_code_list;
+            };
+
+            bool AddCodeUnit(BnshShaderNode::CodeUnit *unit);
         private:
             NintendoWareStringPoolBuilder m_string_builder;
             VariationList                 m_variation_list;
@@ -172,8 +188,10 @@ namespace vp::resbui {
             u32                           m_api_version;
             u32                           m_code_type;
             u32                           m_compiler_version;
+
+            Cache m_cache;
         public:
-            constexpr BnshBuilder() : m_string_builder(), m_variation_list(), m_file_name("dummy"), m_api_type(static_cast<u32>(vp::res::BnshTargetApiType::VpExtVulkan)), m_api_version(1), m_code_type(static_cast<u32>(vp::res::GfxShaderCodeType::Binary)), m_compiler_version(1) {/*...*/}
+            constexpr BnshBuilder() : m_string_builder(), m_variation_list(), m_file_name("dummy"), m_api_type(static_cast<u32>(vp::res::BnshTargetApiType::VpExtVulkan)), m_api_version(), m_code_type(static_cast<u32>(vp::res::GfxShaderCodeType::Intermediate)), m_compiler_version(), m_cache() {/*...*/}
             constexpr ~BnshBuilder() {/*...*/}
 
             constexpr void SetTargetApi(u32 api_type, u32 api_version) {

@@ -49,7 +49,7 @@ namespace awn::sys {
     void SetTlsValue(TlsSlot slot, uintptr_t data) {
         sys::GetCurrentThread()->SetTlsValue(slot, data);
     }    
-#elif VP_TARGET_PLATFORM_nx
+#elifdef VP_TARGET_PLATFORM_nx
     TlsSlot AllocateTlsSlot(TlsDestructor destructor) {
         TlsSlot slot = 0;
         RESULT_ABORT_UNLESS(nn::os::AllocateTlsSlot(std::addressof(slot), destructor));
@@ -61,7 +61,7 @@ namespace awn::sys {
     }
 
     uintptr_t GetTlsValue(TlsSlot slot) {
-        return reinterpret_cast<void*>(nn::os::GetTlsValue(slot));
+        return reinterpret_cast<uintptr_t>(nn::os::GetTlsValue(slot));
     }
     void SetTlsValue(TlsSlot slot, uintptr_t data) {
         nn::os::SetTlsValue(slot, data);

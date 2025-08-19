@@ -32,6 +32,21 @@ namespace vp::resbui {
         constexpr inline u32 cInterfaceTypeCount = sizeof(cInterfaceTypeArray) / sizeof(vp::res::GfxShaderInterfaceType);
     }
 
+    bool BnshBuilder::AddCodeUnit(BnshShaderNode::CodeUnit *unit) {
+        if (unit->list_node.IsLinked()) { unit->list_node.Unlink(); }
+        for (BnshShaderNode::CodeUnit &col : m_cache.code_list) {
+            if (col.code_size != unit->code_size) { continue; }
+            if (col.hash != unit->hash) { continue; }
+            if (::memcmp(col.code, unit->code, unit->code_size) != 0) { continue; }
+            m_cache.collision_code_list.PushBack(*unit);
+            unit->collision = std::addressof(col);
+            return false;
+        }
+        m_cache.code_list.PushBack(*unit);
+        unit->collision = nullptr;
+        return true;
+    }
+
     void BnshBuilder::Serialize(void *out_bnsh, size_t output_size, const BnshBuilderMemoryInfo *memory_info) {
 
         /* Clear memory */
@@ -43,7 +58,7 @@ namespace vp::resbui {
         vp::res::ResBnshShaderVariation     *variation_array  = reinterpret_cast<vp::res::ResBnshShaderVariation*>(reinterpret_cast<uintptr_t>(out_bnsh) + memory_info->location_variation_array.offset);
         vp::res::ResBnshShaderProgram       *program_array    = reinterpret_cast<vp::res::ResBnshShaderProgram*>(reinterpret_cast<uintptr_t>(out_bnsh) + memory_info->location_program_array.offset);
         vp::res::ResBnshShaderContainerData *container_data   = reinterpret_cast<vp::res::ResBnshShaderContainerData*>(reinterpret_cast<uintptr_t>(out_bnsh) + memory_info->location_container_data.offset);
-        void                                *gpu_region       = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(out_bnsh) + memory_info->location_gpu_region.offset);
+        const uintptr_t                      gpu_region       = reinterpret_cast<uintptr_t>(out_bnsh) + memory_info->location_gpu_region.offset;
         void                                *string_pool      = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(out_bnsh) + memory_info->location_string_pool.offset);
         void                                *relocation_table = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(out_bnsh) + memory_info->location_relocation_table.offset);
 
@@ -93,10 +108,18 @@ namespace vp::resbui {
         container_data_iter                                += vp::res::cDefaultBnshRuntimeMemoryPoolSize;
         relocation_stream.AddEntry(std::addressof(container_data->memory_pool_info.gpu_region_base), 2, 1, 2);
 
+        /* Write code */
+        const uintptr_t code_alignment = (m_code_type == static_cast<u32>(res::GfxShaderCodeType::Intermediate)) ? 0x10 : 0x100;
+        uintptr_t gpu_region_iter = gpu_region;
+        for (BnshShaderNode::CodeUnit &unit : m_cache.code_list) {
+            ::memcpy(reinterpret_cast<void*>(gpu_region_iter), unit.code, unit.code_size);
+            unit.code_offset = gpu_region_iter;
+            gpu_region_iter = vp::util::AlignUp(gpu_region_iter + unit.code_size, code_alignment);
+        }
+
         /* Write variation */
         u32 variation_i = 0;
         uintptr_t program_iter = reinterpret_cast<uintptr_t>(program_array);
-        uintptr_t gpu_region_iter = reinterpret_cast<uintptr_t>(gpu_region);
         for (BnshShaderVariationNode &variation_node : m_variation_list) {
             vp::res::ResBnshShaderVariation *variation = std::addressof(variation_array[variation_i]);
             variation->parent_container = container;
@@ -107,7 +130,7 @@ namespace vp::resbui {
                 if (program_node == nullptr) { continue; }
 
                 /* Set program */
-                vp::res::ResBnshShaderProgram *program = reinterpret_cast<vp::res::ResBnshShaderProgram *>(program_iter);
+                vp::res::ResBnshShaderProgram *program = reinterpret_cast<vp::res::ResBnshShaderProgram*>(program_iter);
                 program_iter += sizeof(vp::res::ResBnshShaderProgram);
                 const u32 code_type_index = (i == 2) ? 0 : (i == 0) ? 2 : i;
                 std::addressof(variation->program_source)[code_type_index] = program;
@@ -127,7 +150,7 @@ namespace vp::resbui {
 
                     vp::res::ResBnshShaderCodeInfo *code_info = reinterpret_cast<vp::res::ResBnshShaderCodeInfo*>(program_iter);
                     program_iter += sizeof(vp::res::ResBnshShaderCodeInfo);
-                    std::addressof(program->code_info_vertex)[j] = code_info;
+                    program->code_info_array[j] = code_info;
                 }
 
                 /* Check if any interface slot exists */
@@ -148,7 +171,7 @@ namespace vp::resbui {
                     relocation_stream.AddEntry(interface_info_table, 1, 8, 0);
                 }
 
-                /* Write shader code and control */
+                /* Write control and set shader code */
                 for (u32 j = 0; j < res::cMaxBnshShaderStageCount; ++j) {
                     BnshShaderNode *shader_node = program_node->m_shader_array[j];
                     if (shader_node == nullptr) { continue; }
@@ -165,11 +188,10 @@ namespace vp::resbui {
                         relocation_stream.AddEntry(std::addressof(code_info->code), 1, 1, 0);
                     }
 
-                    void *code = reinterpret_cast<void*>(gpu_region_iter);
-                    gpu_region_iter = vp::util::AlignUp(gpu_region_iter + shader_node->m_code_size, 0x100);
-                    code_info->code_size = shader_node->m_code_size;
+                    const size_t code_offset = (shader_node->m_code_unit.collision != nullptr) ? shader_node->m_code_unit.collision->code_offset : shader_node->m_code_unit.code_offset;
+                    void *code = reinterpret_cast<void*>(code_offset);
+                    code_info->code_size = shader_node->m_code_unit.code_size;
                     code_info->code = code;
-                    ::memcpy(code, shader_node->m_code, shader_node->m_code_size);
                 }
 
                 /* Allocate interface info */
@@ -316,7 +338,6 @@ namespace vp::resbui {
         size_t variation_i = 0;
         size_t program_i = 0;
         size_t program_iter = 0;
-        size_t gpu_region_iter = 0;
         for (BnshShaderVariationNode &variation_node : m_variation_list) {
             ++variation_i;
             for (u32 i = 0; i < res::cMaxBnshShaderCodeTypeCount; ++i) {
@@ -336,7 +357,7 @@ namespace vp::resbui {
                     /* Code Info, Control, Code */
                     program_iter += sizeof(vp::res::ResBnshShaderCodeInfo);
                     program_iter += shader_node->m_control_size;
-                    gpu_region_iter += vp::util::AlignUp(gpu_region_iter + shader_node->m_code_size, 0x100);
+                    this->AddCodeUnit(std::addressof(shader_node->m_code_unit));
                     program_relocation_count += 1;
 
                     /* Interface slots */
@@ -413,21 +434,28 @@ namespace vp::resbui {
         out_memory_info->location_container_data.relocation_count = 1;
         relocation_count += 1;
 
-        out_memory_info->location_gpu_region.offset = vp::util::AlignUp(out_memory_info->location_container_data.offset + out_memory_info->location_container_data.size, vp::util::c4KB);
-        out_memory_info->location_gpu_region.alignment = vp::util::c4KB;
+        /* Gpu region */
+        const size_t code_alignment = (m_code_type == static_cast<u32>(res::GfxShaderCodeType::Intermediate)) ? 0x10 : 0x100;
+        const size_t gpu_alignment = (m_code_type == static_cast<u32>(res::GfxShaderCodeType::Intermediate)) ? 0x10 : vp::util::c4KB;
+        out_memory_info->location_gpu_region.offset = vp::util::AlignUp(out_memory_info->location_container_data.offset + out_memory_info->location_container_data.size, gpu_alignment);
+        size_t gpu_region_iter = 0;
+        for (BnshShaderNode::CodeUnit &unit : m_cache.code_list) {
+            gpu_region_iter = vp::util::AlignUp(gpu_region_iter + unit.code_size, code_alignment);
+        }
+        out_memory_info->location_gpu_region.alignment = gpu_alignment;
         out_memory_info->location_gpu_region.size = gpu_region_iter;
 
         m_string_builder.AddString(std::addressof(m_file_name));
         m_string_builder.CalculateMemoryInfo(std::addressof(out_memory_info->string_pool_memory_info));
 
-        out_memory_info->location_string_pool.offset = vp::util::AlignUp(out_memory_info->location_gpu_region.offset + out_memory_info->location_gpu_region.size, vp::util::c4KB);
+        out_memory_info->location_string_pool.offset = vp::util::AlignUp(out_memory_info->location_gpu_region.offset + out_memory_info->location_gpu_region.size, gpu_alignment);
         out_memory_info->location_string_pool.size = (out_memory_info->string_pool_memory_info.string_count == 0) ? 0 : out_memory_info->string_pool_memory_info.total_size;
 
         out_memory_info->location_relocation_table.offset = out_memory_info->location_string_pool.offset + out_memory_info->location_string_pool.size;
         out_memory_info->location_relocation_table.size = sizeof(vp::res::ResNintendoWareRelocationTable) + sizeof(vp::res::ResNintendoWareRelocationTable::ResSection) + sizeof(vp::res::ResNintendoWareRelocationTable::ResEntry) * relocation_count;
 
         out_memory_info->total_size = out_memory_info->location_relocation_table.offset + out_memory_info->location_relocation_table.size;
-        out_memory_info->max_alignment = vp::util::c4KB;
+        out_memory_info->max_alignment = gpu_alignment;
         out_memory_info->total_section_count = 1;
         out_memory_info->total_relocation_count = relocation_count;
 

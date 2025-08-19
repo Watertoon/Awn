@@ -22,10 +22,10 @@ namespace vp::util {
         public:
             static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
         private:
-            static constexpr size_t cPaddingSize = (sizeof(T) < sizeof(size_t)) ? sizeof(size_t) : (sizeof(T) - sizeof(void*)) & ~(alignof(T) - 1);
-            struct FreeList {
+            static constexpr size_t cPaddingSize = (sizeof(T) < sizeof(size_t)) ? sizeof(size_t) : sizeof(T);
+            union FreeList {
                 FreeList *next;
-                char      _padding[cPaddingSize];
+                char _padding[cPaddingSize];
             };
             static_assert(sizeof(T) <= sizeof(FreeList) && alignof(T) <= alignof(FreeList));  
         public:
@@ -147,6 +147,13 @@ namespace vp::util {
                 return allocation;
             }
 
+            void Remove(T *ptr) {
+                const u32 index = this->FindIndexOf(ptr);
+                VP_ASSERT(index != cInvalidEntryIndex);
+                this->RemoveRange(index, 1);
+                return;
+            }
+
             void RemoveRange(u32 base_index, u32 number_of_elements) {
 
                 const u32 move_element_index = base_index + number_of_elements;
@@ -188,6 +195,7 @@ namespace vp::util {
             }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return m_max_count; }
+            constexpr T **GetArray()  const { return m_array; }
 
             constexpr bool IsValid() const { return m_array != nullptr; }
         private:
@@ -299,7 +307,7 @@ namespace vp::util {
                 new_node->next = m_free_list;
                 m_free_list = new_node;
             }
-            
+
             constexpr void PushPointer(T *pointer) {
                 VP_ASSERT(m_used_count <= m_max_count);
                 m_array[m_used_count] = pointer;

@@ -33,9 +33,62 @@ namespace awn::res {
             case ERROR_NO_MORE_FILES:
                 RESULT_RETURN(ResultDirectoryExhausted);
             default:
+#ifdef VP_TARGET_BINARY_TYPE_debug
+                VP_UNEXPECTED_DEFAULT;
+#endif
                 break;
         }
         RESULT_RETURN(ResultUnknownOSError);
+    }
+
+    Result SystemFileDevice::CreateFileImpl(FileHandle *out_file_handle, const char *path, size_t file_size) {
+
+        /* Format path */
+        RESULT_RETURN_UNLESS(path != nullptr, ResultNullPath);
+        RESULT_RETURN_UNLESS((file_size & (~0x7fff'ffff'ffff'ffff)) == 0, ResultInvalidSize);
+        MaxPathString formatted_path;
+        const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
+        RESULT_TRY(format_result);
+
+        /* Create directory */
+        MaxPathString dir_path;
+        vp::util::GetDirectory(std::addressof(dir_path), std::addressof(formatted_path));
+        u32 base = 0;
+        const u32 dir_end = dir_path.GetLength() - 1;
+        MaxPathString advance_path;
+        do {
+            base = vp::util::GetUpToNextDirectoryFromBase(std::addressof(advance_path), std::addressof(dir_path), base);
+            const bool is_create_dir = ::CreateDirectoryA(advance_path.GetString(), nullptr);
+            if (!is_create_dir && ::GetLastError() != ERROR_ALREADY_EXISTS) {
+                RESULT_TRY(ConvertWin32ErrorToResult());
+            }
+        } while (base < dir_end);
+
+        /* Create file */
+        HANDLE handle = ::CreateFileA(formatted_path.GetString(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_NO_BUFFERING, nullptr);
+        if (handle == INVALID_HANDLE_VALUE) {
+            return ConvertWin32ErrorToResult();
+        }
+        auto close_guard = SCOPE_GUARD { ::CloseHandle(handle); };
+
+        /* Give optional write handle */
+        if (out_file_handle != nullptr) {
+            out_file_handle->handle = handle;
+            out_file_handle->open_mode = static_cast<u32>(OpenMode::Write);
+            close_guard.Cancel();
+        }
+    
+        /* Try set valid file size */
+        const bool result0 = ::SetFileValidData(handle, static_cast<s64>(file_size));
+        if (!result0) {
+            RESULT_RETURN_SUCCESS;
+        }
+        const bool result1 = ::SetEndOfFile(handle);
+        if (!result1) {
+            RESULT_RETURN_SUCCESS;
+        }
+
+        RESULT_RETURN_SUCCESS;
     }
 
     Result SystemFileDevice::OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) {
@@ -57,14 +110,15 @@ namespace awn::res {
         RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
 
         /* Open file */
-        out_file_handle->handle = ::CreateFile(formatted_path.GetString(), access_rights, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        out_file_handle->handle = ::CreateFileA(formatted_path.GetString(), access_rights, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
         if (out_file_handle->handle == INVALID_HANDLE_VALUE) {
             return ConvertWin32ErrorToResult();
         }
         out_file_handle->open_mode = static_cast<u32>(open_mode);
 
         /* Get file size */
-        RESULT_RETURN_UNLESS(::GetFileSizeEx(out_file_handle->handle, reinterpret_cast<LARGE_INTEGER*>(std::addressof(out_file_handle->file_size))) == true, ResultFileSizeRetrievalFailed);
+        const bool size_result = ::GetFileSizeEx(out_file_handle->handle, reinterpret_cast<LARGE_INTEGER*>(std::addressof(out_file_handle->file_size)));
+        RESULT_RETURN_UNLESS(size_result, ResultFileSizeRetrievalFailed);
 
         RESULT_RETURN_SUCCESS;
     }
@@ -162,7 +216,7 @@ namespace awn::res {
         do {
             const bool write_result = ::WriteFile(file_handle->handle, write_buffer, write_clamp, reinterpret_cast<long unsigned int*>(std::addressof(size_written)), nullptr);
             written_iter += size_written;
-            if (write_result == false) {
+            if (!write_result) {
                 return ConvertWin32ErrorToResult();
             }
             if ((write_size - written_iter) < write_clamp) {
@@ -207,14 +261,14 @@ namespace awn::res {
         /* Open file */
         FileHandle handle = {};
         const Result open_result = this->OpenFile(std::addressof(handle), path, OpenMode::Read);
-        RESULT_RETURN_UNLESS(open_result == ResultSuccess, open_result);
+        RESULT_TRY(open_result);
 
         /* Copy size */
         *out_size = handle.file_size;
 
         /* Close file */
         const Result close_result = this->CloseFile(std::addressof(handle));
-        RESULT_RETURN_UNLESS(close_result == ResultSuccess, close_result);
+        RESULT_TRY(close_result);
 
         RESULT_RETURN_SUCCESS;
     }
@@ -227,7 +281,7 @@ namespace awn::res {
         /* Format path */
         MaxPathString formatted_path;
         const Result format_result = this->FormatPath(std::addressof(formatted_path), path);
-        RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
+        RESULT_TRY(format_result);
 
         /* Check file path */
         const u32 check_result = ::GetFileAttributesA(formatted_path.GetString());
@@ -246,13 +300,20 @@ namespace awn::res {
         /* Format path */
         MaxPathString formatted_path;
         const Result format_result = this->FormatPath(std::addressof(formatted_path), directory_path);
-        RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
+        RESULT_TRY(format_result);
 
         /* Create directory */
-        const bool is_create_dir = ::CreateDirectoryA(formatted_path.GetString(), nullptr);
-        if (is_create_dir == false) { return ConvertWin32ErrorToResult(); }
+        u32 base = 0;
+        MaxPathString advance_path;
+        do {
+            base = vp::util::GetUpToNextDirectoryFromBase(std::addressof(advance_path), std::addressof(formatted_path), base);
+            const bool is_create_dir = ::CreateDirectoryA(advance_path.GetString(), nullptr);
+            if (!is_create_dir && ::GetLastError() != ERROR_ALREADY_EXISTS) {
+                RESULT_TRY(ConvertWin32ErrorToResult());
+            }
+        } while (base < formatted_path.GetLength());
 
-        RESULT_RETURN_SUCCESS;
+        return this->CheckDirectoryExistsImpl(directory_path);
     }
 
     Result SystemFileDevice::OpenDirectoryImpl(DirectoryHandle *out_directory_handle, const char *directory_path) {
@@ -263,8 +324,8 @@ namespace awn::res {
 
         /* Format directory path */
         const Result format_result = this->FormatPath(std::addressof(out_directory_handle->directory_path_array[0]), directory_path);
-        RESULT_RETURN_UNLESS(format_result == ResultSuccess,                                                        format_result);
-        RESULT_RETURN_UNLESS(::PathIsDirectoryA(out_directory_handle->directory_path_array[0].GetString()) == true, ResultDirectoryNotFound);
+        RESULT_TRY(format_result);
+        RESULT_RETURN_UNLESS(::PathIsDirectoryA(out_directory_handle->directory_path_array[0].GetString()), ResultDirectoryNotFound);
 
         /* Setup handle */
         out_directory_handle->entry_index             = 0;
@@ -361,7 +422,7 @@ namespace awn::res {
         /* Format path */
         MaxPathString formatted_path;
         const Result format_result = this->FormatPath(std::addressof(formatted_path), directory_path);
-        RESULT_RETURN_UNLESS(format_result == ResultSuccess, format_result);
+        RESULT_TRY(format_result);
 
         RESULT_RETURN_IF(::PathIsDirectoryA(formatted_path.GetString()) == false, ResultDirectoryNotFound);
 
@@ -371,20 +432,48 @@ namespace awn::res {
     Result ContentFileDevice::FormatPath(MaxPathString *out_formatted_path, const char *path_no_drive) {
 
         /* Format path (expects no drive) */
+        //impl::FileDeviceManager *mgr = impl::FileDeviceManager::GetInstance();
+        //const char *cur_dir = (mgr != nullptr) ? mgr->GetCurrentDirectory()->GetString() : "";
         RESULT_RETURN_UNLESS(out_formatted_path->Format("content/%s", path_no_drive) != vp::util::cMaxPath, ResultPathTooLong);
 
         RESULT_RETURN_SUCCESS;
     }
 
-    u32 ContentFileDevice::GetDriveSize() const { return m_drive_size + 9; }
+    u32 ContentFileDevice::GetDriveSize() const {
+        impl::FileDeviceManager *mgr = impl::FileDeviceManager::GetInstance();
+        const u32 drive_size = (mgr != nullptr) ? mgr->GetCurrentDirectory()->GetLength() : 0;
+        return drive_size + 9;
+    }
 
     Result SaveFileDevice::FormatPath(MaxPathString *out_formatted_path, const char *path_no_drive) {
 
         /* Format path (expects no drive) */
+        //impl::FileDeviceManager *mgr = impl::FileDeviceManager::GetInstance();
+        //const char *cur_dir = (mgr != nullptr) ? mgr->GetCurrentDirectory()->GetString() : "";
         RESULT_RETURN_UNLESS(out_formatted_path->Format("save/%s", path_no_drive) != vp::util::cMaxPath, ResultPathTooLong);
 
         RESULT_RETURN_SUCCESS;
     }
 
-    u32 SaveFileDevice::GetDriveSize() const { return m_drive_size + 6; }
+    u32 SaveFileDevice::GetDriveSize() const {
+        impl::FileDeviceManager *mgr = impl::FileDeviceManager::GetInstance();
+        const u32 drive_size = (mgr != nullptr) ? mgr->GetCurrentDirectory()->GetLength() : 0;
+        return drive_size + 6;
+    }
+
+    Result CacheFileDevice::FormatPath(MaxPathString *out_formatted_path, const char *path_no_drive) {
+
+        /* Format path (expects no drive) */
+        //impl::FileDeviceManager *mgr = impl::FileDeviceManager::GetInstance();
+        //const char *cur_dir = (mgr != nullptr) ? mgr->GetCurrentDirectory()->GetString() : "";
+        RESULT_RETURN_UNLESS(out_formatted_path->Format("cache/%s", path_no_drive) != vp::util::cMaxPath, ResultPathTooLong);
+
+        RESULT_RETURN_SUCCESS;
+    }
+
+    u32 CacheFileDevice::GetDriveSize() const {
+        impl::FileDeviceManager *mgr = impl::FileDeviceManager::GetInstance();
+        const u32 drive_size = (mgr != nullptr) ? mgr->GetCurrentDirectory()->GetLength() : 0;
+        return drive_size + 7;
+    }
 }

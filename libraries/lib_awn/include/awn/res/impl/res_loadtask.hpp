@@ -45,7 +45,7 @@ namespace awn::res::impl {
 
                 /* Allocate file path storage */
                 LoadTaskPushInfo *push_info = reinterpret_cast<LoadTaskPushInfo*>(load_task_push_info);
-                m_load_user_data.m_file_path = push_info->file_path;
+                m_load_user_data.m_file_path.SetString(push_info->file_path);
 
                 /* Set resource binder */
                 m_load_user_data.m_resource_binder = push_info->binder;

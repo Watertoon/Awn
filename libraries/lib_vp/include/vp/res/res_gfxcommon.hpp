@@ -607,6 +607,33 @@ namespace vp::res {
         B5G5R5A1_Unorm
     );
 
+    constexpr bool IsDepthFormat(vp::res::GfxImageFormat format) {
+        switch (format) {
+            case GfxImageFormat::Z16_Depth:
+                return true;
+            case GfxImageFormat::D24S8_Depth:
+                return true;
+            case GfxImageFormat::D32F_Depth:
+                return true;
+            case GfxImageFormat::D32FS8_Depth:
+                return true;
+            default:
+                break;
+        };
+        return false;
+    }
+    constexpr bool IsStencilFormat(vp::res::GfxImageFormat format) {
+        switch (format) {
+            case GfxImageFormat::D24S8_Depth:
+                return true;
+            case GfxImageFormat::D32FS8_Depth:
+                return true;
+            default:
+                break;
+        };
+        return false;
+    }
+
     enum class GfxAttributeFormat : u32 {
         None_Unorm           = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::None,         GfxTypeFormat::Unorm),
         R8_Unorm             = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::R8,           GfxTypeFormat::Unorm),
@@ -895,11 +922,14 @@ namespace vp::res {
     enum class GfxTextureDepthStencilMode : u8 {
         Depth   = 0,
         Stencil = 1,
+        /* Vp ext */
+        DepthAndStencil = 2,
     };
     VP_ENUM_TRAITSV(
         vp::res::GfxTextureDepthStencilMode, GfxTextureDepthStencilMode,
         Depth,
-        Stencil
+        Stencil,
+        DepthAndStencil
     );
 
     template <typename T>
@@ -939,6 +969,9 @@ namespace vp::res {
             this->reserve2[2] = 0;
             this->base_array_layer = 0;
             this->array_layer_count = 1;
+            this->reserve3[0] = 0;
+            this->reserve3[1] = 0;
+            this->texture = nullptr;
         }
 
         constexpr void SetImageDimension(GfxImageDimension image_dimension) {
@@ -1111,6 +1144,9 @@ namespace vp::res {
             this->lod_clamp_min     = -1000.0;
             this->lod_clamp_max     =  1000.0;
             this->lod_bias          =  0.0;
+            this->reserve1          =  0;
+            this->reserve2          =  0;
+            this->reserve3          =  0;
         }
 
         constexpr void SetWrapModes(GfxWrapMode u, GfxWrapMode v, GfxWrapMode w) {
@@ -1208,6 +1244,10 @@ namespace vp::res {
         U16,
         U32
     );
+
+    constexpr u32 GfxIndexFormatToSize(GfxIndexFormat index_format) {
+        return (1 << static_cast<u32>(index_format));
+    }
 
     enum class GfxComparisonFunction {
         Never            = 0,

@@ -50,16 +50,21 @@ namespace vp::resbui {
     template <size_t Size>
     class FixedStringPoolString : public StringPoolStringBase {
         public:
-            vp::util::FixedString<Size> m_string;
+            vp::util::FixedString8<Size> m_string;
         public:
             constexpr FixedStringPoolString() : StringPoolStringBase(), m_string() {/*...*/}
             constexpr virtual ~FixedStringPoolString() {/*...*/}
+
+            constexpr FixedStringPoolString &operator=(const char *string) {
+                m_string = string;
+                return *this;
+            }
 
             constexpr virtual const char *GetString() const {
                 return m_string.GetString();
             }
 
-            constexpr virtual u16 GetLength() const override {
+            constexpr virtual u32 GetLength() const override {
                 return m_string.GetLength();
             }
     };

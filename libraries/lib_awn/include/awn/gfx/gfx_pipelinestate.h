@@ -82,16 +82,16 @@ namespace awn::gfx {
             this->blend_target_state_array = nullptr;
         }
 
-        constexpr void SetBlendTargetStates(u8 state_count, BlendTargetState *blend_target_state_array) {
-            this->blend_target_state_count = state_count;
-            this->blend_target_state_array = blend_target_state_array;
+        constexpr void SetBlendTargetStateArray(BlendTargetState *state_array, u8 count) {
+            this->blend_target_state_count = count;
+            this->blend_target_state_array = state_array;
         }
         constexpr void SetLogicOperation(bool is_enable, LogicOperation logic_op) {
             this->is_enable_logic_op = is_enable;
             this->logic_op = static_cast<u8>(logic_op);
         }
-        constexpr void SetConstantColor(vp::util::Color4f constant_color) {
-            this->blend_constant_color = constant_color;
+        constexpr void SetConstantColor(vp::util::Color4f color) {
+            this->blend_constant_color = color;
         }
     };
 
@@ -360,7 +360,7 @@ namespace awn::gfx {
             this->scissor_state_array = nullptr;
         }
 
-        constexpr void SetViewportScissorStates(u32 state_count, ViewportState *viewport_state_array, ScissorState *scissor_state_array) {
+        constexpr void SetViewportScissorStateArray(ViewportState *viewport_state_array, ScissorState *scissor_state_array, u32 state_count) {
             this->is_enable_scissor = (scissor_state_array != nullptr);
             this->state_count = static_cast<u16>(state_count);
             this->viewport_state_array = viewport_state_array;

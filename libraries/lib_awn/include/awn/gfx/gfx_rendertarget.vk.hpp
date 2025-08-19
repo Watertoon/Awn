@@ -61,16 +61,16 @@ namespace awn::gfx {
             friend class CommandBuffer;
         protected:
             VkImageView   m_vk_image_view;
-            VkImageLayout m_vk_image_layout;
+           // VkImageLayout m_vk_image_layout;
             u32           m_vk_aspect_mask;
             u32           m_array_layer_count;
             u32           m_render_width;
             u32           m_render_height;
             Texture       *m_texture;
         protected:
-            void SetVkImageLayout(VkImageLayout vk_image_layout) { m_vk_image_layout = vk_image_layout; }
+            //void SetVkImageLayout(VkImageLayout vk_image_layout) { m_vk_image_layout = vk_image_layout; }
         public:
-            constexpr RenderTargetBase() : m_vk_image_view(VK_NULL_HANDLE), m_vk_image_layout(), m_array_layer_count(), m_render_width(), m_render_height(), m_texture() {/*...*/}
+            constexpr RenderTargetBase() : m_vk_image_view(VK_NULL_HANDLE), /*m_vk_image_layout(),*/ m_array_layer_count(), m_render_width(), m_render_height(), m_texture() {/*...*/}
             constexpr ~RenderTargetBase() {/*...*/}
 
             void Finalize();
@@ -83,7 +83,7 @@ namespace awn::gfx {
             constexpr Texture       *GetTexture()       const { return m_texture; }
             constexpr VkImageView    GetVkImageView()   const { return m_vk_image_view; }
             constexpr VkImage        GetVkImage()       const { return m_texture->GetVkImage(); }
-            constexpr VkImageLayout  GetVkImageLayout() const { return m_vk_image_layout; }
+            //constexpr VkImageLayout  GetVkImageLayout() const { return m_vk_image_layout; }
             constexpr u32            GetVkAspectMask()  const { return m_vk_aspect_mask; }
     };
 

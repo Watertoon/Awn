@@ -41,44 +41,6 @@ namespace vp::util {
         return static_cast<s16>(clamp1);
     }
 
-    constexpr float ConvertFloat16ToFloat(s16 value) {
-        const s32 cast = static_cast<s32>(value);
-        const s32 mantissa = cast & 0x7c00;
-        const s32 sign = cast & 0x8000'0000;
-        const u32 ucast = static_cast<u32>(value);
-        if (mantissa == 0x7c00) {
-            const float result = ((ucast & 0x3ff) != 0) ? std::bit_cast<float>(sign | 0x7fc0'0000 | ((ucast & 0x3ff) << 0xd)) : std::bit_cast<float>(sign | 0x7f80'0000);
-            return result;
-        }
-        if (mantissa != 0) {
-            const float result = std::bit_cast<float>(sign | (mantissa * 0x2000 + 0x3800'0000) | ((ucast & 0x3ff) << 0xd));
-            return result;
-        }
-        if ((ucast & 0x3ff) == 0) {
-            return std::bit_cast<float>(sign);
-        }
-        const u32 bits = vp::util::CountLeftZeroBits(ucast);
-        const u32 r_mant = (sign | 0x4300'0000) + bits * 0xff80'0000;
-        const u32 r_bits = (ucast << ((bits - 8) & 0x1f)) & 0x7f'ffff;
-        return std::bit_cast<float>(r_mant | r_bits);
-    }
-
-    constexpr s16 ConvertFloatToFloat16(float value) {
-        const u32 cast = std::bit_cast<u32>(value);
-        const u32 sign = (cast >> 0x1f) << 0xf;
-        const u32 abs = cast & 0x7fff'ffff;
-        const u32 mantissa = (cast >> 23) & 0xff;
-        if (mantissa < 0x8f) {
-            const u32 abs_mant = abs >> 23;
-            const u32 bits = (cast & 0x7f'ffff) | 0x80'0000;
-            const u32 bits1 = (0x32 < (abs >> 24)) ? (bits + ~(static_cast<u32>(-1) << static_cast<u32>((0x7d - abs_mant) & 0x1f)) + (bits >> ((((0x7e - abs_mant) & 0x1f)) & 1))) >> ((0x7e - abs_mant) & 0x1f) : 0;
-            const u32 bits2 = (0x70 < abs_mant) ? (abs + ((cast >> 0xd) & 1) + 0xc800'0fff) >> 0xd : bits1;
-            return static_cast<u16>(bits2 | sign);
-        }
-        const u32 bits = (0x7f80'0000 < abs) ? ((cast >> 0xd) & 0x1ff) | 0x7e00 : 0x7c00;
-        return static_cast<u16>(bits | sign);
-    }
-
     struct Color4f;
 
     struct Color4u8 {
@@ -96,10 +58,15 @@ namespace vp::util {
     };
 
     struct Color4f {
-        float r;
-        float g;
-        float b;
-        float a;
+        union {
+            struct {                
+                float r;
+                float g;
+                float b;
+                float a;
+            };
+            vp::util::Float4 v;
+        };
 
         constexpr ALWAYS_INLINE Color4f &operator=(const Color4u8 &rhs) {
             r = ConvertUnorm8ToFloat(rhs.r);
@@ -118,11 +85,11 @@ namespace vp::util {
         return *this;
     }
 
-    constexpr inline Color4u8 cBlack4u8 = {0x00, 0x00, 0x00, 0xff};
-    constexpr inline Color4u8 cWhite4u8 = {0xff, 0xff, 0xff, 0xff};
+    constexpr inline Color4u8 cBlack4u8 = {0x00, 0x00, 0x00, 0xff,};
+    constexpr inline Color4u8 cWhite4u8 = {0xff, 0xff, 0xff, 0xff,};
 
-    constexpr inline Color4f cBlack4f   = {0.0f, 0.0f, 0.0f, 1.0f};
-    constexpr inline Color4f cWhite4f   = {1.0f, 1.0f, 1.0f, 1.0f};
+    constexpr inline Color4f cBlack4f   = {0.0f, 0.0f, 0.0f, 1.0f,};
+    constexpr inline Color4f cWhite4f   = {1.0f, 1.0f, 1.0f, 1.0f,};
 
     constexpr ALWAYS_INLINE Color4f operator-(const Color4f &lhs, const Color4f &rhs) {
         const Color4f new_color = {
@@ -136,10 +103,10 @@ namespace vp::util {
 
     constexpr ALWAYS_INLINE Color4u8 operator*(const Color4u8 &lhs, const Color4u8 &rhs) {
         const Color4u8 new_color = {
-            static_cast<u8>(static_cast<u32>(lhs.r) * static_cast<u32>(rhs.r) / 0xff),
-            static_cast<u8>(static_cast<u32>(lhs.g) * static_cast<u32>(rhs.g) / 0xff),
-            static_cast<u8>(static_cast<u32>(lhs.b) * static_cast<u32>(rhs.b) / 0xff),
-            static_cast<u8>(static_cast<u32>(lhs.a) * static_cast<u32>(rhs.a) / 0xff),
+            static_cast<u8>(static_cast<u32>(lhs.r) * static_cast<u32>(rhs.r) / 0xffu),
+            static_cast<u8>(static_cast<u32>(lhs.g) * static_cast<u32>(rhs.g) / 0xffu),
+            static_cast<u8>(static_cast<u32>(lhs.b) * static_cast<u32>(rhs.b) / 0xffu),
+            static_cast<u8>(static_cast<u32>(lhs.a) * static_cast<u32>(rhs.a) / 0xffu),
         };
         return new_color;
     }

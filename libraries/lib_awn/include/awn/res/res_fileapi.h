@@ -20,5 +20,9 @@ namespace awn::res {
     Result LoadFile(const char *path, FileLoadContext *file_load_context);
     Result LoadFileWithDecompressor(const char *path, FileLoadContext *file_load_context, IDecompressor *decompressor);
 
+    Result SaveFile(const char *path, FileSaveInfo *save_info);
+    Result SaveFileWithCompressor(const char *path, FileSaveInfo *save_info, ICompressor *compressor);
+
     void RegisterFileDevice(FileDeviceBase *file_device);
+    FileDeviceBase *FindFileDevice(const char *device_name);
 }

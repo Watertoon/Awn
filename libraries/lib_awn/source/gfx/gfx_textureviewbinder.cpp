@@ -19,12 +19,7 @@ namespace awn::gfx {
 
     Result TextureViewBinder::RegisterTextureView(const TextureViewInfo *texture_view_info) {
         RESULT_RETURN_IF(m_texture_slot.free_count != cInvalidDescriptorSlotFreeCount, ResultRegisterGuardSet);
-        return impl::TextureViewSamplerManager::GetInstance()->RegisterTextureView(std::addressof(m_texture_slot), texture_view_info, nullptr);
-    }
-
-    Result TextureViewBinder::RegisterTextureView(const TextureViewInfo *texture_view_info, TextureBinder *reference_texture_binder) {
-        RESULT_RETURN_IF(m_texture_slot.free_count != cInvalidDescriptorSlotFreeCount, ResultRegisterGuardSet);
-        return impl::TextureViewSamplerManager::GetInstance()->RegisterTextureView(std::addressof(m_texture_slot), texture_view_info, reference_texture_binder);
+        return impl::TextureViewSamplerManager::GetInstance()->RegisterTextureView(std::addressof(m_texture_slot), texture_view_info);
     }
 
     Result TextureViewBinder::ReferenceTextureView(TextureViewBinder *reference_texture_view_binder) {

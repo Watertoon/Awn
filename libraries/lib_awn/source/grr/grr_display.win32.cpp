@@ -108,11 +108,11 @@ namespace awn::grr {
         ::CloseHandle(resource_handle);
 
         /* Initialize gfx render target */
-        gfx::RenderTargetInfo render_target_info;
+        gfx::TextureViewInfo render_target_info;
         render_target_info.SetDefaults();
         render_target_info.SetImageFormat(format);
         render_target_info.SetTexture(std::addressof(this->texture));
-        this->render_target_color.Initialize(std::addressof(render_target_info));
+        this->render_target_color.RegisterTextureView(std::addressof(render_target_info));
 
         this->create_guard = true;
 
@@ -148,7 +148,7 @@ namespace awn::grr {
     void Display::SwapchainTarget::DestroyTarget() {
         this->create_guard = false;
         this->parent_manager = nullptr;
-        this->render_target_color.Finalize();
+        this->render_target_color.Release();
         this->texture.Finalize();
         this->memory_pool.Finalize();
         if (this->presentation_buffer != nullptr) {

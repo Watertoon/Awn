@@ -146,6 +146,7 @@ namespace awn::res {
         if (m_watcher.IsPending()) {
             m_watcher.WaitForCompletion();
         }
+        vp::util::MemoryBarrierInnerRead();
 
         /* Ensure resource unit */
         if (m_resource_unit == nullptr) { return; }
@@ -228,13 +229,13 @@ namespace awn::res {
 
     Resource *ResourceBinder::GetResourceDirect() const {
         /* Fail if the resource is not initialized */
-        if (!this->IsResourceInitialized()) { return nullptr; }
+        if (!this->IsCompleted()) { return nullptr; }
         /* Get resource */
         Resource *resource = m_resource_unit->m_resource;
         return resource;
     }
 
-    bool ResourceBinder::IsInLoad() const {
+    bool ResourceBinder::IsLoading() const {
         /* Fail if we have not scheduled a load */
         if (!m_load_guard) { return false; }
         /* Succeed if the watcher is pending */
@@ -249,12 +250,12 @@ namespace awn::res {
         /* Fail if we are complete */
         if (m_complete_guard) { return false; }
         /* Fail if we are in load */
-        return !this->IsInLoad();
+        return !this->IsLoading();
     }
 
-    bool ResourceBinder::IsResourceInitialized() const {
+    bool ResourceBinder::IsCompleted() const {
         /* Fail if we are still in load */
-        if (this->IsInLoad()) { return false; }
+        if (this->IsLoading()) { return false; }
         /* Fail if we are not complete */
         if (!m_complete_guard) { return false; }
         /* Fail if no resource unit */
@@ -265,7 +266,7 @@ namespace awn::res {
 
     bool ResourceBinder::IsFailed() const {
         /* We haven't failed if we are still loading */
-        if (this->IsInLoad()) { return false; }
+        if (this->IsLoading()) { return false; }
         /* If we or our resource unit has an error status, we failed */
         const bool is_res_unit_failed = (m_load_guard && m_resource_unit != nullptr) ? m_resource_unit->IsErrorStatus() : false;
         return this->IsErrorStatus() | is_res_unit_failed;

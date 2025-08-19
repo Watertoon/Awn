@@ -24,7 +24,7 @@
     private: \
         static class_name *sInstance; \
     public: \
-        static ALWAYS_INLINE class_name *CreateInstance(awn::mem::Heap *allocate_heap) { \
+        static class_name *CreateInstance(awn::mem::Heap *allocate_heap) { \
             if (sInstance != nullptr) { \
                 return sInstance; \
             } \
@@ -32,14 +32,14 @@
             std::construct_at(sInstance); \
             return sInstance; \
         } \
-        static ALWAYS_INLINE void DeleteInstance() { \
+        static void DeleteInstance() { \
             if (sInstance != nullptr) { \
                 std::destroy_at(sInstance); \
                 ::operator delete(sInstance); \
             } \
             sInstance = nullptr; \
         } \
-        constexpr static ALWAYS_INLINE class_name *GetInstance() { return (std::is_constant_evaluated() == true) ? nullptr : sInstance; }
+        constexpr static class_name *GetInstance() { return (std::is_constant_evaluated()) ? nullptr : sInstance; }
 
 /* For implementation files */
 #define AWN_SINGLETON_TRAITS_DISPOSER_IMPL(class_name) \
@@ -70,7 +70,7 @@
     private: \
         vp::util::TypeStorage<SingletonDisposer> m_singleton_disposer; \
     public: \
-        static ALWAYS_INLINE class_name *CreateInstance(awn::mem::Heap *allocate_heap) { \
+        static class_name *CreateInstance(awn::mem::Heap *allocate_heap) { \
             if (sInstance != nullptr) { \
                 return sInstance; \
             } \
@@ -79,7 +79,7 @@
             vp::util::ConstructAt(sInstance->m_singleton_disposer, allocate_heap); \
             return sInstance; \
         } \
-        static ALWAYS_INLINE void DeleteInstance() { \
+        static void DeleteInstance() { \
             SingletonDisposer *disposer = sDisposer; \
             if (sDisposer == nullptr) { \
                 return; \

@@ -24,7 +24,17 @@ namespace awn::res {
 		return impl::FileDeviceManager::GetInstance()->LoadFileWithDecompressor(path, file_load_context, decompressor);
 	}
 
+    Result SaveFile(const char *path, FileSaveInfo *save_info) {
+		return impl::FileDeviceManager::GetInstance()->SaveFile(path, save_info);
+    }
+    Result SaveFileWithCompressor(const char *path, FileSaveInfo *save_info, ICompressor *compressor) {
+		return impl::FileDeviceManager::GetInstance()->SaveFileWithCompressor(path, save_info, compressor);
+    }
+
     void RegisterFileDevice(FileDeviceBase *file_device) {
         impl::FileDeviceManager::GetInstance()->RegisterFileDevice(file_device);
+    }
+    FileDeviceBase *FindFileDevice(const char *path) {
+        return impl::FileDeviceManager::GetInstance()->GetFileDeviceByPath(path);
     }
 }

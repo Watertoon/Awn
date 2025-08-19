@@ -44,10 +44,22 @@ namespace vp::res {
     };
 
     struct AdpcmContext {
-        u16 predictor_scale;
+        union {
+            u16 header;
+            struct {
+                u16 predictor_scale : 4;
+                u16 coefficient_index : 4;
+                u16 reserve0 : 8;
+            };
+        };
         s16 history_array[2];
     };
     static_assert(sizeof(AdpcmContext) == 0x6);
+
+    struct AdpcmCoefficients {
+        s16 coefficient_array[8][2];
+    };
+    static_assert(sizeof(AdpcmCoefficients) == sizeof(s16) * 16);
 
     struct ResBwavLoopPoint {
         u32 loop_start;
@@ -61,7 +73,7 @@ namespace vp::res {
         u32 sample_rate;
         u32 non_prefetch_sample_count;
         u32 sample_count;
-        s16 adpcm_coefficients[16];
+        AdpcmCoefficients adpcm_coefficients;
         u32 non_prefetch_samples_offset;
         u32 samples_offset;
         u16 loop_point_count;
@@ -126,9 +138,14 @@ namespace vp::res {
             return static_cast<BwavChannelPan>(channel_info->channel_pan);
         }
 
-        s16 *GetAdpcmCoefficients(u32 channel_index) {
+        AdpcmCoefficients *GetAdpcmCoefficients(u32 channel_index) {
             ResBwavChannelInfo *channel_info = this->GetChannelInfo(channel_index);
-            return channel_info->adpcm_coefficients;
+            return std::addressof(channel_info->adpcm_coefficients);
+        }
+
+        void *GetSamples(u32 channel_index) {
+            ResBwavChannelInfo *channel_info = this->GetChannelInfo(channel_index);
+            return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + channel_info->non_prefetch_samples_offset);
         }
 
         u32 GetSampleCount(u32 channel_index) {

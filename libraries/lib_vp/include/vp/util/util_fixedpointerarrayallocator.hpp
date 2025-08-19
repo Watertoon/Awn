@@ -79,7 +79,7 @@ namespace vp::util {
                 /* Construct a free list of objects */
                 for (u32 i = 0; i < (Count - 1); ++i) {
                     m_free_list[i].next = m_free_list + i + 1;
-                    m_array[i]  = nullptr;
+                    m_array[i] = nullptr;
                 }
                 m_array[Count - 1]  = nullptr;
             }
@@ -128,13 +128,22 @@ namespace vp::util {
                 return allocation;
             }
 
+            void Remove(T *ptr) {
+                const u32 index = this->FindIndexOf(ptr);
+                VP_ASSERT(index != cInvalidEntryIndex);
+                this->RemoveRange(index, 1);
+                return;
+            }
+
             void RemoveRange(u32 base_index, u32 number_of_elements) {
 
                 const u32 move_element_index = base_index + number_of_elements;
                 const u32 move_element_count = m_used_count - move_element_index;
                 VP_ASSERT(move_element_index <= m_used_count);
 
-                this->Free(m_array[base_index]);
+                for (u32 i = base_index; i < move_element_index; ++i) {                    
+                    this->Free(m_array[base_index]);
+                }
                 if (move_element_count != 0) {
                     ::memmove(std::addressof(m_array[base_index]), std::addressof(m_array[move_element_index]), move_element_count * sizeof(T**));
                 }
@@ -169,6 +178,7 @@ namespace vp::util {
             }
             constexpr u32 GetUsedCount() const { return m_used_count; }
             constexpr u32 GetMaxCount()  const { return Count; }
+            constexpr T **GetArray()  const { return m_array; }
 
             constexpr bool IsValid() const { return m_array != nullptr; }
         private:
@@ -282,7 +292,7 @@ namespace vp::util {
             }
             
             constexpr void PushPointer(T *pointer) {
-                VP_ASSERT(m_used_count <= Count);
+                VP_ASSERT(m_used_count < Count);
                 m_array[m_used_count] = pointer;
                 ++m_used_count;
             }

@@ -79,11 +79,42 @@ namespace awn::gfx {
         public:
             static GpuMemoryRequirements GetGpuMemoryRequirements(const TextureInfo *texture_info);
         public:
+            constexpr bool IsSameInfo(const TextureInfo *texture_info) const {
+                if (m_texture_info.texture_flags != texture_info->texture_flags) { return false; }
+                if (m_texture_info.image_storage_dimension != texture_info->image_storage_dimension) { return false; }
+                if (m_texture_info.tile_mode != texture_info->tile_mode) { return false; }
+                if (m_texture_info.swizzle != texture_info->swizzle) { return false; }
+                if (m_texture_info.mip_level_count != texture_info->mip_level_count) { return false; }
+                if (m_texture_info.texture_flags != texture_info->texture_flags) { return false; }
+                if (m_texture_info.sample_count != texture_info->sample_count) { return false; }
+                if (m_texture_info.image_format != texture_info->image_format) { return false; }
+                if (m_texture_info.gpu_access_flags != texture_info->gpu_access_flags) { return false; }
+                if (m_texture_info.width != texture_info->width) { return false; }
+                if (m_texture_info.height != texture_info->height) { return false; }
+                if (m_texture_info.depth != texture_info->depth) { return false; }
+                if (m_texture_info.array_layer_count != texture_info->array_layer_count) { return false; }
+                if (m_texture_info.packaged_texture_layout != texture_info->packaged_texture_layout) { return false; }
+                return true;
+            }
             constexpr ALWAYS_INLINE VkImage GetVkImage() const {
                 return m_vk_image;
             }
             constexpr u32 GetVkAspectMask() const {
-                return vp::res::GfxImageFormatToVkImageAspectFlags(this->GetImageFormat());
+                const bool is_depth = vp::res::IsDepthFormat(this->GetImageFormat());
+                const bool is_stencil = vp::res::IsStencilFormat(this->GetImageFormat());
+                u32 aspect_mask;
+                if (!is_depth && !is_stencil) {
+                    aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+                } else {
+                    aspect_mask = 0;
+                    if (is_depth) {                
+                        aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                    }
+                    if (is_stencil) {
+                        aspect_mask = VK_IMAGE_ASPECT_STENCIL_BIT;
+                    }
+                }
+                return aspect_mask;
             }
 
             Result InitializeForDedicatedAllocation(const TextureInfo *texture_info, VkImageUsageFlags vk_image_usage_flags, void *pnext = nullptr);

@@ -30,7 +30,7 @@ namespace vp::util {
             u32     m_max;
             Parent *m_array;
         private:
-            constexpr ALWAYS_INLINE u32 GetBaseIndex(HashType hash) const {
+            constexpr u32 GetBaseIndex(HashType hash) const {
 
                 /* Calculate base index */
                 const u32 max_count  = m_max;
@@ -40,8 +40,8 @@ namespace vp::util {
                 return base_index;
             }
 		public:
-            constexpr ALWAYS_INLINE  HashMap() : m_count(), m_max(), m_array() {/*...*/}
-            constexpr ALWAYS_INLINE ~HashMap() {/*...*/}
+            constexpr  HashMap() : m_count(), m_max(), m_array() {/*...*/}
+            constexpr ~HashMap() {/*...*/}
 
             void Initialize(vp::imem::IHeap *heap, u32 max_count) {
 
@@ -71,6 +71,11 @@ namespace vp::util {
                 return;
             }
 
+            constexpr void SetMemory(Parent *parent_array, u32 max_count) {
+                m_array = parent_array;
+                m_max = max_count;
+            }
+
             constexpr Parent *AddEntry(HashType hash) {
 
                 /* Integrity check */
@@ -94,36 +99,32 @@ namespace vp::util {
                 return nullptr;
             }
 
-            constexpr Parent *TryGetParentByHash(HashType hash) {
+            constexpr u32 TryGetIndexByHash(HashType hash) const {
 
                 /* Ensure initialized */
-                if (m_max < 1) { return nullptr; }
+                if (m_max < 1) { return cInvalidEntryIndex; }
 
                 /* Find actual index linearly from base */
                 const u32 base_index = this->GetBaseIndex(hash);
                 u32 i = base_index;
                 do {
-                    if (hash == m_array[i].*HashMemberPtr) { return std::addressof(m_array[i]); }
+                    if (hash == m_array[i].*HashMemberPtr) { return i; }
                     i = ((i + 1) < m_max) ? i + 1 : 0;
                 } while (i != base_index);
 
-                return nullptr;
+                return cInvalidEntryIndex;
+            }
+
+            constexpr Parent *TryGetParentByHash(HashType hash) {
+                const u32 index = this->TryGetIndexByHash(hash);
+                Parent *parent = (index != cInvalidEntryIndex) ? std::addressof(m_array[index]) : nullptr;
+                return parent;
             }
 
             constexpr const Parent *TryGetParentByHash(HashType hash) const {
-
-                /* Ensure initialized */
-                if (m_max < 1) { return nullptr; }
-
-                /* Find actual index linearly from base */
-                const u32 base_index = this->GetBaseIndex(hash);
-                u32 i = base_index;
-                do {
-                    if (hash == m_array[i].*HashMemberPtr) { return std::addressof(m_array[i]); }
-                    i = ((i + 1) < m_max) ? i + 1 : 0;
-                } while (i != base_index);
-
-                return nullptr;
+                const u32 index = this->TryGetIndexByHash(hash);
+                const Parent *parent = (index != cInvalidEntryIndex) ? std::addressof(m_array[index]) : nullptr;
+                return parent;
             }
 
             constexpr void Clear() {
@@ -139,7 +140,14 @@ namespace vp::util {
 
                 return;
             }
+
+            constexpr u32 GetUsedCount() const { return m_count; }
+            constexpr u32 GetMaxCount() const { return m_max; }
         public:
+            constexpr u32 IndexOf(Parent *parent) {
+                return static_cast<u32>(parent - m_array);
+            }
+
             constexpr u32 CountMaxIterationsPerKey() const {
 
                 /* Iterate hash map */

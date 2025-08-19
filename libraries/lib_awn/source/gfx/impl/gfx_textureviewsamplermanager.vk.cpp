@@ -19,8 +19,8 @@ namespace awn::gfx::impl {
 
     namespace {
 
-        constexpr ALWAYS_INLINE TextureViewSamplerManager::SamplerKey HashSampler(const SamplerInfo *sampler_info) {
-            const TextureViewSamplerManager::SamplerKey ret = {
+        constexpr ALWAYS_INLINE SamplerKey HashSampler(const SamplerInfo *sampler_info) {
+            const SamplerKey ret = {
                 .wrap_mode_u = sampler_info->wrap_mode_u,
                 .wrap_mode_v = sampler_info->wrap_mode_v,
                 .wrap_mode_w = sampler_info->wrap_mode_w,
@@ -73,16 +73,10 @@ namespace awn::gfx::impl {
         m_sampler_slot_allocator.Finalize();
     }
 
-    Result TextureViewSamplerManager::RegisterTextureView(DescriptorSlot *out_texture_slot, const TextureViewInfo *texture_view_info, TextureBinder *reference_texture_binder) {
+    Result TextureViewSamplerManager::RegisterTextureView(DescriptorSlot *out_texture_slot, const TextureViewInfo *texture_view_info) {
 
         /* Ensure texture is valid */
         RESULT_RETURN_UNLESS(texture_view_info->texture != nullptr, ResultNoTexture);
-        VP_ASSERT(reference_texture_binder == nullptr);
-        //if (reference_texture_binder != nullptr) {
-        //    RESULT_RETURN_UNLESS(reference_texture_binder->IsRegistered(), ResultInvalidTextureBinder);
-        //    Texture *binder_texture = reference_texture_binder->GetTexture();                        
-        //    RESULT_RETURN_UNLESS(binder_texture == texture_view_info->texture, ResultTextureBinderAndTextureViewInfoMismatch);
-        //}
 
         /* Allocate new texture slot */
         const TextureSlotType texture_slot = m_texture_slot_allocator.Allocate();
@@ -93,13 +87,8 @@ namespace awn::gfx::impl {
 
         /* Initialize texture view unit */
         TextureViewUnit *texture_view_unit = std::addressof(m_texture_view_unit_array[texture_slot]);
-        //if (reference_texture_binder != nullptr) { texture_view_unit->reference_texture_binder.ReferenceBinderSync(reference_texture_binder); }
-        //auto fail_binder_guard = SCOPE_GUARD {
-        //    texture_view_unit->reference_texture_binder.Release();
-        //};
         RESULT_TRY(gfx::impl::CreateVkImageView(std::addressof(texture_view_unit->vk_image_view), texture_view_info));
         fail_slot_guard.Cancel();
-        //fail_binder_guard.Cancel();
         texture_view_unit->key.SetFromInfo(texture_view_info);
         texture_view_unit->reference_count = 1;
 
@@ -222,7 +211,6 @@ namespace awn::gfx::impl {
 
         /* Free texture view */
         gfx::impl::DestroyVkImageView(texture_view_unit->vk_image_view);
-        //texture_view_unit->reference_texture_binder.Release();
         texture_view_unit->IncrementFreeCount();
         m_texture_slot_allocator.Free(texture_index);
 

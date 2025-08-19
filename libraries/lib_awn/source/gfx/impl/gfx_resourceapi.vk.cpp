@@ -47,6 +47,7 @@ namespace awn::gfx::impl {
         /* Ensure address */
         size_t offset;
         MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_address);
+        RESULT_RETURN_IF(memory_pool == nullptr, ResultInvalidMemoryPool);
 
         /* Create VkBuffer */
         return CreateVkBuffer(out_buffer, memory_pool, offset, usage_flags, size);
@@ -242,11 +243,12 @@ namespace awn::gfx::impl {
 
         /* Create VkImageView */
         VkImageView vk_image_view = VK_NULL_HANDLE;
+        const ImageFormat image_format = static_cast<ImageFormat>(texture_view_info->image_format);
         const VkImageViewCreateInfo image_view_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .image = texture_view_info->texture->GetVkImage(),
             .viewType = vp::res::GfxImageDimensionToVkImageViewType(static_cast<ImageDimension>(texture_view_info->image_dimension)),
-            .format   = vp::res::GfxImageFormatToVkFormat(static_cast<ImageFormat>(texture_view_info->image_format)),
+            .format   = vp::res::GfxImageFormatToVkFormat(image_format),
             .components = {
                 .r = vp::res::GfxTextureSwizzleToVkComponentSwizzle(static_cast<TextureSwizzle>(texture_view_info->swizzle_x)),
                 .g = vp::res::GfxTextureSwizzleToVkComponentSwizzle(static_cast<TextureSwizzle>(texture_view_info->swizzle_y)),
@@ -254,7 +256,7 @@ namespace awn::gfx::impl {
                 .a = vp::res::GfxTextureSwizzleToVkComponentSwizzle(static_cast<TextureSwizzle>(texture_view_info->swizzle_w)),
             },
             .subresourceRange = {
-                .aspectMask     = vp::res::GfxTextureViewInfoToVkImageAspectFlags(texture_view_info),
+                .aspectMask     = (vp::res::IsDepthFormat(image_format) || vp::res::IsStencilFormat(image_format)) ? vp::res::GfxTextureDepthStencilModeToVkImageAspectFlags(static_cast<TextureDepthStencilMode>(texture_view_info->depth_stencil_mode)) : static_cast<u32>(VK_IMAGE_ASPECT_COLOR_BIT),
                 .baseMipLevel   = texture_view_info->base_mip_level,
                 .levelCount     = texture_view_info->mip_level_count,
                 .baseArrayLayer = texture_view_info->base_array_layer,

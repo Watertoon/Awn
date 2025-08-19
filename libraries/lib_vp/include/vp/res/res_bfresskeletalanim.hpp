@@ -56,7 +56,10 @@ namespace vp::res {
         util::Float3   scale;
         util::Float3   translation;
         u32            reserve3;
-        util::Vector4f rotation;
+        union {
+            util::Vector4f rotation_quat;
+            util::Vector3f rotation_eulerxyz;
+        };
 
         constexpr BfresBoneAnimRotationType GetRotationType() const {
             return static_cast<BfresBoneAnimRotationType>(this->rotation_type);
@@ -176,10 +179,10 @@ namespace vp::res {
                     rotation = std::addressof(vp::util::Float4::cUnitW);
                     out_result->rotation_type = this->rotation_type;
                 }
-                out_result->rotation = vp::util::CastVector4f(*rotation);
+                out_result->rotation_quat = vp::util::CastVector4f(*rotation);
             } else {
                 const vp::util::Float4 *rotation = reinterpret_cast<const vp::util::Float4*>(result_iter);
-                out_result->rotation = vp::util::CastVector4f(*rotation);
+                out_result->rotation_quat = vp::util::CastVector4f(*rotation);
                 out_result->rotation_type = this->rotation_type;
                 result_iter += sizeof(vp::util::Float4);
             }

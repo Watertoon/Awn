@@ -35,10 +35,14 @@ namespace awn::gfx {
         SupportsShaderInt64,
 
         /* VkPhysicalDeviceFeatures11 features */
+        SupportsStorageBuffer16BitAccess,
+        SupportsUniformAndStorageBuffer16BitAccess,
+        SupportsStorageInputOutput16,
         SupportsVariablePointersStorageBuffer,
         SupportsVariablePointers,
 
         /* VkPhysicalDeviceFeatures12 features */
+        SupportsShaderFloat16,
         SupportsDescriptorIndexing,
         SupportsShaderInputAttachmentArrayDynamicIndexing,
         SupportsShaderUniformBufferArrayNonUniformIndexing,
@@ -117,8 +121,12 @@ namespace awn::gfx {
         SupportsShaderStorageBufferArrayDynamicIndexing,
         SupportsShaderStorageImageArrayDynamicIndexing,
         SupportsShaderInt64,
+        SupportsStorageBuffer16BitAccess,
+        SupportsUniformAndStorageBuffer16BitAccess,
+        SupportsStorageInputOutput16,
         SupportsVariablePointersStorageBuffer,
         SupportsVariablePointers,
+        SupportsShaderFloat16,
         SupportsDescriptorIndexing,
         SupportsShaderInputAttachmentArrayDynamicIndexing,
         SupportsShaderUniformBufferArrayNonUniformIndexing,
@@ -236,3 +244,5 @@ namespace awn::gfx {
         }
     };
 }
+VP_ENUM_TRAITS_AUTO(awn::gfx::RequiredFeature);
+VP_ENUM_TRAITS_AUTO(awn::gfx::OptionalFeature);

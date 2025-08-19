@@ -58,22 +58,26 @@ namespace vp::util {
             T   *m_object_array;
             u32  m_array_count;
         public:
+            static constexpr size_t GetWorkMemorySize(u32 count) {
+                return sizeof(T) * count;
+            }
+        public:
             constexpr ALWAYS_INLINE HeapArray() : m_object_array(), m_array_count() {/*...*/}
             constexpr ALWAYS_INLINE ~HeapArray() {/*...*/}
 
-            bool Initialize(imem::IHeap *alloc_heap, u32 element_count) {
+            bool Initialize(imem::IHeap *alloc_heap, u32 count) {
 
                 /* Fail on invalid element count */
-                if (element_count == 0) { return false; }
+                if (count == 0) { return false; }
 
                 /* Allocate an array of objects */
-                m_object_array = reinterpret_cast<T*>(::operator new(sizeof(T) * element_count, alloc_heap, alignof(T)));
+                m_object_array = reinterpret_cast<T*>(::operator new(sizeof(T) * count, alloc_heap, alignof(T)));
 
                 /* Fail on nullptr */
                 if (m_object_array == nullptr) { return false; }
 
                 /* Set count */
-                m_array_count = element_count;
+                m_array_count = count;
 
                 /* Initialize every object */
                 for (u32 i = 0; i < m_array_count; ++i) {
@@ -102,7 +106,13 @@ namespace vp::util {
 
                 return;
             }
-            
+
+            constexpr void SetMemory(T *memory, u32 count) {
+                m_object_array = memory;
+                m_array_count = count;
+                return;
+            }
+
             constexpr Iterator begin() {
                 return Iterator(m_object_array);
             }
@@ -128,26 +138,61 @@ namespace vp::util {
             }
 
             constexpr bool IsValid() const { return m_object_array != nullptr; }
+        private:
+            struct DefaultCompareLess {
+                constexpr bool operator()(const T &lhs, const T &rhs) {
+                    return lhs < rhs;
+                }
+                constexpr bool operator()(const T &lhs, const T &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<T>> {
+                    const s32 cmp = ::strcmp(lhs, rhs);
+                    return cmp < 0;
+                }
+            };
+            struct DefaultCompareEqual {
+                constexpr bool operator()(const T &lhs, const T &rhs) {
+                    return lhs == rhs;
+                }
+                constexpr bool operator()(const T &lhs, const T &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<T>> {
+                    return vp::util::StringCompare(lhs, rhs);
+                }
+            };
+            template <auto Member>
+            struct DefaultCompareLessMember {
+                constexpr bool operator()(const ParentType<Member> &lhs, const ParentType<Member> &rhs) {
+                    return lhs.*Member < rhs.*Member;
+                }
+                constexpr bool operator()(const ParentType<Member> &lhs, const ParentType<Member> &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
+                    const s32 cmp = ::strcmp(lhs.*Member, rhs.*Member);
+                    return cmp < 0;
+                }
+            };
         public:
+            template <typename CompareLess = DefaultCompareLess>
             constexpr void Sort() {
-                std::sort(m_object_array, m_object_array + m_array_count);
+                std::sort(m_object_array, m_object_array + m_array_count, CompareLess());
             }
 
-            template <auto Member>
+            template <typename CompareLess = DefaultCompareLess>
+            constexpr void HeapSort() {
+                std::sort_heap(m_object_array, m_object_array + m_array_count, CompareLess());
+            }
+
+            template <auto Member, typename CompareLessMember = DefaultCompareLessMember<Member>>
                 requires (std::is_same<ParentType<Member>, T>::value)
             constexpr void SortOn() {
-                struct CompareLessMember {
-                    constexpr bool operator()(const ParentType<Member> &lhs, const ParentType<Member> &rhs) {
-                        return lhs.*Member < rhs.*Member;
-                    }
-                };
                 std::sort(m_object_array, m_object_array + m_array_count, CompareLessMember());
+            }
+
+            template <auto Member, typename CompareLessMember = DefaultCompareLessMember<Member>>
+                requires (std::is_same<ParentType<Member>, T>::value)
+            constexpr void HeapSortOn() {
+                std::sort_heap(m_object_array, m_object_array + m_array_count, CompareLessMember());
             }
 
             /* This function requires the heap array to be sorted */
             template <auto MemberPtr>
                 requires (std::is_same<ParentType<MemberPtr>, T>::value)
-            constexpr bool BinarySearchOn(u32 *out_index, const MemberType<MemberPtr> &find_element) {
+            constexpr bool BinarySearchOn(u32 *out_index, const MemberType<MemberPtr> &find_element) const {
 
                 /* Binary search for find element */
                 u32  entry_index = m_array_count / 2;

@@ -175,7 +175,7 @@ namespace awn::para {
 
     struct BlackboardApplyInfo {
         BlackboardValueType value_type;
-        vp::util::FixedString<0x80> key;
+        vp::util::FixedString8<0x80> key;
         union {
             const char *value_string;
             s32 value_s32;

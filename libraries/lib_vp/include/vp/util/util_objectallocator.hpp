@@ -16,7 +16,7 @@
 #pragma once
 
 namespace vp::util {
-    
+
     template <class T>
         requires (sizeof(void*) <= sizeof(T))
     class ObjectAllocator {
@@ -30,53 +30,29 @@ namespace vp::util {
             FreeList *m_free_list;
             void     *m_start_address;
         public:
-            constexpr ALWAYS_INLINE ObjectAllocator() : m_free_list(nullptr), m_start_address(nullptr) {/*...*/}
+            constexpr ALWAYS_INLINE ObjectAllocator() : m_free_list(), m_start_address() {/*...*/}
             constexpr ~ObjectAllocator() {/*...*/}
-            
-            ALWAYS_INLINE bool Initialize(imem::IHeap *alloc_heap, u32 element_count) {
-                
-                /* Fail if we are passed no elements */
-                if (element_count == 0) { return false; }
+
+            bool Initialize(imem::IHeap *heap, u32 count) {
+
+                /* Integrity checks */
+                if (count < 1) { return false; }
 
                 /* Allocate uninitialized array of objects */
-                void *allocation = ::operator new(sizeof(T) * element_count, alloc_heap, alignof(T));
-                FreeList *list_array = reinterpret_cast<FreeList*>(allocation);
-
-                /* Fail on failed allocation */
+                void *allocation = ::operator new(sizeof(T) * count, heap, alignof(T));
                 if (allocation == nullptr) { return false; }
 
                 /* Set free list and start address */
                 m_start_address = allocation;
-                m_free_list     = list_array;
-
-                /* Construct object free list */
-                for (u32 i = 0; i < (element_count - 1); ++i) {
-                    /* Remember we are adding to a pointer */
-                    list_array[i].next = list_array + i + 1;
-                }
+                this->Clear(count);
 
                 return true;
             }
 
-            ALWAYS_INLINE bool Initialize(T *preallocted_buffer, u32 element_count) {
-                
-                /* Ensure valid arguments */
-                if (element_count == 0 || preallocted_buffer == nullptr) { return false; }
-
-                /* Cast buffer to free list pointer */
-                FreeList *list_array = reinterpret_cast<FreeList*>(preallocted_buffer);
-
-                /* Set free list and start address */
-                m_start_address = preallocted_buffer;
-                m_free_list     = list_array;
-
-                /* Construct object free list */
-                for (u32 i = 0; i < (element_count - 1); ++i) {
-                    /* Remember we are adding to a pointer */
-                    list_array[i].next = list_array + i + 1;
-                }
-
-                return true;
+            void SetMemoryAndClear(T *memory, u32 count) {
+                m_start_address = memory;
+                this->Clear(count);
+                return;
             }
 
             void Finalize() {
@@ -88,7 +64,7 @@ namespace vp::util {
             }
 
             template <typename ... Args>
-            ALWAYS_INLINE T *Allocate(Args &&... args) {
+            T *Allocate(Args &&... args) {
 
                 /* Fail on empty free list */
                 if (m_free_list == nullptr) { return nullptr; }
@@ -103,7 +79,7 @@ namespace vp::util {
                 return allocation;
             }
 
-            ALWAYS_INLINE void Free(T *allocated_object) {
+            void Free(T *allocated_object) {
 
                 /* Destruct the object */
                 std::destroy_at(allocated_object);
@@ -114,6 +90,21 @@ namespace vp::util {
                 m_free_list = new_node;
             }
 
+            void Clear(u32 count) {
+
+                /* Construct object free list */
+                if (count < 1) { return; }
+                FreeList *list_array = reinterpret_cast<FreeList*>(m_start_address);
+                m_free_list = list_array;
+                for (u32 i = 0; i < (count - 1); ++i) {
+                    /* Remember we are adding to a pointer */
+                    list_array[i].next = list_array + i + 1;
+                }
+                list_array[count - 1].next = nullptr;
+                return;
+            }
+
+            constexpr bool IsEmpty() const { return m_free_list == nullptr; }
             constexpr bool IsValid() const { return m_start_address != nullptr; }
     };
 }

@@ -69,7 +69,7 @@ namespace vp::util {
 
                 /* Try to acquire an index */
                 const u32 handle_value = m_next_index;
-                m_next_index           = m_handle_array[handle_value];
+                m_next_index = m_handle_array[handle_value];
 
                 return handle_value;
             }
@@ -78,7 +78,7 @@ namespace vp::util {
 
                 /* Release an index */
                 m_handle_array[index] = m_next_index;
-                m_next_index          = index;
+                m_next_index = index;
 
                 return;
             }

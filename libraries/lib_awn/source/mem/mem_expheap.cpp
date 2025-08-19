@@ -17,137 +17,345 @@
 
 namespace awn::mem {
 
-    bool ExpHeap::AddFreeBlock(AddressRange range) {
+     ExpHeapMemoryBlock *ExpHeap::GetBlock(void *address) {
+        const uintptr_t *walkback = reinterpret_cast<const uintptr_t*>(reinterpret_cast<uintptr_t>(address) - sizeof(size_t));
+        ExpHeapMemoryBlock *ret = (*walkback & 1) ? reinterpret_cast<ExpHeapMemoryBlock*>(*walkback & (~1)) : reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
+        return ret;
+    }
 
-        /* Coalesce free blocks betweens */
-        void *new_start = range.start;
-        void *new_end = range.end;
-        vp::util::IntrusiveListNode *link_node = nullptr;
-        if (!m_free_list.IsEmpty()) {
-            
-            /* Search blocks */
-            ExpHeapMemoryBlock *prev_block = nullptr;
-            ExpHeapMemoryBlock *next_block = nullptr;
-            for (ExpHeapMemoryBlock &free_block : m_free_list) {
-                next_block = std::addressof(free_block);
-                if (new_start <= next_block) { break; }
-                prev_block = next_block;
+    void ExpHeap::AddUsedBlockNoAlign(ExpHeapMemoryBlock *block, size_t size) {
+
+        /* Convert to used */
+        const size_t prev_size = block->size;
+        block->size = size;
+        block->magic = ExpHeapMemoryBlock::cUsedMagic;
+        vp::util::IntrusiveListNode *free_node = block->list_node.next();
+        block->list_node.Unlink();
+        --m_free_count;
+        m_used_list.PushBack(*block);
+        ++m_used_count;
+
+        /* Insert new free block */
+        const size_t free_left = prev_size - size;
+        if (sizeof(ExpHeapMemoryBlock) < free_left) {
+            ExpHeapMemoryBlock *new_block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(block->GetBaseAddress()) + size);
+            std::construct_at(new_block);
+            new_block->magic = ExpHeapMemoryBlock::cFreeMagic;
+            new_block->size = free_left - sizeof(ExpHeapMemoryBlock);
+            free_node->LinkPrev(std::addressof(new_block->list_node));
+            ++m_free_count;
+        } else if (free_left != 0) {
+            block->size = prev_size;
+        }
+
+        return;
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::AddUsedBlockAlign(ExpHeapMemoryBlock *block, size_t size, s32 align) {
+
+        /* Convert to used */
+        const size_t prev_size = block->size;
+        block->size = size;
+        vp::util::IntrusiveListNode *free_node = block->list_node.next();
+        const uintptr_t base = reinterpret_cast<uintptr_t>(block->GetBaseAddress());
+        const uintptr_t align_left = vp::util::AlignUp(base, align) - base;
+        if (align_left < vp::util::c64KB) {
+            block->magic = ExpHeapMemoryBlock::cUsedMagic;
+            block->alignment = static_cast<u16>(align_left);
+            block->list_node.Unlink();
+            --m_free_count;
+            block->size = size;
+            if (align_left != 0) {
+                uintptr_t *walkback = reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(block->GetBaseAddress()) - alignof(ExpHeapMemoryBlock*));
+                *walkback = reinterpret_cast<uintptr_t>(block) | 1;
             }
+        } else {
+            /* Split free block for large align */
+            block->size = align_left - sizeof(ExpHeapMemoryBlock);
+            block->alignment = 0;
 
-            /* Coalesce back */
-            if (next_block != nullptr && new_end == reinterpret_cast<void*>(next_block)) {
-                next_block->exp_list_node.Unlink();
-                new_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(next_block) + next_block->block_size + sizeof(ExpHeapMemoryBlock));
+            block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(block) + align_left);
+            std::construct_at(block);
+            block->magic = ExpHeapMemoryBlock::cUsedMagic;
+            block->alignment = 0;
+            block->size = size;
+        }
+
+        m_used_list.PushBack(*block);
+        ++m_used_count;
+
+        /* Insert new free block */
+        const size_t free_left = prev_size - (size + align_left);
+        if (sizeof(ExpHeapMemoryBlock) < free_left) {
+            ExpHeapMemoryBlock *new_block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(block->GetBaseAddress()) + size);
+            std::construct_at(new_block);
+            new_block->magic = ExpHeapMemoryBlock::cFreeMagic;
+            new_block->size = free_left - sizeof(ExpHeapMemoryBlock);
+            free_node->LinkPrev(std::addressof(new_block->list_node));
+            ++m_free_count;
+        } else if (free_left != 0) {
+            block->size = free_left + size;
+        }
+
+        return block;
+    }
+
+    bool ExpHeap::FindFreeBlockRangeFreeList(ExpHeapMemoryBlock **out_before, ExpHeapMemoryBlock **out_after, ExpHeapMemoryBlock *block) {
+
+        /* Walk free list */
+        BlockList::iterator iter = m_free_list.begin();
+        BlockList::iterator end = m_free_list.end();
+        if (iter == end) { return false; }
+        ExpHeapMemoryBlock *before = nullptr;
+        ExpHeapMemoryBlock *after = std::addressof(*iter);
+        while (after <= block) {
+            before = after;
+            ++iter;
+            after = std::addressof(*iter);
+            if (iter == end) { return false; }
+        }
+
+        *out_before = before;
+        *out_after = after;
+        return true;
+    }
+
+    bool ExpHeap::FindFreeBlockRangeIterate(ExpHeapMemoryBlock **out_before, ExpHeapMemoryBlock **out_after, ExpHeapMemoryBlock *block) {
+        /* Walk contiguous blocks until free block */
+        ExpHeapMemoryBlock *after = reinterpret_cast<ExpHeapMemoryBlock*>(block->GetEndAddress());
+        for (; after < m_end_address; after = reinterpret_cast<ExpHeapMemoryBlock*>(after->GetEndAddress())) {
+            if (after->magic != ExpHeapMemoryBlock::cFreeMagic) { continue; }
+            ExpHeapMemoryBlock *before = BlockListTraits::GetParent(after->list_node.prev());
+            *out_before = (m_free_list.IteratorTo(*before) == m_free_list.end()) ? nullptr : before;
+            *out_after = after;
+            return true;
+        }
+        return false;
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::AddFreeBlock(ExpHeapMemoryBlock *block) {
+
+        /* Find free blocks between block */
+        ExpHeapMemoryBlock *before;
+        ExpHeapMemoryBlock *after;
+        const bool mode = (m_used_count + 3 < m_free_count * 3);
+        const bool is_range = (mode) ? this->FindFreeBlockRangeIterate(std::addressof(before), std::addressof(after), block) : this->FindFreeBlockRangeFreeList(std::addressof(before), std::addressof(after), block);
+
+        /* Failed to find a range */
+        if (!is_range) {
+            /* Coalesce end block */
+            if (!m_free_list.IsEmpty()) {
+                ExpHeapMemoryBlock *back = std::addressof(m_free_list.Back());
+                if (back->GetEndAddress() == block) {
+                    back->size += sizeof(ExpHeapMemoryBlock) + block->alignment + block->size;
+                    return back;
+                }
             }
+            block->magic = ExpHeapMemoryBlock::cFreeMagic;
+            m_free_list.PushBack(*block);
+            ++m_free_count;
+            return block;
+        }
 
-            /* Coalesce front */
-            if (prev_block != nullptr) {
-                link_node = std::addressof(prev_block->exp_list_node);
-                if (new_start == reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(prev_block) + prev_block->block_size + sizeof(ExpHeapMemoryBlock))) {
-                    link_node = prev_block->exp_list_node.prev();
-                    prev_block->exp_list_node.Unlink();
-                    new_start = reinterpret_cast<void*>(prev_block);
+        /* Coalesce before */
+        if (before != nullptr && before->GetEndAddress() == block) {
+            before->size += sizeof(ExpHeapMemoryBlock) + block->alignment + block->size;
+            block = before;
+        } else {
+            block->magic = ExpHeapMemoryBlock::cFreeMagic;
+            after->list_node.LinkPrev(std::addressof(block->list_node));
+            ++m_free_count;
+        }
+        /* Coalesce after */
+        if (after == block->GetEndAddress()) {
+            block->size += sizeof(ExpHeapMemoryBlock) + after->alignment + after->size;
+            after->list_node.Unlink();
+            --m_free_count;
+        }
+
+        return block;
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::FindFreeBlockFirstFit(size_t size, s32 align) {
+
+        /* Find first fitting block */
+        BlockList::iterator iter = m_free_list.begin();
+        BlockList::iterator end = m_free_list.end();
+        while (iter != end) {
+            ExpHeapMemoryBlock *block = std::addressof(*iter);
+            const size_t free_size = block->size;
+            if (size <= free_size) {
+                const uintptr_t addr_base = reinterpret_cast<uintptr_t>(block) + sizeof(ExpHeapMemoryBlock) + block->alignment;
+                const uintptr_t align_size = (size - addr_base) + vp::util::AlignUp(addr_base, align);
+                if (align_size <= free_size) { return block; }
+            }
+            ++iter;
+        }
+
+        return nullptr;
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::FindFreeBlockBestFit(size_t size, s32 align) {
+
+        /* Find best fitting block */
+        BlockList::iterator iter = m_free_list.begin();
+        BlockList::iterator end = m_free_list.end();
+        ExpHeapMemoryBlock *max_block = nullptr;
+        size_t max_size = 0;
+        while (iter != end) {
+            ExpHeapMemoryBlock *block = std::addressof(*iter);
+            ++iter;
+            const size_t free_size = block->size;
+            if (size <= free_size) {
+                const uintptr_t addr_base = reinterpret_cast<uintptr_t>(block) + sizeof(ExpHeapMemoryBlock) + block->alignment;
+                const uintptr_t align_size = (size - addr_base) + vp::util::AlignUp(addr_base, align);
+                if (align_size <= free_size) {
+                    max_block = (max_block != nullptr && max_size <= free_size) ? max_block : block;
+                    max_size = max_block->size;
                 }
             }
         }
 
-        /* Ensure block size is valid */
-        const size_t new_size = reinterpret_cast<uintptr_t>(new_end) - reinterpret_cast<uintptr_t>(new_start);
-        if (new_size < sizeof(ExpHeapMemoryBlock)) {
-            return false;
-        }
-
-        /* Add new free block */
-        ExpHeapMemoryBlock *new_block = reinterpret_cast<ExpHeapMemoryBlock*>(new_start);
-        std::construct_at(new_block);
-        new_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-        new_block->alignment = 0;
-        new_block->block_size = new_size - sizeof(ExpHeapMemoryBlock);
-
-        /* Link new free block between range */
-        if (link_node != nullptr) {            
-            link_node->LinkNext(std::addressof(new_block->exp_list_node));
-        } else {
-            m_free_list.PushFront(*new_block);
-        }
-
-        return true;
+        return max_block;
     }
 
-    void ExpHeap::AddUsedBlock(ExpHeapMemoryBlock *free_block, uintptr_t allocation_address, size_t size) {
+    ExpHeapMemoryBlock *ExpHeap::FindFreeBlockWorstFit(size_t size, s32 align) {
 
-        /* Unlink old free block */
-        vp::util::IntrusiveListNode *next_node = free_block->exp_list_node.next();
-        vp::util::IntrusiveListNode *prev_node = free_block->exp_list_node.prev();
-        free_block->exp_list_node.Unlink();
-
-        /* Calculate new free block addresses and sizes */
-        uintptr_t new_free_address     = allocation_address + size;
-        uintptr_t new_free_end_address = reinterpret_cast<uintptr_t>(free_block) + free_block->block_size + sizeof(ExpHeapMemoryBlock);
-        uintptr_t new_free_total_size  = new_free_end_address - new_free_address;
-        uintptr_t orig_start_address   = reinterpret_cast<uintptr_t>(free_block);
-        uintptr_t used_start_address   = allocation_address - sizeof(ExpHeapMemoryBlock);
-        uintptr_t used_alignment       = used_start_address - orig_start_address;
-
-        /* Create a new free block at front if alignment is great enough */
-        if (sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity <= used_alignment) {
-            ExpHeapMemoryBlock *front_free_block = reinterpret_cast<ExpHeapMemoryBlock*>(orig_start_address);
-            std::construct_at(front_free_block);
-            front_free_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-            front_free_block->alignment   = 0;
-            front_free_block->block_size  = used_alignment - sizeof(ExpHeapMemoryBlock);
-            prev_node->LinkNext(std::addressof(front_free_block->exp_list_node));
-            used_alignment = 0;
+        /* Find worst fitting block */
+        BlockList::iterator iter = m_free_list.begin();
+        BlockList::iterator end = m_free_list.end();
+        ExpHeapMemoryBlock *max_block = nullptr;
+        size_t max_size = 0;
+        while (iter != end) {
+            ExpHeapMemoryBlock *block = std::addressof(*iter);
+            ++iter;
+            const size_t free_size = block->size;
+            if (size <= free_size) {
+                const uintptr_t addr_base = reinterpret_cast<uintptr_t>(block) + sizeof(ExpHeapMemoryBlock) + block->alignment;
+                const uintptr_t align_size = (size - addr_base) + vp::util::AlignUp(addr_base, align);
+                if (align_size <= free_size) {
+                    max_block = (max_block != nullptr && free_size <= max_size) ? max_block : block;
+                    max_size = max_block->size;
+                }
+            }
         }
 
-        /* Create new free block at back if leftover space is great enough */
-        if (sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity <= new_free_total_size) {
-            ExpHeapMemoryBlock *back_free_block = reinterpret_cast<ExpHeapMemoryBlock*>(new_free_address);
-            std::construct_at(back_free_block);
-            back_free_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-            back_free_block->alignment   = 0;
-            back_free_block->block_size  = new_free_total_size - sizeof(ExpHeapMemoryBlock);
-            next_node->LinkPrev(std::addressof(back_free_block->exp_list_node));
-            new_free_total_size = 0;
+        return max_block;
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::FindFreeBlock(size_t size, s32 align, AllocationMode mode) {
+        switch (mode) {
+            case AllocationMode::FirstFit:
+                return this->FindFreeBlockFirstFit(size, align);
+            default:
+            case AllocationMode::BestFit:
+                return this->FindFreeBlockBestFit(size, align);
+            case AllocationMode::WorstFit:
+                return this->FindFreeBlockWorstFit(size, align);
+        };
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::FindFreeBlockFirstFit(size_t size) {
+
+        /* Find first fitting block */
+        BlockList::iterator iter = m_free_list.begin();
+        BlockList::iterator end = m_free_list.end();
+        while (iter != end) {
+            ExpHeapMemoryBlock *block = std::addressof(*iter);
+            const size_t free_size = block->size;
+            if (size <= free_size) { return block; }
+            ++iter;
         }
 
-        /* Add used block */
-        ExpHeapMemoryBlock *used_block = reinterpret_cast<ExpHeapMemoryBlock*>(used_start_address);
+        return nullptr;
+    }
 
-        std::construct_at(used_block);
-        used_block->alloc_magic = ExpHeapMemoryBlock::cAllocMagic;
-        used_block->alignment   = used_alignment;
-        used_block->block_size  = size + new_free_total_size;
-        m_used_list.PushBack(*used_block);
+    ExpHeapMemoryBlock *ExpHeap::FindFreeBlockBestFit(size_t size) {
 
-        return;
+        /* Find best fitting block */
+        BlockList::iterator iter = m_free_list.begin();
+        BlockList::iterator end = m_free_list.end();
+        ExpHeapMemoryBlock *max_block = nullptr;
+        size_t max_size = 0;
+        while (iter != end) {
+            ExpHeapMemoryBlock *block = std::addressof(*iter);
+            ++iter;
+            const size_t free_size = block->size;
+            if (size <= free_size) {
+                max_block = (max_block != nullptr && max_size <= free_size) ? max_block : block;
+                max_size = max_block->size;
+            }
+        }
+
+        return max_block;
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::FindFreeBlockWorstFit(size_t size) {
+
+        /* Find worst fitting block */
+        BlockList::iterator iter = m_free_list.begin();
+        BlockList::iterator end = m_free_list.end();
+        ExpHeapMemoryBlock *max_block = nullptr;
+        size_t max_size = 0;
+        while (iter != end) {
+            ExpHeapMemoryBlock *block = std::addressof(*iter);
+            ++iter;
+            const size_t free_size = block->size;
+            if (size <= free_size) {
+                max_block = (max_block != nullptr && free_size <= max_size) ? max_block : block;
+                max_size = max_block->size;
+            }
+        }
+
+        return max_block;
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::FindFreeBlock(size_t size, AllocationMode mode) {
+        switch (mode) {
+            case AllocationMode::FirstFit:
+                return this->FindFreeBlockFirstFit(size);
+            default:
+            case AllocationMode::BestFit:
+                return this->FindFreeBlockBestFit(size);
+            case AllocationMode::WorstFit:
+                return this->FindFreeBlockWorstFit(size);
+        };
+    }
+
+    ExpHeapMemoryBlock *ExpHeap::GetEndFreeBlock() {
+        if (m_free_count < 1) { return nullptr; }
+        m_used_list.SortByAddress();
+        ExpHeapMemoryBlock *free = std::addressof(m_free_list.Back());
+        ExpHeapMemoryBlock *used = std::addressof(m_used_list.Back());
+        ExpHeapMemoryBlock *ret = (used < free) ? free : nullptr;
+        return ret;
     }
 
     ExpHeap *ExpHeap::TryCreate(const char *name, void *address, size_t size, bool is_thread_safe) {
 
         /* Integrity checks */
-        VP_ASSERT(address != nullptr && (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity) <= size);
+        VP_ASSERT(address != nullptr && (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock)) <= size);
 
         /* Contruct exp heap object */
         ExpHeap *new_heap = reinterpret_cast<ExpHeap*>(address);
-        std::construct_at(new_heap, name, nullptr, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) + sizeof(ExpHeap)), size - sizeof(ExpHeap), is_thread_safe);
+        std::construct_at(new_heap, name, nullptr, address, vp::util::AlignDown(size, alignof(size_t)), is_thread_safe);
 
         /* Create and push free node spanning block */
-        ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(new_heap) + sizeof(ExpHeap));
-        std::construct_at(first_block);
+        ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) + sizeof(ExpHeap));
+        std::construct_at(block);
+        block->magic = ExpHeapMemoryBlock::cFreeMagic;
+        block->alignment   = 0;
+        block->size  = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
 
-        first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-        first_block->alignment   = 0;
-        first_block->block_size  = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
-
-        new_heap->m_free_list.PushBack(*first_block);
+        new_heap->m_free_list.PushBack(*block);
+        new_heap->m_free_count = 1;
 
         return new_heap;
     }
 
     ExpHeap *ExpHeap::TryCreate(const char *name, Heap *parent_heap, size_t size, s32 alignment, bool is_thread_safe) {
 
-        /* Use current heap if one is not provided */
+        /* Parent to current heap if one is not provided */
         if (parent_heap == nullptr) {
             parent_heap = mem::GetCurrentThreadHeap();
         }
@@ -155,29 +363,32 @@ namespace awn::mem {
         /* Respect whole size */
         if (size == mem::Heap::cWholeSize) {
             size = parent_heap->GetMaximumAllocatableSize(alignment);
+            size = vp::util::AlignDown(size, alignof(size_t));
+        } else {
+            size = vp::util::AlignUp(size, alignof(size_t));
         }
 
         /* Enforce minimum size */
-        if (size < (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock) + cMinimumAllocationGranularity)) { return nullptr; }
+        if (size < (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock))) { return nullptr; }
+        if (!vp::util::IsAligned(alignment, alignment)) { return nullptr; }
 
         /* Allocate heap memory from parent heap */
-        void *new_heap_memory = parent_heap->TryAllocate(size, alignment);
-        ExpHeap *new_heap = reinterpret_cast<ExpHeap*>(new_heap_memory);
-        
-        if (new_heap_memory == nullptr) { return nullptr; }
+        void *address = parent_heap->TryAllocate(size, alignment);
+        if (address == nullptr) { return nullptr; }
 
         /* Construct new heap */
-        std::construct_at(new_heap, name, parent_heap, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_heap_memory) + sizeof(ExpHeap)), size - sizeof(ExpHeap), is_thread_safe);
+        ExpHeap *new_heap = reinterpret_cast<ExpHeap*>(address);
+        std::construct_at(new_heap, name, parent_heap, address, size, is_thread_safe);
 
-        /* Construct and add free node spanning new heap */
-        ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(new_heap) + sizeof(ExpHeap));
-        std::construct_at(first_block);
+        /* Add free block spanning memory */
+        ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(new_heap) + sizeof(ExpHeap));
+        std::construct_at(block);
+        block->magic = ExpHeapMemoryBlock::cFreeMagic;
+        block->size = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
+        block->alignment = 0;
 
-        first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-        first_block->block_size  = size - (sizeof(ExpHeap) + sizeof(ExpHeapMemoryBlock));
-        first_block->alignment   = 0;
-
-        new_heap->m_free_list.PushBack(*first_block);
+        new_heap->m_free_list.PushBack(*block);
+        new_heap->m_free_count = 1;
 
         /* Add to parent heap child list */
         parent_heap->PushBackChild(new_heap);
@@ -189,102 +400,36 @@ namespace awn::mem {
 
     MemoryRange ExpHeap::AdjustHeap() {
 
+        /* Ensure parent heap */
+        if (m_parent_heap == nullptr) {
+            return { m_end_address, 0, };
+        }
+
         /* Lock heap */
-        ScopedHeapLock lock(this);
+        ScopedHeapLock l0(this);
+        ScopedHeapLock l1(reinterpret_cast<mem::Heap*>(m_parent_heap));
 
         /* Ensure we have a free block spanning to the end address */
-        if (m_free_list.IsEmpty()) {
-            return { m_end_address, 0, };
-        }
-        ExpHeapMemoryBlock *last_block = std::addressof(m_free_list.Back());
-        const size_t trim_size = sizeof(ExpHeapMemoryBlock) + last_block->block_size;
-        if (reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(last_block) + trim_size) != m_end_address) {
+        ExpHeapMemoryBlock *block = this->GetEndFreeBlock();
+        if (block == nullptr) {
             return { m_end_address, 0, };
         }
 
-        /* Free free block */
-        m_free_list.Remove(*last_block);
-        void *new_end_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_end_address) - trim_size);
-        m_end_address = new_end_address;
-
-        /* Resize parent heap memory block */
-        if (m_parent_heap != nullptr) {
-            const size_t heap_size = this->GetTotalSize() + sizeof(ExpHeap);
-            m_parent_heap->AdjustAllocation(this, heap_size);
+        /* Adjust allocation */
+        block->list_node.Unlink();
+        const size_t b_size = block->size + + block->alignment + sizeof(ExpHeapMemoryBlock);
+        const size_t trim_size = reinterpret_cast<uintptr_t>(block) - reinterpret_cast<uintptr_t>(m_start_address);
+        const size_t new_size = m_parent_heap->AdjustAllocation(m_start_address, trim_size);
+        /* Ensure we shrunk */
+        if (new_size == 0) {
+            m_free_list.PushBack(*block);
+            return { m_end_address, 0, };
         }
+        --m_free_count;
 
-        return { new_end_address, trim_size, };
-    }
-
-    size_t ExpHeap::ResizeHeapBack(size_t new_size) {
-
-        /* Align new size */
-        new_size = vp::util::AlignUp(new_size, cMinimumAllocationGranularity);
-
-        /* Lock the heap */
-        ScopedHeapLock lock(this);
-
-        /* Nothing to do if size doesn't change */
-        const size_t heap_size = this->GetTotalSize();
-        if (new_size == heap_size) { return heap_size; }
-
-        /* Get last free block */
-        ExpHeapMemoryBlock *last_free_block = std::addressof(m_free_list.Back());
-        void *last_free_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(last_free_block) + last_free_block->block_size);
-
-        /* Shrink free block */
-        if (new_size < heap_size) {
-
-            /* Ensure last free block spans to the heap end, and has enough space to shrink */
-            const size_t free_size   = last_free_block->block_size + sizeof(ExpHeapMemoryBlock);
-            const size_t delta_space = (heap_size - new_size);
-            if (last_free_end != m_end_address || free_size < delta_space) { return heap_size; }
-
-            /* Set end address and unlink free block if it matches the shrinkage (effectively AdjustHeap) */
-            if (delta_space == free_size) {
-                last_free_block->exp_list_node.Unlink();
-                m_end_address = reinterpret_cast<void*>(last_free_block);
-                return new_size;
-            }
-
-            /* Set end address and add resized free block */
-            last_free_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(last_free_end) - delta_space);
-            this->AddFreeBlock( { reinterpret_cast<void*>(last_free_block), last_free_end, } );
-            m_end_address = last_free_end;
-
-            return new_size;
-        }
-
-        /* Find start of new free block */
-        void *last_free_start = m_end_address;
-        if (last_free_end == m_end_address) {
-            last_free_start = reinterpret_cast<void*>(last_free_block);
-        }
-
-        /* Calculate new end */
-        void *new_end = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_start_address) + new_size);
-
-        /* If we are not the root heap the memory must come from a parent heap (not implicit) */
-        if (this != mem::GetRootHeap(0)) {
-
-            /* Check we have a parent heap */
-            if (m_parent_heap == nullptr) { return heap_size; }
-
-            /* Check whether the start region is a dedicated allocation */
-            if (!m_parent_heap->IsAddressAllocation(this)) { return heap_size; }
-
-            /* Try to adjust the parent allocation */
-            const size_t adjust_size = m_parent_heap->AdjustAllocation(this, sizeof(ExpHeap) + new_size);
-            if (adjust_size != new_size) { return heap_size; }
-        }
-
-        /* Add new free block */
-        this->AddFreeBlock( { last_free_start, new_end } );
-
-        /* Set end address */
-        m_end_address = new_end;
-
-        return new_size;
+        /* Calculate new end address */
+        m_end_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_start_address) + new_size);
+        return { m_end_address, b_size, };
     }
 
     bool ExpHeap::IsAddressAllocation(void *address) {
@@ -295,7 +440,7 @@ namespace awn::mem {
     bool ExpHeap::IsAddressAllocationUnsafe(void *address) {
 
         /* Search if address is used block */
-        ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
+        ExpHeapMemoryBlock *block = this->GetBlock(address);
         for (const ExpHeapMemoryBlock &used_block : m_used_list) {
             if (std::addressof(used_block) == block) { return true; }
         }
@@ -306,172 +451,139 @@ namespace awn::mem {
     size_t ExpHeap::AdjustAllocation(void *address, size_t adjust_size) {
 
         /* Align new size */
-        adjust_size = vp::util::AlignUp(adjust_size, cMinimumAllocationGranularity);
+        VP_ASSERT(this->IsAddressInHeap(address));
 
         /* Lock the heap */
         ScopedHeapLock lock(this);
 
-        /* Find ExpHeapMemory block */
-        ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
+        /* Calc size diff */
+        ExpHeapMemoryBlock *block = this->GetBlock(address);
+        size_t block_size = block->size;
+        size_t new_size = vp::util::AlignUp(adjust_size, cMinimumAllocationGranularity);
+        size_t diff_size = block_size - new_size;
+        /* Fail if the size grew */
+        if (block_size < new_size) { return 0; }
+        /* No adjust for too small diff */
+        if (diff_size <= sizeof(ExpHeapMemoryBlock)) { return 0; }
+        /* Adjust block and add new free */
+        block->size = new_size;
+        ExpHeapMemoryBlock *new_block = reinterpret_cast<ExpHeapMemoryBlock*>(block->GetEndAddress());
+        std::construct_at(new_block);
+        new_block->size = diff_size - sizeof(ExpHeapMemoryBlock);
+        this->AddFreeBlock(new_block);
 
-        /* Nothing to do if the size doesn't change */
-        size_t block_size = block->block_size;
-        if (block_size == adjust_size) { return adjust_size; }
-
-        /* Reduce range if new size is lesser */
-        if (adjust_size < block_size) {
-            this->AddFreeBlock(AddressRange{reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) + adjust_size), reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) + block->block_size)});
-            block->block_size = adjust_size;
-            return adjust_size;
-        }
-
-        /* Find free block at allocation end address */
-        const uintptr_t end_address = reinterpret_cast<uintptr_t>(address) + block_size;
-        BlockList::iterator free_iter = m_free_list.begin();
-        while (free_iter != m_free_list.end()) {
-            if (reinterpret_cast<uintptr_t>(std::addressof(*free_iter)) == end_address) { break; }
-            ++free_iter;
-        }
-        if (free_iter == m_free_list.end()) { return block_size; }
-
-        /* Ensure free block adds enough memory */
-        ExpHeapMemoryBlock *free_block = std::addressof(*free_iter);
-        const size_t free_total_size = free_block->block_size + sizeof(ExpHeapMemoryBlock);
-        if (free_total_size + block_size < adjust_size) { return block_size; }
-
-        /* Adjust allocation */
-        vp::util::IntrusiveListNode *prev_free_block = free_block->exp_list_node.prev();
-        free_block->exp_list_node.Unlink();
-        const uintptr_t new_end_address = reinterpret_cast<uintptr_t>(free_block) + free_total_size;
-        uintptr_t new_free_base = reinterpret_cast<uintptr_t>(address) + adjust_size + sizeof(ExpHeapMemoryBlock);
-        const size_t new_free_size = new_end_address - reinterpret_cast<uintptr_t>(new_free_base);
-        if (sizeof(ExpHeapMemoryBlock) <= new_free_size) {
-            new_free_base -= new_free_size;
-        }
-        block->block_size = new_free_base - reinterpret_cast<uintptr_t>(address);
-
-        if (sizeof(ExpHeapMemoryBlock) <= new_free_size) {
-            ExpHeapMemoryBlock *new_free_block = reinterpret_cast<ExpHeapMemoryBlock*>(new_free_base);
-            std::construct_at(new_free_block);
-            new_free_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-            new_free_block->alignment = 0;
-            new_free_block->block_size = new_free_size;
-            prev_free_block->LinkNext(std::addressof(new_free_block->exp_list_node));
-        }
-
-        return adjust_size;
+        return new_size;
     }
 
     void *ExpHeap::TryAllocate(size_t size, s32 alignment) {
 
+        /* Integrity check existing free block */
+        auto fail_guard = SCOPE_GUARD {
+            /* Fail callback */
+            OutOfMemoryInfo out_of_memory = {
+                .out_of_memory_heap      = this,
+                .allocation_size         = size,
+                .alignment               = alignment,
+            };
+            mem::OutOfMemoryImpl(std::addressof(out_of_memory));
+        };
+        if (!vp::util::IsAligned(alignment, alignment)) { return nullptr; }
+
+        /* Size granularity */
+        const size_t gran_size = vp::util::AlignUp(vp::util::Max(size, cMinimumAllocationGranularity), cMinimumAllocationGranularity);
         /* Lock heap */
         ScopedHeapLock lock(this);
-
-        /* Label for out of memory restart */
-        _ExpHeap_OutOfMemoryRestart:
-
-        /* Integrity check existing free block */
-        alignment = vp::util::Max(alignment, cMinimumAlignment);
-        if (m_free_list.IsEmpty()) {
-
-            /* Attempt out of memory callback */
-            OutOfMemoryInfo out_of_memory = {
-                .out_of_memory_heap      = this,
-                .allocation_size         = size,
-                .aligned_allocation_size = vp::util::AlignUp(size, alignment),
-                .alignment               = alignment,
+        /* Find free memory, convert to used */
+        ExpHeapMemoryBlock *block = nullptr;
+        if (alignment <= static_cast<s32>(alignof(size_t))) {
+            /* Strip alignment management for pointer aligned (or less) */
+            auto alloc_no_align_lambda = [&]() -> ExpHeapMemoryBlock* {
+                ExpHeapMemoryBlock *block = this->FindFreeBlock(gran_size, m_allocation_mode);
+                if (block == nullptr) { return block; }
+                this->AddUsedBlockNoAlign(block, gran_size);
+                return block;
             };
-            const bool result = mem::OutOfMemoryImpl(std::addressof(out_of_memory));
-            if (result) { goto _ExpHeap_OutOfMemoryRestart; }
-
-            return nullptr;
-        }
-
-        /* Calculate adjusted size */
-        const size_t aligned_size = (size != Heap::cWholeSize) ? vp::util::AlignUp(size, alignment) : this->GetMaximumAllocatableSizeUnsafe(alignment);
-
-        uintptr_t base_address = 0;
-        BlockList::iterator free_block = m_free_list.begin();
-        if (m_allocation_mode == AllocationMode::FirstFit) {
-
-            /* Find first fitting block */
-            while (free_block != m_free_list.end()) {
-                ExpHeapMemoryBlock *block = std::addressof(*free_block);
-                base_address = vp::util::AlignUp(reinterpret_cast<uintptr_t>(block) + sizeof(ExpHeapMemoryBlock), alignment);
-                const uintptr_t alloc_size = (aligned_size - sizeof(ExpHeapMemoryBlock)) - reinterpret_cast<uintptr_t>(block) + base_address;
-                if (alloc_size <= block->block_size) { break; }
-                ++free_block;
-            }
-
+            block = alloc_no_align_lambda();
         } else {
-
-            /* Best fit mode */
-            size_t smaller_size = 0xffff'ffff'ffff'ffff;
-            uintptr_t smaller_address = 0;
-            ExpHeapMemoryBlock *smaller_block = std::addressof(*m_free_list.end());
-            while (free_block != m_free_list.end()) {
-
-                /* Get block */
-                ExpHeapMemoryBlock *block = std::addressof(*free_block);
-
-                /* Find the starting address for the allocation */
-                base_address = vp::util::AlignUp(reinterpret_cast<uintptr_t>(block) + sizeof(ExpHeapMemoryBlock), alignment);
-
-                /* Check if we've found a smaller block that fits */
-                const uintptr_t alloc_size = (aligned_size - sizeof(ExpHeapMemoryBlock)) - reinterpret_cast<uintptr_t>(block) + base_address;
-                const size_t block_size = block->block_size;
-                if (block_size < smaller_size && alloc_size <= block_size) {
-                    smaller_size    = block_size;
-                    smaller_block   = block;
-                    smaller_address = base_address;
-
-                    /* Complete if we found an exact fit */
-                    if (block_size == aligned_size) { break; }
-                }
-
-                ++free_block;
-                base_address = smaller_address;
-            }
-
-            free_block = m_free_list.IteratorTo(*smaller_block);
-        }
-
-        /* Ensure we found a block */
-        if (free_block == m_free_list.end()) {
-
-            /* Attempt out of memory callback */
-            OutOfMemoryInfo out_of_memory = {
-                .out_of_memory_heap      = this,
-                .allocation_size         = size,
-                .aligned_allocation_size = aligned_size,
-                .alignment               = alignment,
+            auto alloc_align_lambda = [&]() -> ExpHeapMemoryBlock* {
+                ExpHeapMemoryBlock *fblock = this->FindFreeBlock(gran_size, alignment, m_allocation_mode);
+                if (fblock == nullptr) { return block; }
+                ExpHeapMemoryBlock *ublock = this->AddUsedBlockAlign(fblock, gran_size, alignment);
+                return ublock;
             };
-            const bool result = mem::OutOfMemoryImpl(std::addressof(out_of_memory));
-            if (result) { goto _ExpHeap_OutOfMemoryRestart; }
+            block = alloc_align_lambda();
+        }
+        if (block == nullptr) { return nullptr; }
 
+        fail_guard.Cancel();
+        return block->GetBaseAddress();
+    }
+
+    void *ExpHeap::TryReallocate(void *address, size_t size, s32 alignment) {
+
+        /* Allocate for no address */
+        if (address == nullptr) {
+            return this->TryAllocate(size, alignment);
+        }
+        /* Free for new size 0 */
+        if (size == 0) {
+            this->Free(address);
             return nullptr;
         }
-
-        /* Convert our new allocation to a used block */
-        this->AddUsedBlock(std::addressof(*free_block), base_address, aligned_size);
-
-        return reinterpret_cast<void*>(base_address);
+        /* Ensure address is in heap */
+        if (!this->IsAddressInHeap(address)) { return nullptr; }
+        
+        ScopedHeapLock l(this);
+        
+        ExpHeapMemoryBlock *block = this->GetBlock(address);
+        const size_t gran_size = vp::util::AlignUp(size, cMinimumAllocationGranularity);
+        auto copy_alloc_lambda = [&](size_t new_size, s32 new_align) -> void* {
+            void *new_addr = this->TryAllocate(new_size, new_align);
+            if (new_addr == nullptr) { return nullptr; }
+            ::memcpy(new_addr, block->GetBaseAddress(), block->size);
+            this->Free(address);
+            return new_addr;
+        };
+        const size_t diff = (block->size - gran_size);
+        if (block->size < gran_size) {
+            /* Reallocate larger block */
+            const s32 align = vp::util::Max(alignment, static_cast<s32>(alignof(size_t)));
+            return copy_alloc_lambda(gran_size, align);
+        } else if (diff == 0) {
+            /* Avoid realloc for aligned */
+            if (alignment == 0 || vp::util::IsAligned(address, alignment)) { return block->GetBaseAddress(); }
+        } else if (alignment == 0 || vp::util::IsAligned(address, alignment)) {
+            /* Shrink block if aligned and space */
+            if (sizeof(ExpHeapMemoryBlock) < diff) {
+                block->size = gran_size;
+                ExpHeapMemoryBlock *new_block = reinterpret_cast<ExpHeapMemoryBlock*>(block->GetEndAddress());
+                std::construct_at(new_block);
+                new_block->size = diff - sizeof(ExpHeapMemoryBlock);
+                this->AddFreeBlock(new_block);
+            }
+            return address;
+        }
+        /* Realloc for unaligned smaller or same */
+        return copy_alloc_lambda(gran_size, alignment);
     }
 
     void ExpHeap::Free(void *address) {
+
+        /* Ensure valid address */
+        VP_ASSERT(address != nullptr);
+        VP_ASSERT(this->IsAddressInHeap(address));
 
         /* Lock heap */
         ScopedHeapLock lock(this);
 
         /* Unlink used block */
-        ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
-        VP_ASSERT(block->alloc_magic == ExpHeapMemoryBlock::cAllocMagic);
-        block->exp_list_node.Unlink();
-
-        /* Add back to free list */
-        void *start = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(block) - block->alignment);
-        void *end   = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) + block->block_size);
-        this->AddFreeBlock(AddressRange{start, end});
+        ExpHeapMemoryBlock *block = this->GetBlock(address);
+        VP_ASSERT(block->magic == ExpHeapMemoryBlock::cUsedMagic);
+        block->list_node.Unlink();
+        --m_used_count;
+        block->size += block->alignment;
+        block->alignment = 0;
+        this->AddFreeBlock(block);
 
         return;
     }
@@ -482,7 +594,7 @@ namespace awn::mem {
         ScopedHeapLock lock(this);
         size_t free_size = 0;
         for (const ExpHeapMemoryBlock &block : m_free_list) {
-            free_size += block.block_size;
+            free_size += block.size;
         }
 
         return free_size;
@@ -496,26 +608,21 @@ namespace awn::mem {
     size_t ExpHeap::GetMaximumAllocatableSizeUnsafe(s32 alignment) {
 
         /* Find largest contiguous free block while respecting alignment */
-        alignment = vp::util::Max(alignment, cMinimumAlignment);
+        if (!vp::util::IsAligned(alignment, alignment)) { return 0; }
         size_t max_free_size = 0;
-        for (const ExpHeapMemoryBlock &block : m_free_list) {
-
-            const uintptr_t block_start = reinterpret_cast<uintptr_t>(std::addressof(block)) + sizeof(ExpHeapMemoryBlock);
-            const uintptr_t block_end   = block_start + block.block_size;
-            const uintptr_t align_start = vp::util::AlignUp(block_start, alignment);
-            const size_t    size        = block_end - align_start;
-
-            /* Select greater size if valid address range */
-            if (align_start <= block_end && max_free_size < size) {
-                max_free_size = size;
-            }
+        const ExpHeapMemoryBlock *block;
+        if (alignment <= static_cast<s32>(alignof(size_t))) {
+            block = this->FindFreeBlock(cMinimumAllocationGranularity, AllocationMode::WorstFit);
+        } else {
+            block = this->FindFreeBlock(cMinimumAllocationGranularity, alignment, AllocationMode::WorstFit);
         }
+        max_free_size = (block != nullptr) ? block->size : 0;
 
         return max_free_size;
     }
 
     size_t ExpHeap::GetAllocationSize(void *address) {
-        const ExpHeapMemoryBlock *block = reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
-        return block->block_size;
+        const ExpHeapMemoryBlock *block = ExpHeap::GetBlock(address);
+        return block->size;
     }
 }

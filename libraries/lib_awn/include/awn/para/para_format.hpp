@@ -35,7 +35,8 @@ namespace awn::para {
 	}
 
 	constexpr void FormatNoWorkExtension(vp::util::MaxPathString *out_string, const char *query_path) {
-		*out_string = AdvanceNoWorkExtension(query_path);
+		const char *adv_path = AdvanceNoWorkExtension(query_path);
+        out_string->SetString(adv_path);
 	}
 
 	constexpr bool FormatSplitNameAndClass(const char **out_file_path, const char **out_class_name, vp::util::MaxPathString *split_string) {
@@ -75,7 +76,8 @@ namespace awn::para {
         while (iter < end_iter) {
 
             /* Pick out next directory sub string */
-            for (u32 i = 0; i < 0x80; ++i) {
+            u32 i = 0;
+            for (; i < 0x80; ++i) {
                 const char next_char = file_path[i + iter];
                 if (next_char != '\0' && next_char != '/') { copy_buffer[i] = next_char; continue; }
                 copy_buffer[i] = '\0';
@@ -97,7 +99,7 @@ namespace awn::para {
 
             /* Append directory to file path */
             if (out_path->IsEmpty()) {
-                *out_path = copy_buffer;
+                out_path->SetString(copy_buffer, i);
             } else {
                 out_path->AppendFormat("\%s", copy_buffer);
             }

@@ -124,7 +124,7 @@ namespace awn::res {
         }
 
         /* Get file size */
-        size_t       file_size   = 0;
+        size_t file_size = 0;
         const Result size_result = file_device->GetFileSize(std::addressof(file_size), std::addressof(handle));
         RESULT_RETURN_UNLESS(size_result == ResultSuccess, size_result);
 
@@ -132,18 +132,18 @@ namespace awn::res {
         s32 output_alignment = (0x20 < file_load_context->file_alignment) ? file_load_context->file_alignment : FileDeviceBase::cMinimumFileAlignment;
 
         /* Get stream base */
-        const size_t  dctx_size   = ::ZSTD_estimateDCtxSize();
+        const size_t dctx_size = ::ZSTD_estimateDCtxSize();
         void *stream = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_work_memory) + dctx_size + cLeftoverSize);
 
         /* First temp read */
-        size_t       file_offset = 0;
+        size_t file_offset = 0;
         const Result read_result = file_device->ReadFile(stream, std::addressof(file_offset), std::addressof(handle), cReadSize, file_offset);
         RESULT_RETURN_UNLESS(read_result == ResultSuccess, read_result);                
 
         /* Get frame header */
         ZSTD_frameHeader frame_header = {};
         const size_t frame_header_result = ::ZSTD_getFrameHeader_advanced(std::addressof(frame_header), stream, file_offset, ZSTD_f_zstd1);
-        RESULT_RETURN_IF(::ZSTD_isError(frame_header_result) == true, ResultZstdError);
+        RESULT_RETURN_IF(::ZSTD_isError(frame_header_result), ResultZstdError);
 
         /* Get decompressed size */
         const size_t decomp_size = frame_header.frameContentSize;
@@ -157,8 +157,8 @@ namespace awn::res {
             RESULT_RETURN_IF(file_load_context->file == nullptr, ResultFailedToAllocateFileMemory);
 
             /* Set output file sizes */
-            file_load_context->file_size                    = decomp_size;
-            file_load_context->file_alignment               = output_alignment;
+            file_load_context->file_size = decomp_size;
+            file_load_context->file_alignment = output_alignment;
             file_load_context->out_is_file_memory_allocated = true;
         } else {
             RESULT_RETURN_UNLESS(decomp_size < file_load_context->file_size, ResultOutputBufferTooSmall);
@@ -173,12 +173,12 @@ namespace awn::res {
         };
 
         /* Try lookup zsdic */
-        const u32   index      = m_dic_map.TryGetIndexByKey(frame_header.dictID);
+        const u32 index = m_dic_map.TryGetIndexByKey(frame_header.dictID);
         ZSTD_DDict *dictionary = (index != DictionaryMap::cInvalidEntryIndex) ? m_dic_array[index] : nullptr;
 
         /* Initialize decompression context */
-        void         *work_memory = m_work_memory;
-        ZSTD_DCtx    *dctx        = ::ZSTD_initStaticDCtx(work_memory, dctx_size);
+        void *work_memory = m_work_memory;
+        ZSTD_DCtx *dctx = ::ZSTD_initStaticDCtx(work_memory, dctx_size);
         VP_ASSERT(dctx != nullptr);
 
         /* Single load */
@@ -223,8 +223,8 @@ namespace awn::res {
         };
 
         /* Streaming decompression */
-        bool   temp_select   = true;
-        size_t size_read     = cReadSize;
+        bool temp_select = true;
+        size_t size_read = cReadSize;
         do {
             
             /* Signal decompressor */
@@ -232,8 +232,8 @@ namespace awn::res {
             m_decompressor_thread->SendMessage(size_read);
 
             /* Select output buffer */
-            void *select_stream  = (temp_select == true) ? reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(stream) + cReadSize) : stream;
-            temp_select  ^= 1;
+            void *select_stream = (temp_select) ? reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(stream) + cReadSize) : stream;
+            temp_select ^= 1;
 
             /* Stream next block */
             size_read = 0;
@@ -245,7 +245,7 @@ namespace awn::res {
 
             /* Ensure errors did not occur */
             RESULT_RETURN_UNLESS(read_result == ResultSuccess, read_result);
-            RESULT_RETURN_IF(m_decompressor_thread->m_is_error == true, ResultStreamDecompressionError);
+            RESULT_RETURN_IF(m_decompressor_thread->m_is_error, ResultStreamDecompressionError);
 
         } while (file_offset < file_size);
 

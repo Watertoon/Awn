@@ -40,6 +40,6 @@ namespace awn::para {
 
             /* Defined in para_document.hpp */
             template <typename T>
-            ALWAYS_INLINE T *GetTypedParam() const;
+            T *GetTypedParam() const;
     };
 }

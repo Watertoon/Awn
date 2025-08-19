@@ -156,7 +156,7 @@ namespace awn::res {
         RESULT_RETURN_SUCCESS;
     }
 
-    Result ArchiveFileDevice::FormatPath(vp::util::FixedString<vp::util::cMaxPath> *out_formatted_path, const char *path) {
+    Result ArchiveFileDevice::FormatPath(MaxPathString *out_formatted_path, const char *path) {
         *out_formatted_path = path;
         RESULT_RETURN_SUCCESS;
     }

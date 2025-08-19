@@ -23,14 +23,14 @@ namespace awn::gfx {
         impl::Context *context = impl::Context::GetInstance();
         const VkShaderCodeTypeEXT vk_code_type = vp::res::GfxShaderCodeTypeToVkShaderCodeType(code_type);
         VkShaderCreateInfoEXT vk_shader_create_info_array[impl::Context::cTargetMaxPrimitiveShaderStageCount];
+        const u32 desc_count = impl::Context::cMaxCombinedSetCountGraphics;
+        const VkDescriptorSetLayout *desc_layout = context->GetPerStageDescriptorLayoutArray();
         u32 info_i = 0;
         for (u32 i = 0; i < stage_count; ++i) {
             if (code_array[i] == nullptr) { continue; }
 
             const ShaderStage stage = stage_array[i];
             const VkShaderStageFlags vk_stage_flags = vp::res::GfxShaderStageToVkShaderStageFlags(stage);
-            u32 desc_count = 0;
-            const VkDescriptorSetLayout *desc_layout = context->GetPerStageDescriptorLayoutArray(std::addressof(desc_count), stage);
             vk_shader_create_info_array[info_i].sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
             vk_shader_create_info_array[info_i].flags                  = create_flags;
             vk_shader_create_info_array[info_i].stage                  = static_cast<VkShaderStageFlagBits>(vk_stage_flags);
@@ -140,6 +140,8 @@ namespace awn::gfx {
         gfx::ShaderStage stage_array[cMaxShaderStageCount];
         VkShaderCreateInfoEXT vk_shader_create_info_array[cMaxShaderStageCount];
         const u32 max_shader_count = cMaxShaderStageCount - (2 * (!gfx::IsOptionalFeature(OptionalFeature::SupportsMeshShaders)));
+        const u32 desc_count = impl::Context::cMaxCombinedSetCountGraphics;
+        const VkDescriptorSetLayout *desc_layout = impl::Context::GetInstance()->GetPerStageDescriptorLayoutArray();
         for (u32 i = 0; i < max_shader_count; ++i) {
 
             /* Increment reference  */
@@ -167,9 +169,6 @@ namespace awn::gfx {
                 }
                 vk_next_shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT;
             }
-
-            u32 desc_count = 0;
-            const VkDescriptorSetLayout *desc_layout = impl::Context::GetInstance()->GetPerStageDescriptorLayoutArray(std::addressof(desc_count), shader_stage);
 
             vk_shader_create_info_array[compile_count].sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
             vk_shader_create_info_array[compile_count].pNext                  = nullptr;
@@ -264,5 +263,25 @@ namespace awn::gfx {
         /* Get slot from global slot array */
         const u32 slot_index = base_index + index;
         return interface_info->interface_slot_array[slot_index];
+    }
+
+    Result Shader::GetBinarySize(size_t *out_size, ShaderStage stage) {
+        const u32 i = static_cast<u32>(stage);
+        RESULT_RETURN_IF(m_vk_shader_array[i] == nullptr, ResultInvalidShaderStage);
+        impl::Context *context = impl::Context::GetInstance();
+        size_t size;
+        const VkResult vk_result = ::pfn_vkGetShaderBinaryDataEXT(context->GetVkDevice(), m_vk_shader_array[i], std::addressof(size), nullptr);
+        RESULT_TRY(impl::ConvertVkResultToResult(vk_result));
+        *out_size += size;
+        RESULT_RETURN_SUCCESS;
+    }
+
+    Result Shader::GetBinary(void *data, size_t data_size, ShaderStage stage) {
+        const u32 i = static_cast<u32>(stage);
+        RESULT_RETURN_IF(m_vk_shader_array[i] == nullptr, ResultInvalidShaderStage);
+        impl::Context *context = impl::Context::GetInstance();
+        const VkResult vk_result = ::pfn_vkGetShaderBinaryDataEXT(context->GetVkDevice(), m_vk_shader_array[i], std::addressof(data_size), data);
+        RESULT_TRY(impl::ConvertVkResultToResult(vk_result));
+        RESULT_RETURN_SUCCESS;
     }
 }

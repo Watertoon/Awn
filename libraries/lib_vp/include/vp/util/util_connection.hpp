@@ -35,7 +35,7 @@ namespace vp::util {
                     constexpr Iterator(u32 max_array, u32 max_bit) : m_mask(), m_max_count(max_array), m_iter(max_array), m_index(max_bit) {/*...*/}
                     constexpr Iterator(const Connection *connection, T mask, u32 base_index) : m_mask_array(connection->m_mask_array), m_max_count(connection->m_array_count), m_max_bit(connection->m_bit_count), m_iter(base_index) {
                         const u32 lz = vp::util::CountRightZeroBits(mask);
-                        const u32 clear = static_cast<T>(1) << lz;
+                        const T clear = static_cast<T>(1) << lz;
                         m_index = (m_iter * BITSIZEOF(T)) + lz;
                         m_mask = clear ^ mask;
                     }
@@ -68,7 +68,7 @@ namespace vp::util {
                         }
                         const T mask = m_mask;
                         const u32 lz = vp::util::CountRightZeroBits(mask);
-                        const u32 clear = static_cast<T>(1) << lz;
+                        const T clear = static_cast<T>(1) << lz;
                         m_index = (m_iter * BITSIZEOF(T)) + lz;
                         m_mask = clear ^ mask;
                         return *this;
@@ -78,6 +78,11 @@ namespace vp::util {
             u32 m_array_count;
             u32 m_bit_count;
             T *m_mask_array;
+        public:
+            static constexpr size_t GetWorkMemorySize(u32 bit_count) {
+                const u32 array_count = (bit_count / BITSIZEOF(T)) + ((bit_count % BITSIZEOF(T)) != 0);
+                return array_count * sizeof(T);
+            }
         public:
             constexpr Connection() : m_array_count(), m_bit_count(), m_mask_array{} {/*...*/}
             constexpr ~Connection() {/*...*/}
@@ -121,6 +126,14 @@ namespace vp::util {
                     m_bit_count = 0;
                     m_mask_array = nullptr;
                 }
+            }
+            
+            constexpr void SetMemory(T *memory, u32 bit_count) {
+                const u32 array_count = (bit_count / BITSIZEOF(T)) + ((bit_count % BITSIZEOF(T)) != 0);
+                m_mask_array = memory;
+                m_array_count = array_count;
+                m_bit_count = bit_count;
+                return;
             }
 
             constexpr void Clear() {
@@ -174,5 +187,8 @@ namespace vp::util {
                 }
                 return count;
             }
+            
+            constexpr u32 GetBitCount() const { return m_bit_count; }
+            constexpr u32 GetArrayCount() const { return m_array_count; }
     };
 }

@@ -20,6 +20,43 @@ namespace vp::util {
         return ret;
     }
 
+    template <typename V>
+        requires (V::cIsVectorType && V::cVectorCount == 3)
+    constexpr void EulerXYZToAxes(V *out_axes, const V &rotation_euler) {
+        const V mod_eu = ModuloPi(rotation_euler);
+        const V sin_eu = CoefficientsSin(mod_eu);
+        const V cos_eu = CoefficientsCos(mod_eu);
+        const V ax0 = {
+            cos_eu[1] * cos_eu[2],
+            (sin_eu[0] * sin_eu[1] * cos_eu[2]) - (cos_eu[0] * sin_eu[2]),
+            cos_eu[0] * cos_eu[2] + sin_eu[0] * sin_eu[1] * sin_eu[2],
+            0.0f,
+        };
+        const V ax1 = {
+            cos_eu[1] * sin_eu[2],
+            (sin_eu[2] * cos_eu[0] * cos_eu[2]) + (sin_eu[0] * sin_eu[1]),
+            cos_eu[0] * sin_eu[2] + sin_eu[1] * -(sin_eu[0] * cos_eu[2]),
+            0.0f,
+        };
+        out_axes[0] = ax0;
+        out_axes[1] = ax1;
+        return;
+    }
+
+    template <typename V>
+        requires (V::cIsVectorType && V::cVectorCount == 3 && std::is_floating_point_v<typename V::UnderlyingType>)
+    constexpr void LinearInterpolateAxes(V *from, const V *to, typename V::UnderlyingType factor) {
+        const V b_ax0 = from[0];
+        const V b_ax1 = from[1];
+        const V a_ax0 = to[0];
+        const V a_ax1 = to[1];
+        const V r_ax0 = b_ax0 + a_ax0 * factor;
+        const V r_ax1 = b_ax1 + a_ax1 * factor;
+        from[0] = r_ax0;
+        from[1] = r_ax1;
+        return;
+    }
+
     template <typename Ret, typename T>
         requires (Ret::cIsVectorType && T::cIsMatrixType)
     constexpr Ret GetScale(const T &trans_matrix) {

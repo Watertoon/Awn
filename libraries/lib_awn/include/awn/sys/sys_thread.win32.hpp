@@ -33,22 +33,19 @@ namespace awn::sys {
         VP_UNEXPECTED_DEFAULT();
     }
 
-    static constexpr u32 cMaxThreadNameLength = 0x40;
+    static constexpr u32 cMaxThreadNameLength = 0x20;
 
 	class Thread : public sys::ThreadBase {
 		protected:
-			HANDLE             m_handle;
-            HANDLE             m_waitable_timer_for_sleep;
-            long unsigned int  m_win32_thread_id;
-            char               m_name[cMaxThreadNameLength];
-            char16_t           m_name_utf16[cMaxThreadNameLength];
+			HANDLE m_handle;
+            HANDLE m_waitable_timer_for_sleep;
+            long unsigned int m_win32_thread_id;
+            vp::util::FixedString8<cMaxThreadNameLength> m_name;
+            vp::util::FixedString16<cMaxThreadNameLength> m_name_utf16;
         public:
             VP_RTTI_DERIVED(SystemThread, ThreadBase);
         public:
-			constexpr Thread() : ThreadBase(), m_handle(), m_waitable_timer_for_sleep(), m_win32_thread_id() {
-                m_name[0] = '\0';
-                m_name_utf16[0] = L'\0';
-            }
+			constexpr Thread() : ThreadBase(), m_handle(), m_waitable_timer_for_sleep(), m_win32_thread_id(), m_name(), m_name_utf16() {/*...*/}
             virtual ~Thread() override {/*...*/}
 
             Result Initialize(mem::Heap *thread_heap, const ThreadInfo *info);
@@ -68,6 +65,7 @@ namespace awn::sys {
             virtual void SetCoreMask(CoreMask core_mask) override;
 
             constexpr HANDLE GetWin32Handle() const { return m_handle; }
+            constexpr HANDLE GetWin32Timer() const { return m_waitable_timer_for_sleep; }
             constexpr long unsigned int GetWin32ThreadId() const { return m_win32_thread_id; }
 	};
 }

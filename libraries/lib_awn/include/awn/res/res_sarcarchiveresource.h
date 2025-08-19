@@ -18,6 +18,8 @@
 namespace awn::res {
 
     class SarcArchiveResource : public ArchiveResource {
+        public:
+            VP_RTTI_DERIVED(SarcArchiveResource, ArchiveResource);
         private:
             vp::res::SarcExtractor m_sarc_extractor;
         public:

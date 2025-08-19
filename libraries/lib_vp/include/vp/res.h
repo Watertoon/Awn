@@ -92,4 +92,5 @@
     #include <vp/res/res_nnosinteroperation.nx.h>
     #include <vp/res/res_nnfsinteroperation.nx.h>
     #include <vp/res/res_nnhidinteroperation.nx.h>
+    #include <vp/res/res_nnresulttovpresult.nx.hpp>
 #endif

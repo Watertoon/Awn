@@ -20,6 +20,15 @@ namespace awn::gfx::impl {
     struct GpuAddress {
         VkDeviceAddress vk_device_address = 0;
 
+        constexpr GpuAddress &operator+=(size_t offset) {
+            this->vk_device_address += offset;
+            return *this;
+        }
+        friend constexpr GpuAddress operator+(GpuAddress address, size_t offset) {
+            address.vk_device_address += offset;
+            return address;
+        }
+
         constexpr bool IsValid() const {
             return this->vk_device_address != 0;
         }

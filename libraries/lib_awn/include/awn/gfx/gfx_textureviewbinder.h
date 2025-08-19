@@ -21,7 +21,7 @@ namespace awn::gfx {
 
     class TextureViewBinder {
         public:
-            static constexpr inline DescriptorSlot cInvalidDescriptorSlot = { 0, cInvalidDescriptorSlotFreeCount };
+            static constexpr inline DescriptorSlot cInvalidDescriptorSlot = { 0, cInvalidDescriptorSlotFreeCount, };
         private:
             gfx::DescriptorSlot m_texture_slot;
         public:
@@ -29,17 +29,29 @@ namespace awn::gfx {
             ~TextureViewBinder() { this->Release(); }
 
             Result RegisterTextureView(const TextureViewInfo *texture_view_info);
-            Result RegisterTextureView(const TextureViewInfo *texture_view_info, TextureBinder *reference_texture_binder);
             Result ReferenceTextureView(TextureViewBinder *reference_texture_view_binder);
 
             void Release();
 
             constexpr DescriptorSlot GetDescriptorSlot() const {
-                impl::TextureViewSamplerManager *tex_view_samp_mgr = impl::TextureViewSamplerManager::GetInstance();
-                if (!tex_view_samp_mgr->IsTextureViewSlotValid(m_texture_slot)) { return cInvalidDescriptorSlot; }
+                impl::TextureViewSamplerManager *mgr = impl::TextureViewSamplerManager::GetInstance();
+                if (!mgr->IsTextureViewSlotValid(m_texture_slot)) { return cInvalidDescriptorSlot; }
                 return m_texture_slot; 
             }
 
             bool IsSameInfo(const TextureViewInfo *texture_view_info);
+        public:
+            constexpr const impl::TextureViewKey *GetTextureViewKey() const {
+                impl::TextureViewSamplerManager *mgr = impl::TextureViewSamplerManager::GetInstance();
+                if (!mgr->IsTextureViewSlotValid(m_texture_slot)) { return nullptr; }
+                const impl::TextureViewKey *key = std::addressof(mgr->GetTextureViewUnit(m_texture_slot.index)->key);
+                return key;
+            }
+            constexpr VkImageView GetVkImageView() const {
+                impl::TextureViewSamplerManager *mgr = impl::TextureViewSamplerManager::GetInstance();
+                if (!mgr->IsTextureViewSlotValid(m_texture_slot)) { return nullptr; }
+                const VkImageView view = mgr->GetTextureViewUnit(m_texture_slot.index)->vk_image_view;
+                return view;
+            }
     };
 }

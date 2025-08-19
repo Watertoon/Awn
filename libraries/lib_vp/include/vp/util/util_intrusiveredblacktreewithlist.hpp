@@ -7,7 +7,7 @@ namespace vp::util {
         public:
             using key_type  = K;
             using node_type = IntrusiveRedBlackTreeNodeWithList<key_type>;
-		private:
+		public:
 			vp::util::IntrusiveRedBlackTreeNode<key_type>  m_tree_node;
             node_type                                     *m_next;
             node_type                                     *m_prev;
@@ -33,6 +33,13 @@ namespace vp::util {
 
                 /* Get next tree node */
                 return reinterpret_cast<node_type*>(next_node->m_tree_node.GetNext());
+            }
+            
+            constexpr ALWAYS_INLINE void SetKey(key_type hash) {
+                m_tree_node.SetKey(hash);
+            }
+            constexpr ALWAYS_INLINE key_type GetKey() const {
+                return m_tree_node.GetKey();
             }
         public:
             constexpr ALWAYS_INLINE void LinkNext(node_type *new_node) {
@@ -76,9 +83,9 @@ namespace vp::util {
             using const_pointer   = const T*;
             using node_type       = vp::util::IntrusiveRedBlackTreeNodeWithList<K>;
             using key_type        = K;
-            using Tree            = vp::util::IntrusiveRedBlackTreeTraits<node_type, node_type::m_tree_node, Compare, Collision>::Tree;
+            using BaseTree        = vp::util::IntrusiveRedBlackTreeTraits<node_type, &node_type::m_tree_node, Compare, Collision>::Tree;
         private:
-            Tree m_tree;
+            BaseTree m_tree;
             u32  m_count;
         public:
             class Iterator {
@@ -129,7 +136,7 @@ namespace vp::util {
             using iterator = Iterator;
             using const_iterator = ConstIterator;
         public:
-			constexpr ALWAYS_INLINE  IntrusiveRedBlackTreeWithList() : m_tree(nullptr), m_count(0) {/*...*/}
+			constexpr ALWAYS_INLINE  IntrusiveRedBlackTreeWithList() : m_tree(), m_count() {/*...*/}
 			constexpr ALWAYS_INLINE ~IntrusiveRedBlackTreeWithList() {/*...*/}
 
             iterator begin() {
@@ -198,21 +205,23 @@ namespace vp::util {
     template<class RP, typename K, auto M>
     class IntrusiveRedBlackTreeWithListMemberTraits {
         public:
+            static constexpr uintptr_t cOffset = OffsetOf<M>();
+        public:
             using ComparisonFunction = std::strong_ordering(*)(const K&, const K&);
-            using CollisionFunction  = void(*)(RP*,RP*);
+            using CollisionFunction  = void(*)(vp::util::IntrusiveRedBlackTreeNodeWithList<K>*,vp::util::IntrusiveRedBlackTreeNodeWithList<K>*);
         public:
             static ALWAYS_INLINE RP *GetParent(IntrusiveRedBlackTreeNodeWithList<K> *node) {
-                return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+                return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
             }
             static ALWAYS_INLINE RP &GetParentReference(IntrusiveRedBlackTreeNodeWithList<K> *node) {
-                return *reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+                return *reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
             }
 
             static ALWAYS_INLINE const RP *GetParent(const IntrusiveRedBlackTreeNodeWithList<K> *node) {
-                return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+                return reinterpret_cast<RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
             }
             static ALWAYS_INLINE const RP &GetParentReference(const IntrusiveRedBlackTreeNodeWithList<K> *node) {
-                return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - OffsetOf(M));
+                return *reinterpret_cast<const RP*>(reinterpret_cast<uintptr_t>(node) - cOffset);
             }
 
             static constexpr ALWAYS_INLINE IntrusiveRedBlackTreeNodeWithList<K> *GetTreeNode(RP *parent) {
@@ -223,13 +232,13 @@ namespace vp::util {
             }
     };
 
-    template<class RP, auto M, auto Compare = RedBlackTreeDefaultCompare<typename vp::util::MemberType<M>::key_type>, auto Collision = RedBlackTreeDefaultCollision<RP>>
+    template<class RP, auto M, auto Compare = RedBlackTreeDefaultCompare<typename vp::util::MemberType<M>::key_type>, auto Collision = RedBlackTreeDefaultCollision<vp::util::IntrusiveRedBlackTreeNodeWithList<typename vp::util::MemberType<M>::key_type>>>
     struct IntrusiveRedBlackTreeWithListTraits {
-        using Key                = vp::util::MemberType<M>::key_type;
-        using Parent             = vp::util::ParentType<M>;
-        using Traits             = IntrusiveRedBlackTreeWithListMemberTraits<RP, Key, M>;
-        using Node               = IntrusiveRedBlackTreeNodeWithList<Key>;
-        using Tree               = IntrusiveRedBlackTreeWithList<ParentType<M>, Key, Traits, Compare, Collision>;
+        using Key    = vp::util::MemberType<M>::key_type;
+        using Parent = vp::util::ParentType<M>;
+        using Traits = IntrusiveRedBlackTreeWithListMemberTraits<RP, Key, M>;
+        using Node   = IntrusiveRedBlackTreeNodeWithList<Key>;
+        using Tree   = IntrusiveRedBlackTreeWithList<ParentType<M>, Key, Traits, Compare, Collision>;
         //using ReverseTree        = IntrusiveRedBlackTree<ParentType<M>, K, Traits>;
     };
 }

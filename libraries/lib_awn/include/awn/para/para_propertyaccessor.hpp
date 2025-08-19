@@ -17,7 +17,7 @@
 
 namespace awn::para {
 
-    using PropertyString = vp::util::FixedString<0x100>;
+    using PropertyString = vp::util::FixedString8<0x100>;
 
     class IPropertyAccessor {
         public:

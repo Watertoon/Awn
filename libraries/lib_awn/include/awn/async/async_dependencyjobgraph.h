@@ -42,18 +42,18 @@ namespace awn::async {
     struct JobUserLink {
         UserId parent_user_id;
         UserId dependent_user_id;
-        bool  has_register_link;
+        bool has_register_link;
     };
 
     struct JobGraphRegisterInfo {
         vp::util::Job *job;
-        bool           is_runnable;
-        bool           enable_user_id;
-        UserId         user_id;
-        bool           is_multi_run_complete_once;
-        u16            multi_run_count;
-        u16            core_number;
-        u16            priority;
+        bool is_runnable = true;
+        bool enable_user_id = false;
+        UserId user_id = 0;
+        bool is_multi_run_complete_once = false;
+        u16 multi_run_count = 1;
+        u16 core_number = 0x41;
+        u16 priority = 0x8000;
     };
 
     struct DependencyJobGraphInfo {
@@ -62,14 +62,17 @@ namespace awn::async {
     };
 
     class DependencyJobQueue;
+    class DependencyLightJobQueue;
 
     class DependencyJobGraph {
         public:
             friend class DependencyJobQueue;
+            friend class DependencyLightJobQueue;
         public:
-            static constexpr size_t cMaxUserIdCount    = 0x100;
-            static constexpr u16    cInvalidRegisterId = 0xffff;
-            static constexpr u16    cAllCores          = 0x41;
+            static constexpr size_t cMaxUserIdCount = 0x100;
+            static constexpr UserId cInvalidUserId = static_cast<UserId>(0xffff'ffff'ffff'ffff);
+            static constexpr RegisterId cInvalidRegisterId = static_cast<RegisterId>(0xffff'ffff'ffff'ffff);
+            static constexpr u16 cAllCores = 0x41;
         public:
             using JobGraphNodeAllocator = vp::util::PointerArrayAllocator<JobGraphNode>;
             using RegisterLinkAllocator = vp::util::PointerArrayAllocator<JobRegisterLink>;
@@ -97,5 +100,9 @@ namespace awn::async {
             void RegisterDependencyByUserId(UserId parent_user_id, UserId dependent_user_id);
 
             void Clear();
+
+            constexpr bool IsUserId(UserId id) const {
+                return (id < cMaxUserIdCount) ? (m_user_id_to_register_id_map[id] != cInvalidUserId) : false;
+            }
     };
 }

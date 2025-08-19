@@ -81,7 +81,7 @@ namespace vp::util {
                 return m_array[base_offset - wrap];
             }
             
-            constexpr ALWAYS_INLINE void PushBack(T value) {
+            constexpr void PushBack(T value) {
 
                 /* Check count */
                 VP_ASSERT(!this->IsFull());
@@ -98,7 +98,7 @@ namespace vp::util {
                 m_array[base_offset - wrap] = value;
             }
 
-            constexpr ALWAYS_INLINE void PushFront(T value) {
+            constexpr void PushFront(T value) {
 
                 /* Check count */
                 VP_ASSERT(!this->IsFull());
@@ -115,7 +115,7 @@ namespace vp::util {
                 m_array[offset] = value;
             }
 
-            constexpr ALWAYS_INLINE T PeekFront() const {
+            constexpr T PeekFront() const {
 
                 /* Check count */
                 const u32 count = m_count;
@@ -128,7 +128,7 @@ namespace vp::util {
                 return ret;
             }
 
-            constexpr ALWAYS_INLINE bool DropFront() {
+            constexpr bool DropFront() {
                 const u32 count = m_count;
                 if (count == 0) { return false; }
                 const u32 offset = m_offset;
@@ -137,7 +137,7 @@ namespace vp::util {
                 return true;
             }
 
-            constexpr ALWAYS_INLINE T RemoveFront() {
+            constexpr T RemoveFront() {
 
                 /* Check count */
                 const u32 count = m_count;
@@ -154,7 +154,7 @@ namespace vp::util {
                 return ret;
             }
 
-            constexpr ALWAYS_INLINE T PeekBack() const {
+            constexpr T PeekBack() const {
 
                 /* Check count */
                 const u32 count = m_count;
@@ -168,14 +168,14 @@ namespace vp::util {
                 return ret;
             }
 
-            constexpr ALWAYS_INLINE bool DropBack() {
+            constexpr bool DropBack() {
                 const u32 count = m_count;
                 if (count == 0) { return false; }
                 m_count = count - 1;
                 return true;
             }
 
-            constexpr ALWAYS_INLINE T RemoveBack() {
+            constexpr T RemoveBack() {
 
                 /* Check count */
                 const u32 count = m_count;
@@ -192,40 +192,66 @@ namespace vp::util {
                 return ret;
             }
 
-            T Remove(T iter) {
+            bool RemoveOrdered(T value) {
 
-                /* Find iter */
-                for (u32 i = 0; i < m_count; ++i) {
+                /* Find and delete value */
+                const u32 offset = m_offset;
+                const u32 count = m_count;
+                constexpr const u32 max = Size;
+                const u32 end_offset = offset + count;
+                for (u32 i = offset; i < end_offset; ++i) {
 
-                    const u32 base   = i + m_offset;
-                    const u32 adjust = (Size < base) ? i - Size : i;
+                    /* Match value to delete location */
+                    const u32 sub0 = (max <= i) ? max : 0;
+                    const u32 base_i = i - sub0;
+                    T *del = m_array + base_i;
+                    if (value != *del) { continue; }
 
-                    if (iter != m_array[adjust]) { continue; }
+                    /* Shift base offset range up to end of memory down by 1 */
+                    const bool is_wrap = (max < end_offset) & (offset < base_i);
+                    const u32 end_count = (is_wrap) ? (max - base_i - 1) : (count - base_i - 1);
+                    ::memmove(del, del + 1, end_count * sizeof(T*));
 
-                    T *adjust_location = m_array + adjust;
-                    
-                    const bool is_wrap   = (Size < m_count + m_offset) & (m_offset < adjust);
-                    const u32  adj_count = (is_wrap == true) ?  Size - adjust - 1 : m_count - adjust - 1;
-
-                    ::memmove(adjust_location, adjust_location + 1, adj_count * sizeof(T*));
-
-                    if (is_wrap == true) {
-                        m_array[Size - 1] = m_array[0];
-
-                        const u32 final_count = (m_offset + m_count) - Size - 1;
-
+                    /* On wrap shift start of memory to end, and shift start range up to end of values down by 1 */
+                    if (is_wrap) {
+                        m_array[max - 1] = m_array[0];
+                        const u32 final_count = end_offset - max - 1;
                         ::memmove(m_array, m_array + 1, final_count * sizeof(T*));
                     }
+                    m_count  = count - 1;
 
-                    /* Adjust count */
-                    m_count  = m_count - 1;
-
-                    return iter;
+                    return true;
                 }
 
-                VP_ASSERT(false);
+                return false;
+            }
 
-                return iter;
+            bool RemoveUnordered(T value) {
+
+                /* Find and delete value */
+                const u32 offset = m_offset;
+                const u32 count = m_count;
+                constexpr const u32 max = Size;
+                const u32 arr_count = offset + count;
+                for (u32 i = offset; i < arr_count; ++i) {
+
+                    /* Match value to delete location */
+                    const u32 sub0 = (max <= i) ? max : 0;
+                    const u32 base_i = i - sub0;
+                    T *del = m_array + base_i;
+                    if (value != *del) { continue; }
+
+                    /* Swap last element in to deleted's place */
+                    const u32 end_i = count + offset - 1;
+                    const u32 sub1 = (max <= end_i) ? max : 0;
+                    const u32 swap_i = end_i - sub1;
+                    *del = m_array[swap_i];
+                    m_count = count - 1;
+
+                    return true;
+                }
+
+                return false;
             }
 
             constexpr void Clear() {
@@ -233,8 +259,9 @@ namespace vp::util {
                 m_count  = 0;
             }
 
+            constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; }
+
             constexpr ALWAYS_INLINE bool IsEmpty() const { return m_count == 0; }
             constexpr ALWAYS_INLINE bool IsFull() const { return (Size <= m_count); }
-            constexpr ALWAYS_INLINE u32 GetUsedCount() const { return m_count; }
 	};
 }

@@ -34,8 +34,8 @@ namespace awn::mem {
                 ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(gpu_address);
                 std::construct_at(first_block);
 
-                first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-                first_block->block_size  = size - (sizeof(ExpHeapMemoryBlock));
+                first_block->magic = ExpHeapMemoryBlock::cFreeMagic;
+                first_block->size  = size - (sizeof(ExpHeapMemoryBlock));
 
                 new_heap->m_free_list.PushBack(*first_block);
 
@@ -76,8 +76,8 @@ namespace awn::mem {
                 ExpHeapMemoryBlock *first_block = reinterpret_cast<ExpHeapMemoryBlock*>(new_heap_memory);
                 std::construct_at(first_block);
 
-                first_block->alloc_magic = ExpHeapMemoryBlock::cFreeMagic;
-                first_block->block_size = size - (sizeof(ExpHeapMemoryBlock));
+                first_block->magic = ExpHeapMemoryBlock::cFreeMagic;
+                first_block->size = size - (sizeof(ExpHeapMemoryBlock));
 
                 new_heap->m_free_list.PushBack(*first_block);
 

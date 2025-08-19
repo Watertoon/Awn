@@ -170,7 +170,7 @@ namespace awn::async {
 	}
 
     AsyncQueue::ThreadBoost *AsyncQueue::GetThreadBoost(AsyncQueueThread *thread) {
-        const u32 index = m_task_thread_array.FindIndexOf(thread);
+        const u32 index = m_task_thread_array.IndexOf(thread);
         return m_thread_boost_array[index];
     }
 
@@ -199,7 +199,7 @@ namespace awn::async {
     void AsyncQueue::WakeThreadSet(u32 set_index, AsyncQueueThread *this_thread) {
         const auto wake_lambda = [&](AsyncQueueThread *thread) {
             if (this_thread == thread) { return; }
-            const u32 index = m_task_thread_array.FindIndexOf(thread);
+            const u32 index = m_task_thread_array.IndexOf(thread);
             this->WakeThread(index, thread);
         };
         const auto wake_function = vp::util::MakeLambdaFunction<void(AsyncQueueThread*)>(wake_lambda);
@@ -486,7 +486,7 @@ namespace awn::async {
         }
 
         /* Link primary thread to boost thread if available, inherit primary core mask to boost thread */
-        const u32 other_index = m_task_thread_array.FindIndexOf(other_thread);
+        const u32 other_index = m_task_thread_array.IndexOf(other_thread);
         if (other_index != AsyncQueueThreadArray::cInvalidEntryIndex) {
             m_thread_boost_array[global_index]->linked_thread = other_index;
             m_thread_boost_array[other_index]->linked_thread = global_index;

@@ -43,9 +43,9 @@ namespace vp::util {
         if (!std::is_constant_evaluated() && std::is_same_v<Type, float>) {
 #ifdef VP_TARGET_ARCHITECTURE_x86
             if constexpr (std::is_same_v<Type, s32> || std::is_same_v<Type, u32>) {
-                return v8t{ .v = reinterpret_cast<long long int __attribute__((vector_size(16)))>(_mm256_set1_epi32(value)), };
+                return v8t{ .v = reinterpret_cast<long long int __attribute__((vector_size(32)))>(_mm256_set1_epi32(value)), };
             } else if constexpr (std::is_same_v<Type, float>) {
-                return v8t{ .v = reinterpret_cast<float __attribute__((vector_size(16)))>(_mm256_set1_ps(value)), };
+                return v8t{ .v = reinterpret_cast<float __attribute__((vector_size(32)))>(_mm256_set1_ps(value)), };
             }
 #endif
         }
@@ -106,9 +106,9 @@ namespace vp::util {
             if constexpr (std::is_same_v<Type, float>) {
                 return v8t{ .v = reinterpret_cast<float __attribute__((vector_size(32)))>(_mm256_loadu_ps(address)), };
             } else if constexpr (std::is_integral_v<Type> && BITSIZEOF(v8t) == 128) {
-                return v8t{ .v = reinterpret_cast<short __attribute__((vector_size(16)))>(_mm_loadu_epi16(address)), };
+                return v8t{ .v = reinterpret_cast<short __attribute__((vector_size(16)))>(_mm_lddqu_si128(reinterpret_cast<const __m128i*>(address))), };
             } else if constexpr (std::is_integral_v<Type> && BITSIZEOF(v8t) == 256) {
-                return v8t{ .v = reinterpret_cast<int __attribute__((vector_size(32)))>(_mm256_loadu_epi32(address)), };
+                return v8t{ .v = reinterpret_cast<int __attribute__((vector_size(32)))>(_mm256_lddqu_si256(reinterpret_cast<const __m256i*>(address))), };
             } else 
 #endif
             if constexpr (v8t::cCountPerRegister == 2) {
@@ -141,7 +141,7 @@ namespace vp::util {
             if constexpr (std::is_integral_v<Type> && BITSIZEOF(v16t) == 128) {
                 return v16t{ .v = reinterpret_cast<char __attribute__((vector_size(16)))>(_mm_lddqu_si128(address)), };
             } else if constexpr (std::is_integral_v<Type> && BITSIZEOF(v16t) == 256) {
-                return v16t{ .v = reinterpret_cast<short __attribute__((vector_size(32)))>(_mm256_loadu_epi16(address)), };
+                return v16t{ .v = reinterpret_cast<short __attribute__((vector_size(32)))>(_mm256_lddqu_si256(reinterpret_cast<const __m256i*>(address))), };
             } else
 #endif
             if constexpr (v16t::cCountPerRegister == 2) {

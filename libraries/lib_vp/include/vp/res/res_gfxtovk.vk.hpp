@@ -291,29 +291,16 @@ namespace vp::res {
         return static_cast<VkComponentSwizzle>(static_cast<u32>(swizzle) + 1);
     }
 
-    template <typename T>
-    constexpr inline VkImageAspectFlags GfxTextureViewInfoToVkImageAspectFlags(const ResGfxTextureViewInfo<T> *texture_view_info) {
+    constexpr inline VkImageAspectFlags GfxTextureDepthStencilModeToVkImageAspectFlags(GfxTextureDepthStencilMode mode) {
 
         u32 flags = 0;
-        if (static_cast<GfxTypeFormat>(texture_view_info->image_format & 0xff) != GfxTypeFormat::Depth) {
-            flags |= VK_IMAGE_ASPECT_COLOR_BIT;
-        } else if (texture_view_info->depth_stencil_mode == static_cast<u8>(GfxTextureDepthStencilMode::Depth)) {
+        if (mode == GfxTextureDepthStencilMode::Depth) {
             flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
-        } else {
+        } else if (mode == GfxTextureDepthStencilMode::Stencil) {
             flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        } else if (mode == GfxTextureDepthStencilMode::DepthAndStencil) {
+            flags |= VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
         }
-        return flags;
-    }
-
-    constexpr inline VkImageAspectFlags GfxImageFormatToVkImageAspectFlags(GfxImageFormat image_format) {
-
-        u32 flags = 0;
-        if (static_cast<GfxTypeFormat>(static_cast<u32>(image_format) & 0xff) != GfxTypeFormat::Depth) {
-            flags |= VK_IMAGE_ASPECT_COLOR_BIT;
-        } else {
-            flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
-        }
-
         return flags;
     }
 

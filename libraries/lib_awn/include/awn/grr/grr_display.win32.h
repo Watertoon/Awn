@@ -61,7 +61,7 @@ namespace awn::grr {
                 IPresentationBuffer   *presentation_buffer;
                 gfx::MemoryPool        memory_pool;
                 gfx::Texture           texture;
-                gfx::RenderTargetColor render_target_color;
+                gfx::TextureViewBinder render_target_color;
                 u64                    present_id;
                 u64                    present_time;
 
@@ -103,7 +103,7 @@ namespace awn::grr {
             void Initialize(mem::Heap *heap, const DisplayInfo *info);
             void Finalize();
         public:
-            constexpr gfx::RenderTargetColor *GetRenderTargetColor() { return std::addressof(m_target_array[m_image_id].render_target_color); }
+            constexpr gfx::TextureViewBinder *GetRenderTargetColor() { return std::addressof(m_target_array[m_image_id].render_target_color); }
             constexpr void RequestPresent() { m_is_request_present = true; }
         public:
             void SetPresentInterval(u32 present_interval) {

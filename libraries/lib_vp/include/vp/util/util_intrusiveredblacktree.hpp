@@ -421,11 +421,11 @@ namespace vp::util {
 
     template<class RP, auto M, auto Compare = RedBlackTreeDefaultCompare<typename vp::util::MemberType<M>::key_type>, auto Collision = RedBlackTreeDefaultCollision<RP>>
     struct IntrusiveRedBlackTreeTraits {
-        using Key                = vp::util::MemberType<M>::key_type;
-        using Parent             = vp::util::ParentType<M>;
-        using Traits             = IntrusiveRedBlackTreeMemberTraits<RP, Key, M>;
-        using Node               = IntrusiveRedBlackTreeNode<Key>;
-        using Tree               = IntrusiveRedBlackTree<ParentType<M>, Key, Traits, Compare, Collision>;
+        using Key    = vp::util::MemberType<M>::key_type;
+        using Parent = vp::util::ParentType<M>;
+        using Traits = IntrusiveRedBlackTreeMemberTraits<RP, Key, M>;
+        using Node   = IntrusiveRedBlackTreeNode<Key>;
+        using Tree   = IntrusiveRedBlackTree<ParentType<M>, Key, Traits, Compare, Collision>;
         //using ReverseTree        = IntrusiveRedBlackTree<ParentType<M>, K, Traits>;
     };
 

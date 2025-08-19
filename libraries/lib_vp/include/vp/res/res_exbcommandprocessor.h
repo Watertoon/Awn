@@ -23,32 +23,32 @@ namespace vp::res {
             constexpr ExbUserMemoryCallback() {/*...*/}
             virtual constexpr ~ExbUserMemoryCallback() {/*...*/}
 
-            virtual s32              *GetUserMemoryInputS32(u16 arg);
-            virtual float            *GetUserMemoryInputFloat(u16 arg);
-            virtual bool             *GetUserMemoryInputBool(u16 arg);
-            virtual char             *GetUserMemoryInputString(u16 arg);
-            virtual vp::util::Float3 *GetUserMemoryInputVector3f(u16 arg);
+            virtual s32              *GetUserMemoryConstS32(u16 arg);
+            virtual float            *GetUserMemoryConstFloat(u16 arg);
+            virtual bool             *GetUserMemoryConstBool(u16 arg);
+            virtual char             *GetUserMemoryConstString(u16 arg);
+            virtual vp::util::Float3 *GetUserMemoryConstVector3f(u16 arg);
     
-            virtual s32              **GetUserMemoryOutputS32(u16 arg);
-            virtual float            **GetUserMemoryOutputFloat(u16 arg);
-            virtual bool             **GetUserMemoryOutputBool(u16 arg);
-            virtual char             **GetUserMemoryOutputString(u16 arg);
-            virtual vp::util::Float3 **GetUserMemoryOutputVector3f(u16 arg);
+            virtual s32              **GetUserMemoryGlobalS32(u16 arg);
+            virtual float            **GetUserMemoryGlobalFloat(u16 arg);
+            virtual bool             **GetUserMemoryGlobalBool(u16 arg);
+            virtual char             **GetUserMemoryGlobalString(u16 arg);
+            virtual vp::util::Float3 **GetUserMemoryGlobalVector3f(u16 arg);
     };
 
     struct ExbCommandProcessorInfo;
 
     struct ExbCommandProcessor {
-        ResExbCommand            *m_res_command_entry;
+        ResExbInstruction        *m_instruction_iter;
         void                     *m_input_memory;
         void                     *m_output_memory;
-        void                     *m_scratch_u32_aligned;
-        void                     *m_scratch_u64_aligned;
-        void                     *m_static_memory;
-        void                     *m_res_exb_parameter_region;
-        char                     *m_res_exb_string_pool;
+        void                     *m_local_memory_u32;
+        void                     *m_local_memory_u64;
+        void                     *m_global_memory;
+        void                     *m_constant_memory;
+        char                     *m_string_pool;
         ExbUserFunctionParameter *m_user_function_parameter;
-        ExbUserMemoryCallback    *m_exb_callback;
+        ExbUserMemoryCallback    *m_user_memory_callback;
 
         void *GetInputValuePointerVoid(ExbDataType data_type, u8 source_type, u16 in_arg, u64 *immediate_storage);
         void *GetOutputValuePointerVoid(ExbDataType data_type, u8 source_type, u16 in_arg);

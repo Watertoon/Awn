@@ -33,11 +33,11 @@ namespace awn::async {
             static constexpr size_t cExitCode = 0;
             static constexpr size_t cMessageCount = 8;
         private:
-            DependencyJobThreadControl  m_thread_control;
-            sys::Event                  m_finish_event;
-            DependencyJobQueue         *m_queue;
+            DependencyJobThreadControl m_thread_control;
+            sys::Event m_finish_event;
+            DependencyJobQueue *m_queue;
             DependencyJobThreadManager *m_thread_manager;
-            size_t                      m_message_array[cMessageCount];
+            size_t m_message_array[cMessageCount];
         public:
             VP_RTTI_DERIVED(DependencyJobThread, sys::Thread);
         public:
@@ -67,12 +67,12 @@ namespace awn::async {
 
     class DependencyJobThreadManager {
         public:
-            using DependencyJobThreadArray = vp::util::PointerArray<DependencyJobThread>;
+            using DependencyJobThreadArray = vp::util::HeapArray<DependencyJobThread>;
         private:
-            DependencyJobThreadArray    m_thread_array;
-            DependencyJobThreadControl  m_main_thread_control;
-            u64                         m_all_core_mask;
-            u64                         m_active_core_mask;
+            DependencyJobThreadArray m_thread_array;
+            DependencyJobThreadControl m_main_thread_control;
+            u64 m_all_core_mask;
+            u64 m_active_core_mask;
             union {
                 u32 m_core_flags;
                 struct {
@@ -80,12 +80,10 @@ namespace awn::async {
                     u32 m_reserve0                 : 31;
                 };
             };
-            DependencyJobQueue         *m_queue;
+            DependencyJobQueue *m_queue;
         private:
             void BuildThreadControl();
-
             void StartThreads();
-        
             void Dispatch();
         public:
             constexpr  DependencyJobThreadManager() : m_thread_array(), m_main_thread_control(), m_all_core_mask(), m_active_core_mask(), m_core_flags(), m_queue()  {/*...*/}

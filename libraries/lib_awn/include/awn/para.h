@@ -19,8 +19,8 @@
 #include <awn/para/para_curve.hpp>
 #include <awn/para/para_propertyaccessor.hpp>
 #include <awn/para/impl/para_dummyfiledevice.hpp>
-#include <awn/para/para_documentbinder.hpp>
 #include <awn/para/impl/para_typedparamfactory.h>
+#include <awn/para/para_documentbinder.hpp>
 #include <awn/para/para_typedparam.hpp>
 #include <awn/para/para_iappimpl.h>
 #include <awn/para/para_document.hpp>

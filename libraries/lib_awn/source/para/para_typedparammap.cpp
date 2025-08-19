@@ -196,7 +196,7 @@ namespace awn::para {
         /* Loop children for resolve parent */
         if (m_resolve_type == static_cast<u32>(ResolveType::ParentAndChildParent)) {
             for (TypedParamMapNode &map_node : m_tree) {
-                vp::util::FixedString<0x100> field_string;
+                vp::util::FixedString8<0x100> field_string;
                 field_string.Format("%s{%s}", field_name, map_node.key);
                 map_node.typed_param->ResolveParent(document, parent_typed_param, field_string.GetString());
             }

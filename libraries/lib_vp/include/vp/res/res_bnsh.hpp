@@ -164,9 +164,14 @@ namespace vp::res {
     struct ResBnshShaderContainer;
 
     struct ResBnshShaderVariation {
-        ResBnshShaderProgram   *program_source;
-        ResBnshShaderProgram   *program_intermediate;
-        ResBnshShaderProgram   *program_binary;
+        union {
+            ResBnshShaderProgram *program_array[3];
+            struct {                    
+                ResBnshShaderProgram   *program_source;
+                ResBnshShaderProgram   *program_intermediate;
+                ResBnshShaderProgram   *program_binary;
+            };
+        };
         ResBnshShaderContainer *parent_container;
         u64                     reserve0[4];
     };

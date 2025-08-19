@@ -63,6 +63,14 @@ namespace vp::res {
             return had_success;
         }
 
+        constexpr u32 GetMaxSubMeshCount() const {
+            u32 max_sub_mesh_count = 0;
+            for (u32 i = 0; i < this->shape_count; ++i) {
+                max_sub_mesh_count = vp::util::Max(max_sub_mesh_count, static_cast<u32>(this->shape_array[i].mesh_count));
+            }
+            return max_sub_mesh_count;
+        }
+
         constexpr ResBfresShape *TryGetShape(const char *shape_name) {
             if (shape_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = shape_dictionary->TryGetEntryIndexByKey(shape_name);

@@ -17,7 +17,7 @@
 
 namespace vp::util {
 
-    constexpr ALWAYS_INLINE void MemoryBarrierReadWrite() {
+    constexpr ALWAYS_INLINE void MemoryBarrierInnerReadWrite() {
         if (std::is_constant_evaluated()) { return; }
         asm volatile(
             "dmb ish"

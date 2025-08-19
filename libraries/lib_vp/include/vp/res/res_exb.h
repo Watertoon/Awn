@@ -17,7 +17,8 @@
 
 namespace vp::res {
 
-	enum class ExbCommand : u8 {
+	enum class ExbInstructionType : u8 {
+        Invalid             = 0x0, 
         Terminator          = 0x1, 
         Assignment          = 0x2,
         Negate              = 0x3,
@@ -31,25 +32,27 @@ namespace vp::res {
         Decrement           = 0xb,
         ScalarMultiplyVec3f = 0xc,
         ScalarDivideVec3f   = 0xd,
-        LeftShift           = 0xe,
-        RightShift          = 0xf,
+        LogicalShiftLeft    = 0xe,
+        LogicalShiftRight   = 0xf,
         LessThan            = 0x10,
         LessThanEqual       = 0x11,
         GreaterThan         = 0x12,
         GreaterThanEqual    = 0x13,
-        Equal               = 0x14,
-        NotEqual            = 0x15,
+        EqualTo             = 0x14,
+        NotEqualTo          = 0x15,
         And                 = 0x16,
         Xor                 = 0x17,
         Or                  = 0x18,
         LogicalAnd          = 0x19,
         LogicalOr           = 0x1a,
         UserFunction        = 0x1b,
-        JumpIfLhsZero       = 0x1c,
+        JumpZero            = 0x1c,
         Jump                = 0x1d,
     };
 
     enum class ExbDataType : u8 {
+        Invalid  = 0x0,
+        Void     = 0x1,
         Bool     = 0x2,
         S32      = 0x3,
         Float    = 0x4,
@@ -74,64 +77,66 @@ namespace vp::res {
         }
     }
 
-    enum class ExbParamSource : u8 {
-        Immediate               = 0x0,
-        ImmediateString         = 0x1,
-        StaticMemory            = 0x2,
-        ParameterTable          = 0x3,
-        ParameterTableString    = 0x4,
-        OutputMemory            = 0x5,
-        InputMemory             = 0x6,
-        ScratchMemoryU32Aligned = 0x7,
-        ScratchMemoryU64Aligned = 0x8,
-        UserMemoryOutput        = 0x9,
-        UserMemoryInput         = 0xa,
+    enum class ExbSourceType : u8 {
+        Immediate       = 0x0,
+        ImmediateString = 0x1,
+        GlobalMemory    = 0x2,
+        Constant        = 0x3,
+        ConstantString  = 0x4,
+        Output          = 0x5,
+        Input           = 0x6,
+        LocalMemoryU32  = 0x7,
+        LocalMemoryU64  = 0x8,
+        ExternGlobal    = 0x9,
+        ExternConst     = 0xa,
     };
 
     struct ResExbCommandInfo {
-        u32 base_index_setup_command;
-        u32 count_setup_command;
-        u32 base_index_main_command;
-        u32 count_main_command;
-        u32 static_memory_usage;
-        u16 scratch_memory_u32_usage;
-        u16 scratch_memory_u64_usage;
+        u32 base_instruction_setup;
+        u32 instruction_count_setup;
+        u32 base_instruction_update;
+        u32 instruction_count_update;
+        u32 global_memory_size;
+        u16 local_memory_size_u32;
+        u16 local_memory_size_u64;
         u16 output_source;
         u16 input_source;
+
+        static constexpr u32 cInvalidCommand = 0xffff'ffff;
     };
     static_assert(sizeof(ResExbCommandInfo) == 0x1c);
-    
+
     struct ResExbCommandInfoTable {
-        u32               info_count;
-        ResExbCommandInfo info_array[];
+        u32               command_count;
+        ResExbCommandInfo command_array[];
     };
     static_assert(sizeof(ResExbCommandInfoTable) == 0x4);
 
-    struct ResExbCommand {
-        u8  command_type;
+    struct ResExbInstruction {
+        u8  instruction_type;
         u8  data_type;
         union {
             struct {
                 u8  lhs_source;
                 u8  rhs_source;
             };
-            u16 static_memory_offset;
+            u16 global_memory_offset;
         };
         union {
             struct {
                 u16 arg0;
                 u16 arg1;
             };
-            u32 function_local_index;
+            u32 function_id;
         };
     };
-    static_assert(sizeof(ResExbCommand) == 0x8);
+    static_assert(sizeof(ResExbInstruction) == 0x8);
 
-    struct ResExbCommandTable {
-        u32               command_count;
-        ResExbCommandInfo command_array[];
+    struct ResExbInstructionTable {
+        u32               instruction_count;
+        ResExbInstruction instruction_array[];
     };
-    static_assert(sizeof(ResExbCommandTable) == 0x4);
+    static_assert(sizeof(ResExbInstructionTable) == 0x4);
 
     struct ResExbSignatureTable {
         u32 signature_count;
@@ -142,37 +147,40 @@ namespace vp::res {
     struct ResExb {
         u32 magic;
         u32 version;
-        u32 static_memory_size;
-        u32 reserve1;
-        u32 scratch_u32_allocator_size;
-        u32 scratch_u64_allocator_size;
-        u32 command_info_offset;
-        u32 command_table_offset;
+        u32 global_memory_size;
+        u32 reserve0;
+        u32 local_memory_size_u32;
+        u32 local_memory_size_u64;
+        u32 command_info_table_offset;
+        u32 instruction_table_offset;
         u32 signature_table_offset;
-        u32 parameter_region_offset;
+        u32 constant_memory_offset;
         u32 string_pool_offset;
 
-        static constexpr u32 cMagic         = util::TCharCode32("EXB ");
+        static constexpr u32 cMagic = util::TCharCode32("EXB ");
         static constexpr u32 cTargetVersion = 2;
 
         constexpr bool IsValid() const {
             return (magic == cMagic) & (version == cTargetVersion);
         }
 
-        ALWAYS_INLINE ResExbCommandInfoTable *GetCommandInfoTable() const {
-            return reinterpret_cast<ResExbCommandInfoTable*>(reinterpret_cast<uintptr_t>(this) + command_info_offset);
+        ResExbCommandInfoTable *GetCommandInfoTable() const {
+            return reinterpret_cast<ResExbCommandInfoTable*>(reinterpret_cast<uintptr_t>(this) + this->command_info_table_offset);
         }
-        ALWAYS_INLINE ResExbCommandTable *GetCommandTable() const {
-            return reinterpret_cast<ResExbCommandTable*>(reinterpret_cast<uintptr_t>(this) + command_table_offset);
+        ResExbInstructionTable *GetInstructionTable() const {
+            return reinterpret_cast<ResExbInstructionTable*>(reinterpret_cast<uintptr_t>(this) + this->instruction_table_offset);
         }
-        ALWAYS_INLINE ResExbSignatureTable *GetSignatureTable() const {
-            return reinterpret_cast<ResExbSignatureTable*>(reinterpret_cast<uintptr_t>(this) + signature_table_offset);
+        ResExbSignatureTable *GetSignatureTable() const {
+            return reinterpret_cast<ResExbSignatureTable*>(reinterpret_cast<uintptr_t>(this) + this->signature_table_offset);
         }
-        ALWAYS_INLINE void *GetParameterRegion() const {
-            return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + parameter_region_offset);
+        void *GetConstantMemory() const {
+            return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + this->constant_memory_offset);
         }
-        ALWAYS_INLINE const char *GetString(u32 string_offset) const {
-            return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) + string_pool_offset + string_offset);
+        char *GetStringPool() {
+            return reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(this) + this->string_pool_offset);
+        }
+        const char *GetString(u32 string_offset) const {
+            return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) + this->string_pool_offset + string_offset);
         }
     };
     static_assert(sizeof(ResExb) == 0x2c);

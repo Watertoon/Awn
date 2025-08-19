@@ -97,7 +97,7 @@ namespace awn::res::impl {
         for (sys::ThreadBase *&thread : m_registered_thread_ring) {
             if (sys::IsThreadValid(thread)) { continue; }
 
-            ArchiveTreeNode    *node                 = m_archive_tree_allocator.Find(thread);
+            ArchiveTreeNode *node = m_archive_tree_allocator.Find(thread);
             LocalArchiveBinder *local_archive_binder = node->m_local_archive_binder;
             VP_ASSERT(local_archive_binder != nullptr);
 
@@ -129,7 +129,7 @@ namespace awn::res::impl {
             if (local_archive == nullptr) { return nullptr; }
         }
 
-        return (local_archive->resource_binder.IsResourceInitialized() == true) ? local_archive: nullptr;
+        return (local_archive->resource_binder.IsCompleted()) ? local_archive: nullptr;
     }
 
     ResourceBinder *ThreadLocalArchiveManager::GetThreadLocalArchiveBinder() {
@@ -144,7 +144,7 @@ namespace awn::res::impl {
             if (local_archive == nullptr) { return nullptr; }
         }
 
-        return (local_archive->resource_binder.IsResourceInitialized() == true) ? std::addressof(local_archive->resource_binder) : nullptr;
+        return (local_archive->resource_binder.IsCompleted()) ? std::addressof(local_archive->resource_binder) : nullptr;
     }
 
     LocalArchiveBinder *ThreadLocalArchiveManager::RegisterThread(sys::ThreadBase *thread) {
@@ -206,10 +206,10 @@ namespace awn::res::impl {
 
         /* Check if archive is already loaded */
         LocalArchiveBinder *local_archive_binder = this->GetThreadLocalArchive();
-        if (local_archive_binder == nullptr || local_archive_binder->resource_binder.IsResourceInitialized() == true) { return false; }
+        if (local_archive_binder == nullptr || local_archive_binder->resource_binder.IsCompleted()) { return false; }
 
         /* Reference binder */
-        return local_archive_binder->resource_binder.ReferenceBinderSync(binder_to_reference) == ResultSuccess;
+        return RESULT_SUCCEEDED(local_archive_binder->resource_binder.ReferenceBinderSync(binder_to_reference));
     }
 
     bool ThreadLocalArchiveManager::IsThreadLocalArchiveInReference() {
@@ -223,6 +223,7 @@ namespace awn::res::impl {
         vp::util::InterlockedIncrement(std::addressof(local_archive_binder->reference_count));
         return;
     }
+
     void ThreadLocalArchiveManager::ReleaseThreadLocalArchive() {
 
         LocalArchiveBinder *local_archive_binder = reinterpret_cast<LocalArchiveBinder*>(sys::GetTlsValue(m_tls_slot));

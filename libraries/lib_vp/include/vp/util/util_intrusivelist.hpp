@@ -106,6 +106,13 @@ namespace vp::util {
                         m_next = m_next->prev();
                         return *this;
                     }
+    
+                    constexpr vp::util::IntrusiveListNode *GetListNode() {
+                        return m_next;
+                    }
+                    constexpr const vp::util::IntrusiveListNode *GetListNode() const {
+                        return m_next;
+                    }
             };
         public:
             using value_type      = T;
@@ -209,6 +216,13 @@ namespace vp::util {
                 return;
             }
 
+            constexpr ALWAYS_INLINE void ForceClear() {
+                /* Force reset */
+                m_list.m_next = std::addressof(m_list);
+                m_list.m_prev = std::addressof(m_list);
+                return;
+            }
+
             reference GetByIndex(u32 index) {
                 for (reference node : *this) {
                     if (index == 0) { return node; }
@@ -248,6 +262,29 @@ namespace vp::util {
             static constexpr pointer GetNext(IntrusiveListNode *node) {
                 return Traits::GetParent(node->next());
             }
+        public:
+            constexpr void SortByAddress() {
+                iterator iter = this->begin();
+                iterator end = this->end();
+                ++iter;
+                while (iter != end) {
+                    vp::util::IntrusiveListNode *node = iter.GetListNode();
+                    vp::util::IntrusiveListNode *prev = node->prev();
+                    ++iter;
+                    vp::util::IntrusiveListNode *link = nullptr;
+                    while (node <= prev) {
+                        prev = prev->prev();
+                        link = end.GetListNode();
+                        if (prev == link) { break; }
+                        link = prev;
+                    }
+                    if (link != nullptr) {
+                        node->Unlink();
+                        link->LinkNext(node);
+                    }
+                }
+                return;
+            }
     };
 
     template<class RP, auto M>
@@ -276,9 +313,42 @@ namespace vp::util {
         }
     };
 
+    template <class L, class Traits>
+    class SafeIntrusiveListIterator {
+        private:
+            vp::util::IntrusiveListNode *m_end;
+            vp::util::IntrusiveListNode *m_iter;
+        public:
+            constexpr SafeIntrusiveListIterator() : m_end(), m_iter() {/*...*/}
+            constexpr SafeIntrusiveListIterator(L::iterator base, L::iterator end) : m_end(), m_iter() { this->SetRange(base, end); }
+            constexpr ~SafeIntrusiveListIterator() {/*...*/}
+
+            constexpr void SetRange(L::iterator base, L::iterator end) {
+                m_end = end.GetListNode();
+                m_iter = base.GetListNode();
+            }
+
+            bool GetNext(L::pointer *out_obj) {
+                bool ret = false;
+                vp::util::IntrusiveListNode *prev = m_iter;
+                vp::util::IntrusiveListNode *iter;
+                while (iter = prev, iter != nullptr) {
+                    vp::util::IntrusiveListNode *n = iter->next();
+                    vp::util::IntrusiveListNode *next = (n == m_end) ? nullptr : n;
+                    ret = vp::util::InterlockedCompareExchangeWeak(std::addressof(prev), std::addressof(m_iter), next, prev);
+                    if (ret) {
+                        *out_obj = Traits::GetParent(iter);
+                        return ret;
+                    }
+                }
+                return ret;
+            }
+    };
+
     template<class RP, auto M>
     struct IntrusiveListTraits {
         using Traits = IntrusiveListMemberTraits<RP, M>;
-        using List   = IntrusiveList<RP, Traits>;
+        using List = IntrusiveList<RP, Traits>;
+        using SafeIter = SafeIntrusiveListIterator<List, Traits>;
     };
 }

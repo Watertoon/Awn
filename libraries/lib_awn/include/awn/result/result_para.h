@@ -17,7 +17,7 @@
 
 namespace awn::para {
 
-    DECLARE_RESULT_MODULE(16);
+    DECLARE_RESULT_MODULE(28);
     DECLARE_RESULT(NoComposite,    1);
     DECLARE_RESULT(FoundComposite, 2);
 }

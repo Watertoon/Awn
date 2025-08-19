@@ -19,69 +19,69 @@ namespace vp::res {
 
     void *ExbCommandProcessor::GetInputValuePointerVoid(ExbDataType data_type, u8 source_type, u16 in_arg, u64 *immediate_storage) {
 
-        const ExbParamSource source = static_cast<ExbParamSource>(source_type);
+        const ExbSourceType source = static_cast<ExbSourceType>(source_type);
         void *memory = nullptr;
         switch (source) {
-            case ExbParamSource::ImmediateString:
-                *reinterpret_cast<char**>(immediate_storage) = m_res_exb_string_pool + m_res_command_entry->arg1;
+            case ExbSourceType::ImmediateString:
+                *reinterpret_cast<char**>(immediate_storage) = m_string_pool + m_instruction_iter->arg1;
                 return immediate_storage;
-            case ExbParamSource::Immediate:
+            case ExbSourceType::Immediate:
                 if (data_type == ExbDataType::Float) {
-                    *reinterpret_cast<float*>(immediate_storage) = static_cast<float>(m_res_command_entry->arg1);
+                    *reinterpret_cast<float*>(immediate_storage) = static_cast<float>(m_instruction_iter->arg1);
                 } else if (data_type == ExbDataType::S32 || data_type == ExbDataType::Bool) {
-                    *reinterpret_cast<u32*>(immediate_storage) = static_cast<u32>(m_res_command_entry->arg1);
+                    *reinterpret_cast<u32*>(immediate_storage) = static_cast<u32>(m_instruction_iter->arg1);
                 }
                 return immediate_storage;
-            case ExbParamSource::StaticMemory:
-                memory = m_static_memory;
+            case ExbSourceType::GlobalMemory:
+                memory = m_global_memory;
                 break;
-            case ExbParamSource::ParameterTable:
-                memory = m_res_exb_parameter_region;
+            case ExbSourceType::Constant:
+                memory = m_constant_memory;
                 break;
-            case ExbParamSource::ParameterTableString:
-                return m_res_exb_string_pool + *reinterpret_cast<s32*>(reinterpret_cast<uintptr_t>(m_res_exb_parameter_region) + in_arg);
+            case ExbSourceType::ConstantString:
+                return m_string_pool + *reinterpret_cast<s32*>(reinterpret_cast<uintptr_t>(m_constant_memory) + in_arg);
                 break;
-            case ExbParamSource::OutputMemory:
+            case ExbSourceType::Output:
                 memory = m_output_memory;
                 break;
-            case ExbParamSource::InputMemory:
+            case ExbSourceType::Input:
                 memory = m_input_memory;
                 break;
-            case ExbParamSource::ScratchMemoryU32Aligned:
-                memory = m_scratch_u32_aligned;
+            case ExbSourceType::LocalMemoryU32:
+                memory = m_local_memory_u32;
                 break;
-            case ExbParamSource::ScratchMemoryU64Aligned:
-                memory = m_scratch_u64_aligned;
+            case ExbSourceType::LocalMemoryU64:
+                memory = m_local_memory_u64;
                 break;
-            case ExbParamSource::UserMemoryOutput:
+            case ExbSourceType::ExternGlobal:
                 if (data_type == ExbDataType::S32) {
-                    return m_exb_callback->GetUserMemoryOutputS32(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalS32(in_arg);
                 } else if (data_type == ExbDataType::Float) {
-                    return m_exb_callback->GetUserMemoryOutputFloat(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalFloat(in_arg);
                 } else if (data_type == ExbDataType::Bool) {
-                    return m_exb_callback->GetUserMemoryOutputBool(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalBool(in_arg);
                 } else if (data_type == ExbDataType::Vector3f) {
-                    return m_exb_callback->GetUserMemoryOutputVector3f(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalVector3f(in_arg);
                 } else if (data_type == ExbDataType::String) {
-                    return m_exb_callback->GetUserMemoryOutputString(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalString(in_arg);
                 }
 
                 return nullptr;
-            case ExbParamSource::UserMemoryInput:
+            case ExbSourceType::ExternConst:
                 if (data_type == ExbDataType::S32) {
-                    return m_exb_callback->GetUserMemoryInputS32(in_arg);
+                    return m_user_memory_callback->GetUserMemoryConstS32(in_arg);
                 } else if (data_type == ExbDataType::Float) {
-                    if (-1 < static_cast<s16>(in_arg)) { return m_exb_callback->GetUserMemoryOutputFloat(in_arg); }
-                    void *float_region = m_exb_callback->GetUserMemoryOutputVector3f(in_arg & 0xff);
+                    if (-1 < static_cast<s16>(in_arg)) { return m_user_memory_callback->GetUserMemoryConstFloat(in_arg); }
+                    void *float_region = m_user_memory_callback->GetUserMemoryConstVector3f(in_arg & 0xff);
                     return reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(float_region) + ((in_arg & 0x7f00) >> 8));
                 } else if (data_type == ExbDataType::Bool) {
-                    return m_exb_callback->GetUserMemoryInputBool(in_arg);
+                    return m_user_memory_callback->GetUserMemoryConstBool(in_arg);
                 } else if (data_type == ExbDataType::Vector3f) {
-                    return m_exb_callback->GetUserMemoryInputVector3f(in_arg);
+                    return m_user_memory_callback->GetUserMemoryConstVector3f(in_arg);
                 } else if (data_type == ExbDataType::String) {
-                    return m_exb_callback->GetUserMemoryInputString(in_arg);
+                    return m_user_memory_callback->GetUserMemoryConstString(in_arg);
                 }
-                [[fallthrough]];
+                return nullptr;
             default:
                 return nullptr;
         }
@@ -91,36 +91,36 @@ namespace vp::res {
 
     void *ExbCommandProcessor::GetOutputValuePointerVoid(ExbDataType data_type, u8 source_type, u16 in_arg) {
 
-        const ExbParamSource source = static_cast<ExbParamSource>(source_type);
+        const ExbSourceType source = static_cast<ExbSourceType>(source_type);
         void *memory = nullptr;
         switch (source) {
-            case ExbParamSource::StaticMemory:
-                memory = m_static_memory;
+            case ExbSourceType::GlobalMemory:
+                memory = m_global_memory;
                 break;
-            case ExbParamSource::OutputMemory:
+            case ExbSourceType::Output:
                 memory = m_output_memory;
                 break;
-            case ExbParamSource::ScratchMemoryU32Aligned:
-                memory = m_scratch_u32_aligned;
+            case ExbSourceType::LocalMemoryU32:
+                memory = m_local_memory_u32;
                 break;
-            case ExbParamSource::ScratchMemoryU64Aligned:
-                memory = m_scratch_u64_aligned;
+            case ExbSourceType::LocalMemoryU64:
+                memory = m_local_memory_u64;
                 break;
-            case ExbParamSource::UserMemoryOutput:
+            case ExbSourceType::ExternGlobal:
                 if (data_type == ExbDataType::S32) {
-                    return m_exb_callback->GetUserMemoryOutputS32(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalS32(in_arg);
                 } else if (data_type == ExbDataType::Float) {
-                    if (-1 < static_cast<s16>(in_arg)) { return m_exb_callback->GetUserMemoryOutputFloat(in_arg); }
-                    void *float_region = m_exb_callback->GetUserMemoryOutputVector3f(in_arg & 0xff);
+                    if (-1 < static_cast<s16>(in_arg)) { return m_user_memory_callback->GetUserMemoryGlobalFloat(in_arg); }
+                    void *float_region = m_user_memory_callback->GetUserMemoryGlobalVector3f(in_arg & 0xff);
                     return reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(float_region) + ((in_arg & 0x7f00) >> 8));
                 } else if (data_type == ExbDataType::Bool) {
-                    return m_exb_callback->GetUserMemoryOutputBool(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalBool(in_arg);
                 } else if (data_type == ExbDataType::Vector3f) {
-                    return m_exb_callback->GetUserMemoryOutputVector3f(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalVector3f(in_arg);
                 } else if (data_type == ExbDataType::String) {
-                    return m_exb_callback->GetUserMemoryOutputString(in_arg);
+                    return m_user_memory_callback->GetUserMemoryGlobalString(in_arg);
                 }
-                [[fallthrough]];
+                return nullptr;
             default:
                 return nullptr;
         }
@@ -131,17 +131,17 @@ namespace vp::res {
     void *ExbCommandProcessor::GetOutputValuePointerUserMemory(ExbDataType data_type,u16 in_arg) {
 
         if (data_type == ExbDataType::S32) {
-            return m_exb_callback->GetUserMemoryOutputS32(in_arg);
+            return m_user_memory_callback->GetUserMemoryGlobalS32(in_arg);
         } else if (data_type == ExbDataType::Float) {
-            if (-1 < static_cast<s16>(in_arg)) { return m_exb_callback->GetUserMemoryOutputFloat(in_arg); }
-            void *float_region = m_exb_callback->GetUserMemoryOutputVector3f(in_arg & 0xff);
+            if (-1 < static_cast<s16>(in_arg)) { return m_user_memory_callback->GetUserMemoryGlobalFloat(in_arg); }
+            void *float_region = m_user_memory_callback->GetUserMemoryGlobalVector3f(in_arg & 0xff);
             return reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(float_region) + ((in_arg & 0x7f00) >> 8));
         } else if (data_type == ExbDataType::Bool) {
-            return m_exb_callback->GetUserMemoryOutputBool(in_arg);
+            return m_user_memory_callback->GetUserMemoryGlobalBool(in_arg);
         } else if (data_type == ExbDataType::Vector3f) {
-            return m_exb_callback->GetUserMemoryOutputVector3f(in_arg);
+            return m_user_memory_callback->GetUserMemoryGlobalVector3f(in_arg);
         } else if (data_type == ExbDataType::String) {
-            return m_exb_callback->GetUserMemoryOutputString(in_arg);
+            return m_user_memory_callback->GetUserMemoryGlobalString(in_arg);
         }
 
         return nullptr;
@@ -149,24 +149,24 @@ namespace vp::res {
 
     void ExbCommandProcessor::ProcessCommands() {
 
-        ResExbCommand *base_entry = m_res_command_entry;
+        ResExbInstruction *base_entry = m_instruction_iter;
         for (;;) {
 
             /* Load command */
-            ExbCommand  exb_command   = static_cast<ExbCommand>(m_res_command_entry->command_type);
-            ExbDataType exb_data_type = static_cast<ExbDataType>(m_res_command_entry->data_type);
-            u8          lhs_source    = m_res_command_entry->lhs_source;
-            u8          rhs_source    = m_res_command_entry->rhs_source;
-            u16         arg0          = m_res_command_entry->arg0;
-            u16         arg1          = m_res_command_entry->arg1;
+            ExbInstructionType  exb_command   = static_cast<ExbInstructionType>(m_instruction_iter->instruction_type);
+            ExbDataType exb_data_type = static_cast<ExbDataType>(m_instruction_iter->data_type);
+            u8          lhs_source    = m_instruction_iter->lhs_source;
+            u8          rhs_source    = m_instruction_iter->rhs_source;
+            u16         arg0          = m_instruction_iter->arg0;
+            u16         arg1          = m_instruction_iter->arg1;
 
             u64   immediate_storage = 0;
             void *lhs_ptr           = GetOutputValuePointerVoid(exb_data_type, lhs_source, arg0);
 
             switch (exb_command) {
-                case ExbCommand::Terminator:
+                case ExbInstructionType::Terminator:
                     return;
-                case ExbCommand::Assignment:
+                case ExbInstructionType::Assignment:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -194,7 +194,7 @@ namespace vp::res {
                     }
                     break;
                 }
-                case ExbCommand::Negate:
+                case ExbInstructionType::Negate:
                 {
                     /* Negate float, s32, or Vector3f */
                     if (exb_data_type == ExbDataType::Float) {
@@ -209,14 +209,14 @@ namespace vp::res {
                     }
                     break;
                 }
-                case ExbCommand::NegateBool:
+                case ExbInstructionType::NegateBool:
                 {
                     /* Negate bool */
                     bool *lhs = reinterpret_cast<bool*>(lhs_ptr);
                     *lhs = *lhs ^ 1;
                     break;
                 }
-                case ExbCommand::Add:
+                case ExbInstructionType::Add:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -237,7 +237,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::Subtract:
+                case ExbInstructionType::Subtract:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -257,7 +257,7 @@ namespace vp::res {
                     }
                     break;
                 }
-                case ExbCommand::Multiply:
+                case ExbInstructionType::Multiply:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -273,7 +273,7 @@ namespace vp::res {
                     }
                     break;
                 }
-                case ExbCommand::Divide:
+                case ExbInstructionType::Divide:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -289,7 +289,7 @@ namespace vp::res {
                     }
                     break;
                 }
-                case ExbCommand::Modulus:
+                case ExbInstructionType::Modulus:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -304,7 +304,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::Increment:
+                case ExbInstructionType::Increment:
                 {
                     /* Increment s32 */
                     s32 *lhs = reinterpret_cast<s32*>(lhs_ptr);
@@ -313,7 +313,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::Decrement:
+                case ExbInstructionType::Decrement:
                 {
                     /* Decrement s32 */
                     s32 *lhs = reinterpret_cast<s32*>(lhs_ptr);
@@ -322,7 +322,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::ScalarMultiplyVec3f:
+                case ExbInstructionType::ScalarMultiplyVec3f:
                 {
                     float *rhs_ptr = reinterpret_cast<float*>(GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage)));
 
@@ -333,7 +333,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::ScalarDivideVec3f:
+                case ExbInstructionType::ScalarDivideVec3f:
                 {
                     float *rhs_ptr = reinterpret_cast<float*>(GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage)));
 
@@ -344,7 +344,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::LeftShift:
+                case ExbInstructionType::LogicalShiftLeft:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -355,7 +355,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::RightShift:
+                case ExbInstructionType::LogicalShiftRight:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -366,10 +366,10 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::LessThan:
+                case ExbInstructionType::LessThan:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
-                    bool *output  = (static_cast<ExbParamSource>(lhs_source) == ExbParamSource::UserMemoryOutput) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
+                    bool *output  = (static_cast<ExbSourceType>(lhs_source) == ExbSourceType::ExternGlobal) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
 
                     /* operator< s32 or float */
                     if (exb_data_type == ExbDataType::S32) {
@@ -384,10 +384,10 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::LessThanEqual:
+                case ExbInstructionType::LessThanEqual:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
-                    bool *output  = (static_cast<ExbParamSource>(lhs_source) == ExbParamSource::UserMemoryOutput) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
+                    bool *output  = (static_cast<ExbSourceType>(lhs_source) == ExbSourceType::ExternGlobal) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
 
                     /* operator<= s32 or float */
                     if (exb_data_type == ExbDataType::S32) {
@@ -402,10 +402,10 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::GreaterThan:
+                case ExbInstructionType::GreaterThan:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
-                    bool *output  = (static_cast<ExbParamSource>(lhs_source) == ExbParamSource::UserMemoryOutput) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
+                    bool *output  = (static_cast<ExbSourceType>(lhs_source) == ExbSourceType::ExternGlobal) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
 
                     /* operator> s32 or float */
                     if (exb_data_type == ExbDataType::S32) {
@@ -420,10 +420,10 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::GreaterThanEqual:
+                case ExbInstructionType::GreaterThanEqual:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
-                    bool *output  = (static_cast<ExbParamSource>(lhs_source) == ExbParamSource::UserMemoryOutput) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
+                    bool *output  = (static_cast<ExbSourceType>(lhs_source) == ExbSourceType::ExternGlobal) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
 
                     /* operator>= s32 or float */
                     if (exb_data_type == ExbDataType::S32) {
@@ -438,10 +438,10 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::Equal:
+                case ExbInstructionType::EqualTo:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
-                    bool *output  = (static_cast<ExbParamSource>(lhs_source) == ExbParamSource::UserMemoryOutput) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
+                    bool *output  = (static_cast<ExbSourceType>(lhs_source) == ExbSourceType::ExternGlobal) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
 
                     /* operator== s32 or float */
                     if (exb_data_type == ExbDataType::S32) {
@@ -456,10 +456,10 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::NotEqual:
+                case ExbInstructionType::NotEqualTo:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
-                    bool *output  = (static_cast<ExbParamSource>(lhs_source) == ExbParamSource::UserMemoryOutput) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
+                    bool *output  = (static_cast<ExbSourceType>(lhs_source) == ExbSourceType::ExternGlobal) ? reinterpret_cast<bool*>(GetOutputValuePointerUserMemory(ExbDataType::Bool, arg0)) : reinterpret_cast<bool*>(lhs_ptr); 
 
                     /* operator!= s32 or float */
                     if (exb_data_type == ExbDataType::S32) {
@@ -474,7 +474,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::And:
+                case ExbInstructionType::And:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -485,7 +485,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::Xor:
+                case ExbInstructionType::Xor:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -496,7 +496,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::Or:
+                case ExbInstructionType::Or:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -507,7 +507,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::LogicalAnd:
+                case ExbInstructionType::LogicalAnd:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -518,7 +518,7 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::LogicalOr:
+                case ExbInstructionType::LogicalOr:
                 {
                     void *rhs_ptr = GetInputValuePointerVoid(exb_data_type, rhs_source, arg1, std::addressof(immediate_storage));
 
@@ -529,11 +529,11 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::UserFunction:
+                case ExbInstructionType::UserFunction:
                 {
                     /* Call a user function */
                     m_user_function_parameter->exb_data_type = exb_data_type;
-                    const u16          local_index    = m_res_command_entry->function_local_index;
+                    const u16          local_index    = m_instruction_iter->function_id;
                     const u32          function_index = m_user_function_parameter->function_table->GetFunctionIndex(local_index);
                     const ExbFunction *exb_function   = vp::res::GetExbFunctionManager()->GetFunction(function_index);
                     VP_ASSERT(exb_function != nullptr);
@@ -546,16 +546,17 @@ namespace vp::res {
 
                     break;
                 }
-                case ExbCommand::JumpIfLhsZero:
+                case ExbInstructionType::JumpZero:
                 {
                     /* Break on non-zero argument, else fallthrough */
                     bool *lhs = reinterpret_cast<bool*>(lhs_ptr);
                     if (*lhs != 0) { break; }
+                    if (arg1 == 0) { break; }
                     [[fallthrough]];
                 }
-                case ExbCommand::Jump:
+                case ExbInstructionType::Jump:
                     /* Jump to another command */
-                    m_res_command_entry = base_entry + (arg1 - 1);
+                    m_instruction_iter = base_entry + (arg1 - 1);
                     break;
                 default:
                     VP_ASSERT(false);
@@ -563,7 +564,7 @@ namespace vp::res {
             }
 
             /* Advance command */
-            m_res_command_entry = m_res_command_entry + 1;
+            m_instruction_iter = m_instruction_iter + 1;
         }
 
         return;

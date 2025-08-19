@@ -25,18 +25,10 @@ namespace vp::util {
     constexpr ALWAYS_INLINE T InterlockedLoadAcquire(T *read) {
         return __atomic_load_n(read, __ATOMIC_ACQUIRE);
     }
-    template <typename T>
-    constexpr ALWAYS_INLINE T InterlockedLoadRelease(T *read) {
-        return __atomic_load_n(read, __ATOMIC_RELEASE);
-    }
 
     template <typename T>
     constexpr ALWAYS_INLINE void InterlockedStore(T *write, T value) {
         __atomic_store_n(write, value, __ATOMIC_SEQ_CST);
-    }
-    template <typename T>
-    constexpr ALWAYS_INLINE void InterlockedStoreAcquire(T *write, T value) {
-        __atomic_store_n(write, value, __ATOMIC_ACQUIRE);
     }
     template <typename T>
     constexpr ALWAYS_INLINE void InterlockedStoreRelease(T *write, T value) {

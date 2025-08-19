@@ -21,11 +21,8 @@ namespace awn::res {
         MaxExtensionString  extension;
         CompressionType     compression_type;
 
-        constexpr bool operator<(const ExtensionInfo &rhs) const {
-            return extension < rhs.extension;
-        }
-        constexpr bool operator>(const ExtensionInfo &rhs) const {
-            return extension > rhs.extension;
+        constexpr s32 operator<=>(const ExtensionInfo &rhs) const {
+            return this->extension <=> rhs.extension;
         }
     };
 

@@ -27,6 +27,9 @@ namespace awn::hid {
     using MouseButtonSet = vp::util::FixedConnection<u32, 0x20>;
     using MouseAttributeSet = vp::util::FixedConnection<u32, 0x20>;
 
+    static constexpr u32 cMaxMouseStateCount = 0x10;
+    static constexpr vp::util::Int2 cInvalidMousePosition = { 0x7fff'ffff, 0x7fff'ffff, };
+
     struct MouseState {
         s64 sampling_count;
         vp::util::Int2 position;
@@ -35,12 +38,23 @@ namespace awn::hid {
         MouseButtonSet button_set;
         MouseAttributeSet attribute_set;
 
-        constexpr bool IsButtonDown(MouseButton mouse_button) {
+        constexpr void SetDefaults() {
+            this->sampling_count = 0;
+            this->position = cInvalidMousePosition;
+            this->delta = vp::util::Int2::cZero;
+            this->delta_wheel = vp::util::Int2::cZero;
+            this->button_set.Clear();
+            this->attribute_set.Clear();
+        }
+        constexpr bool IsButton(MouseButton mouse_button) {
             return this->button_set.GetBit(static_cast<u32>(mouse_button));
         }
     };
 
-	void InitializeMouse(mem::Heap *heap, u32 max_mice);
+	void InitializeMouse(mem::Heap *heap, u32 max_mouse_count);
     void FinalizeMouse();
-    void GetMouseStates(MouseState *out_mouse_states, u32 state_count, u32 device_index);
+    u32 GetMouseStates(MouseState *out_mouse_states, u32 state_count, u32 mouse_id);
+
+    void SwapMouseAssignment(u32 mouse_id0, u32 mouse_id1);
+    void DisconnectMouse(u32 mouse_id);
 }

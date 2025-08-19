@@ -16,6 +16,7 @@
 #pragma once
 
 #include <awn/res/res_idecompressor.h>
+#include <awn/res/res_icompressor.h>
 #include <awn/res/res_filedevicebase.h>
 
 #ifdef VP_TARGET_PLATFORM_win32

@@ -138,6 +138,7 @@ namespace awn::res {
                 Referenced                  = 2,
                 Reclaimed                   = 3,
                 InLoad                      = 4,
+                /* Error statuses */
                 UnknownError                = 5,
                 RequiresReprocess           = 6,
                 FileNotFound                = 7,
@@ -174,6 +175,7 @@ namespace awn::res {
             void HandleResourceUnitError();
 
             void InitializeResource(ResourceUserContext *resource_user_context);
+            Resource *GetResourceDirect() const;
         public:
             constexpr  ResourceBinder() : m_state_mask(), m_type(Type::Uninitialized), m_status(Status::Uninitialized), m_resource_unit(), m_watcher() {/*...*/}
             ~ResourceBinder() { this->Release(); }
@@ -189,16 +191,18 @@ namespace awn::res {
 
             template <typename T>
                 requires (Resource::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()))
-            constexpr T *GetResource() const {
+            T *GetResource() const {
                 Resource *resource = this->GetResourceDirect();
-                return (T::CheckRuntimeTypeInfoStatic(resource)) ? reinterpret_cast<T*>(resource) : nullptr;
+                if constexpr (T::GetRuntimeTypeInfoStatic() == Resource::GetRuntimeTypeInfoStatic()) {
+                    return resource;
+                } else {
+                    return (T::CheckRuntimeTypeInfoStatic(resource)) ? reinterpret_cast<T*>(resource) : nullptr;
+                }
             }
         public:
             Result ReferenceBinderAsync(ResourceBinder *binder_to_reference);
             Result ReferenceBinderSync(ResourceBinder *binder_to_reference);
             Result ReferenceLocalArchiveSync();
-        public:
-            Resource *GetResourceDirect() const;
         public:
             constexpr Status GetStatus() const { return m_status; }
             constexpr bool IsErrorStatus() const { return static_cast<u32>(Status::UnknownError) <= static_cast<u32>(m_status); }
@@ -208,9 +212,9 @@ namespace awn::res {
 
             constexpr bool IsReferenceBinder() const { return m_type == Type::Reference; }
 
-            bool IsResourceInitialized() const;
-            bool IsInLoad() const;
+            bool IsLoading() const;
             bool IsLoaded() const;
             bool IsFailed() const;
+            bool IsCompleted() const;
     };
 }

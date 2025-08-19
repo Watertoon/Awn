@@ -3,16 +3,16 @@
 namespace vp::util {
 
     template <typename T>
-        requires (sizeof(T) <= sizeof(u32))
+        requires (sizeof(T) <= sizeof(u64)) && (std::is_integral_v<T>)
     class AtomicIndexAllocator {
         public:
-            static constexpr T   cInvalidHandle     = static_cast<T>(0xffff'ffff'ffff'ffff);
-            static constexpr T   cInvalidEntryIndex = static_cast<T>(0xffff'ffff'ffff'ffff);
-            static constexpr u32 cMaxSize           = cInvalidHandle;
+            static constexpr T cInvalidHandle = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr T cInvalidEntryIndex = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr T cMaxSize = cInvalidHandle;
         private:
-            u32  m_next_index;
-            u32  m_max_count;
-            T   *m_handle_array;
+            T m_next_index;
+            T m_max_count;
+            T *m_handle_array;
         public:
             constexpr AtomicIndexAllocator() : m_next_index(), m_max_count(), m_handle_array() {/*...*/}
             constexpr ~AtomicIndexAllocator() {/*...*/}
@@ -21,6 +21,7 @@ namespace vp::util {
 
                 /* Integrity check size */
                 VP_ASSERT(max_index_count < cMaxSize);
+                VP_ASSERT(0 < max_index_count);
 
                 /* Allocate array */
                 m_handle_array = new (heap, alignof(T)) T[max_index_count];
@@ -31,7 +32,7 @@ namespace vp::util {
                 for (u32 i = 0; i < max_index_count - 1; ++i) {
                     m_handle_array[i] = i + 1;
                 }
-                m_handle_array[max_index_count - 1] = static_cast<T>(cInvalidHandle);
+                m_handle_array[max_index_count - 1] = cInvalidHandle;
 
                 /* Set max */
                 m_max_count  = max_index_count;
@@ -41,7 +42,7 @@ namespace vp::util {
 
             void Finalize() {
 
-                m_next_index = static_cast<T>(cInvalidHandle);
+                m_next_index = cInvalidHandle;
                 m_max_count  = 0;
                 if (m_handle_array != 0) {
                     delete [] m_handle_array;
@@ -58,7 +59,7 @@ namespace vp::util {
                 for (u32 i = 0; i < m_max_count - 1; ++i) {
                     m_handle_array[i] = i + 1;
                 }
-                m_handle_array[m_max_count - 1] = static_cast<T>(cInvalidHandle);
+                m_handle_array[m_max_count - 1] = cInvalidHandle;
 
                 return;
             }
@@ -66,25 +67,24 @@ namespace vp::util {
             constexpr T Allocate() {
 
                 /* Try to atomicly acquire an index */
-                u32 handle_value = vp::util::InterlockedLoadAcquire(std::addressof(m_next_index));
+                T handle_value = InterlockedLoadAcquire(std::addressof(m_next_index));
                 for (;;) {
-                    if (handle_value == static_cast<T>(cInvalidHandle)) { break; }
-                    const bool result = vp::util::InterlockedCompareExchange(std::addressof(handle_value), std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle_value]), handle_value);
-                    if (result == true) { return static_cast<T>(handle_value); }
+                    if (handle_value == cInvalidHandle) { break; }
+                    const bool result = InterlockedCompareExchange(std::addressof(handle_value), std::addressof(m_next_index), m_handle_array[handle_value], handle_value);
+                    if (result) { return handle_value; }
                 }
 
-                return static_cast<T>(cInvalidHandle);
+                return cInvalidHandle;
             }
 
             constexpr void Free(T index) {
 
                 /* Atomicly release an index */
-                u32 handle = 0;
+                T handle = InterlockedLoadAcquire(std::addressof(m_next_index));
                 bool result;
                 do {
-                    handle                = vp::util::InterlockedLoadAcquire(std::addressof(m_next_index));
                     m_handle_array[index] = handle;
-                    result                = vp::util::InterlockedCompareExchange(std::addressof(handle), std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle]), handle);
+                    result = InterlockedCompareExchange(std::addressof(handle), std::addressof(m_next_index), index, handle);
                 } while (result == false);
 
                 return;
@@ -94,14 +94,14 @@ namespace vp::util {
     };
 
     template <typename T, size_t Count>
-        requires (sizeof(T) <= sizeof(u32)) && (Count < static_cast<T>(0xffff'ffff'ffff'ffff))
+        requires (sizeof(T) <= sizeof(u64)) && (Count < static_cast<T>(0xffff'ffff'ffff'ffff)) && (std::is_integral_v<T>)
     class FixedAtomicIndexAllocator {
         public:
-            static constexpr T cInvalidHandle     = static_cast<T>(0xffff'ffff'ffff'ffff);
+            static constexpr T cInvalidHandle = static_cast<T>(0xffff'ffff'ffff'ffff);
             static constexpr T cInvalidEntryIndex = static_cast<T>(0xffff'ffff'ffff'ffff);
         private:
-            u32  m_next_index;
-            T    m_handle_array[Count];
+            T m_next_index;
+            T m_handle_array[Count];
         public:
             constexpr  FixedAtomicIndexAllocator() : m_next_index(), m_handle_array() { this->Clear(); }
             constexpr ~FixedAtomicIndexAllocator() {/*...*/}
@@ -121,7 +121,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE T Allocate() {
 
                 /* Try to atomicly acquire an index */
-                u32 handle_value = InterlockedLoadAcquire(std::addressof(m_next_index));
+                T handle_value = InterlockedLoadAcquire(std::addressof(m_next_index));
                 for (;;) {
                     if (handle_value == static_cast<T>(cInvalidHandle)) { break; }
                     const bool result = InterlockedCompareExchange(std::addressof(handle_value), std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle_value]), handle_value);
@@ -134,12 +134,11 @@ namespace vp::util {
             constexpr ALWAYS_INLINE void Free(T index) {
 
                 /* Atomicly release an index */
-                u32 handle = 0;
+                T handle = InterlockedLoadAcquire(std::addressof(m_next_index));
                 bool result;
                 do {
-                    handle                = InterlockedLoadAcquire(std::addressof(m_next_index));
                     m_handle_array[index] = handle;
-                    result                = InterlockedCompareExchange(std::addressof(handle), std::addressof(m_next_index), static_cast<u32>(m_handle_array[handle]), handle);
+                    result = InterlockedCompareExchange(std::addressof(handle), std::addressof(m_next_index), index, handle);
                 } while (result == false);
 
                 return;

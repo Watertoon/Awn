@@ -25,17 +25,43 @@ namespace vp::util {
             u32  m_max_count;
 			T   *m_array;
         public:
-            constexpr ALWAYS_INLINE AtomicRingBuffer() : m_offset(0), m_count(0), m_max_count(0), m_array{} {/*...*/}
+            class Iterator {
+                private:
+                    AtomicRingBuffer<T> *m_ring;
+                    u32 m_index;
+                public:
+                    constexpr ALWAYS_INLINE Iterator(AtomicRingBuffer<T> *ring, u32 index) : m_ring(ring), m_index(index) {/*...*/}
+                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
+
+                    constexpr bool GetNext(T *out_value) {
+                        const u32 max_mask = (m_ring->m_max_count - 1);
+                        u32 i = m_index;
+                        u32 count = m_ring->m_count;
+                        ON_SCOPE_EXIT { m_index = i + 1; };
+                        while (i < count) {
+                            const T ret = m_ring->m_array[i & max_mask];
+                            if (ret != 0) { *out_value = ret; return true; }
+                            ++i;
+                            count = m_ring->m_count;
+                        }
+                        return false;
+                    }
+            };
+        public:
+            constexpr ALWAYS_INLINE AtomicRingBuffer() : m_offset(), m_count(), m_max_count(), m_array{} {/*...*/}
             constexpr ALWAYS_INLINE ~AtomicRingBuffer() {/*...*/}
 
             void Initialize(imem::IHeap *heap, u32 queue_count, s32 alignment = 8) {
 
                 /* Integrity checks */
                 VP_ASSERT(queue_count != 0);
-                VP_ASSERT(vp::util::CountOneBits32(queue_count) == 1);
+
+                /* Align up count to nearest power of 2 */
+                const u32 shift = vp::util::CountLeftZeroBits32(queue_count - 1);
+                const u32 count = static_cast<u32>(0x8000'0000) >> shift;
 
                 /* Allocate pointer array */
-                m_array = new (heap, alignment) T[queue_count];
+                m_array = new (heap, alignment) T[count];
                 VP_ASSERT(m_array != nullptr);
 
                 /* Set state */
@@ -91,7 +117,7 @@ namespace vp::util {
                 while (0 < m_count - offset) {
 
                     /* Check if next element is available */
-                    T ret = m_array[offset & max_mask];
+                    const T ret = m_array[offset & max_mask];
                     if (ret == 0) {
                         vp::util::MemoryBarrierRelease();
 
@@ -115,5 +141,24 @@ namespace vp::util {
 
                 return 0;
             }
+
+            constexpr Iterator Begin() {
+                return Iterator(this, m_offset);
+            }
+
+            constexpr void Clear() {
+                if (0 < static_cast<s32>(m_offset) - static_cast<s32>(m_count)) {
+                    m_offset = 0;
+                    m_count = 0;
+                    for (u32 i = 0; i < m_max_count; ++i) {
+                        m_array[i] = nullptr;
+                    }
+                }
+                return;
+            }
+
+            constexpr u32 GetUsedCount() const { return m_count; }
+            constexpr u32 GetOffset() const { return m_offset; }
+            constexpr u32 GetMaxCount() const { return m_max_count; }
 	};
 }

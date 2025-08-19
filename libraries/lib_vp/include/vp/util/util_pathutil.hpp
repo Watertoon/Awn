@@ -17,78 +17,6 @@
 
 namespace vp::util {
 
-    constexpr char ToLowercase(char character) {
-        return (0x19 < character - 0x41) ? character : character + 0x20;   
-    }
-
-    static constexpr u32 cInvalidDelimiter = 0xffff'ffff;
-
-    constexpr u32 FindDelimiter(const char *path, char delimiter) {
-
-        /* Find delimiter */
-        u32 drive_offset = 0;
-        {
-            do {
-                if (path[drive_offset] == delimiter) { break; }
-                if (path[drive_offset] == '\0') { return cInvalidDelimiter; }
-                ++drive_offset;
-            } while (drive_offset != 0);
-        }
-
-        return drive_offset;
-    }
-
-    constexpr u32 FindDriveDelimiter(const char *path, u32 path_len) {
-
-        /* Find ':' */
-        u32 drive_offset = path_len - 1;
-        {
-            do {
-                if (path[drive_offset] == ':') { break; }
-                --drive_offset;
-            } while (drive_offset != 0);
-        }
-
-        return drive_offset;
-    }
-
-    constexpr u32 FindDirectoryDelimiter(const char *path, u32 path_len) {
-        
-        /* Find '\\' */
-        u32 back_slash_offset = path_len - 1;
-        {
-            do {
-                if (path[back_slash_offset] == '\\') { break; }
-                --back_slash_offset;
-            } while (back_slash_offset != 0);
-        }
-
-        /* Find '/' */
-        u32 forward_slash_offset = path_len - 1;
-        {
-            do {
-                if (path[forward_slash_offset] == '/') { break; }
-                --forward_slash_offset;
-            } while (forward_slash_offset != 0);
-        }
-        
-        return (forward_slash_offset < back_slash_offset) ? back_slash_offset : forward_slash_offset;
-    }
-
-    constexpr u32 FindExtensionDelimiter(const char *path, u32 path_len) {
-
-        /* Find '.' */
-        u32 dot_offset = path_len - 1;
-        {
-            do {
-                if (path[dot_offset] == '.') { break; }
-                --dot_offset;
-            } while (dot_offset != 0);
-        }
-
-        return dot_offset;
-    }
-
     constexpr inline size_t cMaxPath = 260;
 
 #ifdef VP_TARGET_PLATFORM_win32
@@ -98,150 +26,200 @@ namespace vp::util {
     constexpr inline size_t cMaxDrive = 32;
     constexpr inline size_t cMaxExtension = 16;
 
-    using MaxPathString      = vp::util::FixedString<cMaxPath>;
-    using MaxDriveString     = vp::util::FixedString<cMaxDrive>;
-    using MaxExtensionString = vp::util::FixedString<cMaxExtension>;
+    using MaxPathString      = vp::util::FixedString8<cMaxPath>;
+    using MaxDriveString     = vp::util::FixedString8<cMaxDrive>;
+    using MaxExtensionString = vp::util::FixedString8<cMaxExtension>;
 
-    constexpr void GetDrive(MaxDriveString *out_drive, const char *path_with_drive) {
+    static constexpr u32 cInvalidDelimiter = 0xffff'ffff;
+
+    template <typename T>
+        requires (IsCharRaw<T>)
+    constexpr T ToLowercase(T character) {
+        return (0x19 < character - 0x41) ? character : character + 0x20;   
+    }
+
+    template <typename T>
+        requires (IsStringRaw<T>)
+    constexpr u32 FindDelimiter(const T *path, UnderlyingCharType<T> delimiter) {
+
+        /* Find delimiter */
+        u32 drive_offset = 0;
+        {
+            do {
+                if (path[drive_offset] == delimiter) { break; }
+                if (path[drive_offset] == static_cast<UnderlyingCharType<T>>('\0')) { return cInvalidDelimiter; }
+                ++drive_offset;
+            } while (drive_offset != 0);
+        }
+
+        return drive_offset;
+    }
+
+    template <typename T>
+        requires (IsStringRaw<T>)
+    constexpr u32 FindDriveDelimiter(const T *path, u32 path_len) {
+
+        /* Find ':' */
+        u32 drive_offset = path_len - 1;
+        {
+            do {
+                if (path[drive_offset] == static_cast<UnderlyingCharType<T>>(':')) { break; }
+                --drive_offset;
+            } while (drive_offset != 0);
+        }
+
+        return drive_offset;
+    }
+
+    template <typename T>
+        requires (IsStringRaw<T>)
+    constexpr u32 FindDirectoryDelimiter(const T *path, u32 path_len) {
+        
+        /* Find '\\' */
+        u32 back_slash_offset = path_len - 1;
+        {
+            do {
+                if (path[back_slash_offset] == static_cast<UnderlyingCharType<T>>('\\')) { break; }
+                --back_slash_offset;
+            } while (back_slash_offset != 0);
+        }
+
+        /* Find '/' */
+        u32 forward_slash_offset = path_len - 1;
+        {
+            do {
+                if (path[forward_slash_offset] == static_cast<UnderlyingCharType<T>>('/')) { break; }
+                --forward_slash_offset;
+            } while (forward_slash_offset != 0);
+        }
+        
+        return (forward_slash_offset < back_slash_offset) ? back_slash_offset : forward_slash_offset;
+    }
+
+    template <typename T>
+        requires (IsStringRaw<T>)
+    constexpr u32 FindDirectoryDelimiterForward(const T *path, u32 path_len) {
+
+        /* Find '\\' */
+        u32 back_slash_offset = 0;
+        {
+            do {
+                if (path[back_slash_offset] == static_cast<UnderlyingCharType<T>>('\\')) { break; }
+                ++back_slash_offset;
+            } while (back_slash_offset != path_len);
+        }
+
+        /* Find '/' */
+        u32 forward_slash_offset = 0;
+        {
+            do {
+                if (path[forward_slash_offset] == static_cast<UnderlyingCharType<T>>('/')) { break; }
+                ++forward_slash_offset;
+            } while (forward_slash_offset != path_len);
+        }
+        const u32 offset = (back_slash_offset < forward_slash_offset) ? back_slash_offset : forward_slash_offset;
+        return offset;
+    }
+
+    template <typename T>
+        requires (IsStringRaw<T>)
+    constexpr u32 FindExtensionDelimiter(const T *path, u32 path_len) {
+
+        /* Find '.' */
+        u32 dot_offset = path_len - 1;
+        {
+            do {
+                if (path[dot_offset] == static_cast<UnderlyingCharType<T>>('.')) { break; }
+                --dot_offset;
+            } while (dot_offset != 0);
+        }
+
+        return dot_offset;
+    }
+
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr void GetDrive(O *out_drive, T *path_with_drive) {
 
         /* Null check */
         if (out_drive == nullptr || path_with_drive == nullptr) { return; }
 
-        /* strlen */
-        const u32 path_len = vp::util::StringLength(path_with_drive);
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), path_with_drive);
 
         /* Length check */
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 drive_start_offset = FindDriveDelimiter(path_with_drive, path_len);
+        const u32 drive_start_offset = FindDriveDelimiter(path, path_len);
 
-         /* Copy string from last delimiter */
-        const u32 name_size = drive_start_offset;
-        ::memcpy(out_drive->m_string_array, path_with_drive, (name_size < cMaxDrive) ? name_size : (cMaxDrive - 1));
-        out_drive->m_length = name_size;
+         /* Copy string up to delimiter */
+        out_drive->SetString(path, drive_start_offset);
 
-        out_drive->AssureTermination();
+        return;
     }
 
-    constexpr void GetDrive(MaxDriveString *out_drive, MaxPathString *path_with_drive) {
-
-        /* Null check */
-        if (out_drive == nullptr || path_with_drive == nullptr) { return; }
-
-        /* strlen */
-        const u32 path_len = path_with_drive->m_length;
-
-        /* Length check */
-        if (path_len == 0) { return; }
-
-        /* Get file name offset */
-        const u32 drive_start_offset = FindDriveDelimiter(path_with_drive->m_string_array, path_len);
-
-         /* Copy string from last delimiter */
-        const u32 name_size = drive_start_offset;
-        ::memcpy(out_drive->m_string_array, path_with_drive->m_string_array, (name_size < cMaxDrive) ? name_size : (cMaxDrive - 1));
-        out_drive->m_length = name_size;
-
-        out_drive->AssureTermination();
-    }
-
-    constexpr void GetPathWithoutDrive(MaxPathString *out_path, const char *path_with_drive) {
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr void GetPathWithoutDrive(O *out_path, T *path_with_drive) {
 
         /* Null check */
         if (out_path == nullptr || path_with_drive == nullptr) { return; }
 
-        /* strlen */
-        const u32 path_len = vp::util::StringLength(path_with_drive);
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), path_with_drive);
 
         /* Length check */
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 drive_base         = FindDriveDelimiter(path_with_drive, path_len);
+        const u32 drive_base = FindDriveDelimiter(path, path_len);
         const u32 drive_start_offset = (drive_base != 0) ? drive_base + 2 : 0;
 
          /* Copy string from last delimiter */
         const u32 name_size = path_len - drive_start_offset;
-        ::memcpy(out_path->m_string_array, path_with_drive + drive_start_offset, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_path->m_length = name_size;
+        out_path->SetString(path + drive_start_offset, name_size);
 
-        out_path->AssureTermination();
+        return;
     }
 
-    constexpr void GetPathWithoutDrive(MaxPathString *out_path, MaxPathString *path_with_drive) {
-
-        /* Null check */
-        if (out_path == nullptr || path_with_drive == nullptr) { return; }
-
-        /* strlen */
-        const u32 path_len = path_with_drive->m_length;
-
-        /* Length check */
-        if (path_len == 0) { return; }
-
-        /* Get file name offset */
-        const u32 drive_base         = FindDriveDelimiter(path_with_drive->m_string_array, path_len);
-        const u32 drive_start_offset = (drive_base != 0) ? drive_base + 2 : 0;
-
-         /* Copy string from last delimiter */
-        const u32 name_size = path_len - drive_start_offset;
-        ::memcpy(out_path->m_string_array, path_with_drive->m_string_array + drive_start_offset, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_path->m_length = name_size;
-    
-        out_path->AssureTermination();
-    }
-
-    constexpr void GetPathWithoutExtension(MaxPathString *out_path, const char *path_with_extension) {
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr void GetPathWithoutExtension(O *out_path, T *path_with_extension) {
 
         /* Null check */
         if (out_path == nullptr || path_with_extension == nullptr) { return; }
 
-        /* strlen */
-        const u32 path_len = vp::util::StringLength(path_with_extension);
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), path_with_extension);
 
         /* Length check */
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 ext_start_offset = FindExtensionDelimiter(path_with_extension, path_len);
+        const u32 ext_start_offset = FindExtensionDelimiter(path, path_len);
 
          /* Copy string from last delimiter */
         const u32 name_size = ext_start_offset;
-        ::memcpy(out_path->m_string_array, path_with_extension, name_size);
-        out_path->m_length = name_size;
+        out_path->SetString(path, name_size);
 
-        out_path->AssureTermination();
+        return;
     }
 
-    constexpr void GetPathWithoutExtension(MaxPathString *out_path, MaxPathString *path_with_extension) {
-
-        /* Null check */
-        if (out_path == nullptr || path_with_extension == nullptr) { return; }
-
-        /* strlen */
-        const u32 path_len = path_with_extension->m_length;
-
-        /* Length check */
-        if (path_len == 0) { return; }
-
-        /* Get file name offset */
-        const u32 ext_start_offset = FindExtensionDelimiter(path_with_extension->m_string_array, path_len);
-
-         /* Copy string from last delimiter */
-        const u32 name_size = ext_start_offset;
-        ::memcpy(out_path->m_string_array, path_with_extension, name_size);
-        out_path->m_length = name_size;
-
-        out_path->AssureTermination();
-    }
-
-    constexpr const char *AdvancePathNoDirectory(const char *path) {
+    template <typename T>
+        requires (IsStringRaw<T>)
+    constexpr T *AdvancePathNoDirectory(T *path) {
 
         /* Null check */
         if (path == nullptr) { return path; }
 
-        /* strlen */
+        /* Strlen */
         const u32 path_len = vp::util::StringLength(path);
 
         /* Length check */
@@ -254,13 +232,17 @@ namespace vp::util {
         return path + name_start_offset;
     }
 
-    constexpr void GetDirectory(MaxPathString *out_directory, const char *path) {
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr void GetDirectory(O *out_directory, T *file_path) {
 
         /* Null check */
-        if (out_directory == nullptr || path == nullptr) { return; }
+        if (out_directory == nullptr || file_path == nullptr) { return; }
 
-        /* strlen */
-        const u32 path_len = vp::util::StringLength(path);
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), file_path);
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -270,87 +252,80 @@ namespace vp::util {
 
         /* Copy string until last delimiter */
         const u32 name_size = name_start_offset;
-        ::memcpy(out_directory->m_string_array, path, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_directory->m_length = name_size;
-
-        out_directory->AssureTermination();
+        out_directory->SetString(path, name_size);
+        return;
     }
 
-    constexpr void GetDirectory(MaxPathString *out_directory, MaxPathString *path) {
-
-        /* Null check */
-        if (out_directory == nullptr || path == nullptr) { return; }
-
-        /* strlen */
-        const u32 path_len = path->m_length;
-
-        /* Length check */
-        if (path_len == 0) { return; }
-
-        /* Get file name offset */
-        const u32 name_start_offset = FindDirectoryDelimiter(path->m_string_array, path_len) + 1;
-
-        /* Copy string until last delimiter */
-        const u32 name_size = name_start_offset;
-        ::memcpy(out_directory->m_string_array, path->m_string_array, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_directory->m_length = name_size;
-
-        out_directory->AssureTermination();
-    }
-
-    constexpr void GetDirectoryWithoutDrive(MaxPathString *out_directory, const char *path_with_drive) {
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr void GetDirectoryWithoutDrive(O *out_directory, T *path_with_drive) {
 
         /* Null check */
         if (out_directory == nullptr || path_with_drive == nullptr) { return; }
 
-        /* strlen */
-        const u32 path_len = vp::util::StringLength(path_with_drive);
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), path_with_drive);
 
         /* Length check */
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 dir_start_offset  = FindDriveDelimiter(path_with_drive, path_len);
-        const u32 name_start_offset = FindDirectoryDelimiter(path_with_drive, path_len) + 1;
+        const u32 dir_start_offset  = FindDriveDelimiter(path, path_len);
+        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
 
         /* Copy out directory */
         const u32 name_size = name_start_offset - dir_start_offset - name_start_offset;
-        ::memcpy(out_directory->m_string_array, path_with_drive + dir_start_offset, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_directory->m_length = name_size;
-
-        out_directory->AssureTermination();
+        out_directory->SetString(path_with_drive + dir_start_offset, name_size);
+        return;
     }
 
-    constexpr void GetDirectoryWithoutDrive(MaxPathString *out_directory, MaxPathString *path_with_drive) {
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr u32 GetUpToNextDirectoryFromBase(O *out_directory, T *directory_path, u32 base) {
 
         /* Null check */
-        if (out_directory == nullptr || path_with_drive == nullptr) { return; }
+        if (out_directory == nullptr || directory_path == nullptr) { return 0; }
 
-        /* strlen */
-        const u32 path_len = path_with_drive->m_length;
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), directory_path);
 
         /* Length check */
-        if (path_len == 0) { return; }
+        if (base == 0) {
+            const u32 delimit = FindDriveDelimiter(path, path_len);
+            if (delimit != 0) {
+                base += delimit + 1;
+            }
+        }
+        base = base + 1;
+        if (path_len <= base) { return path_len; }
 
         /* Get file name offset */
-        const u32 dir_start_offset  = FindDriveDelimiter(path_with_drive->m_string_array, path_len);
-        const u32 name_start_offset = FindDirectoryDelimiter(path_with_drive->m_string_array, path_len) + 1;
+        const UnderlyingCharType<T> *dir_offset = path + base;
+        const u32 dir_off_len = path_len - base;
+        const u32 dir_start_offset = FindDirectoryDelimiterForward(dir_offset, dir_off_len);
 
         /* Copy out directory */
-        const u32 name_size = name_start_offset - dir_start_offset - name_start_offset;
-        ::memcpy(out_directory->m_string_array, path_with_drive->m_string_array + dir_start_offset, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_directory->m_length = name_size;
-
-        out_directory->AssureTermination();
+        const u32 total_size = dir_start_offset + base;
+        const u32 copy_size = (total_size >= path_len - 1) ? path_len : total_size;
+        out_directory->SetString(path, copy_size);
+        return copy_size;
     }
 
-    constexpr void GetFileNameWithExtension(MaxPathString *out_file_name, const char *path) {
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr void GetFileNameWithExtension(O *out_file_name, T *file_path) {
 
         /* Null check */
-        if (out_file_name == nullptr || path == nullptr) { return; }
+        if (out_file_name == nullptr || file_path == nullptr) { return; }
 
-        /* strlen */
-        const u32 path_len = vp::util::StringLength(path);
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), file_path);
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -360,87 +335,46 @@ namespace vp::util {
 
         /* Copy string from last delimiter */
         const u32 name_size = path_len - name_start_offset;
-        ::memcpy(out_file_name->m_string_array, path + name_start_offset, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_file_name->m_length = name_size;
-
-        out_file_name->AssureTermination();
+        out_file_name->SetString(path + name_start_offset, name_size);
+        return;
     }
 
-    constexpr void GetFileNameWithExtension(MaxPathString *out_file_name, MaxPathString *path) {
-
-        /* Null check */
-        if (out_file_name == nullptr || path == nullptr) { return; }
-
-        /* strlen */
-        const u32 path_len = path->m_length;
-
-        /* Length check */
-        if (path_len == 0) { return; }
-
-        /* Get file name offset */
-        const u32 name_start_offset = FindDirectoryDelimiter(path->m_string_array, path_len) + 1;
-
-        /* Copy string from last delimiter */
-        const u32 name_size = path_len - name_start_offset;
-        ::memcpy(out_file_name->m_string_array, path->m_string_array + name_start_offset, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_file_name->m_length = name_size;
-
-        out_file_name->AssureTermination();
-    }
-
-    constexpr void GetFileNameWithoutExtension(MaxPathString *out_file_name, const char *path_with_extension) {
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr void GetFileNameWithoutExtension(O *out_file_name, T *path_with_extension) {
 
         /* Null check */
         if (out_file_name == nullptr || path_with_extension == nullptr) { return; }
 
-        /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path_with_extension, cMaxPath + 1) : ::strlen(path_with_extension);
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), path_with_extension);
 
         /* Length check */
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 ext_start_offset  = FindExtensionDelimiter(path_with_extension, path_len);
-        const u32 name_start_offset = FindDirectoryDelimiter(path_with_extension, path_len) + 1;
+        const u32 ext_start_offset  = FindExtensionDelimiter(path, path_len);
+        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
 
         /* Copy string from last delimiter */
         const u32 name_size = ext_start_offset - name_start_offset;
-        ::memcpy(out_file_name->m_string_array, path_with_extension + name_start_offset, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_file_name->m_length = name_size;
-
-        out_file_name->AssureTermination();
+        out_file_name->SetString(path + name_start_offset, name_size);
+        return;
     }
 
-    constexpr void GetFileNameWithoutExtension(MaxPathString *out_file_name, MaxPathString *path_with_extension) {
-
-        /* Null check */
-        if (out_file_name == nullptr || path_with_extension == nullptr) { return; }
-
-        /* strlen */
-        const u32 path_len = path_with_extension->m_length;
-
-        /* Length check */
-        if (path_len == 0) { return; }
-
-        /* Get file name offset */
-        const u32 ext_start_offset  = FindExtensionDelimiter(path_with_extension->m_string_array, path_len);
-        const u32 name_start_offset = FindDirectoryDelimiter(path_with_extension->m_string_array, path_len) + 1;
-
-        /* Copy string from last delimiter */
-        const u32 name_size = ext_start_offset - name_start_offset;
-        ::memcpy(out_file_name->m_string_array, path_with_extension->m_string_array + name_start_offset, (name_size < cMaxPath) ? name_size : (cMaxPath - 1));
-        out_file_name->m_length = name_size;
-
-        out_file_name->AssureTermination();
-    }
-
-    constexpr void GetExtension(MaxExtensionString *out_extension, const char *path) {
+    template <typename O, typename T>
+        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+    constexpr void GetExtension(O *out_extension, T *file_path) {
 
        /* Null check */
-        if (out_extension == nullptr || path == nullptr) { return; }
+        if (out_extension == nullptr || file_path == nullptr) { return; }
 
-        /* strlen */
-        const u32 path_len = (std::is_constant_evaluated() == true) ? TStringLength(path, cMaxPath + 1) : ::strlen(path);
+        /* Get string */
+        const UnderlyingCharType<T> *path;
+        u32 path_len;
+        GetUnderlyingString(std::addressof(path), std::addressof(path_len), file_path);
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -451,42 +385,19 @@ namespace vp::util {
         /* Copy string until last delimiter */
         const u32 ext_len  = (path_len - ext_start_offset);
         const u32 ext_size = (ext_len < cMaxExtension) ? ext_len : (cMaxExtension - 1);
-        ::memcpy(out_extension->m_string_array, path + ext_start_offset, ext_size);
-        out_extension->m_length = ext_size;
-
-        out_extension->AssureTermination();
+        out_extension->SetString(path + ext_start_offset, ext_size);
+        return;
     }
 
-    constexpr void GetExtension(MaxExtensionString *out_extension, MaxPathString *path) {
-
-       /* Null check */
-        if (out_extension == nullptr || path == nullptr) { return; }
-
-        /* strlen */
-        const u32 path_len = path->m_length;
-
-        /* Length check */
-        if (path_len == 0) { return; }
-
-        /* Get extension offset */
-        const u32 ext_start_offset = FindExtensionDelimiter(path->m_string_array, path_len);
-
-        /* Copy string until last delimiter */
-        const u32 ext_len  = (path_len - ext_start_offset);
-        const u32 ext_size = (ext_len < cMaxExtension) ? ext_len : (cMaxExtension - 1);
-        ::memcpy(out_extension->m_string_array, path->m_string_array + ext_start_offset, ext_size);
-        out_extension->m_length = ext_size;
-
-        out_extension->AssureTermination();
-    }
-
-    constexpr void ChangeDirectoryDelimiter(MaxPathString *in_out_path, char new_delimiter) {
+    template <typename T>
+        requires (IsFixedString<T>)
+    constexpr void ChangeDirectoryDelimiter(T *in_out_path, UnderlyingCharType<T> new_delimiter) {
 
         /* Null check */
         if (in_out_path == nullptr) { return; }
 
         /* strlen */
-        const u32 path_len = in_out_path->m_length;
+        const u32 path_len = in_out_path->GetLength();
 
         /* Length check */
         if (path_len == 0) { return; }
@@ -498,5 +409,6 @@ namespace vp::util {
             if (in_out_path->m_string_array[start_offset] == '/' || in_out_path->m_string_array[start_offset] == '\\') { in_out_path->m_string_array[start_offset] = new_delimiter; }
             --start_offset;
         }
+        return;
     }
 }

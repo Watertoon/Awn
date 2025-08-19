@@ -1,89 +1,70 @@
 # Awn
-Awn is a personal C++ library designed to power low-latency multi-threaded real-time applications.
+Awn is a personal C++ library designed to power low-latency multi-threaded real-time applications. It's based on common game literature and reverse engineerings of retail game's.
+## Sub-libraries
 
-# Awn Features
-* awn::mem; Memory management library, provides heap data structures and virtual memory management
-* awn::sys; Underlying operating environment library, manages threading and other common OS operations across supported platforms (Win32 or NX)
-* awn::async; Multithreaded work scheduling library, provides asynchronous task management and dependency-based job graphs
-* awn::res; File resource library; provides an asynchronous resource loader for allocating, loading, decompressing, and initializing file data
-* awn::gfx; High-level graphics api, abstracts platform graphics api (Vulkan or NVN), interoperates with reverse-engineered NintendoWare gfx formats
-* awn::grr; Graphics rendering library, Provides display management (Win32 Composition Swapchain or nn::vi)
-* awn::para; Parameterization library, class autogen for general byaml parsing, blackboards, pause management, variable framerate management, etc
-* awn::hid; Host input device management, preliminary supports keyboard and mice
-* awn::frm; Provides a bootstrap for libraries
+| sub-library | description                                                                                                                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| mem         | Virtual memory and heap memory management library.                                                                                                                                         |
+| sys         | Thread and system environment management library for the supported underlying Operating System.                                                                                            |
+| async       | Library for multi-threaded workers. Implements Asynchronous tasks, and dependency-based job graphs.                                                                                        |
+| res         | Resource library. File devices handle file systems. Resources handle per-file data. An asynchronous resource management system is provided for real-time data streaming and decompression. |
+| gfx         | A high-level graphics api based on modern Vulkan extensions, as well as reverse engineered nn::gfx and NVN.                                                                                |
+| para        | A parameter library for generating parameter classes, handling resource databases, collaborating agents with blackboards, etc.                                                             |
+| hid         | Host input device library. Supports keyboard and mice input reporting.                                                                                                                     |
+| grr         | A graphics rendering library. Implements a display server and an immediate mode drawer.                                                                                                    |
+| frm         | Bootstraps libraries.                                                                                                                                                                      |
+
+## In Development
+
+| sub-library | in-progress description                                                  |
+| ----------- | ------------------------------------------------------------------------ |
+| grr         | Immediate mode rendering, font rendering, model rendering, ui rendering. |
+| act         | An actor library based on the reverse-engineering of shaft::baseproc.    |
+| hid         | Bluetooth api. Game controller support for major platforms.              |
+| audio       | Audio device output, input, and basic rendering.                         |
+| frm         | A modular real-time application main-loop and an event-based main-loop.  |
+| ai          | A behavior tree system based on the reverse-engineering of ainb.         |
 
 # Vp
 Vp is a personal C++ library designed to portably carry common utilities and file format definitions.
+## Sub-libraries
 
-# Vp Features
-* vp::codec; compression (zstd), encryption (nisasyst, aes128cbc)
-* vp::imem; Heap interface
-* vp::res; Resource library, reverse engineered file headers, accessors, and serializers for various NintendoWare and Nintendo EPD formats (names may not be official)
-  * Ainb (AI Node Binary)
-  * Bea (Bezel Engine Archive)
-  * Bffnt (Binary Cafe Font)
-  * Bfres (Binary Cafe Resource)
-  * Bfsha (Binary Cafe Shader Archive)
-  * Bnsh (Binary Nintendo Shader)
-  * Bntx (Binary Nintendo Texture Archive)
-  * Byaml (Binary Yet Another Markup Language)
-  * Bwav (Binary Wave)
-  * Common nn::util and NintendoWare gfx structures and enums
-  * Exb (Expression Binary)
-  * Rsizetable (Resource Size Table)
-  * Sarc (sead Archive?)
-* vp::resbui, Resource serialization library, serializers for:
-  * Bnsh (Binary shader format)
-  * Bntx (Binary texture archive format)
-  * Byaml (Binary YAML)
-  * Rsizetable (Resource size table)
-  * Sarc (Archive format)
-* vp::util, General utility library:
-  * Hash algorithms, crc32b, murmur3, and murmur64
-  * x86_64 avx2 SIMD math
-  * Scope Guard
-  * Result-based Structured Error Handling
-  * Custom Runtime Type Info
-  * Utf8, Utf16, and Utf32 string encoding conversion
-  * File Path Parsing
-  * Enum Reflection
-  * Red Black Trees
-  * Ring Buffers
-  * Handle Tables 
-  * Object Allocators
-  * Index Allocators
-  * Intrusive Lists
-  * Priority Queues
-  * Hash Maps
-  * Bit arrays
-  * Pointer Arrays
-  * Frame Arrays
-  * Heap Arrays
-  * Fixed Strings
-  * IFunction
+| sub-libraries | description                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| codec         | Compression and decompression codec library, supports zstd.                                                                  |
+| image         | Image format library, supports PNG encoding and decoding through libpng.                                                     |
+| imem          | A heap allocator interface.                                                                                                  |
+| resbui        | File format serialization library. Contains builders for some reverse engineered NintendoWare and Nintendo EPD file formats. |
+| res           | File format library. Contains many reverse engineered NintendoWare and Nintendo EPD file format headers.                     |
+| trace         |                                                                                                                              |
+| util          | A large common data structure, algorithm, and utility sink.                                                                  |
 
-# In Development
-* An immediate mode style draw api
-* 3d model and animation support
+## In Development
+
+| sub-libraries | description                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| dsp           | A set of digital signal processing functions for pcm conversion, resampling, and effects. |
 
 # System Requirements
-* The user's Vulkan implementation must conform to all the limits and features enforced by awn::gfx::Context which include but are not limited to:
-  * Descriptor Buffers
-  * Mutable Descriptors
-  * Shader Objects
-  * Resizable-Bar
-* Requires an x86_64 CPU with AVX2 and PCLMUL
+>The user's Vulkan implementation must conform to all the limits and features described by the awn::gfx::RequiredFeature enum which include but are not limited to:
+	>Vulkan 1.4
+	>Descriptor Buffers
+	>Mutable Descriptors
+	>Host Image Copy
+	>Shader Objects
+	>Resizable-Bar
+> Requires an x86_64 CPU with AVX2 and PCLMUL, or an AArch64 CPU with NEON
 
 # Footnote
-Built for Windows 10 with GCC 14.1 and gnu make from MSYS2. 
+Built for Windows 10 with GCC 15.2 and gnu make from MSYS2. 
 Build instructions:
 1. Install MSYS2 
 2. From MSYS2 install the standard GCC package
 3. Run the newly installed Make program from the command line in the root project directory
 4. Link the relevant libraries in other programs
 
-I'm informed by reverse engineering, text books, free online resources, word on the street, and api documentation. I believe to be conformant with respect to my references.
+I'm informed by reverse engineering, text books, free online resources, and public api documentation. I am not under NDA. If there are problems of any kind please file an issue or contact me and I'll do my best to resolve the issue.
 
-This repo is currently not all of the project but irregular snapshots.
+This repository is currently an irregular snapshot of the project.
 
-Feel free to contact me or file an issue.
+Licensed under GPLv2 only. Following Atmosphère's lead, due to my use of reverse-engineering, Nintendo is exempt from GPLv2 licensing, and at it's discretion may instead license any of the source code authored for the Awn or Vp projects under the Zero-Clause BSD license.

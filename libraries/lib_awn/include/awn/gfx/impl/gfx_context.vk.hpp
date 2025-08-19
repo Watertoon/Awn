@@ -105,72 +105,36 @@ namespace awn::gfx::impl {
             static constexpr size_t cTargetMaxShaderStageCount = 8;
             static constexpr size_t cTargetMaxSimultaneousShaderStageCount = 5;
 
-            static constexpr size_t cTargetMaxMeshShaderStageCount         = 3;
-            static constexpr size_t cTargetMaxPrimitiveShaderStageCount    = 5;
-            static constexpr size_t cTargetMaxComputeShaderStageCount      = 1;
-        private:
+            static constexpr size_t cTargetMaxMeshShaderStageCount      = 3;
+            static constexpr size_t cTargetMaxPrimitiveShaderStageCount = 5;
+            static constexpr size_t cTargetMaxComputeShaderStageCount   = 1;
+        public:
             static constexpr size_t cTargetBindlessLayoutSet = 0;
 
-            /* NV Per Stage layout sets */
+            /* Global pipeline layout */
             static constexpr size_t cTargetPerStageTextureSamplerLayoutSet = 1;
             static constexpr size_t cTargetPerStageBufferLayoutSet = 2;
 
-            static constexpr size_t cMaxPerStageSetCount = 3;
-
-            /* Global pipeline layout */
-            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetFragment = 1;
-            static constexpr size_t cTargetPerStageBufferLayoutSetFragment = 2;
-            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetVertex = 3;
-            static constexpr size_t cTargetPerStageBufferLayoutSetVertex = 4;
-            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetGeometry = 5;
-            static constexpr size_t cTargetPerStageBufferLayoutSetGeometry = 6;
-            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetTessellationControl = 7;
-            static constexpr size_t cTargetPerStageBufferLayoutSetTessellationControl = 8;
-            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetTessellationEvaluation = 9;
-            static constexpr size_t cTargetPerStageBufferLayoutSetTessellationEvaluation = 10;
-            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetTask = 11;
-            static constexpr size_t cTargetPerStageBufferLayoutSetTask = 12;
-            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetMesh = 13;
-            static constexpr size_t cTargetPerStageBufferLayoutSetMesh = 14;
-
-            static constexpr size_t cMaxCombinedSetCountGraphics = 15;
+            static constexpr size_t cMaxCombinedSetCountGraphics = 3;
 
             static constexpr size_t cTargetPerStageTextureSamplerLayoutSetCompute = 1;
             static constexpr size_t cTargetPerStageBufferLayoutSetCompute = 2;
 
             static constexpr size_t cMaxCombinedSetCountCompute = 3;
-
-            static constexpr size_t cTargetPerStageTextureSamplerLayoutSetArray[cTargetMaxShaderStageCount] = {
-                cTargetPerStageTextureSamplerLayoutSetVertex,
-                cTargetPerStageTextureSamplerLayoutSetTessellationControl,
-                cTargetPerStageTextureSamplerLayoutSetTessellationEvaluation,
-                cTargetPerStageTextureSamplerLayoutSetGeometry,
-                cTargetPerStageTextureSamplerLayoutSetFragment,
-                cTargetPerStageTextureSamplerLayoutSetCompute,
-                cTargetPerStageTextureSamplerLayoutSetTask,
-                cTargetPerStageTextureSamplerLayoutSetMesh,
-            };
-            static constexpr size_t cTargetPerStageBufferLayoutSetArray[cTargetMaxShaderStageCount] = {
-                cTargetPerStageBufferLayoutSetVertex,
-                cTargetPerStageBufferLayoutSetTessellationControl,
-                cTargetPerStageBufferLayoutSetTessellationEvaluation,
-                cTargetPerStageBufferLayoutSetGeometry,
-                cTargetPerStageBufferLayoutSetFragment,
-                cTargetPerStageBufferLayoutSetCompute,
-                cTargetPerStageBufferLayoutSetTask,
-                cTargetPerStageBufferLayoutSetMesh,
-            };
+            static constexpr size_t cMaxPerStageSetCount = vp::util::Max(cMaxCombinedSetCountGraphics, cMaxCombinedSetCountCompute);
+            static constexpr size_t cMaxPerStageBindCount = 2;
         public:
-            static constexpr size_t cTargetMaxPerStageInputCount                  = 32;
-            static constexpr size_t cTargetMaxPerStageOutputCount                 = 32;
-            static constexpr size_t cTargetMaxPerStageTextureSamplerCount         = 32;
-            static constexpr size_t cTargetMaxPerStageImageCount                  = 8;
-            static constexpr size_t cTargetMaxPerStageUniformBufferCount          = 14;
-            static constexpr size_t cTargetMaxPerStageStorageBufferCount          = 16;
-            static constexpr size_t cTargetMaxPerStageSeparateTextureCount        = 128;
-            static constexpr size_t cTargetMaxPerStageSeparateSamplerCount        = 32;
-            static constexpr size_t cTargetMaxPerStageCombinedCount               = cTargetMaxPerStageTextureSamplerCount + cTargetMaxPerStageImageCount + cTargetMaxPerStageUniformBufferCount + cTargetMaxPerStageStorageBufferCount;
-            static constexpr size_t cTargetMaxPerStageSeparateTextureSamplerCount = cTargetMaxPerStageSeparateTextureCount + cTargetMaxPerStageSeparateSamplerCount;
+            static constexpr size_t cTargetMaxPerStageInputCount           = 32;
+            static constexpr size_t cTargetMaxPerStageOutputCount          = 32;
+            static constexpr size_t cTargetMaxPerStageTextureSamplerCount  = 32;
+            static constexpr size_t cTargetMaxPerStageImageCount           = 8;
+            static constexpr size_t cTargetMaxPerStageUniformBufferCount   = 14;
+            static constexpr size_t cTargetMaxPerStageStorageBufferCount   = 16;
+            static constexpr size_t cTargetMaxPerStageSeparateTextureCount = 128;
+            static constexpr size_t cTargetMaxPerStageSeparateSamplerCount = 32;
+            static constexpr size_t cTargetMaxPerStageTextureSamplerCombinedCount = cTargetMaxPerStageTextureSamplerCount + cTargetMaxPerStageImageCount + cTargetMaxPerStageSeparateTextureCount + cTargetMaxPerStageSeparateSamplerCount;
+            static constexpr size_t cTargetMaxPerStageBufferCombinedCount = cTargetMaxPerStageUniformBufferCount + cTargetMaxPerStageStorageBufferCount;
+            static constexpr size_t cTargetMaxPerStageCombinedCount = cTargetMaxPerStageTextureSamplerCombinedCount + cTargetMaxPerStageBufferCombinedCount;
         private:
             void InitializeInstance(const ContextInfo *context_info);
             void FinalizeInstance();
@@ -195,21 +159,7 @@ namespace awn::gfx::impl {
             u32                   m_queue_family_index_array_enum[cTargetMaxQueueCount];
             VkQueue               m_vk_queue_array_enum[cTargetMaxQueueCount];
             VkDescriptorSetLayout m_vk_bindless_descriptor_set_layout;
-            union {
-                PerStageDescriptorLayout m_per_stage_descriptor_layout_array[cTargetMaxShaderStageCount];
-                struct {                    
-                    PerStageDescriptorLayout m_per_stage_descriptor_layout_vertex;
-                    PerStageDescriptorLayout m_per_stage_descriptor_layout_tessellation_control;
-                    PerStageDescriptorLayout m_per_stage_descriptor_layout_tessellation_evaluation;
-                    PerStageDescriptorLayout m_per_stage_descriptor_layout_geometry;
-                    PerStageDescriptorLayout m_per_stage_descriptor_layout_fragment;
-                    PerStageDescriptorLayout m_per_stage_descriptor_layout_compute;
-                    PerStageDescriptorLayout m_per_stage_descriptor_layout_task;
-                    PerStageDescriptorLayout m_per_stage_descriptor_layout_mesh;
-                };
-            };
-            VkDescriptorSetLayout m_vk_combined_descriptor_set_layout_graphics[cMaxCombinedSetCountGraphics];
-            VkDescriptorSetLayout m_vk_combined_descriptor_set_layout_compute[cMaxCombinedSetCountCompute];
+            PerStageDescriptorLayout m_per_stage_descriptor_layout;
             VkPipelineLayout m_vk_combined_pipeline_layout_graphics;
             VkPipelineLayout m_vk_combined_pipeline_layout_compute;
 
@@ -273,7 +223,7 @@ namespace awn::gfx::impl {
             m_vk_instance(), m_vk_physical_device(), m_vk_device(),
             m_queue_family_index_count(), m_queue_family_index_array_linear(), m_queue_family_index_array_enum(), m_vk_queue_array_enum(),
             m_vk_bindless_descriptor_set_layout(),
-            m_per_stage_descriptor_layout_array{},
+            m_per_stage_descriptor_layout{},
             m_vk_physical_device_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
                 .pNext = std::addressof(m_vk_physical_device_properties_11),
@@ -397,85 +347,60 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE u32 GetOpticalFlowQueueFamilyIndex() const { return m_queue_family_index_array_enum[static_cast<u32>(QueueType::OpticalFlow)]; }
 
             constexpr ALWAYS_INLINE VkDescriptorSetLayout GetBindlessVkDescriptorSetLayout() const { return m_vk_bindless_descriptor_set_layout; }
-            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet]; }
-            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedBuffer(ShaderStage shader_stage) const { return this->GetPerStageDescriptorLayout(shader_stage)->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet]; }
-            constexpr ALWAYS_INLINE const VkDescriptorSetLayout *GetPerStageDescriptorLayoutArray(u32 *out_count, ShaderStage shader_stage) const {
-                const VkDescriptorSetLayout *array;
-                if (shader_stage == ShaderStage::Compute) {
-                    array = m_vk_combined_descriptor_set_layout_compute;
-                    *out_count = cMaxCombinedSetCountCompute;
-                } else {
-                    const bool is_mesh_shaders = this->IsOptionalFeature(OptionalFeature::SupportsMeshShaders);
-                    array = m_vk_combined_descriptor_set_layout_graphics;
-                    *out_count = cMaxCombinedSetCountGraphics - (is_mesh_shaders * 4);
-                }
-                return array;
-            }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayout(ShaderStage shader_stage) const { return std::addressof(m_per_stage_descriptor_layout_array[static_cast<u32>(shader_stage)]); }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutVertex()                   const { return std::addressof(m_per_stage_descriptor_layout_vertex); }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutTessellationEvaluation()   const { return std::addressof(m_per_stage_descriptor_layout_tessellation_evaluation); }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutTessellationControl()      const { return std::addressof(m_per_stage_descriptor_layout_tessellation_control); }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutGeometry()                 const { return std::addressof(m_per_stage_descriptor_layout_geometry); }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutFragment()                 const { return std::addressof(m_per_stage_descriptor_layout_fragment); }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutCompute()                  const { return std::addressof(m_per_stage_descriptor_layout_compute); }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutTask()                     const { return std::addressof(m_per_stage_descriptor_layout_task); }
-            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayoutMesh()                     const { return std::addressof(m_per_stage_descriptor_layout_mesh); }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedTextureSampler() const { return this->GetPerStageDescriptorLayout()->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet]; }
+            constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedBuffer() const { return this->GetPerStageDescriptorLayout()->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet]; }
+            constexpr ALWAYS_INLINE const VkDescriptorSetLayout *GetPerStageDescriptorLayoutArray() const { return m_per_stage_descriptor_layout.vk_descriptor_set_layout_array; }
+            constexpr ALWAYS_INLINE const PerStageDescriptorLayout *GetPerStageDescriptorLayout() const { return std::addressof(m_per_stage_descriptor_layout); }
 
             constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutGraphics() const { return m_vk_combined_pipeline_layout_graphics; }
             constexpr ALWAYS_INLINE VkPipelineLayout GetVkPipelineLayoutCompute() const { return m_vk_combined_pipeline_layout_compute; }
 
-            constexpr ALWAYS_INLINE u32 GetBindlessSet() {
+            static constexpr ALWAYS_INLINE u32 GetBindlessSet() {
                 return cTargetBindlessLayoutSet;
             }
-            constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedTextureSampler(ShaderStage shader_stage) {
-                const u32 base_set = cTargetPerStageTextureSamplerLayoutSetArray[static_cast<u32>(shader_stage)];
+            static constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedTextureSampler() {
+                const u32 base_set = static_cast<u32>(cTargetPerStageTextureSamplerLayoutSet);
                 return base_set;
             }
-            constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedBuffer(ShaderStage shader_stage) {
-                const u32 base_set = cTargetPerStageBufferLayoutSetArray[static_cast<u32>(shader_stage)];
+            static constexpr ALWAYS_INLINE u32 GetPerStageSetCombinedBuffer() {
+                const u32 base_set = static_cast<u32>(cTargetPerStageBufferLayoutSet);
                 return base_set;
             }
-            constexpr ALWAYS_INLINE u32 GetPerStageSetTextureSampler(ShaderStage shader_stage) {
-                return this->GetPerStageSetCombinedTextureSampler(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageSetTextureSampler() {
+                return GetPerStageSetCombinedTextureSampler();
             }
-            constexpr ALWAYS_INLINE u32 GetPerStageSetImage(ShaderStage shader_stage) {
-                return this->GetPerStageSetCombinedTextureSampler(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageSetImage() {
+                return GetPerStageSetCombinedTextureSampler();
             }
-            constexpr ALWAYS_INLINE u32 GetPerStageSetUniformBuffer(ShaderStage shader_stage) {
-                return this->GetPerStageSetCombinedBuffer(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageSetUniformBuffer() {
+                return GetPerStageSetCombinedBuffer();
             }
-            constexpr ALWAYS_INLINE u32 GetPerStageSetStorageBuffer(ShaderStage shader_stage) {
-                return this->GetPerStageSetCombinedBuffer(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageSetStorageBuffer() {
+                return GetPerStageSetCombinedBuffer();
             }
-            constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateTexture(ShaderStage shader_stage) {
-                return this->GetPerStageSetCombinedTextureSampler(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateTexture() {
+                return GetPerStageSetCombinedTextureSampler();
             }
-            constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateSampler(ShaderStage shader_stage) {
-                return this->GetPerStageSetCombinedTextureSampler(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageSetSeparateSampler() {
+                return GetPerStageSetCombinedTextureSampler();
             }
 
-            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseTextureSampler(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseTextureSampler() {
                 return 0;
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseImage(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseImage() {
                 return 0;
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseUniformBuffer(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseUniformBuffer() {
                 return 0;
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseStorageBuffer(ShaderStage shader_stage) {
-                VP_UNUSED(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseStorageBuffer() {
                 return 0;
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateTexture(ShaderStage shader_stage) { 
-                VP_UNUSED(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateTexture() { 
                 return 0;
             }
-            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateSampler(ShaderStage shader_stage) { 
-                VP_UNUSED(shader_stage);
+            static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateSampler() { 
                 return 0;
             }
 
@@ -490,13 +415,13 @@ namespace awn::gfx::impl {
 
             constexpr ALWAYS_INLINE size_t GetCombinedTextureSamplerDescriptorLayoutSize()  const {
                 size_t layout_size = 0;
-                ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(ShaderStage::Vertex), std::addressof(layout_size));
+                ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler(), std::addressof(layout_size));
                 return vp::util::AlignUp(layout_size, this->GetDescriptorOffsetAlignment());
             }
 
             constexpr ALWAYS_INLINE size_t GetCombinedBufferDescriptorLayoutSize()  const {
                 size_t layout_size = 0;
-                ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetPerStageVkDescriptorSetLayoutCombinedBuffer(ShaderStage::Vertex), std::addressof(layout_size));
+                ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetPerStageVkDescriptorSetLayoutCombinedBuffer(), std::addressof(layout_size));
                 return vp::util::AlignUp(layout_size, this->GetDescriptorOffsetAlignment());
             }
 

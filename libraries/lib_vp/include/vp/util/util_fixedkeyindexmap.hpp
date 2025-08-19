@@ -17,33 +17,36 @@
 
 namespace vp::util {
 
-    template <u32 Size>
+    template <class KeyType, class IndexType, u32 Size>
 	class FixedKeyIndexMap {
         public:
             static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
         public:
-            struct Index {
-                u32 hash;
-                u32 index;
+            struct Key {
+                KeyType hash;
             };
         private:
-            FixedHashMap<Index, &Index::hash, Size> m_hash_map;
+            FixedHashMap<Key, &Key::hash, Size> m_hash_map;
+            IndexType m_index_array[Size];
         public:
-            constexpr ALWAYS_INLINE  FixedKeyIndexMap() : m_hash_map() {/*...*/}
-            constexpr ALWAYS_INLINE ~FixedKeyIndexMap() {/*...*/}
+            constexpr  FixedKeyIndexMap() : m_hash_map(), m_index_array() {/*...*/}
+            constexpr ~FixedKeyIndexMap() {/*...*/}
 
-            constexpr ALWAYS_INLINE void AddEntry(u32 hash, u32 index) {
-                Index *entry = m_hash_map.AddEntry(hash);
-                entry->index = index;
+            constexpr void AddEntry(KeyType hash, IndexType index) {
+                Key *entry = m_hash_map.AddEntry(hash);
+                const u32 id = m_hash_map.IndexOf(entry);
+                m_index_array[id] = index;
                 return;
             }
 
-            constexpr ALWAYS_INLINE u32 TryGetIndexByKey(u32 hash) const {
-                const Index *entry = m_hash_map.TryGetParentByHash(hash);
-                return (entry != nullptr) ? entry->index : cInvalidEntryIndex;
+            constexpr IndexType TryGetIndexByKey(KeyType hash) const {
+                const u32 id = m_hash_map.TryGetIndexByHash(hash);
+                return (id != FixedHashMap<Key, &Key::hash, Size>::cInvalidEntryIndex) ? m_index_array[id] : cInvalidEntryIndex;
             }
 
-            constexpr ALWAYS_INLINE void Clear() { m_hash_map.Clear(); }
+            constexpr void Clear() { m_hash_map.Clear(); }
+
+            constexpr u32 GetUsedCount() const { return m_hash_map.GetUsedCount(); }
         public:
             constexpr u32 CountMaxIterationsPerKey() const {
                 return m_hash_map.CountMaxIterationsPerKey();

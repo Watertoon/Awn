@@ -17,7 +17,7 @@
 
 namespace awn::gfx {
 
-    DECLARE_RESULT_MODULE(15);
+    DECLARE_RESULT_MODULE(26);
     DECLARE_RESULT(MaximumGpuHeaps,                         1);
     DECLARE_RESULT(InvalidPriority,                         2);
     DECLARE_RESULT(NoBnsh,                                  3);
@@ -39,7 +39,12 @@ namespace awn::gfx {
     DECLARE_RESULT(NullArgument,                            19);
     DECLARE_RESULT(InvalidMemoryPool,                       20);
     DECLARE_RESULT(InvalidGpuAddress,                       21);
+    DECLARE_RESULT(OutOfMemory,                             22);
+    DECLARE_RESULT(OutOfCommandUnits,                       23);
+    DECLARE_RESULT(OutOfStagingMemory,                      24);
+    DECLARE_RESULT(InvalidShaderStage,                      25);
 
+    /* Vulkan converted results */
     DECLARE_RESULT(UnknownApiError,                         50);
     DECLARE_RESULT(NotReady,                                51);
     DECLARE_RESULT(Timeout,                                 52);

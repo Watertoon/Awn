@@ -19,7 +19,7 @@
 #define VP_ENUM_TRAITSV(lookup_name, enum_type, ...) VP_CLASS_VMACRO(lookup_name, enum_type, VP_ENUM_TRAITS, __VA_ARGS__)
 
 #define VP_ENUM_TRAITS_IMPL(enum_type) \
-    const ::vp::util::EnumDictionaryNode s##enum_type##DicNode(std::addressof( c##enum_type##EnumDictionary ));
+    const ::vp::util::EnumDictionaryNode _s##enum_type##DicNode(std::addressof( _c##enum_type##TraitsEnumDictionary ));
 
 namespace vp::util::impl {        
     struct DummyEnumTraits {
@@ -45,54 +45,7 @@ namespace vp::util {
 
     template <typename T>
         requires (std::is_enum<T>::value)
-    using TEnumTraits = TVpEnumTraits<T>;
-
-    template <size_t NamespaceLength, size_t NameLength>
-    struct TFixedNamespaceString {
-        static constexpr size_t cStringLength = (NamespaceLength != 0) ? NamespaceLength + NameLength + 2 : NameLength;
-
-        char nw_string[cStringLength + 1];
-
-        constexpr TFixedNamespaceString(const char *namespace_string, const char *string) : nw_string() {
-
-            for (u32 i = 0; i < NamespaceLength; ++i) {
-                nw_string[i] = namespace_string[i];
-            }
-            if (NamespaceLength != 0) {
-                nw_string[NamespaceLength + 0] = ':';
-                nw_string[NamespaceLength + 1] = ':';
-            }
-            for (u32 i = 0; i < NameLength; ++i) {
-                nw_string[i + NamespaceLength + 2] = string[i];
-            }
-
-            nw_string[cStringLength] = '\0';
-        }
-        constexpr ~TFixedNamespaceString() {/*...*/}
-
-        constexpr const char *GetString() const { return nw_string; }
-    };
-
-    template <size_t StringLength>
-    struct TFixedNintendoWareString {
-        static constexpr size_t cStringLength = StringLength;
-
-        char nw_string[cStringLength + 3];
-
-        constexpr TFixedNintendoWareString(const char *string) : nw_string() {
-
-            nw_string[0] = cStringLength;
-            nw_string[1] = (cStringLength >> 0x8) & 0xff;
-            
-            for (u32 i = 0; i < cStringLength; ++i) {
-                nw_string[i + 2] = string[i];
-            }
-            nw_string[cStringLength + 2] = '\0';
-        }
-        constexpr ~TFixedNintendoWareString() {/*...*/}
-
-        constexpr const char *GetString() const { return nw_string; }
-    };
+    using TEnumTraits = TVpEnumTraits<T>::Traits;
 
     class EnumDictionaryBase {
         protected:
@@ -111,23 +64,27 @@ namespace vp::util {
     template <typename T>
         requires (!std::is_enum<T>::value)
     class EnumDictionary : public EnumDictionaryBase {
+        public:
+            using KeyMap = vp::util::KeyIndexMap<u32,u16>;
         protected:
-            const T                             *m_value_array;
-            vp::res::ResNintendoWareDictionary   m_res_dic;
+            const T *m_value_array;
+            const char * const *m_string_array;
+            KeyMap m_key_map;
         public:
             VP_RTTI_DERIVED(EnumDictionary, EnumDictionaryBase);
         public:
-            constexpr EnumDictionary(const char *class_name, const T *value_array) : EnumDictionaryBase(class_name), m_value_array(value_array), m_res_dic() {/*...*/}
+            constexpr EnumDictionary(const char *class_name, const char * const *string_array, const T *value_array) : EnumDictionaryBase(class_name), m_value_array(value_array), m_string_array(string_array), m_key_map() {/*...*/}
             virtual constexpr ~EnumDictionary() override {/*...*/}
 
             constexpr bool GetEnumIndexByName(u32 *out_index, const char *enum_value_name) const {
-                const u32 index = m_res_dic.TryGetEntryIndexByKey(enum_value_name);
-                if (index == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex) { return false; }
-                *out_index = index;
+                const u32 hash = HashMurmur3(enum_value_name);
+                const u16 index = m_key_map.TryGetIndexByKey(hash);
+                if (index == KeyMap::cInvalidEntryIndex) { return false; }
+                *out_index = static_cast<u32>(index);
                 return true;
             }
             constexpr bool GetEnumIndexByValue(u32 *out_index, T enum_value) const {
-                for (u32 i = 0; i < m_res_dic.node_count; ++i) {
+                for (u32 i = 0; i < this->GetEnumCount(); ++i) {
                     if (enum_value == m_value_array[i]) { *out_index = i; return true; }
                 }
                 return false;
@@ -144,31 +101,27 @@ namespace vp::util {
                 *out_value = static_cast<T>(m_value_array[index]);
                 return true;
             }
-            constexpr ALWAYS_INLINE u32 GetEnumCount() const {
-                return m_res_dic.node_count;
+            const char *GetEnumNameByIndex(const char *out_value, u32 index) const {
+                return m_string_array[index];
+            }
+            constexpr u32 GetEnumCount() const {
+                return m_key_map.GetUsedCount();
             }
     };
 
     template <typename T, size_t Size>
     class TFixedValueDictionary final : public EnumDictionary<T> {
         private:
-            vp::res::ResNintendoWareDictionary::ResDicNode m_entry_array[Size];
+            EnumDictionary<T>::KeyMap::Key m_hash_array[Size * 2];
+            u16 m_index_array[Size * 2];
         public:
-            constexpr TFixedValueDictionary(const char *class_name, const char * const *nw_string_array, const T *value_array) : EnumDictionary<T>(class_name, value_array), m_entry_array{} {
+            constexpr TFixedValueDictionary(const char *class_name, const std::array<const char*, Size> &string_array, const std::array<T, Size> &value_array, const std::array<u32, Size> &hash_array) : EnumDictionary<T>(class_name, string_array.data(), value_array.data()), m_hash_array{}, m_index_array{} {
 
                 /* Populate entries */
+                this->EnumDictionary<T>::m_key_map.SetMemory(m_hash_array, m_index_array, Size * 2);
                 for (u32 i = 0; i < Size; ++i) {
-                    m_entry_array[i].key = nw_string_array[i];
+                    this->EnumDictionary<T>::m_key_map.AddEntry(hash_array[i], i);
                 }
-
-                /* Set res dic meta data */
-                this->EnumDictionary<T>::m_res_dic.magic         = vp::res::ResNintendoWareDictionary::cMagic;
-                this->EnumDictionary<T>::m_res_dic.node_count    = Size;
-                this->EnumDictionary<T>::m_res_dic.root_node.key = "\0\0\0";
-
-                /* Build res dic */
-                const bool result = this->EnumDictionary<T>::m_res_dic.TBuild(m_entry_array);
-                VP_ASSERT(result == true);
 
                 return;
             }
@@ -216,65 +169,89 @@ namespace vp::util {
     EnumDictionaryManager *GetEnumDictionaryManager();
 }
 
+
+namespace vp::util::impl {
+
+    template <class UnderlyingType>
+    struct EnumUnpackHelper {
+        const char * const string;
+        UnderlyingType value;
+    };
+
+    template <class UnderlyingType, size_t Size>
+    constexpr std::array<const char*, Size> EnumUnpackString(const EnumUnpackHelper<UnderlyingType> *h_array) {
+        std::array<const char*, Size> ret;
+        for (u32 i = 0; i < Size; ++i) {
+            ret[i] = h_array[i].string;
+        }
+        return ret;
+    }
+
+    template <class UnderlyingType, size_t Size>
+    constexpr std::array<UnderlyingType, Size> EnumUnpackValue(const EnumUnpackHelper<UnderlyingType> *h_array) {
+        std::array<UnderlyingType, Size> ret;
+        for (u32 i = 0; i < Size; ++i) {
+            ret[i] = h_array[i].value;
+        }
+        return ret;
+    }
+
+    template <size_t Size>
+    constexpr std::array<u32,Size> GenerateEnumValueHashArray(const std::array<const char*,Size> &string_array) {
+        std::array<u32,Size> ret;
+        for (u32 i = 0; i < Size; ++i) {
+            ret[i] = HashMurmur3(string_array[i]);
+        }
+        return ret;
+    }
+
+    template <size_t Size>
+    constexpr bool ValidateEnumHashArray(const std::array<u32,Size> &hash_array) {
+        /* Ensure no 0 hash or duplicate */
+        for (u32 i = 0; i < hash_array.size(); ++i) {
+            if (hash_array[i] == 0) { return false; }
+            for (u32 j = i+1; j < hash_array.size(); ++j) {
+                if (hash_array[i] == hash_array[j]) { return false; }
+            }
+        }
+        return true;
+    }
+}
+
 #define VP_ENUM_TRAITS_START(lookup_name, enum_type) \
     struct enum_type##Traits { \
         using EnumType = enum_type ; \
-        using UnderlyingType = std::underlying_type<EnumType>::type; \
+        using UnderlyingType = std::underlying_type_t<EnumType>; \
         static constexpr bool cIsDummy = false; \
-        static constexpr const char *cClassName = TOSTRING( lookup_name );
+        static constexpr const char * cClassName = TOSTRING( lookup_name ); \
+        static constexpr const ::vp::util::impl::EnumUnpackHelper<UnderlyingType> cPackArray[] = {
 
-#define VP_ENUM_TRAITS_NW_STR(_arg, _num) \
-        static constexpr const ::vp::util::TFixedNintendoWareString<vp::util::TStringLength( TOSTRING( _arg ) ,0xffff'ffff)>  cNWString##_num { TOSTRING( _arg ) };
-
-#define VP_ENUM_TRAITS_MID0() \
-        static constexpr const char * const cNWStringArray[] = {
-
-#define VP_ENUM_TRAITS_NW_STR_ARRAY(_num) \
-            cNWString##_num .GetString(),
-
-#define VP_ENUM_TRAITS_MID1() \
-        }; \
-        static constexpr const char * const cIndexToStringArray[] = {
-
-#define VP_ENUM_TRAITS_STR_ARRAY(_num) \
-            cNWString##_num .GetString() + 2,
-
-#define VP_ENUM_TRAITS_MID2() \
-        }; \
-        static constexpr const UnderlyingType cIndexToEnumArray[] = {
-
-#define VP_ENUM_TRAITS_UNDERLYING_TYPE(_arg) \
-            static_cast<UnderlyingType>(EnumType:: _arg ),
+#define VP_ENUM_TRAITS_PACK_ENTRY(_arg) \
+            { TOSTRING( _arg ) , static_cast<UnderlyingType>(EnumType:: _arg ), },
 
 #define VP_ENUM_TRAITS_END(enum_type) \
         }; \
-        static constexpr u32 cEnumCount = sizeof(cIndexToEnumArray) / sizeof(UnderlyingType); \
+        static constexpr const u32 cEnumCount = sizeof(cPackArray) / sizeof(::vp::util::impl::EnumUnpackHelper<UnderlyingType>); \
+        static constexpr const std::array<const char*,cEnumCount> cIndexToStringArray = ::vp::util::impl::EnumUnpackString<UnderlyingType, cEnumCount>(cPackArray); \
+        static constexpr const std::array<UnderlyingType,cEnumCount> cIndexToEnumArray = ::vp::util::impl::EnumUnpackValue<UnderlyingType, cEnumCount>(cPackArray); \
+        static constexpr const std::array<u32,cEnumCount> cHashToIndexArray = ::vp::util::impl::GenerateEnumValueHashArray<cEnumCount>(cIndexToStringArray); \
+        static_assert(::vp::util::impl::ValidateEnumHashArray<cEnumCount>(cHashToIndexArray)); \
+        \
         static constexpr u32 GetIndexByEnumValue(EnumType enum_value) { u32 i = 0; for (; i < cEnumCount; ++i) { if (static_cast<EnumType>(cIndexToEnumArray[i]) == enum_value) { break; }} VP_ASSERT(i < cEnumCount); return i; } \
         static constexpr const char *GetStringByIndex(u32 index) { VP_ASSERT(index < cEnumCount); return cIndexToStringArray[index]; } \
-        static constexpr const char *GetStringByEnumValue(EnumType enum_value) { return cIndexToStringArray[GetIndexByEnumValue(enum_value)]; } \
-        static constexpr bool GetEnumValueByString(EnumType *out_value, const char *enum_string); \
-        static constexpr bool GetEnumValueByString(UnderlyingType *out_value, const char *enum_string); \
-        static constexpr EnumType GetEnumValueByIndex(u32 index) { VP_ASSERT(index < cEnumCount); return static_cast<EnumType>(cIndexToEnumArray[index]); } \
-        static_assert(sizeof(cNWStringArray) / sizeof(const char*) == sizeof(cIndexToEnumArray) / sizeof(UnderlyingType)); \
+        static constexpr const char *GetStringByValue(EnumType enum_value) { return cIndexToStringArray[GetIndexByEnumValue(enum_value)]; } \
+        static constexpr bool GetValueByString(EnumType *out_value, const char *enum_string); \
+        static constexpr bool GetValueByString(UnderlyingType *out_value, const char *enum_string); \
+        static constexpr EnumType GetValueByIndex(u32 index) { VP_ASSERT(index < cEnumCount); return static_cast<EnumType>(cIndexToEnumArray[index]); } \
     }; \
-    static constexpr const ::vp::util::TFixedValueDictionary< enum_type##Traits::UnderlyingType, sizeof( enum_type##Traits::cNWStringArray) / sizeof(const char*)> c##enum_type##EnumDictionary( enum_type##Traits::cClassName, enum_type##Traits::cNWStringArray, enum_type##Traits::cIndexToEnumArray ); \
-    constexpr bool enum_type##Traits::GetEnumValueByString(EnumType *out_value, const char *enum_string) { \
-        if (std::is_constant_evaluated() == true) { \
-            for (u32 i = 0; i < cEnumCount; ++i) { if (::vp::util::TStringCompare(enum_string, cIndexToStringArray[i], 0xffff'ffff) == true) { *out_value = static_cast<EnumType>(cIndexToEnumArray[i]); return true; } } \
-            return false; \
-        } else { \
-            UnderlyingType value = 0; \
-            const bool result = c##enum_type##EnumDictionary.GetEnumValueByName(std::addressof(value), enum_string); \
-            *out_value = static_cast<EnumType>(value); \
-            return result; \
-        } \
+    static constexpr const ::vp::util::TFixedValueDictionary<typename enum_type##Traits::UnderlyingType, enum_type##Traits::cEnumCount> _c##enum_type##TraitsEnumDictionary( enum_type##Traits::cClassName, enum_type##Traits::cIndexToStringArray, enum_type##Traits::cIndexToEnumArray, enum_type##Traits::cHashToIndexArray); \
+    constexpr bool enum_type##Traits::GetValueByString(EnumType *out_value, const char *enum_string) { \
+        UnderlyingType value = 0; \
+        const bool result = _c##enum_type##TraitsEnumDictionary.GetEnumValueByName(std::addressof(value), enum_string); \
+        *out_value = static_cast<EnumType>(value); \
+        return result; \
     } \
-    constexpr bool enum_type##Traits::GetEnumValueByString(UnderlyingType *out_value, const char *enum_string) { \
-        if (std::is_constant_evaluated() == true) { \
-            for (u32 i = 0; i < cEnumCount; ++i) { if (::vp::util::TStringCompare(enum_string, cIndexToStringArray[i], 0xffff'ffff) == true) { *out_value = static_cast<UnderlyingType>(cIndexToEnumArray[i]); return true; } } \
-            return false; \
-        } else { \
-            const bool result = c##enum_type##EnumDictionary.GetEnumValueByName(out_value, enum_string); \
-            return result; \
-        } \
+    constexpr bool enum_type##Traits::GetValueByString(UnderlyingType *out_value, const char *enum_string) { \
+        const bool result = _c##enum_type##TraitsEnumDictionary.GetEnumValueByName(out_value, enum_string); \
+        return result; \
     }

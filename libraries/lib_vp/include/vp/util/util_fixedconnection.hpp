@@ -34,25 +34,21 @@ namespace vp::util {
                     constexpr Iterator() : m_iter(cArrayCount), m_index(BitCount) {/*...*/}
                     constexpr Iterator(const FixedConnection *connection, T mask, u32 base_index) : m_mask_array(connection->m_mask_array), m_iter(base_index) {
                         const u32 lz = vp::util::CountRightZeroBits(mask);
-                        const u32 clear = static_cast<T>(1) << lz;
+                        const T clear = static_cast<T>(1) << lz;
                         m_index = (m_iter * BITSIZEOF(T)) + lz;
                         m_mask = clear ^ mask;
                     }
                     constexpr ~Iterator() {/*...*/}
 
-                    constexpr ALWAYS_INLINE u32 operator*() {
+                    constexpr u32 operator*() {
                         return m_index;
                     }
-                    constexpr ALWAYS_INLINE u32 operator*() const {
+                    constexpr u32 operator*() const {
                         return m_index;
                     }
 
                     constexpr bool operator==(const Iterator &rhs) const {
                         return m_iter == rhs.m_iter && m_index == rhs.m_index;
-                    }
-
-                    constexpr bool operator!=(const Iterator &rhs) const {
-                        return m_iter != rhs.m_iter || m_index != rhs.m_index;
                     }
 
                     constexpr Iterator &operator++() {
@@ -67,7 +63,7 @@ namespace vp::util {
                         }
                         const T mask = m_mask;
                         const u32 lz = vp::util::CountRightZeroBits(mask);
-                        const u32 clear = static_cast<T>(1) << lz;
+                        const T clear = static_cast<T>(1) << lz;
                         m_index = (m_iter * BITSIZEOF(T)) + lz;
                         m_mask = clear ^ mask;
                         return *this;
@@ -125,14 +121,12 @@ namespace vp::util {
 
             constexpr T GetBitMask(u32 mask_index) const { return m_mask_array[mask_index]; }
             constexpr void SetBitMask(u32 mask_index, T mask) { m_mask_array[mask_index] = mask; }
+            constexpr T *GetBitMaskArray() { return m_mask_array; }
 
-            constexpr void ExchangeBitMaskAtomic(u32 mask_index, T set_mask, T clear_mask) {
-                T *loc = std::addressof(m_mask_array[mask_index]);
-                T prev = *loc;
-                for (;;) {
-                    const T next = (prev & (~clear_mask)) | set_mask;
-                    if (vp::util::InterlockedCompareExchange(std::addressof(prev), loc, next, prev)) { return; }
-                }
+            constexpr void ExchangeBitMask(u32 mask_index, T clear_mask, T set_mask) {
+                const T prev = m_mask_array[mask_index];
+                const T next = (prev & (~clear_mask)) | set_mask;
+                m_mask_array[mask_index] = next;
             }
 
             constexpr u32 CountOneBits() const {
@@ -141,6 +135,51 @@ namespace vp::util {
                     count += vp::util::CountOneBits(m_mask_array[i]);
                 }
                 return count;
+            }
+        public:
+            constexpr bool SetBitAtomic(u32 bit_index) {
+                const u32 index = bit_index / BITSIZEOF(T);
+                const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
+                const T bit = (static_cast<T>(1) << shift);
+                const T prev = vp::util::InterlockedFetchOr(std::addressof(m_mask_array[index]), bit);
+                const bool ret = (prev >> shift) & 1;
+                return ret;
+            }
+            constexpr bool ClearBitAtomic(u32 bit_index) {
+                const u32 index = bit_index / BITSIZEOF(T);
+                const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
+                const T mask = (~(static_cast<T>(1) << shift));
+                const T prev = vp::util::InterlockedFetchAnd(std::addressof(m_mask_array[index]), mask);
+                const bool ret = (prev >> shift) & 1;
+                return ret;
+            }
+            constexpr bool XorBitAtomic(u32 bit_index) {
+                const u32 index = bit_index / BITSIZEOF(T);
+                const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
+                const T bit = (static_cast<T>(1) << shift);
+                const T prev = vp::util::InterlockedFetchXor(std::addressof(m_mask_array[index]), bit);
+                const bool ret = (prev >> shift) & 1;
+                return ret;
+            }
+            constexpr T AndBitMaskAtomic(u32 mask_index, T mask) {
+                const T prev = vp::util::InterlockedFetchAnd(std::addressof(m_mask_array[mask_index]), mask);
+                return prev;
+            }
+            constexpr T OrBitMaskAtomic(u32 mask_index, T mask) {
+                const T prev = vp::util::InterlockedFetchOr(std::addressof(m_mask_array[mask_index]), mask);
+                return prev;
+            }
+            constexpr T XorBitMaskAtomic(u32 mask_index, T mask) {
+                const T prev = vp::util::InterlockedFetchXor(std::addressof(m_mask_array[mask_index]), mask);
+                return prev;
+            }
+            constexpr void ExchangeBitMaskAtomic(u32 mask_index, T clear_mask, T set_mask) {
+                T *loc = std::addressof(m_mask_array[mask_index]);
+                T prev = *loc;
+                for (;;) {
+                    const T next = (prev & (~clear_mask)) | set_mask;
+                    if (vp::util::InterlockedCompareExchange(std::addressof(prev), loc, next, prev)) { return; }
+                }
             }
         public:
             constexpr void And(const FixedConnection &rhs) {

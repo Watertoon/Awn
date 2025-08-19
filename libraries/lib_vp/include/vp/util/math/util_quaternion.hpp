@@ -367,4 +367,46 @@ namespace vp::util {
         const Vector4f result = v_from + v_to;
         return result;
     }
+
+    constexpr void ApproximateQuatSlerpBlend(vp::util::Vector4f *from, vp::util::Vector4f *to, float from_factor, float to_factor) {
+
+        if (from_factor == 0.0f) {
+            *from = *to;
+            return;
+        }
+
+        const vp::util::Vector4f res = *from;
+        const vp::util::Vector4f rot = *to;
+        const float fact_ratio = to_factor / (from_factor + to_factor);
+        const float sum = vp::util::Sum(res * rot);
+        const float abs_sum = (sum < 0.0f) ? -sum : sum;
+        const float sum_sign = (sum < 0.0f) ? -1.0f : 1.0f;
+        const float arc = vp::util::ApproximateArcCos(abs_sum);
+        const float inv_sin = 1.0f / vp::util::CoefficientsSin(vp::util::ModuloPi(arc));
+
+        const float at_fact = fact_ratio * arc;
+        const float rev_at_fact = (1.0f - fact_ratio) * arc;
+        const float at_fact_div = at_fact * vp::util::cFloat1Divided2Pi;
+        const float rev_at_fact_div = rev_at_fact * vp::util::cFloat1Divided2Pi;
+        const float sel = (0.0f <= at_fact_div) ? 0.5f : -0.5f;
+        const float rev_sel = (0.0f <= rev_at_fact_div) ? 0.5f : -0.5f;
+        const float rnd = static_cast<float>(static_cast<s32>(sel));
+        const float rev_rnd = static_cast<float>(static_cast<s32>(rev_sel));
+        const float at_off = at_fact - rnd * vp::util::cFloat2Pi;
+        const float rev_at_off = rev_at_fact - rev_rnd * vp::util::cFloat2Pi;
+        const float at_flip0 = (vp::util::cFloatPiDivided2 < at_off) ? vp::util::cFloatPi - at_off : at_off;
+        const float rev_at_flip0 = (vp::util::cFloatPiDivided2 < rev_at_off) ? vp::util::cFloatPi - rev_at_off : rev_at_off;
+        const float at_flip1 = (at_flip0 < vp::util::cFloatPiDivided2) ? -vp::util::cFloatPi - at_flip0 : at_flip0;
+        const float rev_at_flip1 = (rev_at_flip0 < vp::util::cFloatPiDivided2) ? -vp::util::cFloatPi - rev_at_flip0 : rev_at_flip0;
+
+        float a_fact = fact_ratio * sum_sign;
+        float b_fact = 1.0f - fact_ratio;
+        if (abs_sum <= (1.0f - vp::util::cFloatQuaternionEpsilon)) {
+            a_fact = inv_sin * sum_sign * vp::util::CoefficientsSin(at_flip1);
+            b_fact = inv_sin * vp::util::CoefficientsSin(rev_at_flip1);
+        }
+        const vp::util::Vector4f ret = res * b_fact + rot * a_fact;
+        *from = ret;
+        return;
+    }
 }

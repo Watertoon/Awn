@@ -27,6 +27,7 @@
 #elif VP_TARGET_PLATFORM_nx
     #include <awn/sys/sys_event.nx.hpp>
     #include <awn/sys/sys_messagequeue.nx.hpp>
+    #include <awn/sys/sys_readerwriterlock.nx.hpp>
 #endif
 
 #include <awn/sys/sys_threadbase.h>

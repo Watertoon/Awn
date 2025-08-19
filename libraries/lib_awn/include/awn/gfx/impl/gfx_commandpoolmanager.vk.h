@@ -28,14 +28,14 @@ namespace awn::gfx::impl {
         public:
             struct CommandPoolUnit {
                 u32 ref_count;
-                VkCommandPool vk_command_pool;
                 QueueType queue_type;
+                VkCommandPool vk_command_pool;
             };
         public:
-            static constexpr CommandPoolId cInvalidHandle = static_cast<CommandPoolId>(0xffff'ffff'ffff'ffff);
+            static constexpr CommandPoolId cInvalidCommandPoolId = static_cast<CommandPoolId>(0xffff'ffff'ffff'ffff);
             static constexpr size_t cMaxCommandBufferThreadCount = 0x80;
         public:
-            using HandleAllocator = vp::util::IndexAllocator<CommandPoolId>;
+            using HandleAllocator = vp::util::AtomicIndexAllocator<CommandPoolId>;
             using CommandPoolUnitArray = vp::util::HeapArray<CommandPoolUnit>;
         private:
             sys::Mutex m_command_pool_cs;
@@ -50,11 +50,14 @@ namespace awn::gfx::impl {
             void Initialize(mem::Heap *heap, u32 pool_count);
             void Finalize();
 
-            CommandList CreateCommandList(QueueType queue_type, CommandPoolId pool_id, bool is_primary);
-            void FinalizeCommandList(CommandList command_list);
+            Result CreateCommandPool(CommandPoolId *out_id, QueueType queue_type);
+            void FreeCommandPool(CommandPoolId id);
+
+            Result CreateCommandBuffer(VkCommandBuffer *out_vk_command_buffer, CommandPoolId pool_id, bool is_primary);
+            void FreeCommandBuffer(VkCommandBuffer vk_command_buffer, CommandPoolId pool_id);
 
             constexpr QueueType GetQueueType(CommandPoolId pool_id) {
-                VP_ASSERT(pool_id != cInvalidHandle);
+                VP_ASSERT(pool_id != cInvalidCommandPoolId);
                 return m_unit_array[pool_id].queue_type;
             }
     };

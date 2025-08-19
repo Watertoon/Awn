@@ -29,6 +29,7 @@ namespace awn::sys {
             void Wait() {
                 const u32 result = ::WaitForSingleObjectEx(m_handle, INFINITE, false);
                 VP_ASSERT(result != WAIT_FAILED && result != WAIT_TIMEOUT);
+                return;
             }
 
             void Signal() {
@@ -44,7 +45,7 @@ namespace awn::sys {
                 VP_ASSERT(result);
             }
         public:
-            void SetNativeHandle(sys::NativeHandle native_handle);
-            sys::NativeHandle GetNativeHandle();
+            constexpr void SetNativeHandle(sys::NativeHandle native_handle) { m_handle = native_handle; }
+            constexpr sys::NativeHandle GetNativeHandle() const { return m_handle; }
     };
 }

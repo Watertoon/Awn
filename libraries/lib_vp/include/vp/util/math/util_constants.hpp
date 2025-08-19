@@ -33,12 +33,13 @@ namespace vp::util {
     constexpr inline float cFloatUlp                = 1.1920929E-7;
     constexpr inline float cFloatMax                = FLT_MAX;
 
-    constexpr inline double cDoublePi          = 3.1415927;
-    constexpr inline double cDouble2Pi         = 6.2831855;
-    constexpr inline double cDoublePiDivided2  = 1.5707964;
-    constexpr inline double cDouble3PiDivided2 = 4.712389;
-    constexpr inline double cDouble1Divided2Pi = 0.15915494;
-    constexpr inline double cDoubleDegree180   = 180.0;
+    constexpr inline double cDoublePi               = 3.1415927;
+    constexpr inline double cDouble2Pi              = 6.2831855;
+    constexpr inline double cDoublePiDivided2       = 1.5707964;
+    constexpr inline double cDouble3PiDivided2      = 4.712389;
+    constexpr inline double cDouble1Divided2Pi      = 0.15915494;
+    constexpr inline double cDoubleDegree180        = 180.0;
+    constexpr inline double cDoubleNormalizeEpsilon = 6.7178761075660375e-140;
     constexpr inline double cDoubleMax         = DBL_MAX;
 
     template <typename T>

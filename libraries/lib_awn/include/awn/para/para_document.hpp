@@ -41,20 +41,25 @@ namespace awn::para {
             u32                 m_reference_count;
             u32                 m_is_parent_resolved;
         private:
+            constexpr TypedParam *GetTypedParamBase() const { return m_typed_param; }
             static Result UnresolveParentRescursiveImpl(CompositeLoopInfo *loop_info, vp::util::IFunction<void(TypedParam*)> *unresolve_function);
         public:
             constexpr Document() : m_tree_node(), m_resource(), m_typed_param(), m_file_path(), m_file_name(), m_hash(), m_reference_count(), m_is_parent_resolved() {/*...*/}
             constexpr Document(const char *file_path, TypedParam *typed_param) : m_tree_node(), m_resource(), m_typed_param(typed_param), m_file_path(file_path), m_file_name(vp::util::AdvancePathNoDirectory(file_path)), m_hash(vp::util::DualHashMurmur64(file_path, typed_param->GetClassName())), m_reference_count(), m_is_parent_resolved() {/*...*/}
             ~Document();
 
-            constexpr TypedParam *GetTypedParamBase() const { return m_typed_param; }
 
             template <typename T>
                 requires (TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()))
-            ALWAYS_INLINE T *GetTypedParam() const {
+            T *GetTypedParam() const {
                 TypedParam *typed_param = this->GetTypedParamBase();
-                const bool is_rtti_compatible = (typed_param != nullptr) ? T::CheckRuntimeTypeInfoStatic(typed_param->GetRuntimeTypeInfo()) : false;
-                return (is_rtti_compatible) ? reinterpret_cast<T*>(typed_param) : nullptr;
+                if constexpr (TypedParam::GetRuntimeTypeInfoStatic() == T::GetRuntimeTypeInfoStatic()) {
+                    return typed_param;
+                } else {
+                    const bool is_rtti_valid = T::CheckRuntimeTypeInfoStatic(typed_param);
+                    T *result = (is_rtti_valid) ? reinterpret_cast<T*>(typed_param) : nullptr;
+                    return result;
+                }
             }
 
             void UnresolveFreeHandle();
@@ -66,12 +71,16 @@ namespace awn::para {
     };
 
     template <typename T>
-    ALWAYS_INLINE T *DocumentBinder::GetTypedParam() const {
+    T *DocumentBinder::GetTypedParam() const {
         static_assert(TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()));
         if (m_document == nullptr) { return nullptr; }
-        TypedParam *typed_param = m_document->m_typed_param;
-        const bool is_rtti_valid = T::CheckRuntimeTypeInfoStatic(typed_param);
-        T *result = (is_rtti_valid) ? reinterpret_cast<T*>(typed_param) : nullptr;
-        return result;
+        TypedParam *typed_param = m_document->GetTypedParamBase();
+        if constexpr (TypedParam::GetRuntimeTypeInfoStatic() == T::GetRuntimeTypeInfoStatic()) {
+            return typed_param;
+        } else {
+            const bool is_rtti_valid = T::CheckRuntimeTypeInfoStatic(typed_param);
+            T *result = (is_rtti_valid) ? reinterpret_cast<T*>(typed_param) : nullptr;
+            return result;
+        }
     }
 }

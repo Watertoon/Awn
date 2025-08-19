@@ -73,5 +73,6 @@ namespace vp::res {
 
         void Relocate();
         void Unrelocate();
+        void UnrelocateFromBase(void *base);
 	};
 }

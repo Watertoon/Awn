@@ -88,6 +88,27 @@ namespace vp::util {
 
     template <typename T>
         requires (T::cIsVectorizedType)
+    constexpr void Store16(typename T::UnderlyingType *out_address, T const *address) {
+        using Type = T::UnderlyingType;
+        if (!std::is_constant_evaluated()) {
+#ifdef VP_TARGET_ARCHITECTURE_x86
+            if constexpr (std::is_same_v<Type, float>) {
+                _mm256_storeu_ps(out_address, *reinterpret_cast<__m256 const *>(address));
+                return;
+            } else if constexpr (std::is_integral_v<Type> && BITSIZEOF(T) == 256) {
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(out_address), *reinterpret_cast<__m256i const *>(address));
+                return;
+            }
+#endif
+        }
+        for (u32 i = 0; i < 16; ++i) {
+            out_address[i] = (*address)[i];
+        }
+        return;
+    }
+
+    template <typename T>
+        requires (T::cIsVectorizedType)
     constexpr void Store2Aligned(typename T::UnderlyingType *out_address, T const *address) {
         using Type = T::UnderlyingType;
         if (!std::is_constant_evaluated()) {
