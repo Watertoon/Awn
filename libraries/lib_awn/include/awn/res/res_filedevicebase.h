@@ -54,6 +54,9 @@ namespace awn::res {
     constexpr s32 AwnOpenModeToNnFsOpenMode(OpenMode open_mode) {
         return static_cast<s32>(open_mode);
     }
+#elifdef VP_TARGET_PLATFORM_linux
+    using NativeFileHandle = int;
+    using NativeDirectoryHandle = DIR*;
 #endif
 
     struct DirectoryEntry {
@@ -146,7 +149,7 @@ namespace awn::res {
 
             virtual Result OpenDirectoryImpl(DirectoryHandle *out_directory_handle, const char *path)                         { VP_ASSERT(false); VP_UNUSED(out_directory_handle, path); RESULT_RETURN_SUCCESS; }
             virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle)                                              { VP_ASSERT(false); VP_UNUSED(directory_handle); RESULT_RETURN_SUCCESS; }
-            virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { VP_ASSERT(false); VP_UNUSED(directory_handle, entry_array, entry_count); RESULT_RETURN_SUCCESS; }
+            virtual Result ReadDirectoryImpl(u32 *out_read_count, DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { VP_ASSERT(false); VP_UNUSED(out_read_count, directory_handle, entry_array, entry_count); RESULT_RETURN_SUCCESS; }
 
             virtual Result CheckDirectoryExistsImpl(const char *path) { VP_ASSERT(false); VP_UNUSED(path); RESULT_RETURN_SUCCESS; }
 
@@ -175,19 +178,18 @@ namespace awn::res {
             Result FlushFile(FileHandle *file_handle)                                                                                      { return this->FlushFileImpl(file_handle); }
 
             Result Commit() { return this->CommitImpl(); }
-    
             Result GetFileSize(size_t *out_size, FileHandle *file_handle) { return this->GetFileSizeImpl(out_size, file_handle); }
             Result GetFileSize(size_t *out_size, const char *path)        { return this->GetFileSizeImpl(out_size, path); }
 
             Result CheckFileExists(const char *path) { return CheckFileExistsImpl(path); }
-
+        public:
             Result CreateDirectory(const char *path) { return this->CreateDirectoryImpl(path); }
             Result OpenDirectory(DirectoryHandle *out_directory_handle, const char *path)                         { return this->OpenDirectoryImpl(out_directory_handle, path); }
             Result CloseDirectory(DirectoryHandle *directory_handle)                                              { return this->CloseDirectoryImpl(directory_handle); }
-            Result ReadDirectory(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { return this->ReadDirectoryImpl(directory_handle, entry_array, entry_count); }
+            Result ReadDirectory(u32 *out_read_count, DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) { return this->ReadDirectoryImpl(out_read_count, directory_handle, entry_array, entry_count); }
 
             Result CheckDirectoryExists(const char *path) { return this->CheckDirectoryExistsImpl(path); }
-
+        public:
             constexpr const char *GetDeviceName() const { return m_drive.GetString(); }
     };
 }

@@ -20,8 +20,8 @@ namespace awn::gfx::impl {
     Result ConvertVkResultToResult(VkResult vk_result);
 
     struct ContextInfo {
-        const char *app_name = "AwnDefault";
-        const char *engine_name = "Awn";
+        const char *app_name = "Default";
+        const char *engine_name = "Awn_001";
         OptionalFeatureMask preferred_optional_feature_mask;
         OptionalFeatureMask required_optional_feature_mask;
         size_t texture_view_descriptor_count;
@@ -33,6 +33,10 @@ namespace awn::gfx::impl {
         VkPhysicalDevice vk_physical_device;
         VkDevice vk_device;
     };
+
+#ifdef VP_TARGET_PLATFORM_linux
+    bool IsWaylandCompatibleVkPhysicalDevice(const VkPhysicalDeviceDrmPropertiesEXT *prop);
+#endif
 
     class Context {
         public:
@@ -76,8 +80,10 @@ namespace awn::gfx::impl {
             static constexpr size_t cTargetUniformBufferAlignment    = 0x40;
             static constexpr size_t cTargetStorageBufferAlignment    = 0x40;
             static constexpr size_t cTargetTexelBufferAlignment      = 0x40;
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             static constexpr size_t cTargetDescriptorBufferAlignment = 0x100;
             static constexpr size_t cTargetDescriptorBufferOffsetAlignment = 0x40;
+        #endif
 
             /* Max resource sizes */
             static constexpr size_t cTargetMaxUniformBufferSize = vp::util::c64KB;
@@ -86,6 +92,8 @@ namespace awn::gfx::impl {
             static constexpr size_t cTargetMaxTextureViewCount = 0xffff;
             static constexpr size_t cTargetMaxSamplerCount = 0xfa0;
 
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+            /* Descriptor buffer descriptor size */
             static constexpr size_t cTargetMaxTextureSamplerDescriptorSize  = 0x80;
             static constexpr size_t cTargetMaxUniformBufferDescriptorSize   = 0x40;
             static constexpr size_t cTargetMaxStorageBufferDescriptorSize   = 0x40;
@@ -100,14 +108,22 @@ namespace awn::gfx::impl {
             /* Base descriptor set layout bindings */
             static constexpr size_t cBindlessBindingBaseTexture = 0;
             static constexpr size_t cBindlessBindingBaseSampler = 1;
+        #else
+            /* Descriptor heap descriptor size */
+            static constexpr size_t cTargetMaxImageDescriptorSize = 0x40;
+            static constexpr size_t cTargetMaxSeparateTextureDescriptorSize = 0x40;
+            static constexpr size_t cTargetMaxSeparateSamplerDescriptorSize = 0x40;
+            static constexpr size_t cMaxPerStageBindCount = 1;
+        #endif
 
             /* Per Shader stage resource limits */
-            static constexpr size_t cTargetMaxShaderStageCount = 8;
+            static constexpr size_t cTargetMaxShaderStageCount = vp::res::cMaxShaderStageCount;
             static constexpr size_t cTargetMaxSimultaneousShaderStageCount = 5;
 
             static constexpr size_t cTargetMaxMeshShaderStageCount      = 3;
             static constexpr size_t cTargetMaxPrimitiveShaderStageCount = 5;
             static constexpr size_t cTargetMaxComputeShaderStageCount   = 1;
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
         public:
             static constexpr size_t cTargetBindlessLayoutSet = 0;
 
@@ -123,6 +139,7 @@ namespace awn::gfx::impl {
             static constexpr size_t cMaxCombinedSetCountCompute = 3;
             static constexpr size_t cMaxPerStageSetCount = vp::util::Max(cMaxCombinedSetCountGraphics, cMaxCombinedSetCountCompute);
             static constexpr size_t cMaxPerStageBindCount = 2;
+        #endif
         public:
             static constexpr size_t cTargetMaxPerStageInputCount           = 32;
             static constexpr size_t cTargetMaxPerStageOutputCount          = 32;
@@ -141,6 +158,7 @@ namespace awn::gfx::impl {
             void SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, const ContextInfo *context_info);
             void InitializeLogicalDevice(const ContextInfo *context_info);
             void FinalizeLogicalDevice();
+    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             void InitializePipelineLayout(const ContextInfo *context_info);
             void FinalizePipelineLayout();
         public:
@@ -149,6 +167,7 @@ namespace awn::gfx::impl {
                 VkDescriptorSetLayout vk_descriptor_set_layout_array[cMaxPerStageSetCount];
                 //VkPushConstantRange vk_push_constant_range;
             };
+    #endif
         private:
             /* Vulkan current physical device objects */
             VkInstance            m_vk_instance;
@@ -158,10 +177,12 @@ namespace awn::gfx::impl {
             u32                   m_queue_family_index_array_linear[cTargetMaxQueueCount];
             u32                   m_queue_family_index_array_enum[cTargetMaxQueueCount];
             VkQueue               m_vk_queue_array_enum[cTargetMaxQueueCount];
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             VkDescriptorSetLayout m_vk_bindless_descriptor_set_layout;
             PerStageDescriptorLayout m_per_stage_descriptor_layout;
             VkPipelineLayout m_vk_combined_pipeline_layout_graphics;
             VkPipelineLayout m_vk_combined_pipeline_layout_compute;
+        #endif
 
             /* Vulkan physical device properties */
             VkPhysicalDeviceProperties2                        m_vk_physical_device_properties;
@@ -170,10 +191,19 @@ namespace awn::gfx::impl {
             VkPhysicalDeviceVulkan13Properties                 m_vk_physical_device_properties_13;
             VkPhysicalDeviceVulkan14Properties                 m_vk_physical_device_properties_14;
             VkPhysicalDeviceShaderObjectPropertiesEXT          m_vk_physical_device_shader_object_properties;
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             VkPhysicalDeviceDescriptorBufferPropertiesEXT      m_vk_physical_device_descriptor_buffer_properties;
+        #else
+            VkPhysicalDeviceDescriptorHeapPropertiesEXT        m_vk_physical_device_descriptor_heap_properties;
+        #endif
             VkPhysicalDeviceNestedCommandBufferPropertiesEXT   m_vk_physical_device_nested_command_buffer_properties;
             VkPhysicalDeviceRobustness2PropertiesEXT           m_vk_physical_device_robustness_2_properties;
             VkPhysicalDeviceMeshShaderPropertiesEXT            m_vk_physical_device_mesh_shader_properties;
+#ifdef VP_TARGET_PLATFORM_linux
+            VkPhysicalDeviceDrmPropertiesEXT m_vk_physical_device_drm_properties;
+            //int m_drm_fd;
+            //struct gbm_device *m_gbm_device;
+#endif
 
             /* Vulkan physical device features */
             MissingFeatures     m_missing_features;
@@ -222,8 +252,10 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE Context() :
             m_vk_instance(), m_vk_physical_device(), m_vk_device(),
             m_queue_family_index_count(), m_queue_family_index_array_linear(), m_queue_family_index_array_enum(), m_vk_queue_array_enum(),
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             m_vk_bindless_descriptor_set_layout(),
             m_per_stage_descriptor_layout{},
+        #endif
             m_vk_physical_device_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
                 .pNext = std::addressof(m_vk_physical_device_properties_11),
@@ -244,6 +276,7 @@ namespace awn::gfx::impl {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
                 .pNext = std::addressof(m_vk_physical_device_shader_object_properties),
             },
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             m_vk_physical_device_shader_object_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
                 .pNext = std::addressof(m_vk_physical_device_descriptor_buffer_properties),
@@ -252,6 +285,16 @@ namespace awn::gfx::impl {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
                 .pNext = std::addressof(m_vk_physical_device_nested_command_buffer_properties),
             },
+        #else
+            m_vk_physical_device_shader_object_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_descriptor_heap_properties),
+            },
+            m_vk_physical_device_descriptor_heap_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_PROPERTIES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_nested_command_buffer_properties),
+            },
+        #endif
             m_vk_physical_device_nested_command_buffer_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
                 .pNext = std::addressof(m_vk_physical_device_robustness_2_properties),
@@ -262,8 +305,18 @@ namespace awn::gfx::impl {
             },
             m_vk_physical_device_mesh_shader_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
+#ifdef VP_TARGET_PLATFORM_linux
+                .pNext = std::addressof(m_vk_physical_device_drm_properties),
+#endif
+            },
+#ifdef VP_TARGET_PLATFORM_linux
+            m_vk_physical_device_drm_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT,
                 .pNext = nullptr,
             },
+            //m_drm_fd(-1),
+            //m_gbm_device(),
+#endif
             m_missing_features(),
             m_optional_features(),
             m_is_unified_memory()
@@ -300,13 +353,14 @@ namespace awn::gfx::impl {
             }
             static_assert(VK_MAX_MEMORY_TYPES == 32);
 
-            constexpr ALWAYS_INLINE u32 GetVkMemoryTypeIndex(MemoryPropertyFlags memory_property_flags) const {
+            constexpr ALWAYS_INLINE u32 GetVkMemoryTypeIndex(MemoryPropertyFlags memory_property_flags, u32 restrict_memory_type_bits) const {
 
                 u32 vk_memory_properties    = vp::res::GfxMemoryPoolFlagsToVkMemoryPropertyFlags(memory_property_flags);
                 u32 closest_type            = 0xffff'ffff;
                 u32 closest_extra_props     = 0xffff'ffff;
                 const u32 memory_type_count = m_vk_physical_device_memory_properties.memoryTypeCount;
                 for (u32 i = 0; i < memory_type_count; ++i) {
+                    if (restrict_memory_type_bits != 0 && ((restrict_memory_type_bits >> i) & 1) == 0) { continue; }
 
                     /* Exact match */
                     if (m_vk_physical_device_memory_properties.memoryTypes[i].propertyFlags == vk_memory_properties) { return i; }
@@ -346,6 +400,7 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE u32 GetVideoEncodeQueueFamilyIndex() const { return m_queue_family_index_array_enum[static_cast<u32>(QueueType::VideoEncode)]; }
             constexpr ALWAYS_INLINE u32 GetOpticalFlowQueueFamilyIndex() const { return m_queue_family_index_array_enum[static_cast<u32>(QueueType::OpticalFlow)]; }
 
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             constexpr ALWAYS_INLINE VkDescriptorSetLayout GetBindlessVkDescriptorSetLayout() const { return m_vk_bindless_descriptor_set_layout; }
             constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedTextureSampler() const { return this->GetPerStageDescriptorLayout()->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet]; }
             constexpr ALWAYS_INLINE VkDescriptorSetLayout GetPerStageVkDescriptorSetLayoutCombinedBuffer() const { return this->GetPerStageDescriptorLayout()->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet]; }
@@ -403,10 +458,14 @@ namespace awn::gfx::impl {
             static constexpr ALWAYS_INLINE u32 GetPerStageBindingBaseSeparateSampler() { 
                 return 0;
             }
+        #else
+            
+        #endif
 
             constexpr ALWAYS_INLINE const VkPhysicalDeviceProperties2 *GetPhysicalDeviceProperties() const { return std::addressof(m_vk_physical_device_properties); }
             constexpr ALWAYS_INLINE const void *GetPhysicalDeviceLuid() const { return m_vk_physical_device_properties_11.deviceLUID; }
 
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             constexpr ALWAYS_INLINE size_t GetBindlessDescriptorLayoutSize()  const {
                 size_t layout_size = 0;
                 ::pfn_vkGetDescriptorSetLayoutSizeEXT(this->GetVkDevice(), this->GetBindlessVkDescriptorSetLayout(), std::addressof(layout_size));
@@ -433,6 +492,16 @@ namespace awn::gfx::impl {
                 const size_t max4 = vp::util::Max(max3, this->GetSeparateSamplerDescriptorSize());
                 return max4;
             }
+            constexpr ALWAYS_INLINE size_t GetCombinedTextureSamplerDescriptorSize()  const {
+                const size_t max0 = vp::util::Max(this->GetTextureSamplerDescriptorSize(), this->GetImageDescriptorSize());
+                const size_t max1 = vp::util::Max(max0, this->GetSeparateTextureDescriptorSize());
+                const size_t max2 = vp::util::Max(max1, this->GetSeparateSamplerDescriptorSize());
+                return max2;
+            }
+            constexpr ALWAYS_INLINE size_t GetCombinedBufferDescriptorSize()  const {
+                const size_t max0 = vp::util::Max(this->GetStorageBufferDescriptorSize(), this->GetUniformBufferDescriptorSize());
+                return max0;
+            }
             constexpr ALWAYS_INLINE size_t GetTextureSamplerDescriptorSize()  const { return m_vk_physical_device_descriptor_buffer_properties.combinedImageSamplerDescriptorSize; }
             constexpr ALWAYS_INLINE size_t GetUniformBufferDescriptorSize()   const { return m_vk_physical_device_descriptor_buffer_properties.uniformBufferDescriptorSize; }
             constexpr ALWAYS_INLINE size_t GetStorageBufferDescriptorSize()   const { return m_vk_physical_device_descriptor_buffer_properties.storageBufferDescriptorSize; }
@@ -440,6 +509,20 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE size_t GetSeparateTextureDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.sampledImageDescriptorSize; }
             constexpr ALWAYS_INLINE size_t GetSeparateSamplerDescriptorSize() const { return m_vk_physical_device_descriptor_buffer_properties.samplerDescriptorSize; }
             constexpr ALWAYS_INLINE size_t GetDescriptorOffsetAlignment()     const { return m_vk_physical_device_descriptor_buffer_properties.descriptorBufferOffsetAlignment; }
+        #else
+            constexpr ALWAYS_INLINE size_t GetImageDescriptorSize()                 const { return m_vk_physical_device_descriptor_heap_properties.imageDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetSeparateTextureDescriptorSize()       const { return m_vk_physical_device_descriptor_heap_properties.imageDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetSeparateSamplerDescriptorSize()       const { return m_vk_physical_device_descriptor_heap_properties.samplerDescriptorSize; }
+            constexpr ALWAYS_INLINE size_t GetImageDescriptorAlignment()            const { return m_vk_physical_device_descriptor_heap_properties.imageDescriptorAlignment; }
+            constexpr ALWAYS_INLINE size_t GetSeparateTextureDescriptorAlignment()  const { return m_vk_physical_device_descriptor_heap_properties.imageDescriptorAlignment; }
+            constexpr ALWAYS_INLINE size_t GetSeparateSamplerDescriptorAlignment()  const { return m_vk_physical_device_descriptor_heap_properties.samplerDescriptorAlignment; }
+            constexpr ALWAYS_INLINE size_t GetResourceDescriptorHeapAlignment()     const { return m_vk_physical_device_descriptor_heap_properties.resourceHeapAlignment; }
+            constexpr ALWAYS_INLINE size_t GetSamplerDescriptorHeapAlignment()      const { return m_vk_physical_device_descriptor_heap_properties.samplerHeapAlignment; }
+
+            constexpr ALWAYS_INLINE size_t GetResourceDescriptorHeapReservedRange() const { return m_vk_physical_device_descriptor_heap_properties.minResourceHeapReservedRange; }
+            constexpr ALWAYS_INLINE size_t GetResourceDescriptorHeapReservedAlignment() const { return vp::util::Max(m_vk_physical_device_descriptor_heap_properties.imageDescriptorAlignment, m_vk_physical_device_descriptor_heap_properties.bufferDescriptorAlignment); }
+            constexpr ALWAYS_INLINE size_t GetSamplerDescriptorHeapReservedRange()  const { return m_vk_physical_device_descriptor_heap_properties.minSamplerHeapReservedRange; }
+        #endif
 
             constexpr bool IsOptionalFeature(OptionalFeature optional_feature) const {
                 return m_optional_features.GetBit(static_cast<u32>(optional_feature));
@@ -447,6 +530,11 @@ namespace awn::gfx::impl {
             constexpr bool IsUnifiedMemory() const {
                 return m_is_unified_memory;
             }
+        public:
+#ifdef VP_TARGET_PLATFORM_linux
+            //constexpr int GetDrmFd() const { return m_drm_fd; }
+            //constexpr struct gbm_device *GetGbmDevice() { return m_gbm_device; }
+#endif
     };
 }
 

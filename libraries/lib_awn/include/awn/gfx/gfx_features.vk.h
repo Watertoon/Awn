@@ -44,7 +44,7 @@ namespace awn::gfx {
         /* VkPhysicalDeviceFeatures12 features */
         SupportsShaderFloat16,
         SupportsDescriptorIndexing,
-        SupportsShaderInputAttachmentArrayDynamicIndexing,
+        //SupportsShaderInputAttachmentArrayDynamicIndexing,
         SupportsShaderUniformBufferArrayNonUniformIndexing,
         SupportsShaderSampledImageArrayNonUniformIndexing,
         SupportsShaderStorageBufferArrayNonUniformIndexing,
@@ -91,78 +91,8 @@ namespace awn::gfx {
         /* VK_EXT_nested_command_buffer */
         SupportsNestedCommandBuffers,
     };
-    VP_ENUM_TRAITSV(
-        awn::gfx::RequiredFeature, RequiredFeature,
-        GraphicsQueue,
-        TargetApiVersion,
-        TargetUniformBufferSize,
-        TargetMemoryMapAlignment,
-        TargetUniformBufferAlignment,
-        TargetStorageBufferAlignment,
-        TargetMaxTextureViewCount,
-        TargetMaxSamplerCount,
-        SupportsFullDrawU32,
-        SupportsIndependentBlend,
-        SupportsGeometryShaders,
-        SupportsTessellationShaders,
-        SupportsLogicOperation,
-        SupportsDepthClamp,
-        SupportsDepthBiasClamp,
-        SupportsFillModeNonSolid,
-        SupportsWideLines,
-        SupportsLargePoints,
-        SupportsMultiViewport,
-        SupportsSamplerAnisotropy,
-        SupportsBC,
-        SupportsFragmentStoresAndAtomics,
-        SupportsShaderStorageImageExtendedFormats,
-        SupportsShaderUniformBufferArrayDynamicIndexing,
-        SupportsShaderSampledImageArrayDynamicIndexing,
-        SupportsShaderStorageBufferArrayDynamicIndexing,
-        SupportsShaderStorageImageArrayDynamicIndexing,
-        SupportsShaderInt64,
-        SupportsStorageBuffer16BitAccess,
-        SupportsUniformAndStorageBuffer16BitAccess,
-        SupportsStorageInputOutput16,
-        SupportsVariablePointersStorageBuffer,
-        SupportsVariablePointers,
-        SupportsShaderFloat16,
-        SupportsDescriptorIndexing,
-        SupportsShaderInputAttachmentArrayDynamicIndexing,
-        SupportsShaderUniformBufferArrayNonUniformIndexing,
-        SupportsShaderSampledImageArrayNonUniformIndexing,
-        SupportsShaderStorageBufferArrayNonUniformIndexing,
-        SupportsShaderStorageImageArrayNonUniformIndexing,
-        SupportsDescriptorBindingUniformBufferArrayUpdateAfterBind,
-        SupportsDescriptorBindingSampledImageArrayUpdateAfterBind,
-        SupportsDescriptorBindingStorageBufferArrayUpdateAfterBind,
-        SupportsDescriptorBindingStorageImageArrayUpdateAfterBind,
-        SupportsDescriptorBindingUpdateUnusedWhilePending,
-        SupportsDescriptorBindingPartiallyBound,
-        SupportsDescriptorBindingVariableDescriptorCount,
-        SupportsRuntimeDescriptorArray,
-        SupportsScalarBlockLayout,
-        SupportsUniformBufferStandardLayout,
-        SupportsTimelineSemaphore,
-        SupportsBufferDeviceAddress,
-        SupportsSynchronization2,
-        SupportsDynamicRendering,
-        SupportsMaintenance4,
-        SupportsVertexAttributeInstanceRateDivisor,
-        SupportsVertexAttributeInstanceRateZeroDivisor,
-        SupportsIndexTypeU8,
-        SupportsDynamicRenderingLocalRead,
-        SupportsMaintenance5,
-        SupportsMaintenance6,
-        SupportsHostImageCopy,
-        SupportsExternalMemoryHost,
-        SupportsShaderObject,
-        SupportsDescriptorBuffer,
-        SupportsMutableDescriptors,
-        SupportsNestedCommandBuffers
-    );
 
-    static constexpr u32 cRequiredFeatureCount = RequiredFeatureTraits::cEnumCount;
+    static constexpr u32 cRequiredFeatureCount = vp::util::TEnumTraits<RequiredFeature>::cEnumCount;
     using RequiredFeatureMask = vp::util::FixedConnection<u64, cRequiredFeatureCount>;
 
     enum class OptionalFeature : u32 {
@@ -192,20 +122,8 @@ namespace awn::gfx {
         /* VK_NVX_image_view_handle */
         //SupportsNvBindlessTexture,
     };
-    VP_ENUM_TRAITSV(
-        awn::gfx::OptionalFeature, OptionalFeature,
-        SupportsSeparateTextureAndSeparateSampler,
-        SupportsAstcLdr,
-        SupportsShaderMaximalReconvergence,
-        SupportsRobustness2,
-        SupportsVertexAttributeRobustness,
-        SupportsMeshShaders,
-        SupportsCommandBufferInheritance
-        //SupportsPerStageDescriptorSets,
-        //SupportsNvBindlessTexture
-    );
 
-    static constexpr u32 cOptionalFeatureCount = OptionalFeatureTraits::cEnumCount;
+    static constexpr u32 cOptionalFeatureCount = vp::util::TEnumTraits<OptionalFeature>::cEnumCount;
     using OptionalFeatureMask = vp::util::FixedConnection<u32, cOptionalFeatureCount>;
 
     constexpr bool IsOptionalFeature(OptionalFeature optional_feature);
@@ -244,5 +162,3 @@ namespace awn::gfx {
         }
     };
 }
-VP_ENUM_TRAITS_AUTO(awn::gfx::RequiredFeature);
-VP_ENUM_TRAITS_AUTO(awn::gfx::OptionalFeature);

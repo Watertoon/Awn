@@ -56,14 +56,14 @@ namespace awn::para {
 
                 /* Get real count */
                 vp::res::ByamlData  data = {};
-                const char         *key  = "";
-                u32                 real_count = 0;
+                const char *key  = "";
+                u32 real_count = 0;
                 for (u32 i = 0; i < count; ++i) {
                     real_count = real_count + byaml_iterator.TryGetByamlDataAndKeyByIndex(std::addressof(data), std::addressof(key), i);
                 }
 
                 /* Create array */
-                m_map.Initialize(heap, real_count);
+                RESULT_ABORT_UNLESS(m_map.Initialize(heap, real_count));
 
                 /* Parse data */
                 for (u32 i = 0; i < count; ++i) {

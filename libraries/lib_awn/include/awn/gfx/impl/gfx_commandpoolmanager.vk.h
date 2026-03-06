@@ -23,6 +23,7 @@ namespace awn::gfx::impl {
 
     static constexpr u32 cMaxCommandBufferCount = 0x8000;
     using CommandPoolId = vp::util::MinUIntType<cMaxCommandBufferCount>;
+    static constexpr CommandPoolId cInvalidCommandPoolId = static_cast<CommandPoolId>(0xffff'ffff'ffff'ffff);
 
     class CommandPoolManager {
         public:
@@ -32,7 +33,6 @@ namespace awn::gfx::impl {
                 VkCommandPool vk_command_pool;
             };
         public:
-            static constexpr CommandPoolId cInvalidCommandPoolId = static_cast<CommandPoolId>(0xffff'ffff'ffff'ffff);
             static constexpr size_t cMaxCommandBufferThreadCount = 0x80;
         public:
             using HandleAllocator = vp::util::AtomicIndexAllocator<CommandPoolId>;

@@ -35,7 +35,7 @@ namespace vp::util {
         };
 
         template <typename V>
-            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+            requires (V::cIsVectorType && 2 <= V::cCount)
         constexpr V GetPosition() const {
             using Type = typename V::UnderlyingType;
             const Type x = static_cast<Type>(this->left + this->right) / static_cast<Type>(2);
@@ -44,7 +44,7 @@ namespace vp::util {
         }
 
         template <typename V>
-            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+            requires (V::cIsVectorType && 2 <= V::cCount)
         constexpr V GetSize() const {
             using Type = typename V::UnderlyingType;
             const Type w = static_cast<T>(right - left);
@@ -53,7 +53,7 @@ namespace vp::util {
         }
 
         template <typename V>
-            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+            requires (V::cIsVectorType && 2 <= V::cCount)
         constexpr void SetPosition(const V &position) {
             using Type = typename V::UnderlyingType;
             const V size = this->GetSize<V>();
@@ -68,7 +68,7 @@ namespace vp::util {
         }
 
         template <typename V>
-            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+            requires (V::cIsVectorType && 2 <= V::cCount)
         constexpr void SetSize(const V &size) {
             using Type = typename V::UnderlyingType;
             const V position = this->GetPosition<V>();
@@ -101,7 +101,7 @@ namespace vp::util {
         }
 
         template <typename V>
-            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+            requires (V::cIsVectorType && 2 <= V::cCount)
         constexpr bool IsOverlapping(const V &position) const {
             const T left_l   = this->left;
             const T top_l    = this->top;
@@ -362,7 +362,7 @@ namespace vp::util {
         }
 
         template <typename V>
-            requires (V::cIsVectorType && 2 <= V::cVectorCount)
+            requires (V::cIsVectorType && 2 <= V::cCount)
         constexpr V ClampPoint(const V &position) const {
 
             /* Clamp position to rect */
@@ -378,8 +378,8 @@ namespace vp::util {
         }
 
         template <typename V>
-            requires (V::cIsVectorType && 2 <= V::cVectorCount)
-        constexpr vp::util::Float2 NormalizePointFloat(const V &position) const {
+            requires (V::cIsVectorType && 2 <= V::cCount)
+        constexpr Float2 NormalizePointFloat(const V &position) const {
 
             /* Convert to normalized floating point */
             V point = this->ClampPoint(position);

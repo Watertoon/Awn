@@ -86,7 +86,7 @@ namespace awn::res {
         directory_handle->entry_index = 0;
         RESULT_RETURN_SUCCESS;
     }
-    Result ArchiveFileDevice::ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) {
+    Result ArchiveFileDevice::ReadDirectoryImpl(u32 *out_read_count, DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) {
         
         /* Integrity checks */
         RESULT_RETURN_UNLESS(directory_handle != nullptr, ResultNullDirectoryHandle);
@@ -100,7 +100,13 @@ namespace awn::res {
 
         /* Read directory entries */
         u32 iter_index = directory_handle->entry_index;
-        for (u32 i = 0; iter_index < end_offset; ++iter_index) {
+        u32 i = 0;
+        ON_SCOPE_EXIT {
+            if (out_read_count != nullptr) {
+                *out_read_count = i;
+            }
+        };
+        for (; iter_index < end_offset; ++iter_index) {
             const bool result = m_archive_resource->TryReadDirectoryEntryByIndex(std::addressof(entry_array[i]), iter_index);
             RESULT_RETURN_IF(result == false, ResultDirectoryExhausted);
             ++i;

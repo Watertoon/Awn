@@ -9,33 +9,33 @@ namespace vp::util {
                 private:
                     T *m_array;
                 public:
-                    constexpr ALWAYS_INLINE Iterator(T *array) : m_array(array) {/*...*/}
-                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
+                    constexpr Iterator(T *array) : m_array(array) {/*...*/}
+                    constexpr ~Iterator() {/*...*/}
 
-                    constexpr ALWAYS_INLINE T &operator*() {
+                    constexpr T &operator*() {
                         return *m_array;
                     }
-                    constexpr ALWAYS_INLINE const T &operator*() const {
+                    constexpr const T &operator*() const {
                         return *m_array;
                     }
 
-                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
+                    constexpr bool operator==(const Iterator &rhs) const {
                         return m_array == rhs.m_array;
                     }
 
-                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
+                    constexpr bool operator!=(const Iterator &rhs) const {
                         return m_array != rhs.m_array;
                     }
 
-                    constexpr ALWAYS_INLINE Iterator &operator++() {
+                    constexpr Iterator &operator++() {
                         ++m_array;
                         return *this;
                     }
-                    constexpr ALWAYS_INLINE Iterator &operator++([[maybe_unused]]int) {
+                    constexpr Iterator &operator++([[maybe_unused]]int) {
                         ++m_array;
                         return *this;
                     }
-                    constexpr ALWAYS_INLINE Iterator &operator--() {
+                    constexpr Iterator &operator--() {
                         --m_array;
                         return *this;
                     }
@@ -48,6 +48,44 @@ namespace vp::util {
 			constexpr FrameArray() : m_count(), m_max(), m_array() {/*...*/}
 			constexpr ~FrameArray() {/*...*/}
 
+            Result Initialize(imem::IHeap *heap, u32 count, s32 alignment = 8) {
+
+                /* Integrity checks */
+                RESULT_RETURN_UNLESS(count != 0, ResultRangeNG);
+
+                /* Allocate pointer array */
+                T *array = new (heap, alignment) T[count];
+                RESULT_RETURN_UNLESS(array != nullptr, ResultNoMemory);
+
+                /* Set state */
+                m_array = array;
+                m_count = 0;
+                m_max = count;
+
+                RESULT_RETURN_SUCCESS;
+            }
+
+            void Finalize() {
+                if (m_array != nullptr) {
+                    delete [] m_array;
+                    m_array = nullptr;
+                }
+                m_count = 0;
+                m_max  = 0;
+                return;
+            }
+
+            static constexpr size_t GetRequiredMemorySize(u32 count) {
+                return sizeof(T) * count;
+            }
+
+            constexpr void SetMemory(T *array, u32 count) {
+                m_array = array;
+                m_count = 0;
+                m_max   = count;
+                return;
+            }
+        public:
             constexpr Iterator begin() {
                 return Iterator(m_array);
             }
@@ -55,7 +93,7 @@ namespace vp::util {
                 return Iterator(m_array + m_count);
             }
 
-            constexpr ALWAYS_INLINE T operator[](u32 index) {
+            constexpr T operator[](u32 index) {
                 if (index <= m_count) {
                     VP_ASSERT(index <= m_count);
                     index = 0;
@@ -64,59 +102,17 @@ namespace vp::util {
                 return m_array[index];
             }
 
-            constexpr ALWAYS_INLINE const T operator[](u32 index) const {
+            constexpr const T operator[](u32 index) const {
                 if (index <= m_count) {
                     VP_ASSERT(index <= m_count);
                     index = 0;
                     VP_ASSERT(0 < m_max);
                 }
                 return m_array[index];
-            }
-
-            ALWAYS_INLINE void Initialize(imem::IHeap *heap, u32 value_count, s32 alignment = 8) {
-
-                /* Integrity checks */
-                VP_ASSERT(value_count != 0);
-                VP_ASSERT(m_array == nullptr && m_max == 0);
-
-                /* Allocate pointer array */
-                m_array = new (heap, alignment) T[value_count];
-                VP_ASSERT(m_array != nullptr);
-
-                /* Set state */
-                m_count = 0;
-                m_max  = value_count;
-
-                return;
-            }
-
-            ALWAYS_INLINE void Finalize() {
-
-                if (m_array != nullptr) {
-                    delete [] m_array;
-                }
-                m_count = 0;
-                m_max  = 0;
-                m_array = nullptr;
-
-                return;
-            }
-
-            constexpr ALWAYS_INLINE void SetArray(void *array, u32 count) {
-
-                /* Integrity checks */
-                VP_ASSERT(array != nullptr && count != 0);
-
-                /* Set state */
-                m_array = reinterpret_cast<T*>(array);
-                m_count = 0;
-                m_max   = count;
-
-                return;
             }
 
             template <typename ... Args>
-            ALWAYS_INLINE T *Allocate(Args &&... args) {
+            T *Allocate(Args &&... args) {
 
                 /* Increment count */
                 const u32 count = m_count;
@@ -130,20 +126,20 @@ namespace vp::util {
                 return next;
             }
 
-            constexpr ALWAYS_INLINE void PushValue(T value) {
+            constexpr void PushValue(T value) {
                 VP_ASSERT(m_count <= m_max);
                 m_array[m_count] = value;
                 ++m_count;
             }
 
-            constexpr ALWAYS_INLINE T PopValue() {
+            constexpr T PopValue() {
                 T ret = m_array[m_count - 1];
                 m_array[m_count - 1] = nullptr;
                 --m_count;
                 return ret;
             }
 
-            ALWAYS_INLINE void RemoveRange(u32 base_index, u32 number_of_elements) {
+            void RemoveRange(u32 base_index, u32 number_of_elements) {
 
                 const u32 move_element_index = base_index + number_of_elements;
                 const u32 move_element_count = m_count - move_element_index;
@@ -158,7 +154,7 @@ namespace vp::util {
             }
 
             void Clear() { m_count = 0; }
-
+        public:
             constexpr u32 GetUsedCount() const { return m_count; }
             constexpr u32 GetMaxCount()  const { return m_max; }
 	};

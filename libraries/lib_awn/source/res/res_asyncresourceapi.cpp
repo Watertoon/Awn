@@ -17,9 +17,17 @@
 
 namespace awn::res {
 
-    Result LoadAsyncResourceSync(Resource **out_resource, const char *path, AsyncResourceLoadInfo *load_info) {
-        VP_UNUSED(out_resource, path, load_info); 
-        VP_NOT_IMPLEMENTED();
+    Result InitializeAsyncResourceManager(mem::Heap *heap, AsyncResourceManagerInfo *info) {
+        impl::AsyncResourceManager *mgr = impl::AsyncResourceManager::CreateInstance(heap);
+        RESULT_RETURN_IF(mgr == nullptr, ResultNoMemory);
+        auto fail_guard0 = SCOPE_GUARD { impl::AsyncResourceManager::DeleteInstance(); };
+        RESULT_TRY(mgr->Initialize(heap, info));
+        fail_guard0.Cancel();
+        RESULT_RETURN_SUCCESS;
+    }
+
+    Result LoadAsyncResourceSync(Resource **out_resource, const char *path, const AsyncResourceLoadInfo *load_info) {
+        return impl::AsyncResourceManager::GetInstance()->LoadSync(out_resource, path, load_info);
     }
 
     void SetControlThreadPriority(s32 priority) {
@@ -54,6 +62,10 @@ namespace awn::res {
         impl::AsyncResourceManager::GetInstance()->SetDefaultArchive(archive_binder);
     }
 
+    bool ReferenceThreadLocalArchiveToBinder(ResourceBinder *binder) {
+        return impl::AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager()->ReferenceThreadLocalArchiveToBinder(binder);
+    }
+
     void ReferenceThreadLocalArchive() {
         impl::AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager()->ReferenceThreadLocalArchive();
     }
@@ -66,7 +78,7 @@ namespace awn::res {
         impl::ThreadLocalArchiveManager *manager = impl::AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager();
         impl::LocalArchiveBinder *local_archive_binder = manager->GetThreadLocalArchive();
         if (local_archive_binder != nullptr) {
-            m_last_binder.ReferenceBinderSync(std::addressof(local_archive_binder->resource_binder));
+            RESULT_DISCARD(m_last_binder.ReferenceBinderSync(std::addressof(local_archive_binder->resource_binder)));
             local_archive_binder->resource_binder.Release();
         }
         manager->SetThreadLocalArchive(archive_binder);
@@ -76,7 +88,7 @@ namespace awn::res {
         impl::ThreadLocalArchiveManager *manager = impl::AsyncResourceManager::GetInstance()->GetThreadLocalArchiveManager();
         impl::LocalArchiveBinder *local_archive_binder = manager->GetThreadLocalArchive();
         if (local_archive_binder != nullptr) {
-            m_last_binder.ReferenceBinderSync(std::addressof(local_archive_binder->resource_binder));
+            RESULT_DISCARD(m_last_binder.ReferenceBinderSync(std::addressof(local_archive_binder->resource_binder)));
             local_archive_binder->resource_binder.Release();
         }
         manager->SetThreadLocalArchive(archive_binder);

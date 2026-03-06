@@ -62,7 +62,7 @@ namespace awn::res::impl {
             constexpr AsyncSaveManager() : m_save_file_device(), m_user_file_device(), m_save_thread(), m_delegate(this, &AsyncSaveManager::ThreadMain), m_output(), m_output_size(), m_save_path(), m_copy_path(), m_request_flags() {/*...*/}
             constexpr ~AsyncSaveManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, const char *thread_name, u32 priority, sys::CoreMask core_mask);
+            Result Initialize(mem::Heap *heap, const char *thread_name, u32 priority, sys::CoreMask core_mask);
             void Finalize();
 
             bool RequestRead(void *file_buffer, size_t buffer_size, const char *path, FileDeviceBase *user_file_device);

@@ -17,12 +17,12 @@
 
 namespace awn::res {
 
-    class ResourceUserContext {
+    class IComposeInfo {
         public:
-            VP_RTTI_BASE(ResourceUserContext);
+            VP_RTTI_BASE(IComposeInfo);
         public:
-            constexpr ResourceUserContext() {/*...*/}
-            virtual ~ResourceUserContext() {/*...*/}
+            constexpr IComposeInfo() {/*...*/}
+            virtual ~IComposeInfo() {/*...*/}
     };
 
     class ResourceFactoryBase;
@@ -39,16 +39,15 @@ namespace awn::res {
             constexpr ALWAYS_INLINE Resource() : m_file(), m_file_size() {/*...*/}
             virtual constexpr ~Resource() {/*...*/}
 
-            virtual Result OnFileLoad(mem::Heap *heap, mem::Heap *gpu_heap, void *file, size_t file_size) { VP_UNUSED(heap, gpu_heap, file, file_size); RESULT_RETURN_SUCCESS; }
-
-            virtual constexpr bool IsRequireInitializeOnCreate() const { return false; }
-
-            virtual Result Initialize(mem::Heap *heap, mem::Heap *gpu_heap, ResourceUserContext *user_context, void *file, size_t file_size) { VP_UNUSED(heap, gpu_heap, user_context, file, file_size); RESULT_RETURN_SUCCESS; }
-            virtual Result PostInitialize(mem::Heap *heap, mem::Heap *gpu_heap, ResourceUserContext *user_context, void *file, size_t file_size) { VP_UNUSED(heap, gpu_heap, user_context, file, file_size); RESULT_RETURN_SUCCESS; }
-            virtual Result PreFinalize() { RESULT_RETURN_SUCCESS; }
-            virtual void   Finalize() { return; }
-
+            virtual Result OnFileLoad(mem::Heap *heap, void *file, size_t file_size) { VP_UNUSED(heap, file, file_size); RESULT_RETURN_SUCCESS; }
             constexpr ALWAYS_INLINE void *GetFile()           { return m_file; }
             constexpr ALWAYS_INLINE u32   GetFileSize() const { return m_file_size; }
+        public:
+            virtual constexpr bool IsRequireCompose() const { return false; }
+
+            virtual Result Compose(mem::Heap *heap, IComposeInfo *info, void *file, size_t file_size) { VP_UNUSED(heap, info, file, file_size); RESULT_RETURN_SUCCESS; }
+            virtual Result PostCompose(mem::Heap *heap, IComposeInfo *info, void *file, size_t file_size) { VP_UNUSED(heap, info, file, file_size); RESULT_RETURN_SUCCESS; }
+            virtual Result PreFinalize() { RESULT_RETURN_SUCCESS; }
+            virtual void Finalize() { return; }
     };
 }

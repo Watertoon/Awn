@@ -18,38 +18,49 @@
 namespace vp::util {
 
     template <typename T>
-    concept IsString8Raw = (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<char>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<char8_t>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<u8>>);
+    concept IsChar8 = (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char8_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<u8>>);
     template <typename T>
-    concept IsString16Raw = (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<char16_t>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<wchar_t>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<u16>>);
+    concept IsChar16 = (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char16_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<wchar_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<u16>>);
     template <typename T>
-    concept IsString32Raw = (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<char32_t>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<u32>>);
+    concept IsChar32 = (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char32_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<u32>>);
     template <typename T>
-    concept IsStringRaw = (IsString8Raw<T>) || (IsString16Raw<T>) || (IsString32Raw<T>);
+    concept IsChar = (IsChar8<T>) || (IsChar16<T>) || (IsChar32<T>);
 
     template <typename T>
-    concept IsChar8Raw = (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char8_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<u8>>);
+    concept IsRawString8 = (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<char>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<char8_t>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<u8>>);
     template <typename T>
-    concept IsChar16Raw = (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char16_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<wchar_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<u16>>);
+    concept IsRawString16 = (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<char16_t>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<wchar_t>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<u16>>);
     template <typename T>
-    concept IsChar32Raw = (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char32_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<u32>>);
+    concept IsRawString32 = (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<char32_t>>) || (std::is_same_v<std::remove_pointer_t<std::remove_extent_t<std::add_cv_t<T>>>,std::add_cv_t<u32>>);
     template <typename T>
-    concept IsCharRaw = (IsChar8Raw<T>) || (IsChar16Raw<T>) || (IsChar32Raw<T>);
+    concept IsRawString = (IsRawString8<T>) || (IsRawString16<T>) || (IsRawString32<T>);
 
+    template <typename T>
+    concept IsHeapString = (T::cIsHeapString8) || (T::cIsHeapString16) || (T::cIsHeapString32);
     template <typename T>
     concept IsFixedString = (T::cIsFixedString8) || (T::cIsFixedString16) || (T::cIsFixedString32);
     template <typename T>
-    concept IsFixedString8OrRaw = (T::cIsFixedString8) || (IsString8Raw<T>);
+    concept IsString = (IsHeapString<T>) || (IsFixedString<T>);
     template <typename T>
-    concept IsFixedString16OrRaw = (T::cIsFixedString16) || (IsString16Raw<T>);
+    concept IsString8 = (T::cIsHeapString8) || (T::cIsFixedString8);
     template <typename T>
-    concept IsFixedString32OrRaw = (T::cIsFixedString32) || (IsString32Raw<T>);
+    concept IsString16 = (T::cIsHeapString16) || (T::cIsFixedString16);
     template <typename T>
-    concept IsFixedStringOrRaw = (IsFixedString8OrRaw<T>) || (IsFixedString16OrRaw<T>) || (IsFixedString32OrRaw<T>);
+    concept IsString32 = (T::cIsHeapString32) || (T::cIsFixedString32);
+
+    template <typename T>
+    concept IsString8OrRaw = (IsString8<T>) || (IsRawString8<T>);
+    template <typename T>
+    concept IsString16OrRaw = (IsString16<T>) || (IsRawString16<T>);
+    template <typename T>
+    concept IsString32OrRaw = (IsString32<T>) || (IsRawString32<T>);
+    template <typename T>
+    concept IsStringOrRaw = (IsString8OrRaw<T>) || (IsString16OrRaw<T>) || (IsString32OrRaw<T>);
 
     namespace {
 
         template <typename T>
-            requires (IsFixedStringOrRaw<T>)
+            requires (IsStringOrRaw<T>)
         struct UnderlyingCharTypeImpl {
             using Type = typename T::UnderlyingType;
         };
@@ -184,13 +195,13 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsFixedStringOrRaw<T>)
+        requires (IsStringOrRaw<T>)
     using UnderlyingCharType = typename UnderlyingCharTypeImpl<T>::Type;
 
 #ifdef VP_TARGET_ARCHITECTURE_x86
 
     template <typename T>
-        requires (IsString8Raw<T>)
+        requires (IsRawString8<T>)
     constexpr u32 StringLength8(T *string) {
 
         /* Constexpr impl */
@@ -208,15 +219,17 @@ namespace vp::util {
         string = string + unaligned;
 
         /* Handle aligned string */
+        using v32cc = Vector32cc;
         u32 i = unaligned;
         u32 mask = 0;
         const v32cc zero = {};
         for (;;) {
 
             /* Load 32 characters, compare if equal to zero, and convert result to a mask */
-            const v32cc characters = Load32Aligned(string);
-            const v32cc result = CompareEqual32(zero, characters);
-            mask = MoveMask256(result);
+            v32cc c;
+            Load(std::addressof(c), string);
+            const v32cc result = CompareEqual(zero, c);
+            mask = impl::MoveMask_8bit(result);
 
             /* Check if the mask has a bit set, meaning a character is non-zero */
             if (mask != 0) {
@@ -231,9 +244,9 @@ namespace vp::util {
     }
 
     template <typename T0, typename T1>
-        requires (IsString8Raw<T0>) && (IsString8Raw<T1>)
+        requires (IsRawString8<T0>) && (IsRawString8<T1>)
     constexpr bool StringCompare8(T0 *lhs, T1 *rhs) {
-        
+
         /* Constexpr impl */
         if (std::is_constant_evaluated()) {
             while (*lhs != '\0' || *rhs != '\0') { 
@@ -249,18 +262,20 @@ namespace vp::util {
         const u32 iter = 0x20;
         const char *l_iter = lhs;
         const char *r_iter = rhs;
+        using v32cc = Vector32cc;
         const v32cc zero = {};
         for (;;) {
 
             /* Load 32 characters, compare if equal to zero, and convert result to a mask */
-            const v32cc lhs_char = Load32(l_iter);
-            const v32cc rhs_char = Load32(r_iter);
-            const v32cc result0 = CompareEqual32(lhs_char, zero);
-            const v32cc result1 = CompareEqual32(rhs_char, zero);
-            const v32cc result2 = CompareEqual32(lhs_char, rhs_char);
-            const u32 mask0 = MoveMask256(result0);
-            const u32 mask1 = MoveMask256(result1);
-            const u32 mask2 = MoveMask256(result2);
+            v32cc l,r;
+            Load(std::addressof(l), l_iter);
+            Load(std::addressof(r), r_iter);
+            const v32cc result0 = CompareEqual(l, zero);
+            const v32cc result1 = CompareEqual(r, zero);
+            const v32cc result2 = CompareEqual(l, r);
+            const u32 mask0 = impl::MoveMask_8bit(result0);
+            const u32 mask1 = impl::MoveMask_8bit(result1);
+            const u32 mask2 = impl::MoveMask_8bit(result2);
 
             /* Check if the mask has a bit set, meaning a character is non-zero */
             if (mask0 != 0 || mask1 != 0 || mask2 != 0) {
@@ -281,7 +296,7 @@ namespace vp::util {
 #else
 
     template <typename T>
-        requires (IsString8Raw<T>)
+        requires (IsRawString8<T>)
     constexpr u32 StringLength8(T *string) {
 
         /* Handle unaligned string */
@@ -292,7 +307,7 @@ namespace vp::util {
     }
 
     template <typename T0, typename T1>
-        requires (IsString8Raw<T0>) && (IsString8Raw<T1>)
+        requires (IsRawString8<T0>) && (IsRawString8<T1>)
     constexpr bool StringCompare8(T0 *lhs, T1 *rhs) {
         while (*lhs != '\0' || *rhs != '\0') { 
             if (*lhs != *rhs) { return false; }
@@ -304,7 +319,7 @@ namespace vp::util {
 #endif
 
     template <typename T>
-        requires (IsString16Raw<T>)
+        requires (IsRawString16<T>)
     constexpr u32 StringLength16(T *string) {
 
         /* Handle unaligned string */
@@ -315,7 +330,7 @@ namespace vp::util {
     }
 
     template <typename T0, typename T1>
-        requires (IsString16Raw<T0>) && (IsString16Raw<T1>)
+        requires (IsRawString16<T0>) && (IsRawString16<T1>)
     constexpr bool StringCompare16(T0 *lhs, T1 *rhs) {
         while (*lhs != u'\0' || *rhs != u'\0') { 
             if (*lhs != *rhs) { return false; }
@@ -326,7 +341,7 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsString32Raw<T>)
+        requires (IsRawString32<T>)
     constexpr u32 StringLength32(T *string) {
 
         /* Handle unaligned string */
@@ -337,7 +352,7 @@ namespace vp::util {
     }
 
     template <typename T0, typename T1>
-        requires (IsString32Raw<T0>) && (IsString32Raw<T1>)
+        requires (IsRawString32<T0>) && (IsRawString32<T1>)
     constexpr bool StringCompare32(T0 *lhs, T1 *rhs) {
         while (*lhs != 0u || *rhs != 0u) { 
             if (*lhs != *rhs) { return false; }
@@ -348,15 +363,15 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsFixedStringOrRaw<T>)
+        requires (IsStringOrRaw<T>)
     constexpr u32 StringLength(const T *string) {
-        if constexpr (IsString8Raw<T>) {
+        if constexpr (IsRawString8<T>) {
             return StringLength8(string);
-        } else if constexpr (IsString16Raw<T>) {
+        } else if constexpr (IsRawString16<T>) {
             return StringLength16(string);
-        } else if constexpr (IsString32Raw<T>) {
+        } else if constexpr (IsRawString32<T>) {
             return StringLength32(string);
-        } else if constexpr (IsFixedString<T>) {
+        } else if constexpr (IsString<T>) {
             return string->GetLength();
         } else {
             _consteval_fail();
@@ -364,19 +379,19 @@ namespace vp::util {
     }
 
     template <typename T0, typename T1>
-        requires ((IsString8Raw<T0>) && (IsString8Raw<T1>)) || ((IsString16Raw<T0>) && (IsString16Raw<T1>)) || ((IsString32Raw<T0>) && (IsString32Raw<T1>)) || ((IsFixedString<T0>) && (IsFixedStringOrRaw<T1>)) || ((IsFixedStringOrRaw<T0>) && (IsFixedString<T1>))
+        requires (IsRawString<T0> && IsRawString<T1>) || (IsString<T0> && IsStringOrRaw<T1>) || (IsStringOrRaw<T0> && IsString<T1>) && (sizeof(UnderlyingCharType<T0>) == sizeof(UnderlyingCharType<T1>))
     constexpr bool StringCompare(const T0 *lhs, const T1 *rhs) {
-        if constexpr (IsString8Raw<T0>) {
+        if constexpr (IsRawString8<T0> && IsRawString8<T1>) {
             return StringCompare8(lhs, rhs);
-        } else if constexpr (IsString16Raw<T0>) {
+        } else if constexpr (IsRawString16<T0> && IsRawString16<T1>) {
             return StringCompare16(lhs, rhs);
-        } else if constexpr (IsString32Raw<T0>) {
+        } else if constexpr (IsRawString32<T0> && IsRawString32<T1>) {
             return StringCompare32(lhs, rhs);
-        } else if constexpr (IsFixedString<T0> && IsFixedString<T1>) {
+        } else if constexpr (IsString<T0> && IsString<T1>) {
             return *lhs == *rhs;
-        }  else if constexpr (IsFixedString<T0>) {
+        }  else if constexpr (IsString<T0>) {
             return *lhs == rhs;
-        } else if constexpr (IsFixedString<T1>) {
+        } else if constexpr (IsString<T1>) {
             return *rhs == lhs;
         } else {
             _consteval_fail();
@@ -384,10 +399,10 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsFixedStringOrRaw<T>)
+        requires (IsStringOrRaw<T>)
     constexpr inline void GetUnderlyingString(const UnderlyingCharType<T> **out_string, u32 *out_len, T *string) {
         const UnderlyingCharType<T> *path;
-        if constexpr (IsFixedString<T>) {
+        if constexpr (IsString<T>) {
             path = string->GetString();
         } else if constexpr (std::is_array_v<std::remove_pointer_t<T>>) {
             path = *string;
@@ -403,4 +418,6 @@ namespace vp::util {
         }
         return;
     }
+
+    
 }

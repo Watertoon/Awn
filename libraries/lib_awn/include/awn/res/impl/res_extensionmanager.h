@@ -23,7 +23,7 @@ namespace awn::res::impl {
             constexpr  ExtensionManager() : m_extension_array(), m_resource_unit_manager_array() {/*...*/}
             constexpr ~ExtensionManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, const ExtensionManagerInfo *ext_mgr_info);
+            Result Initialize(mem::Heap *heap, const ExtensionManagerInfo *ext_mgr_info);
             void Finalize();
 
             bool LoopResourceUnitManagers(const ResourceUnitLoopFunction *loop_function);

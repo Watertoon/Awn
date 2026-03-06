@@ -40,7 +40,7 @@ namespace awn::mem {
     static constexpr u32 cMaxRootHeapCount = 3;
 
     struct HeapManager {
-        using OutOfMemoryDelegate = vp::util::DelegateReturnFunction<bool, OutOfMemoryInfo*>;
+        using OutOfMemoryDelegate = vp::util::AnyFunction<4, bool(OutOfMemoryInfo*)>;
 
         Heap                *root_heap_array[cMaxRootHeapCount];
         size_t               out_of_memory_resize_alignment;

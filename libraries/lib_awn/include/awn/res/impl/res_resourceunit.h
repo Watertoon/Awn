@@ -21,9 +21,10 @@ namespace awn::res {
 
 namespace awn::res::impl {
 
-    class ResourceMemoryManager;
-    class ResourceUnitManager;
     class AsyncResourceManager;
+    class ResourceMemoryManager;
+    class ResourceUnitAllocator;
+    class ResourceUnitManager;
     struct ResourceSizePrepareResult;
     struct ResourceSizePrepareInfo;
 
@@ -35,14 +36,16 @@ namespace awn::res::impl {
         bool is_initialize_resource;
         bool is_compose;
         bool is_boost_compose;
+        bool is_no_add_to_memory_manager;
     };
 
     class ResourceUnit {
         public:
             friend class res::ResourceBinder;
-            friend class ResourceMemoryManager;
-            friend class ResourceUnitManager;
             friend class AsyncResourceManager;
+            friend class ResourceMemoryManager;
+            friend class ResourceUnitAllocator;
+            friend class ResourceUnitManager;
         public:
             enum class Status : u32 {
                 Uninitialized                  = 0,
@@ -95,7 +98,7 @@ namespace awn::res::impl {
                 CacheUnloadNoErrorFlag_IsValid = 0,
             };
             enum CompressionFlag : u32 {
-                CompressionFlag_IsExternalHeap = 0,
+                CompressionFlag_IsNoAddToMemoryMgr = 0,
                 CompressionFlag_IsCompressSzs = 1,
                 CompressionFlag_IsCompressZstd = 2,
                 CompressionFlag_IsCompressMc = 3,
@@ -113,7 +116,7 @@ namespace awn::res::impl {
             u8                           m_is_part_of_resource_unit_mgr;
             Status                       m_status;
             s32                          m_reference_count;
-            s32                          m_deferred_adjust_count[2];
+            s32                          m_deferred_adjust_count;
             s32                          m_compose_reference_count;
             u32                          m_resource_initialize_guard;
             size_t                       m_user_resource_size;
@@ -124,7 +127,7 @@ namespace awn::res::impl {
             MaxPathString                m_file_path;
             FileDeviceBase              *m_file_device;
             const ResourceFactoryBase   *m_resource_factory;
-            ResourceUserContext         *m_resource_user_context;
+            IComposeInfo                *m_compose_info;
             ResourceBinder               m_archive_binder;
             ArchiveResource             *m_archive_resource;
             Resource                    *m_resource;
@@ -134,7 +137,6 @@ namespace awn::res::impl {
             async::AsyncTask             m_unload_task;
 
             mem::Heap                   *m_resource_heap;
-            mem::Heap                   *m_gpu_heap;
             ResourceMemoryManager       *m_memory_manager;
             vp::util::IntrusiveListNode  m_finalize_async_res_mgr_list_node;
             vp::util::IntrusiveListNode  m_memory_manager_node;
@@ -155,14 +157,14 @@ namespace awn::res::impl {
 
             void SetToBinder(ResourceBinder *resource_binder);
             constexpr void SetBinderStatusFromError(ResourceBinder *binder) const {
-                if (m_state.GetBit(State_IsFileNotFound)) { binder->m_status = ResourceBinder::Status::FileNotFound; return; }
-                if (m_state.GetBit(State_IsFailGetFileSize)) { binder->m_status = ResourceBinder::Status::FailedToGetDecompressedSize; return; }
-                if (m_state.GetBit(State_IsFailInitializeResource)) { binder->m_status = ResourceBinder::Status::FailedToInitializeResource; return; }
-                if (m_state.GetBit(State_IsInvalidUserResourceSize)) { binder->m_status = ResourceBinder::Status::InvalidUserResourceSize; return; }
-                if (m_state.GetBit(State_IsInvalidResourceSize)) { binder->m_status = ResourceBinder::Status::InvalidResourceSize; return; }
-                if (m_state.GetBit(State_IsFileNotAvailable)) { binder->m_status = ResourceBinder::Status::FileNotAvailable; return; }
-                if (m_state.GetBit(State_IsMemoryAllocationFailure)) { binder->m_status = ResourceBinder::Status::MemoryAllocationFailure; return; }
-                binder->m_status = ResourceBinder::Status::UnknownError;
+                if (m_state.GetBit(State_IsFileNotFound)) { binder->m_status = ResourceBinder::Status::NoFile; return; }
+                if (m_state.GetBit(State_IsFailGetFileSize)) { binder->m_status = ResourceBinder::Status::SizeZero; return; }
+                if (m_state.GetBit(State_IsFailInitializeResource)) { binder->m_status = ResourceBinder::Status::ComposeNG; return; }
+                if (m_state.GetBit(State_IsInvalidUserResourceSize)) { binder->m_status = ResourceBinder::Status::AllocSizeNG; return; }
+                if (m_state.GetBit(State_IsInvalidResourceSize)) { binder->m_status = ResourceBinder::Status::HeapSizeNG; return; }
+                if (m_state.GetBit(State_IsFileNotAvailable)) { binder->m_status = ResourceBinder::Status::FileDeviceNG; return; }
+                if (m_state.GetBit(State_IsMemoryAllocationFailure)) { binder->m_status = ResourceBinder::Status::NoMemory; return; }
+                binder->m_status = ResourceBinder::Status::Unknown;
                 return;
             }
 
@@ -240,8 +242,9 @@ namespace awn::res::impl {
             void ScheduleCompose(u32 priority);
 
             Result TryLoadFile(const char *file_path);
-            void ScheduleUnload();
+            bool ScheduleUnload();
         public:
+            bool CheckOrWaitUnloaded(bool is_wait);
             void CancelUnload(AsyncResourceManager *manager);
 
             void UnregisterFromResourceUnitManager();
@@ -254,7 +257,7 @@ namespace awn::res::impl {
                 else if (status == Status::InResourceFinalize) { m_status = Status::ResourcePostInitialized; }
             }
         public:
-            bool InitializeResource(ResourceUserContext *user_context);
+            bool ComposeResource(IComposeInfo *info);
 
             bool PreFinalizeResource();
             void FinalizeResource();

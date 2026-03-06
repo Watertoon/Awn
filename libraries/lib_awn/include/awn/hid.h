@@ -17,7 +17,11 @@
 
 #include <awn/hid/hid_keylocation.h>
 #include <awn/hid/hid_keyboardapi.h>
-#include <awn/hid/impl/hid_keyboardmanager.win32.hpp>
 
+#include <awn/hid/hid_mouselocation.h>
 #include <awn/hid/hid_mouseapi.h>
-#include <awn/hid/impl/hid_mousemanager.win32.hpp>
+
+#ifdef VP_TARGET_PLATFORM_win32
+    #include <awn/hid/impl/hid_keyboardmanager.win32.hpp>
+    #include <awn/hid/impl/hid_mousemanager.win32.hpp>
+#endif

@@ -33,36 +33,40 @@ namespace vp::util {
             constexpr ALWAYS_INLINE ObjectAllocator() : m_free_list(), m_start_address() {/*...*/}
             constexpr ~ObjectAllocator() {/*...*/}
 
-            bool Initialize(imem::IHeap *heap, u32 count) {
+            Result Initialize(imem::IHeap *heap, u32 count) {
 
                 /* Integrity checks */
-                if (count < 1) { return false; }
+                RESULT_RETURN_IF(count < 1, ResultRangeNG);
 
                 /* Allocate uninitialized array of objects */
                 void *allocation = ::operator new(sizeof(T) * count, heap, alignof(T));
-                if (allocation == nullptr) { return false; }
+                RESULT_RETURN_IF(allocation == nullptr, ResultNoMemory);
 
                 /* Set free list and start address */
                 m_start_address = allocation;
                 this->Clear(count);
 
-                return true;
+                RESULT_RETURN_SUCCESS;
             }
 
-            void SetMemoryAndClear(T *memory, u32 count) {
-                m_start_address = memory;
-                this->Clear(count);
-                return;
-            }
 
             void Finalize() {
                 if (m_start_address != nullptr) {
                     ::operator delete(m_start_address);
                     m_start_address = nullptr;
-                    m_free_list     = nullptr;
+                    m_free_list = nullptr;
                 }
             }
 
+            static constexpr size_t GetRequiredMemorySize(u32 count) {
+                return sizeof(T) * count;
+            }
+            void SetMemory(T *memory, u32 count) {
+                m_start_address = memory;
+                this->Clear(count);
+                return;
+            }
+        public:
             template <typename ... Args>
             T *Allocate(Args &&... args) {
 
@@ -106,5 +110,61 @@ namespace vp::util {
 
             constexpr bool IsEmpty() const { return m_free_list == nullptr; }
             constexpr bool IsValid() const { return m_start_address != nullptr; }
+    };
+
+    template <class T, size_t Count>
+        requires (sizeof(void*) <= sizeof(T)) && (Count != 0)
+    class FixedObjectAllocator {
+        private:
+            struct FreeList {
+                FreeList *next;
+                char      _padding[sizeof(T) - sizeof(void*)];
+            };
+            static_assert(sizeof(T) == sizeof(FreeList) && alignof(T) == alignof(FreeList));
+        private:
+            FreeList     *m_free_list;
+            union {
+                T         m_object_array[Count];
+                FreeList  m_free_node_array[Count];
+            };
+        public:
+            constexpr ALWAYS_INLINE FixedObjectAllocator() : m_free_list(m_free_node_array), m_free_node_array{} {
+
+                /* Construct a free list of objects */
+                for (u32 i = 0; i < (Count - 1); ++i) {
+                    m_free_node_array[i].next = m_free_node_array + i + 1;
+                }
+            }
+            constexpr ALWAYS_INLINE ~FixedObjectAllocator() {/*...*/}
+
+            template <typename ... Args>
+            ALWAYS_INLINE T *Allocate(Args &&... args) {
+
+                /* Fail on empty free list */
+                if (m_free_list == nullptr) { return nullptr; }
+
+                /* Pop a free object */
+                T *allocation = reinterpret_cast<T*>(m_free_list);
+                m_free_list = m_free_list->next;
+
+                /* Initialize the object */
+                std::construct_at(allocation, std::forward<Args>(args) ...);
+
+                return allocation;
+            }
+
+            ALWAYS_INLINE void Free(T *allocated_object) {
+
+                /* Integrity check parameter */
+                VP_ASSERT(m_object_array <= allocated_object && allocated_object < m_object_array + Count);
+
+                /* Destruct the object */
+                std::destroy_at(allocated_object);
+
+                /* Add it to the front of the free list */
+                FreeList *new_node = reinterpret_cast<FreeList*>(allocated_object);
+                new_node->next = m_free_list;
+                m_free_list = new_node;
+            }
     };
 }

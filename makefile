@@ -15,12 +15,12 @@ ALL_PROGRAMS_LIST := $(THIRD_PARTY_LIST) $(LIBRARY_DIR_LIST) $(TOOL_LIST) $(PROG
 
 # Default build environment variables to be overriden here or from the command line
 arch         ?= x86
-platform     ?= win32
+platform     ?= linux
 graphics_api ?= vk
 binary_type  ?= debug
 
 #Valid Architectures: x86, aarch64, arm, powerpc, mips
-#Valid platforms:     win32, winnt, nx, ctr, cafe, rvl, dol, ntr, nus, agb
+#Valid platforms:     win32, winnt, linux, nx, ctr, cafe, rvl, dol, ntr, nus, agb
 #Valid graphics apis: vk, nvn, awn
 #Valid binary types:  release develop debug
 

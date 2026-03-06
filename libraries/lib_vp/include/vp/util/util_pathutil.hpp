@@ -33,13 +33,13 @@ namespace vp::util {
     static constexpr u32 cInvalidDelimiter = 0xffff'ffff;
 
     template <typename T>
-        requires (IsCharRaw<T>)
+        requires (IsChar<T>)
     constexpr T ToLowercase(T character) {
         return (0x19 < character - 0x41) ? character : character + 0x20;   
     }
 
     template <typename T>
-        requires (IsStringRaw<T>)
+        requires (IsRawString<T>)
     constexpr u32 FindDelimiter(const T *path, UnderlyingCharType<T> delimiter) {
 
         /* Find delimiter */
@@ -56,7 +56,7 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsStringRaw<T>)
+        requires (IsRawString<T>)
     constexpr u32 FindDriveDelimiter(const T *path, u32 path_len) {
 
         /* Find ':' */
@@ -72,7 +72,7 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsStringRaw<T>)
+        requires (IsRawString<T>)
     constexpr u32 FindDirectoryDelimiter(const T *path, u32 path_len) {
         
         /* Find '\\' */
@@ -97,7 +97,7 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsStringRaw<T>)
+        requires (IsRawString<T>)
     constexpr u32 FindDirectoryDelimiterForward(const T *path, u32 path_len) {
 
         /* Find '\\' */
@@ -122,7 +122,7 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsStringRaw<T>)
+        requires (IsRawString<T>)
     constexpr u32 FindExtensionDelimiter(const T *path, u32 path_len) {
 
         /* Find '.' */
@@ -137,8 +137,28 @@ namespace vp::util {
         return dot_offset;
     }
 
+    template <typename T>
+        requires (IsRawString<T>)
+    constexpr T *AdvancePathNoDirectory(T *path) {
+
+        /* Null check */
+        if (path == nullptr) { return path; }
+
+        /* Strlen */
+        const u32 path_len = vp::util::StringLength(path);
+
+        /* Length check */
+        if (path_len == 0) { return path; }
+
+        /* Get file name offset */
+        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
+
+        /* Advance string to cut off directory */
+        return path + name_start_offset;
+    }
+
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+        requires (IsString<O>) && (IsStringOrRaw<T>)
     constexpr void GetDrive(O *out_drive, T *path_with_drive) {
 
         /* Null check */
@@ -162,7 +182,7 @@ namespace vp::util {
     }
 
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+        requires (IsString<O>) && (IsStringOrRaw<T>)
     constexpr void GetPathWithoutDrive(O *out_path, T *path_with_drive) {
 
         /* Null check */
@@ -188,7 +208,7 @@ namespace vp::util {
     }
 
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+        requires (IsString<O>) && (IsStringOrRaw<T>)
     constexpr void GetPathWithoutExtension(O *out_path, T *path_with_extension) {
 
         /* Null check */
@@ -212,29 +232,9 @@ namespace vp::util {
         return;
     }
 
-    template <typename T>
-        requires (IsStringRaw<T>)
-    constexpr T *AdvancePathNoDirectory(T *path) {
-
-        /* Null check */
-        if (path == nullptr) { return path; }
-
-        /* Strlen */
-        const u32 path_len = vp::util::StringLength(path);
-
-        /* Length check */
-        if (path_len == 0) { return path; }
-
-        /* Get file name offset */
-        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
-
-        /* Advance string to cut off directory */
-        return path + name_start_offset;
-    }
-
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
-    constexpr void GetDirectory(O *out_directory, T *file_path) {
+        requires (IsString<O>) && (IsStringOrRaw<T>)
+    constexpr void GetDirectoryWithDrive(O *out_directory, T *file_path) {
 
         /* Null check */
         if (out_directory == nullptr || file_path == nullptr) { return; }
@@ -257,7 +257,7 @@ namespace vp::util {
     }
 
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+        requires (IsString<O>) && (IsStringOrRaw<T>)
     constexpr void GetDirectoryWithoutDrive(O *out_directory, T *path_with_drive) {
 
         /* Null check */
@@ -282,7 +282,7 @@ namespace vp::util {
     }
 
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+        requires (IsString<O>) && (IsStringOrRaw<T>)
     constexpr u32 GetUpToNextDirectoryFromBase(O *out_directory, T *directory_path, u32 base) {
 
         /* Null check */
@@ -316,7 +316,7 @@ namespace vp::util {
     }
 
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+        requires (IsString<O>) && (IsStringOrRaw<T>)
     constexpr void GetFileNameWithExtension(O *out_file_name, T *file_path) {
 
         /* Null check */
@@ -340,7 +340,7 @@ namespace vp::util {
     }
 
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+        requires (IsString<O>) && (IsStringOrRaw<T>)
     constexpr void GetFileNameWithoutExtension(O *out_file_name, T *path_with_extension) {
 
         /* Null check */
@@ -365,7 +365,7 @@ namespace vp::util {
     }
 
     template <typename O, typename T>
-        requires (IsFixedString<O>) && (IsFixedStringOrRaw<T>)
+        requires (IsString<O>) && (IsStringOrRaw<T>)
     constexpr void GetExtension(O *out_extension, T *file_path) {
 
        /* Null check */
@@ -390,7 +390,7 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsFixedString<T>)
+        requires (IsString<T>)
     constexpr void ChangeDirectoryDelimiter(T *in_out_path, UnderlyingCharType<T> new_delimiter) {
 
         /* Null check */

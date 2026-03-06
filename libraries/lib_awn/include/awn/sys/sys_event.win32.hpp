@@ -28,30 +28,91 @@ namespace awn::sys {
 
     class Event {
         private:
+            SRWLOCK m_srwlock;
+            CONDITION_VARIABLE m_cv;
+            bool m_state;
             bool m_is_auto_reset;
-            u32  m_state;
+            u64 m_broadcast_id;
         private:
             void WaitImpl(u32 last);
             Result WaitTimeoutImpl(s64 timeout_tick, u32 last);
         public:
-            constexpr Event() : m_is_auto_reset(), m_state() {/*...*/}
-            constexpr ALWAYS_INLINE Event(SignalState signal_state, ResetMode reset_mode) : m_is_auto_reset(static_cast<bool>(reset_mode)), m_state((signal_state == SignalState::Signaled) ? 2 : 0) {/*...*/}
+            constexpr Event() : m_srwlock(SRWLOCK_INIT), m_cv(CONDITION_VARIABLE_INIT), m_state(), m_is_auto_reset(), m_broadcast_id() {/*...*/}
+            constexpr Event(SignalState signal_state, ResetMode reset_mode) : m_srwlock(SRWLOCK_INIT), m_cv(CONDITION_VARIABLE_INIT), m_state((signal_state == SignalState::Signaled)), m_is_auto_reset((reset_mode == ResetMode::Auto)), m_broadcast_id() {/*...*/}
             constexpr ~Event() {/*...*/}
 
             constexpr void Initialize(SignalState signal_state, ResetMode reset_mode) {
-                m_is_auto_reset = static_cast<bool>(reset_mode);
-                m_state         = (signal_state == SignalState::Signaled) ? 2 : 0;
+                m_is_auto_reset = (reset_mode == ResetMode::Auto);
+                m_state = (signal_state == SignalState::Signaled);
             }
 
             constexpr void Finalize() {
                 m_is_auto_reset = 0;
-                m_state         = 0;
+                m_state = 0;
             }
 
-            void Wait();
-            void Signal();
-            void Clear();
+            void Wait() {
+                ::AcquireSRWLockExclusive(std::addressof(m_srwlock));
+                if (!m_state) {
+                    const u64 b_id = m_broadcast_id;
+                    do {
+                        if (b_id != m_broadcast_id) { break; }
+                        ::SleepConditionVariableSRW(std::addressof(m_cv), std::addressof(m_srwlock), INFINITE, 0);
+                    } while (!m_state);
+                }
+                if (m_is_auto_reset) {
+                    m_state = 0;
+                }
+                ::ReleaseSRWLockExclusive(std::addressof(m_srwlock));
+            }
+            bool TryWait() {
+                ::AcquireSRWLockExclusive(std::addressof(m_srwlock));
+                u8 state = m_state;
+                if (m_is_auto_reset) {
+                    m_state = 0;
+                }
+                ::ReleaseSRWLockExclusive(std::addressof(m_srwlock));
+                return state != 0;
+            }
+            bool TimedWait(TimeSpan timeout) {
+                ::AcquireSRWLockExclusive(std::addressof(m_srwlock));
+                if (!m_state) {
+                    const u64 b_id = m_broadcast_id;
+                    do {
+                        if (b_id != m_broadcast_id) { break; }
+                        const bool is_timeout = ::SleepConditionVariableSRW(std::addressof(m_cv), std::addressof(m_srwlock), timeout.GetMilliSeconds(), 0);
+                        if (is_timeout && ::GetLastError() == ERROR_TIMEOUT) {
+                            ::ReleaseSRWLockExclusive(std::addressof(m_srwlock));
+                            return false;
+                        }
+                    } while (!m_state);
+                }
+                if (m_is_auto_reset) {
+                    m_state = 0;
+                }
+                ::ReleaseSRWLockExclusive(std::addressof(m_srwlock));
+                return true;
+            }
 
-            bool TimedWait(TimeSpan timeout);
+            void Signal() {
+                ::AcquireSRWLockExclusive(std::addressof(m_srwlock));
+                if (!m_state) {
+                    m_state = 1;
+                    if (!m_is_auto_reset) {
+                        ++m_broadcast_id;
+                        ::WakeAllConditionVariable(std::addressof(m_cv));
+                    } else {
+                        ::WakeConditionVariable(std::addressof(m_cv));
+                    }
+                }
+                ::ReleaseSRWLockExclusive(std::addressof(m_srwlock));
+            }
+
+            void Clear() {
+                ::AcquireSRWLockExclusive(std::addressof(m_srwlock));
+                m_state = 0;
+                ::ReleaseSRWLockExclusive(std::addressof(m_srwlock));
+            }
+
     };
 }

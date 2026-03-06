@@ -81,7 +81,7 @@
 #include <vp/res/res_exb.h>
 #include <vp/res/res_exbfunctionmanager.hpp>
 #include <vp/res/res_exbcommandprocessor.h>
-#include <vp/res/res_ainb.470.h>
+//#include <vp/res/res_ainb.470.h>
 
 /* Reverse engineered game sdk nso headers */
 #ifdef VP_TARGET_GRAPHICS_API_nvn

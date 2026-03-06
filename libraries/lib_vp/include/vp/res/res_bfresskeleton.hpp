@@ -65,7 +65,7 @@ namespace vp::res {
         u16                        bone_parent_index;
         u16                        bone_index_smooth;
         u16                        bone_index_rigid;
-        u16                        billboard_bone_index;
+        u16                        bone_billboard_index;
         u16                        user_data_count;
         union {
             u32 flags;

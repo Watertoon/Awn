@@ -24,16 +24,7 @@ namespace awn::gfx {
         /* Ensure valid descriptor slots */
         if (!texture_sampler_manager->IsTextureViewSlotValid(texture_view_slot)) { return cInvalidTextureSamplerHandle; }
         if (!texture_sampler_manager->IsSamplerSlotValid(sampler_slot)) { return cInvalidTextureSamplerHandle; }
-        /* Handle descriptor indexing vs nv bindless */
-        //if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {
-            /* Get indices */
-            return TextureSamplerHandle { .handle = texture_view_slot.index | (static_cast<u64>(sampler_slot.index) << 0x20), };
-        //}
-        /* Get combined image handler */
-        /* Note; this is an undocumented dependency */
-        //const impl::TextureViewSamplerManager::TextureViewUnit *texture_view_unit = texture_sampler_manager->GetTextureViewUnit(texture_view_slot.index);
-        //const impl::TextureViewSamplerManager::SamplerUnit *sampler_unit = texture_sampler_manager->GetSamplerUnit(sampler_slot.index);
-        //return TextureSamplerHandle { .handle = *reinterpret_cast<const u32*>(texture_view_unit->descriptor_memory) | *reinterpret_cast<const u32*>(sampler_unit->descriptor_memory), };
+        return TextureSamplerHandle { .handle = texture_view_slot.index | (static_cast<u64>(sampler_slot.index) << 0x20), };
     }
 
     ImageHandle GetImageHandle(DescriptorSlot texture_view_slot) {
@@ -42,15 +33,7 @@ namespace awn::gfx {
         if (texture_sampler_manager == nullptr) { return cInvalidImageHandle; }
         /* Ensure valid descriptor slot */
         if (!texture_sampler_manager->IsTextureViewSlotValid(texture_view_slot)) { return cInvalidImageHandle; }
-        /* Handle descriptor indexing vs nv bindless */
-        //if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {
-            /* Get index */
-            return ImageHandle { .handle = texture_view_slot.index, };
-        //}
-        /* Get image handle */
-        /* Note; this is an undocumented dependency */
-        //const impl::TextureViewSamplerManager::TextureViewUnit *texture_view_unit = texture_sampler_manager->GetTextureViewUnit(texture_view_slot.index);
-        //return ImageHandle { .handle = *reinterpret_cast<const u32*>(texture_view_unit->descriptor_memory), };
+        return ImageHandle { .handle = texture_view_slot.index, };
     }
 
     SeparateTextureHandle GetSeparateTextureHandle(DescriptorSlot texture_view_slot) {
@@ -59,15 +42,7 @@ namespace awn::gfx {
         if (texture_sampler_manager == nullptr) { return cInvalidSeparateTextureHandle; }
         /* Ensure valid descriptor slot */
         if (!texture_sampler_manager->IsTextureViewSlotValid(texture_view_slot)) { return cInvalidSeparateTextureHandle; }
-        /* Handle descriptor indexing vs nv bindless */
-        //if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {
-            /* Get index */
-            return SeparateTextureHandle { .handle = texture_view_slot.index, };
-        //}
-        /* Get separate texture handle */
-        /* Note; this is an undocumented dependency */
-        //const impl::TextureViewSamplerManager::TextureViewUnit *texture_view_unit = texture_sampler_manager->GetTextureViewUnit(texture_view_slot.index);
-        //return SeparateTextureHandle { .handle = *reinterpret_cast<const u32*>(texture_view_unit->descriptor_memory), };
+        return SeparateTextureHandle { .handle = texture_view_slot.index, };
     }
 
     SeparateSamplerHandle GetSeparateSamplerHandle(DescriptorSlot sampler_slot) {
@@ -76,15 +51,7 @@ namespace awn::gfx {
         if (texture_sampler_manager == nullptr) { return cInvalidSeparateSamplerHandle; }
         /* Ensure valid descriptor slot */
         if (!texture_sampler_manager->IsSamplerSlotValid(sampler_slot)) { return cInvalidSeparateSamplerHandle; }
-        /* Handle descriptor indexing vs nv bindless */
-        //if (!gfx::IsOptionalFeature(OptionalFeature::SupportsNvBindlessTexture)) {
-            /* Get index */
-            return SeparateSamplerHandle { .handle = sampler_slot.index, };
-        //}
-        /* Get separate sampler handle */
-        /* Note; this is an undocumented dependency */
-        //const impl::TextureViewSamplerManager::SamplerUnit *sampler_unit = texture_sampler_manager->GetSamplerUnit(sampler_slot.index);
-        //return SeparateSamplerHandle { .handle = *reinterpret_cast<const u32*>(sampler_unit->descriptor_memory), };
+        return SeparateSamplerHandle { .handle = sampler_slot.index, };
     }
 
     bool IsUnifiedMemory() {
@@ -92,10 +59,16 @@ namespace awn::gfx {
     }
 
     void FlushCpuCache(void *gpu_address, size_t size) {
-        mem::FindGpuRootHeapContextFromAddress(gpu_address)->FlushCpuCache(gpu_address, size);
+        uintptr_t offset;
+        MemoryPool *pool = FindMemoryPool(std::addressof(offset), gpu_address);
+        if (pool == nullptr) { return; }
+        pool->FlushMappedRange(offset, size);
     }
 
     void InvalidateCpuCache(void *gpu_address, size_t size) {
-        mem::FindGpuRootHeapContextFromAddress(gpu_address)->InvalidateCpuCache(gpu_address, size);
+        uintptr_t offset;
+        MemoryPool *pool = FindMemoryPool(std::addressof(offset), gpu_address);
+        if (pool == nullptr) { return; }
+        pool->InvalidateMappedRange(offset, size);
     }
 }

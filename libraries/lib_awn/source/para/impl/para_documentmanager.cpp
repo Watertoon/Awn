@@ -67,7 +67,7 @@ namespace awn::para::impl {
     u16 DocumentManager::AcquireTypedParamHandle(TypedParam *typed_param) {
 
         const u32 new_handle = m_typed_param_parent_handle_index_allocator.Allocate();
-        VP_ASSERT(new_handle != HandleAllocator::cInvalidHandle);
+        VP_ASSERT(new_handle != HandleAllocator::cInvalidEntryIndex);
         
         m_typed_param_parent_handle_array[new_handle].typed_param  = typed_param;
 
@@ -84,11 +84,14 @@ namespace awn::para::impl {
         return;
     }
 
-    void DocumentManager::Initialize(mem::Heap *heap, const DocumentManagerInfo *mgr_info) {
+    Result DocumentManager::Initialize(mem::Heap *heap, const DocumentManagerInfo *mgr_info) {
+        RESULT_TRY(m_typed_param_parent_handle_array.Initialize(heap, mgr_info->typed_param_parent_count));
+        auto fail_guard0 = SCOPE_GUARD { this->Finalize(); };
+        RESULT_TRY(m_typed_param_parent_handle_index_allocator.Initialize(heap, mgr_info->typed_param_parent_count));
+        RESULT_TRY(m_remove_queue.Initialize(heap, mgr_info->remove_queue_count));
         m_app_impl = mgr_info->app_impl;
-        m_typed_param_parent_handle_array.Initialize(heap, mgr_info->typed_param_parent_count);
-        m_typed_param_parent_handle_index_allocator.Initialize(heap, mgr_info->typed_param_parent_count);
-        m_remove_queue.Initialize(heap, mgr_info->remove_queue_count);
+        fail_guard0.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void DocumentManager::Finalize() {
@@ -112,7 +115,7 @@ namespace awn::para::impl {
         for (;;) {
 
             /* Pop ring buffer element */
-            const u64 remove_key = m_remove_queue.RemoveFront();
+            const u64 remove_key = m_remove_queue.RemoveFrontWeak();
             if (remove_key == 0) { break; }
 
             /* Get document and ensure it's out of reference */

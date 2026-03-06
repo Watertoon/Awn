@@ -22,6 +22,11 @@ namespace awn::mem {
         ExpHeapMemoryBlock *ret = (*walkback & 1) ? reinterpret_cast<ExpHeapMemoryBlock*>(*walkback & (~1)) : reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
         return ret;
     }
+    const ExpHeapMemoryBlock *ExpHeap::GetBlock(const void *address) {
+        const uintptr_t *walkback = reinterpret_cast<const uintptr_t*>(reinterpret_cast<uintptr_t>(address) - sizeof(size_t));
+        const ExpHeapMemoryBlock *ret = (*walkback & 1) ? reinterpret_cast<const ExpHeapMemoryBlock*>(*walkback & (~1)) : reinterpret_cast<const ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
+        return ret;
+    }
 
     void ExpHeap::AddUsedBlockNoAlign(ExpHeapMemoryBlock *block, size_t size) {
 
@@ -432,15 +437,15 @@ namespace awn::mem {
         return { m_end_address, b_size, };
     }
 
-    bool ExpHeap::IsAddressAllocation(void *address) {
+    bool ExpHeap::IsAddressAllocation(const void *address) {
         ScopedHeapLock lock(this);
         return this->IsAddressAllocationUnsafe(address);
     }
 
-    bool ExpHeap::IsAddressAllocationUnsafe(void *address) {
+    bool ExpHeap::IsAddressAllocationUnsafe(const void *address) const {
 
         /* Search if address is used block */
-        ExpHeapMemoryBlock *block = this->GetBlock(address);
+        const ExpHeapMemoryBlock *block = this->GetBlock(address);
         for (const ExpHeapMemoryBlock &used_block : m_used_list) {
             if (std::addressof(used_block) == block) { return true; }
         }

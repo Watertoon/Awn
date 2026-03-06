@@ -48,28 +48,31 @@ namespace awn::gfx {
             void CopyMemoryToTexture(const void * const*memory_array, const TextureCopyRegion *copy_region_array, u32 copy_region_count, bool is_no_conversion = false);
             void CopyTextureToMemory(void **memory_array, const TextureCopyRegion *copy_region_array, u32 copy_region_count, bool is_no_conversion = false);
 
-            constexpr ALWAYS_INLINE u32 GetWidth() const {
+            constexpr bool IsValid() const {
+                return m_vk_image != VK_NULL_HANDLE;
+            }
+            constexpr u32 GetWidth() const {
                 return m_texture_info.width;
             }
-            constexpr ALWAYS_INLINE u32 GetHeight() const {
+            constexpr u32 GetHeight() const {
                 return m_texture_info.height;
             }
-            constexpr ALWAYS_INLINE u32 GetDepth() const {
+            constexpr u32 GetDepth() const {
                 return m_texture_info.depth;
             }
-            constexpr ALWAYS_INLINE vp::util::Int2 GetSize2d() const {
-                return vp::util::Int2 { static_cast<s32>(m_texture_info.width), static_cast<s32>(m_texture_info.height), };
+            constexpr Int2 GetSize2d() const {
+                return Int2 { static_cast<s32>(m_texture_info.width), static_cast<s32>(m_texture_info.height), };
             }
-            constexpr ALWAYS_INLINE vp::util::Int3 GetSize3d() const {
-                return vp::util::Int3 { static_cast<s32>(m_texture_info.width), static_cast<s32>(m_texture_info.height), static_cast<s32>(m_texture_info.depth), };
+            constexpr Int3 GetSize3d() const {
+                return Int3 { static_cast<s32>(m_texture_info.width), static_cast<s32>(m_texture_info.height), static_cast<s32>(m_texture_info.depth), };
             }
-            constexpr ALWAYS_INLINE u32 GetMipLevelCount() const {
+            constexpr u32 GetMipLevelCount() const {
                 return m_texture_info.mip_level_count;
             }
-            constexpr ALWAYS_INLINE u32 GetArrayLayerCount() const {
+            constexpr u32 GetArrayLayerCount() const {
                 return m_texture_info.array_layer_count;
             }
-            constexpr ALWAYS_INLINE gfx::ImageFormat GetImageFormat() const {
+            constexpr gfx::ImageFormat GetImageFormat() const {
                 return static_cast<gfx::ImageFormat>(m_texture_info.image_format);
             }
 

@@ -27,4 +27,6 @@ namespace awn::async {
     DECLARE_RESULT(IsNotPending,    7);
     DECLARE_RESULT(TaskExecuting,   8);
     DECLARE_RESULT(TaskExecuted,    9);
+    DECLARE_RESULT(RangeNG,         10);
+    DECLARE_RESULT(NoMemory,        11);
 }

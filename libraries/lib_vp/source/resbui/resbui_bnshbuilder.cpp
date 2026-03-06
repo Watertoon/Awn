@@ -71,7 +71,7 @@ namespace vp::resbui {
         /* Write relocation table header */
         NintendoWareRelocationTableStream relocation_stream;
         relocation_stream.SetStream(bnsh, relocation_table, memory_info->total_section_count, memory_info->total_relocation_count);
-        relocation_stream.StartSection(0, memory_info->location_relocation_table.offset);
+        RESULT_ABORT_UNLESS(relocation_stream.StartSection(0, memory_info->location_relocation_table.offset));
 
         /* Write header */
         bnsh->magic                   = res::ResBnsh::cMagic;
@@ -97,7 +97,7 @@ namespace vp::resbui {
         container->compiler_version   = m_compiler_version;
         container->variation_array    = variation_array;
         container->container_data     = container_data;
-        relocation_stream.AddEntry(std::addressof(container->variation_array), 1, 2, 0);
+        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(container->variation_array), 1, 2, 0));
 
         /* Write container data */
         container_data->memory_pool_info.memory_pool_flags  = static_cast<u32>(res::GfxMemoryPoolFlags::ShaderCode | res::GfxMemoryPoolFlags::GpuCached | res::GfxMemoryPoolFlags::CpuNoAccess);
@@ -106,7 +106,7 @@ namespace vp::resbui {
         uintptr_t container_data_iter                       = reinterpret_cast<uintptr_t>(container_data) + sizeof(res::ResBnshShaderContainerData);
         container_data->runtime_memory_pool                 = reinterpret_cast<void*>(container_data_iter);
         container_data_iter                                += vp::res::cDefaultBnshRuntimeMemoryPoolSize;
-        relocation_stream.AddEntry(std::addressof(container_data->memory_pool_info.gpu_region_base), 2, 1, 2);
+        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(container_data->memory_pool_info.gpu_region_base), 2, 1, 2));
 
         /* Write code */
         const uintptr_t code_alignment = (m_code_type == static_cast<u32>(res::GfxShaderCodeType::Intermediate)) ? 0x10 : 0x100;
@@ -140,8 +140,8 @@ namespace vp::resbui {
                 program->runtime_shader = reinterpret_cast<void*>(container_data_iter);
                 container_data_iter += vp::res::cDefaultBnshRuntimeShaderSize;
                 program->parent_variation = variation;
-                relocation_stream.AddEntry(std::addressof(program->code_info_vertex), 1, 8, 0);
-                relocation_stream.AddEntry(std::addressof(program->runtime_shader), 1, 3, 0);
+                RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(program->code_info_vertex), 1, 8, 0));
+                RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(program->runtime_shader), 1, 3, 0));
 
                 /* Set code infos */
                 for (u32 j = 0; j < res::cMaxBnshShaderStageCount; ++j) {
@@ -168,7 +168,7 @@ namespace vp::resbui {
                     interface_info_table = reinterpret_cast<vp::res::ResBnshShaderInterfaceInfoTable*>(program_iter);
                     program_iter += sizeof(vp::res::ResBnshShaderInterfaceInfoTable);
                     program->shader_interface_info_table = interface_info_table;
-                    relocation_stream.AddEntry(interface_info_table, 1, 8, 0);
+                    RESULT_ABORT_UNLESS(relocation_stream.AddEntry(interface_info_table, 1, 8, 0));
                 }
 
                 /* Write control and set shader code */
@@ -183,9 +183,9 @@ namespace vp::resbui {
                         code_info->control_size = shader_node->m_control_size;
                         code_info->control = control;
                         ::memcpy(control, shader_node->m_control, shader_node->m_control_size);
-                        relocation_stream.AddEntry(std::addressof(code_info->control), 1, 2, 0);
+                        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(code_info->control), 1, 2, 0));
                     } else {
-                        relocation_stream.AddEntry(std::addressof(code_info->code), 1, 1, 0);
+                        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(code_info->code), 1, 1, 0));
                     }
 
                     const size_t code_offset = (shader_node->m_code_unit.collision != nullptr) ? shader_node->m_code_unit.collision->code_offset : shader_node->m_code_unit.code_offset;
@@ -221,15 +221,15 @@ namespace vp::resbui {
                         vp::res::ResBnshShaderInterfaceInfo *interface_info = reinterpret_cast<vp::res::ResBnshShaderInterfaceInfo*>(program_iter);
                         program_iter += sizeof(vp::res::ResBnshShaderInterfaceInfo);
                         interface_info_table->interface_info_array[j] = interface_info;
-                        relocation_stream.AddEntry(std::addressof(interface_info->input_attribute_dictionary), 1, 5, 0);
-                        relocation_stream.AddEntry(std::addressof(interface_info->interface_slot_array), 1, 1, 0);
+                        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(interface_info->input_attribute_dictionary), 1, 5, 0));
+                        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(interface_info->interface_slot_array), 1, 1, 0));
                         if (is_slot_ext_program) {
                             vp::res::ResBnshExtendedInterfaceInfo *interface_info_ext = reinterpret_cast<vp::res::ResBnshExtendedInterfaceInfo*>(program_iter);
                             program_iter += sizeof(vp::res::ResBnshExtendedInterfaceInfo);
                             interface_info->extended_interface_info = interface_info_ext;
-                            relocation_stream.AddEntry(std::addressof(interface_info->image_dictionary), 1, 4, 0);
+                            RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(interface_info->image_dictionary), 1, 4, 0));
                         } else {
-                            relocation_stream.AddEntry(std::addressof(interface_info->image_dictionary), 1, 1, 0);
+                            RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(interface_info->image_dictionary), 1, 1, 0));
                         }
                     }
                 }
@@ -252,7 +252,7 @@ namespace vp::resbui {
                             
                             /* Add to dictionary */
                             ++slot_count;
-                            dict_builder.AddNode(std::addressof(interface_node->name));
+                            RESULT_ABORT_UNLESS(dict_builder.AddNode(std::addressof(interface_node->name)));
                         }
                         if (slot_count == 0) { return nullptr; }
                         total_slot_count += slot_count;
@@ -311,7 +311,7 @@ namespace vp::resbui {
             ++variation_i;
         }
         container->variation_count = variation_i;
-        relocation_stream.AddEntry(variation_array, variation_i, 4, 4);
+        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(variation_array, variation_i, 4, 4));
 
         /* End relocation stream and unrelocate file*/
         relocation_stream.EndStream();
@@ -378,8 +378,8 @@ namespace vp::resbui {
                             
                             /* Add to dictionary */
                             ++type_count;
-                            dict_builder.AddNode(std::addressof(interface_node->name));
-                            m_string_builder.AddString(std::addressof(interface_node->name));
+                            RESULT_ABORT_UNLESS(dict_builder.AddNode(std::addressof(interface_node->name)));
+                            RESULT_ABORT_UNLESS(m_string_builder.AddString(std::addressof(interface_node->name)));
                         }
                         if (type_count == 0) { continue; }
                         total_slot_count += type_count;
@@ -445,7 +445,7 @@ namespace vp::resbui {
         out_memory_info->location_gpu_region.alignment = gpu_alignment;
         out_memory_info->location_gpu_region.size = gpu_region_iter;
 
-        m_string_builder.AddString(std::addressof(m_file_name));
+        RESULT_ABORT_UNLESS(m_string_builder.AddString(std::addressof(m_file_name)));
         m_string_builder.CalculateMemoryInfo(std::addressof(out_memory_info->string_pool_memory_info));
 
         out_memory_info->location_string_pool.offset = vp::util::AlignUp(out_memory_info->location_gpu_region.offset + out_memory_info->location_gpu_region.size, gpu_alignment);

@@ -67,7 +67,7 @@ namespace awn::para {
     constexpr bool FormatDirectoryUsingParentPath(vp::util::MaxPathString *out_path, const char *parent_path, const char *file_path) {
 
         /* Get directory of parent path */
-        vp::util::GetDirectory(out_path, parent_path);
+        vp::util::GetDirectoryWithDrive(out_path, parent_path);
 
         /* Copy output directories */
         u32 iter     = 0;
@@ -87,13 +87,13 @@ namespace awn::para {
 
             /* Handle . */
             if (copy_buffer[0] == '.') {
-                
+
                 /* Continue if . directory */
                 if (copy_buffer[1] == '\0') { continue; }
 
                 /* Remove directory for .. */
                 if (copy_buffer[1] == '.' && copy_buffer[1]) {
-                    vp::util::GetDirectory(out_path, out_path);
+                    vp::util::GetDirectoryWithDrive(out_path, out_path);
                 }
             }
 

@@ -24,7 +24,7 @@ namespace vp::res {
         u16         curve_count_int;
         u16         base_constant;
         u16         constant_count;
-        u16         material_sub_shader_param_index;
+        u16         fast_bind_shader_param_id;
         u32         reserve0;
     };
     static_assert(sizeof(ResBfresShaderParamAnim) == 0x18);
@@ -33,14 +33,14 @@ namespace vp::res {
         const char *sampler_name;
         u16         base_curve;
         u16         base_constant;
-        u8          material_sub_sampler_index;
+        u8          fast_bind_sampler_id;
         u8          reserve0;
         u16         reserve1;
     };
     static_assert(sizeof(ResBfresTexturePatternAnim) == 0x10);
 
     struct ResBfresConstantEntry {
-        u32 field_offset;
+        u32 result_offset;
         u32 value;
     };
 

@@ -30,11 +30,13 @@ namespace awn::gfx {
         constexpr VkBuffer GetVkBuffer();
     };
 
-    static constexpr size_t cTargetVertexBufferAlignment = impl::Context::cTargetVertexBufferAlignment;
-    static constexpr size_t cTargetIndexBufferAlignment = impl::Context::cTargetIndexBufferAlignment;
-    static constexpr size_t cTargetUniformBufferAlignment = impl::Context::cTargetUniformBufferAlignment;
-    static constexpr size_t cTargetStorageBufferAlignment = impl::Context::cTargetStorageBufferAlignment;
-    static constexpr size_t cTargetDescriptorBufferAlignment = impl::Context::cTargetDescriptorBufferAlignment;
+    static constexpr size_t cMaxVertexBufferAlignment = impl::Context::cTargetVertexBufferAlignment;
+    static constexpr size_t cMaxIndexBufferAlignment = impl::Context::cTargetIndexBufferAlignment;
+    static constexpr size_t cMaxUniformBufferAlignment = impl::Context::cTargetUniformBufferAlignment;
+    static constexpr size_t cMaxStorageBufferAlignment = impl::Context::cTargetStorageBufferAlignment;
+#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+    static constexpr size_t cMaxDescriptorBufferAlignment = impl::Context::cTargetDescriptorBufferAlignment;
+#endif
 
 	class Buffer {
 		private:
@@ -44,20 +46,23 @@ namespace awn::gfx {
             MemoryPool *m_memory_pool;
             size_t      m_memory_offset;
 		public:
-			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(), m_gpu_address(), m_address(), m_memory_pool(), m_memory_offset() {/*...*/}
+			constexpr ALWAYS_INLINE  Buffer() : m_vk_buffer(VK_NULL_HANDLE), m_gpu_address(), m_address(), m_memory_pool(), m_memory_offset() {/*...*/}
             constexpr ALWAYS_INLINE ~Buffer() {/*...*/}
 
 			Result Initialize(MemoryPool *memory_pool, size_t memory_offset, const BufferInfo *buffer_info);
 			Result Initialize(void *gpu_memory_address, const BufferInfo *buffer_info);
             void Finalize();
 
-            constexpr ALWAYS_INLINE void *GetAddress() const { return m_address; }
-            constexpr ALWAYS_INLINE GpuAddress GetGpuAddress() const { return m_gpu_address; }
-            constexpr ALWAYS_INLINE BufferAddress GetBufferAddress(size_t offset = 0) const { return { this, offset, }; }
+            constexpr void *GetAddress() const { return m_address; }
+            constexpr GpuAddress GetGpuAddress() const { return m_gpu_address; }
+            constexpr BufferAddress GetBufferAddress(size_t offset = 0) const { return { this, offset, }; }
 
             void FlushMappedRange(size_t offset, size_t size);
             void InvalidateMappedRange(size_t offset, size_t size);
 
+            constexpr bool IsValid() const {
+                return m_vk_buffer != VK_NULL_HANDLE;
+            }
             constexpr uintptr_t GetMemoryPoolOffset() const {
                 return m_memory_offset;
             }

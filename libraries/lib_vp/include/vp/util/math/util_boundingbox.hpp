@@ -17,43 +17,29 @@
 
 namespace vp::util {
 
-    template <typename T>
+    template <typename T, bool IsVectorized>
     struct BoundingBox {
-        TVector<T, 3, false> min;
-        TVector<T, 3, false> max;
+        TVector<T, 3, IsVectorized> min;
+        TVector<T, 3, IsVectorized> max;
 
         using UnderlyingType = T;
         static constexpr bool cIsBoundingBoxType = true;
-        static constexpr bool cIsVectorized = false;
+        static constexpr bool cIsVectorized = IsVectorized;
     };
 
-    template <typename T>
-    struct BoundingBoxV {
-        TVector<T, 3, true> min;
-        TVector<T, 3, true> max;
+    using BoundingBoxVh = BoundingBox<_Float16,true>;
 
-        using UnderlyingType = T;
-        static constexpr bool cIsBoundingBoxType = true;
-        static constexpr bool cIsVectorized = true;
-    };
-
-    using BoundingBoxf = BoundingBox<float>;
-    using BoundingBoxVf = BoundingBoxV<float>;
-
+    using BoundingBoxf = BoundingBox<float,false>;
+    using BoundingBoxVf = BoundingBox<float,true>;
+    using BoundingBoxd = BoundingBox<double,false>;
+    using BoundingBoxVd = BoundingBox<double,true>;
+    using BoundingBoxsi = BoundingBox<s32,false>;
+    using BoundingBoxVsi = BoundingBox<s32,true>;
 
     template <typename B>
         requires (B::cIsBoundingBoxType)
-    constexpr bool IsBoundingBoxValid(const B &box) {
-        if constexpr (B::cIsVectorized) {
-            const vp::util::Vector3f compare_mask = vp::util::CompareGreaterThan(box.min, box.max);
-            const u32 mask = vp::util::MoveMask(compare_mask);
-            return (mask == 0);
-        } else {
-            if (box.max[0] < box.min[0]) { return false; }
-            if (box.max[1] < box.min[1]) { return false; }
-            if (box.max[2] < box.min[2]) { return false; }
-            return true;
-        }
+    constexpr bool IsBoundingBoxInverted(const B &box) {
+        return box.min > box.max;
     }
 
     template <typename Ret, typename M, typename B>
@@ -74,17 +60,8 @@ namespace vp::util {
         requires (Ret::cIsBoundingBoxType && B0::cIsBoundingBoxType && B1::cIsBoundingBoxType)
     constexpr Ret BoundingBoxMerge(const B0 &l_box, const B1 &r_box) {
         Ret ret = {};
-        if constexpr (Ret::cIsVectorized && B0::cIsVectorized && B1::cIsVectorized) {
-            ret.min = Min(l_box.min, r_box.min);
-            ret.max = Max(l_box.max, r_box.max);
-            return ret;
-        }
-        ret.min[0] = Min(l_box.min[0], r_box.min[0]);
-        ret.min[1] = Min(l_box.min[1], r_box.min[1]);
-        ret.min[2] = Min(l_box.min[2], r_box.min[2]);
-        ret.max[0] = Max(l_box.max[0], r_box.max[0]);
-        ret.max[1] = Max(l_box.max[1], r_box.max[1]);
-        ret.max[2] = Max(l_box.max[2], r_box.max[2]);
+        ret.min = Min(l_box.min, r_box.min);
+        ret.max = Max(l_box.max, r_box.max);
         return ret;
     }
 
@@ -94,7 +71,7 @@ namespace vp::util {
         using Type = typename B::UnderlyingType;
         using VectorType = TVector<Type, 3, B::cIsVectorized>;
         const VectorType size = box.max - box.min;
-        const Type ret = size[0] * size[1] * size[2];
+        const Type ret = Sum(size);
         return ret;
     }
 

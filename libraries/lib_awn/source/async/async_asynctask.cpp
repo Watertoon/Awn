@@ -67,8 +67,8 @@ namespace awn::async {
         }
 
         /* Result execute */
-        m_cancel_function               = nullptr;
-        Result          result          = ResultSuccess;
+        m_cancel_function = nullptr;
+        Result result = ResultSuccess;
         ResultFunction *result_function = m_result_function;
         if (result_function != nullptr) {
             m_result_function = nullptr;
@@ -152,12 +152,12 @@ namespace awn::async {
     }
 
     void AsyncTask::CancelTask() {
-        if (m_queue != nullptr) { m_queue->CancelTask(this, true); }
+        if (m_queue != nullptr) { RESULT_DISCARD(m_queue->CancelTask(this, true)); }
     }
 
     Result AsyncTask::TryCancelTask() {
         if (m_queue == nullptr) { RESULT_RETURN_SUCCESS; }
-        return m_queue->CancelTask(this, false);
+        RESULT_RETURN(m_queue->CancelTask(this, false));
     }
 
     void AsyncTask::Cancel() {
@@ -222,7 +222,7 @@ namespace awn::async {
 
         /* Ensure queued and valid priority */
         RESULT_RETURN_UNLESS(!m_queue_list_node.IsLinked(), ResultAlreadyQueued);
-        RESULT_RETURN_UNLESS(push_info->priority <= queue->m_priority_level_array.GetCount(), ResultInvalidPriority);
+        RESULT_RETURN_UNLESS(push_info->priority <= queue->m_priority_level_array.GetCount(), ResultRangeNG);
 
         /* Clear job completion event */
         if (is_signal_event) { m_finish_event.Clear(); }

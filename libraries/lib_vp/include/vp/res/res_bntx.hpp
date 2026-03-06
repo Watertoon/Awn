@@ -44,6 +44,7 @@ namespace vp::res {
         u32                         reserve0;
 
         static constexpr u32 cMagicNX = util::TCharCode32("NX  ");
+        static constexpr u32 cMagicOunce = util::TCharCode32("Ounc");
         static constexpr u32 cMagicVpVk = util::TCharCode32("VPVK");
 
         ResBntxTextureInfo *TryGetTextureInfo(const char *texture_name) {
@@ -59,7 +60,7 @@ namespace vp::res {
         ResGfxTextureInfo           texture_info;
         u8                          texture_layout[0x4];
         u8                          reserve1[0x14];
-        u32                         mipmap_total_size;
+        u32                         texture_data_size;
         u32                         texture_data_alignment;
         u8                          channel_sources[0x4];
         u8                          image_dimension;

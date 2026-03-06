@@ -17,19 +17,27 @@
 
 namespace awn::res::impl {
 
+    class AsyncResourceManager;
+
     class ResourceUnitAllocator {
+        public:
+            friend class AsyncResourceManager;
         private:
-            using ResourceUnitArray    = vp::util::HeapArray<ResourceUnit>;
-            using ResourceUnitFreeRing = vp::util::RingBuffer<ResourceUnit*>;
+            using ResourceUnitArray = vp::util::HeapArray<ResourceUnit>;
+            using ResourceUnitIdAllocator = vp::util::IndexAllocator<u32>;
+            using ResourceUnitFreeRing = vp::util::AtomicRingBuffer<u64, false>;
         private:
             ResourceUnitArray m_resource_unit_array;
+            ResourceUnitIdAllocator m_resource_unit_id_allocator;
             ResourceUnitFreeRing m_resource_unit_free_ring;
-            sys::Mutex m_ring_cs;
+        private:
+            ResourceUnit *AllocateImpl();
+            void FreeCache(bool is_block);
         public:
-            constexpr  ResourceUnitAllocator() : m_resource_unit_array(), m_resource_unit_free_ring(), m_ring_cs()  {/*...*/}
+            constexpr  ResourceUnitAllocator() : m_resource_unit_array(), m_resource_unit_id_allocator(), m_resource_unit_free_ring()  {/*...*/}
             constexpr ~ResourceUnitAllocator() {/*...*/}
 
-            void Initialize(mem::Heap *heap, u32 resource_unit_count);
+            Result Initialize(mem::Heap *heap, u32 resource_unit_count);
             void Finalize();
 
             ResourceUnit *Allocate();

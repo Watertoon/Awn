@@ -37,18 +37,26 @@ namespace awn::gfx {
     static constexpr inline u32 cTargetMaxTextureDescriptorCount = 0x1'0000;
     static constexpr inline u32 cTargetMaxSamplerDescriptorCount = 0x1000;
     static constexpr inline u32 cMaxBindlessDescriptorCount = vp::util::Max(cTargetMaxSamplerDescriptorCount, cTargetMaxTextureDescriptorCount);
+    static_assert(cMaxBindlessDescriptorCount <= 0xffff'ffff);
 
-    using DescriptorSlotIndexType = vp::util::MinUIntType<cMaxBindlessDescriptorCount - 1>;
+    using DescriptorSlotIndexType = u32;
 
-    constexpr inline u16 cInvalidDescriptorSlotFreeCount = 0xffff;
+    constexpr inline u32 cInvalidDescriptorSlotFreeCount = 0xffff'ffff;
 
     struct DescriptorSlot {
-        DescriptorSlotIndexType index = 0;
-        u16 free_count = cInvalidDescriptorSlotFreeCount;
+        union {
+            struct {
+                u32 index = cInvalidDescriptorSlotFreeCount;
+                u32 free_count = cInvalidDescriptorSlotFreeCount;
+            };
+            u64 state;
+        };
+        
+        constexpr bool operator==(const DescriptorSlot &rhs) const { return this->state == rhs.state; }
     };
-    static_assert(sizeof(DescriptorSlot) <= sizeof(u64));
+    static_assert(sizeof(DescriptorSlot) == sizeof(u64));
 
-    constexpr inline DescriptorSlot cInvalidDescriptorSlot = DescriptorSlot{};
+    constexpr inline DescriptorSlot cInvalidDescriptorSlot = DescriptorSlot{ cInvalidDescriptorSlotFreeCount, cInvalidDescriptorSlotFreeCount, };
 
     struct TextureSamplerHandle {
         u64 handle = 0xffff'ffff'ffff'ffff;

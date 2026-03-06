@@ -17,10 +17,10 @@
 
 namespace awn::res::impl {
 
-	void ResourceSizeTableManager::Initialize(const char *path) {
+	Result ResourceSizeTableManager::Initialize(const char *path) {
 
 		/* Load rsizetable */
-        if (path == nullptr || *path == '\0') { return; }
+        if (path == nullptr || *path == '\0') { RESULT_RETURN_SUCCESS; }
         
         Resource *resource = nullptr;
 		AsyncResourceLoadInfo async_load_info = {
@@ -32,7 +32,7 @@ namespace awn::res::impl {
 		const bool result = m_extractor.Initialize(resource->GetFile(), resource->GetFileSize());
 		VP_ASSERT(result == true);
 
-		return;
+		RESULT_RETURN_SUCCESS;
 	}
 
 	void ResourceSizeTableManager::Finalize() {

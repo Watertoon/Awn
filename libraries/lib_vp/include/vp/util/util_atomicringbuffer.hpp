@@ -17,59 +17,41 @@
 
 namespace vp::util {
 
-	template<typename T>
+	template<typename T, bool IsCancellable = true>
+        requires (sizeof(T) == sizeof(u64))
 	class AtomicRingBuffer {
+		public:
+            static constexpr const u64 cCancelValue = 0xffff'ffff'ffff'ffff;
 		private:
+            u32  m_max_count;
 			u32  m_offset;
 			u32  m_count;
-            u32  m_max_count;
-			T   *m_array;
+			u64 *m_array;
         public:
-            class Iterator {
-                private:
-                    AtomicRingBuffer<T> *m_ring;
-                    u32 m_index;
-                public:
-                    constexpr ALWAYS_INLINE Iterator(AtomicRingBuffer<T> *ring, u32 index) : m_ring(ring), m_index(index) {/*...*/}
-                    constexpr ALWAYS_INLINE ~Iterator() {/*...*/}
+            constexpr AtomicRingBuffer() : m_max_count(), m_offset(), m_count(), m_array{} {/*...*/}
+            constexpr ~AtomicRingBuffer() {/*...*/}
 
-                    constexpr bool GetNext(T *out_value) {
-                        const u32 max_mask = (m_ring->m_max_count - 1);
-                        u32 i = m_index;
-                        u32 count = m_ring->m_count;
-                        ON_SCOPE_EXIT { m_index = i + 1; };
-                        while (i < count) {
-                            const T ret = m_ring->m_array[i & max_mask];
-                            if (ret != 0) { *out_value = ret; return true; }
-                            ++i;
-                            count = m_ring->m_count;
-                        }
-                        return false;
-                    }
-            };
-        public:
-            constexpr ALWAYS_INLINE AtomicRingBuffer() : m_offset(), m_count(), m_max_count(), m_array{} {/*...*/}
-            constexpr ALWAYS_INLINE ~AtomicRingBuffer() {/*...*/}
-
-            void Initialize(imem::IHeap *heap, u32 queue_count, s32 alignment = 8) {
+            Result Initialize(imem::IHeap *heap, u32 queue_count, s32 alignment = 8) {
 
                 /* Integrity checks */
-                VP_ASSERT(queue_count != 0);
+                RESULT_RETURN_UNLESS(queue_count != 0, ResultRangeNG);
+                RESULT_RETURN_UNLESS(queue_count < 0x8000'0000, ResultRangeNG);
 
                 /* Align up count to nearest power of 2 */
-                const u32 shift = vp::util::CountLeftZeroBits32(queue_count - 1);
-                const u32 count = static_cast<u32>(0x8000'0000) >> shift;
+                const u32 count = vp::util::AlignPow2(queue_count);
 
                 /* Allocate pointer array */
-                m_array = new (heap, alignment) T[count];
-                VP_ASSERT(m_array != nullptr);
+                u64 *array = new (heap, alignment) u64[count];
+                RESULT_RETURN_UNLESS(array == nullptr, ResultNoMemory);
+                ::memset(array, 0, sizeof(u64) * count);
 
                 /* Set state */
+                m_array = array;
                 m_max_count = queue_count;
-                m_offset    = 0;
-                m_count     = 0;
+                m_offset = 0;
+                m_count = 0;
 
-                return;
+                RESULT_RETURN_SUCCESS;
             }
 
             void Finalize() {
@@ -82,83 +64,279 @@ namespace vp::util {
                 m_offset    = 0;
             }
 
+            constexpr void SetMemory(T *array, u32 count) {
+                m_array = array;
+                m_max_count = count;
+                m_offset = 0;
+                m_count = 0;
+            }
+        public:
             bool PushBack(T value) {
 
                 /* Integrity checks */
                 VP_ASSERT(value != 0);
+                VP_ASSERT(!IsCancellable || reinterpret_cast<u64>(value) != cCancelValue);
 
-                /* Ensure available space */
-                u32 count = m_count;
-                u32 last  = 0;
-                while ((count - m_offset) < (m_max_count - 3)) {
+                /* Reserve space for push back loop */
+                const u32 max = m_max_count;
+                const u32 max_mask = (max - 1);
+                u32 prev_count = vp::util::InterlockedLoadAcquire(std::addressof(m_count));
+                for (;;) {
+                    /* Fail if out of space */
+                    const u32 offset = vp::util::InterlockedLoadAcquire(std::addressof(m_offset));
+                    if (static_cast<s32>(max) <= static_cast<s32>(prev_count - offset)) { return false; }
 
-                    /* Attempt to reserve space */
-                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(last), std::addressof(m_count), count + 1, count);
-                    if (!result) {
-                        count = last;
-                        continue;
-                    }
-
-                    /* Insert our element */
-                    vp::util::MemoryBarrierRelease();
-                    m_array[count & (m_max_count - 1)] = value;
-
-                    return true;
+                    /* Reserve space */
+                    const u32 next_count = prev_count + 1;
+                    const bool result = vp::util::InterlockedCompareExchange(std::addressof(prev_count), std::addressof(m_count), next_count, prev_count);
+                    if (result) { break; }
                 }
 
-                return false;
+                /* Insert element into our reserved space */
+                vp::util::MemoryBarrierInnerReadWrite();
+                m_array[prev_count & max_mask] = reinterpret_cast<u64>(value);
+                return true;
             }
 
             T RemoveFront() {
 
-                /* Attempt to read the next item in the queue */
-                const u32 max_mask = (m_max_count - 1);
-                u32 offset = m_offset;
-                while (0 < m_count - offset) {
+                /* Remove front loop */
+                const u32 max = m_max_count;
+                const u32 max_mask = (max - 1);
+                u32 prev_offset = m_offset;
+                u64 value;
+                for (;;) {
+                    const s32 count = static_cast<s32>(m_count - prev_offset);
+                    if (count < 1) { return static_cast<T>(0); }
 
-                    /* Check if next element is available */
-                    const T ret = m_array[offset & max_mask];
-                    if (ret == 0) {
-                        vp::util::MemoryBarrierRelease();
-
-                        /* Retry if a new element was added */
-                        const u32 next_offset = m_offset;
-                        if (next_offset == offset) { return 0; }
-                        offset = next_offset;
+                    /* Ensure value */
+                    value = m_array[prev_offset & max_mask];
+                    if (value == 0) {
+                        /* Reset offset and try again, for someone else took our value */
+                        vp::util::MemoryBarrierInnerReadWrite();
+                        u32 reload_offset = m_offset;
+                        if (reload_offset == prev_offset) { return static_cast<T>(0); }
+                        prev_offset = reload_offset;
                         continue;
                     }
 
-                    /* Reserve the element as ours */
-                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(offset), std::addressof(m_offset), offset + 1, offset);
+                    /* Reserve offset and value */
+                    const u32 next_offset = prev_offset + 1;
+                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(prev_offset), std::addressof(m_offset), next_offset, prev_offset);
                     if (!result) { continue; }
+                    vp::util::MemoryBarrierInnerReadWrite();
+                    m_array[prev_offset & max_mask] = 0;
 
-                    /* Take the element */
-                    vp::util::MemoryBarrierRelease();
-                    m_array[offset & max_mask] = 0;
-
-                    return ret;
+                    /* Succeed if not cancelled */
+                    if (!IsCancellable || value != cCancelValue) { return reinterpret_cast<T>(value); }
+                    /* Try next offset if cancelled */
+                    ++prev_offset;
                 }
-
-                return 0;
             }
 
-            constexpr Iterator Begin() {
-                return Iterator(this, m_offset);
+            T RemoveFrontWeak() {
+
+                /* Read loop */
+                const u32 max_mask = (m_max_count - 1);
+                u32 offset = m_offset;
+                for (;;) {
+                    /* Ensure we have an element */
+                    const s32 count = static_cast<s32>(m_count - offset);
+                    if (count < 1) { return static_cast<T>(0); }
+
+                    /* Pop next value */
+                    const u32 index = offset & max_mask;
+                    u64 value = m_array[index];
+                    /* Fail on zero (is only meant to happen when space has been reserved in PushBack, but the value has not yet been written) */
+                    if (value == 0) { return static_cast<T>(0); }
+                    m_array[index] = 0;
+                    ++offset;
+
+                    /* Increment offset */
+                    vp::util::MemoryBarrierInnerReadWrite();
+                    m_offset = offset;
+                    if (!IsCancellable || value != cCancelValue) { return reinterpret_cast<T>(value); }
+                    /* Try next offset if cancelled */
+                }
+            }
+
+            constexpr void Cancel(T value) requires (IsCancellable) {
+
+                /* Integrity checks */
+                VP_ASSERT(value != 0);
+                VP_ASSERT(!IsCancellable || reinterpret_cast<u64>(value) != cCancelValue);
+
+                const u32 max_mask = (m_max_count - 1);
+                u32 offset = m_offset;
+                u32 count = m_count;
+                const u64 value_t = reinterpret_cast<u64>(value);
+                while (offset < count) {
+                    const u32 index = offset & max_mask;
+                    if (m_array[index] == value_t) {
+                        m_array[index] = cCancelValue;
+                    }
+                    ++offset;
+                    count = m_count;
+                }
+                return;
             }
 
             constexpr void Clear() {
-                if (0 < static_cast<s32>(m_offset) - static_cast<s32>(m_count)) {
+                if (!this->IsEmpty()) {
                     m_offset = 0;
                     m_count = 0;
                     for (u32 i = 0; i < m_max_count; ++i) {
-                        m_array[i] = nullptr;
+                        m_array[i] = 0;
                     }
                 }
                 return;
             }
 
-            constexpr u32 GetUsedCount() const { return m_count; }
+            constexpr bool IsEmpty() const { return (this->GetUsedCount() < 1); }
+            constexpr u32 GetUsedCount() const { return m_count - m_offset; }
+            constexpr u32 GetCounter() const { return m_count; }
             constexpr u32 GetOffset() const { return m_offset; }
             constexpr u32 GetMaxCount() const { return m_max_count; }
+	};
+
+	template<typename T, u32 Count, bool IsCancellable = true>
+        requires (sizeof(T) == sizeof(u64) && vp::util::IsAlignedPow2(Count))
+	class AtomicFixedRingBuffer {
+		public:
+            static constexpr const u64 cCancelValue = 0xffff'ffff'ffff'ffff;
+		private:
+			u32 m_offset;
+			u32 m_count;
+			u64 m_array[Count];
+        public:
+            constexpr AtomicFixedRingBuffer() : m_offset(), m_count(), m_array{} {/*...*/}
+            constexpr ~AtomicFixedRingBuffer() {/*...*/}
+
+            bool PushBack(T value) {
+
+                /* Integrity checks */
+                VP_ASSERT(value != 0);
+                VP_ASSERT(!IsCancellable || reinterpret_cast<u64>(value) != cCancelValue);
+
+                /* Reserve space for push back loop */
+                const u32 max = Count;
+                const u32 max_mask = (max - 1);
+                u32 prev_count = vp::util::InterlockedLoadAcquire(std::addressof(m_count));
+                for (;;) {
+                    /* Fail if out of space */
+                    const u32 offset = vp::util::InterlockedLoadAcquire(std::addressof(m_offset));
+                    if (max <= (prev_count - offset)) { return false; }
+
+                    /* Reserve space */
+                    const u32 next_count = prev_count + 1;
+                    const bool result = vp::util::InterlockedCompareExchange(std::addressof(prev_count), std::addressof(m_count), next_count, prev_count);
+                    if (result) { break; }
+                }
+
+                /* Insert element into our reserved space */
+                vp::util::MemoryBarrierInnerReadWrite();
+                m_array[prev_count & max_mask] = reinterpret_cast<u64>(value);
+                return true;
+            }
+
+            T RemoveFront() {
+
+                /* Remove front loop */
+                const u32 max = Count;
+                const u32 max_mask = (max - 1);
+                u32 prev_offset = m_offset;
+                u64 value;
+                for (;;) {
+                    const s32 count = static_cast<s32>(m_count - prev_offset);
+                    if (count < 1) { return static_cast<T>(0); }
+
+                    /* Ensure value */
+                    value = m_array[prev_offset & max_mask];
+                    if (value == 0) {
+                        /* Reset offset and try again, for someone else took our value */
+                        vp::util::MemoryBarrierInnerReadWrite();
+                        u32 reload_offset = m_offset;
+                        if (reload_offset == prev_offset) { return static_cast<T>(0); }
+                        prev_offset = reload_offset;
+                        continue;
+                    }
+
+                    /* Reserve offset and value */
+                    const u32 next_offset = prev_offset + 1;
+                    const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(prev_offset), std::addressof(m_offset), next_offset, prev_offset);
+                    if (!result) { continue; }
+                    vp::util::MemoryBarrierInnerReadWrite();
+                    m_array[prev_offset & max_mask] = 0;
+
+                    /* Succeed if not cancelled */
+                    if (!IsCancellable || value != cCancelValue) { return reinterpret_cast<T>(value); }
+                    /* Try next offset if cancelled */
+                    ++prev_offset;
+                }
+            }
+
+            T RemoveFrontWeak() {
+
+                /* Read loop */
+                const u32 max_mask = (Count - 1);
+                u32 offset = m_offset;
+                for (;;) {
+                    /* Ensure we have an element */
+                    const s32 count = static_cast<s32>(m_count - offset);
+                    if (count < 1) { return static_cast<T>(0); }
+
+                    /* Pop next value */
+                    const u32 index = offset & max_mask;
+                    u64 value = m_array[index];
+                    /* Fail on zero (is only meant to happen when space has been reserved in PushBack, but the value has not yet been written) */
+                    if (value == 0) { return static_cast<T>(0); }
+                    m_array[index] = 0;
+                    ++offset;
+
+                    /* Increment offset */
+                    vp::util::MemoryBarrierInnerReadWrite();
+                    m_offset = offset;
+                    if (!IsCancellable || value != cCancelValue) { return reinterpret_cast<T>(value); }
+                    /* Try next offset if cancelled */
+                }
+            }
+
+            constexpr void Cancel(T value) requires (IsCancellable) {
+
+                /* Integrity checks */
+                VP_ASSERT(value != 0);
+                VP_ASSERT(!IsCancellable || reinterpret_cast<u64>(value) != cCancelValue);
+
+                const u32 max_mask = (Count - 1);
+                u32 offset = m_offset;
+                u32 count = m_count;
+                const u64 value_t = reinterpret_cast<u64>(value);
+                while (offset < count) {
+                    const u32 index = offset & max_mask;
+                    if (m_array[index] == value_t) {
+                        m_array[index] = cCancelValue;
+                    }
+                    ++offset;
+                    count = m_count;
+                }
+                return;
+            }
+
+            constexpr void Clear() {
+                if (!this->IsEmpty()) {
+                    m_offset = 0;
+                    m_count = 0;
+                    for (u32 i = 0; i < Count; ++i) {
+                        m_array[i] = 0;
+                    }
+                }
+                return;
+            }
+
+            constexpr bool IsEmpty() const { return (static_cast<s32>(this->GetUsedCount()) < 1); }
+            constexpr u32 GetUsedCount() const { return m_count - m_offset; }
+            constexpr u32 GetCounter() const { return m_count; }
+            constexpr u32 GetOffset() const { return m_offset; }
+            constexpr u32 GetMaxCount() const { return Count; }
 	};
 }

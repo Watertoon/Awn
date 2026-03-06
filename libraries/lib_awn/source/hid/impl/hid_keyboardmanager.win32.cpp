@@ -196,11 +196,11 @@ namespace awn::hid::impl {
             .hbrBackground = (HBRUSH)(COLOR_BACKGROUND),
             .lpszClassName = cClassName,
         };
-        const u32 result0 = ::RegisterClass(std::addressof(wc));
+        const u32 result0 = ::RegisterClassA(std::addressof(wc));
         VP_ASSERT(result0 != 0);
 
         /* Create Window thread */
-        HWND window_handle = ::CreateWindowEx(0 , cClassName, "Keyboard_RawInput", 0, 0, 0, 32, 32, HWND_MESSAGE, 0, process_handle, this);
+        HWND window_handle = ::CreateWindowExA(0 , cClassName, "Keyboard_RawInput", 0, 0, 0, 32, 32, HWND_MESSAGE, 0, process_handle, this);
         VP_ASSERT(window_handle != INVALID_HANDLE_VALUE);
         m_hwnd = window_handle;
 

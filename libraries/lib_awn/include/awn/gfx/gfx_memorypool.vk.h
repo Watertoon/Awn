@@ -47,7 +47,7 @@ namespace awn::gfx {
             constexpr VkDeviceMemory GetVkDeviceMemory() const {
                 return this->m_vk_device_memory;
             }
-            Result InitializeImpl(const MemoryPoolInfo *memory_pool_info, const void *pnext);
+            Result InitializeImpl(const MemoryPoolInfo *memory_pool_info, u32 restrict_memory_type_bits, const void *pnext);
     };
     static_assert(sizeof(MemoryPool) <= vp::res::cMaxGfxMemoryPoolSize);
 }

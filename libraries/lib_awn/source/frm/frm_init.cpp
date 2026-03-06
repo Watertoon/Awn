@@ -81,9 +81,9 @@ namespace awn::frm {
         /* Free root heap */
         mem::FinalizeHeapManager();
         if (sys::IsEnableLargePages()) {
-            mem::FreeLargeAddressRegionWithMemoryPages(root_heap);
+            mem::FreeLargeAddressRegionWithMemoryPages(root_heap, vp::util::AlignUp(root_heap->GetTotalSize(), mem::cPageSize));
         } else {
-            mem::FreeAddressRegion(root_heap);
+            mem::FreeAddressRegion(root_heap, vp::util::AlignUp(root_heap->GetTotalSize(), mem::cPageSize));
         }
 
         /* Free virtual address heap */
@@ -94,9 +94,9 @@ namespace awn::frm {
         return;
     }
 
-    gfx::MemoryPool sMemoryPoolCpuUncached;
-    gfx::MemoryPool sMemoryPoolCpuCached;    
-    gfx::MemoryPool sMemoryPoolGpuUncached;
+    //gfx::MemoryPool sMemoryPoolCpuUncached;
+    //gfx::MemoryPool sMemoryPoolCpuCached;    
+    //gfx::MemoryPool sMemoryPoolGpuUncached;
 
     void InitializeGraphics(const GraphicsInfo *graphics_info) {
 
@@ -118,54 +118,6 @@ namespace awn::frm {
         context->Initialize(awn_graphics_heap, std::addressof(context_info));
 #endif
 
-        /* Initialize gpu heap manager */
-        mem::GpuHeapManager *gpu_heap_mgr = mem::GpuHeapManager::CreateInstance(awn_graphics_heap);
-        gfx::MemoryPoolInfo pool_info;
-        pool_info.SetDefaults();
-        const bool is_cpu_uncached = (0 < graphics_info->cpu_uncached_memory_size);
-        const bool is_cpu_cached = (0 < graphics_info->cpu_cached_memory_size);
-        const bool is_gpu_uncached = (0 < graphics_info->gpu_uncached_memory_size);
-        if (is_cpu_uncached) {
-            pool_info.SetMemoryPropertyFlags(gfx::MemoryPropertyFlags::CpuUncached);
-            pool_info.SetSize(graphics_info->cpu_uncached_memory_size);
-            RESULT_ABORT_UNLESS(sMemoryPoolCpuUncached.Initialize(std::addressof(pool_info)));
-        }
-        if (is_cpu_cached) {
-            pool_info.SetMemoryPropertyFlags(gfx::MemoryPropertyFlags::CpuCached);
-            pool_info.SetSize(graphics_info->cpu_uncached_memory_size);
-            RESULT_ABORT_UNLESS(sMemoryPoolCpuCached.Initialize(std::addressof(pool_info)));
-        }
-        if (is_gpu_uncached) {
-            pool_info.SetMemoryPropertyFlags(gfx::MemoryPropertyFlags::GpuUncached | gfx::MemoryPropertyFlags::CpuUncached);
-            pool_info.SetSize(graphics_info->gpu_uncached_memory_size);
-            RESULT_ABORT_UNLESS(sMemoryPoolGpuUncached.Initialize(std::addressof(pool_info)));
-        }
-        const mem::GpuHeapManagerInfo gpu_heap_mgr_info = {
-            .cpu_uncached_root_heap_count = is_cpu_uncached,
-            .cpu_cached_root_heap_count   = is_cpu_cached,
-            .gpu_uncached_root_heap_count = is_gpu_uncached,
-            .cpu_uncached_info_array = {
-                {
-                    .memory_pool = std::addressof(sMemoryPoolCpuUncached),
-                    .size = graphics_info->cpu_uncached_memory_size,
-                },
-            },
-            .cpu_cached_info_array = {
-                {
-                    .memory_pool = std::addressof(sMemoryPoolCpuCached),
-                    .size = graphics_info->cpu_cached_memory_size, 
-                },
-            },
-            .gpu_uncached_info_array = {
-                {
-                    .memory_pool = std::addressof(sMemoryPoolGpuUncached),
-                    .size = graphics_info->gpu_uncached_memory_size,
-                },
-            },
-        };
-        gpu_heap_mgr->Initialize(awn_graphics_heap, std::addressof(gpu_heap_mgr_info));
-        mem::Heap *gpu_heap_gpu_host_uncached = gpu_heap_mgr->GetGpuRootHeapGpuUncached(0);
-
 #ifdef VP_TARGET_GRAPHICS_API_vk
         /* Initialize command pool manager */
         gfx::impl::CommandPoolManager *cmd_pool_mgr = gfx::impl::CommandPoolManager::CreateInstance(awn_graphics_heap);
@@ -173,12 +125,14 @@ namespace awn::frm {
 
         /* Initialize descriptor memory manager */
         const gfx::impl::DescriptorMemoryManagerInfo desc_mgr_info = {
-            .max_command_buffer_count = graphics_info->max_command_buffer_count,
-            .max_command_list_count = graphics_info->max_command_list_count,
+            //.max_command_buffer_count = graphics_info->max_command_buffer_count,
+            //.max_command_list_count = graphics_info->max_command_list_count,
+            .per_stage_max_allocation_count = 0x2000,
             .per_stage_memory_size = graphics_info->per_stage_descriptor_memory_size,
+            .transient_descriptor_memory_size = vp::util::c1MB,
         };
         gfx::impl::DescriptorMemoryManager *desc_memory_mgr = gfx::impl::DescriptorMemoryManager::CreateInstance(awn_graphics_heap);
-        desc_memory_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, std::addressof(desc_mgr_info));
+        desc_memory_mgr->Initialize(awn_graphics_heap, std::addressof(desc_mgr_info));
 #endif
 
         /* Initialize texture view sampler manager */
@@ -187,7 +141,7 @@ namespace awn::frm {
             .max_texture_view_unit_count = graphics_info->max_texture_view_count,
             .max_sampler_unit_count = graphics_info->max_sampler_count,
         };
-        tex_samp_mgr->Initialize(awn_graphics_heap, gpu_heap_gpu_host_uncached, std::addressof(texture_sampler_mgr_info));
+        tex_samp_mgr->Initialize(awn_graphics_heap, std::addressof(texture_sampler_mgr_info));
 
         awn_graphics_heap->AdjustHeap();
 
@@ -212,14 +166,6 @@ namespace awn::frm {
             gfx::impl::CommandPoolManager::GetInstance()->Finalize();
             gfx::impl::CommandPoolManager::DeleteInstance();
 #endif
-
-            mem::GpuHeapManager::GetInstance()->Finalize();
-            mem::GpuHeapManager::DeleteInstance();
-
-            sMemoryPoolCpuUncached.Finalize();
-            sMemoryPoolCpuCached.Finalize();
-            sMemoryPoolGpuUncached.Finalize();
-
             gfx::impl::Context::GetInstance()->Finalize();
             gfx::impl::Context::DeleteInstance();
         }

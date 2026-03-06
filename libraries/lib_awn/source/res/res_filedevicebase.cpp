@@ -39,13 +39,13 @@ namespace awn::res {
         /* Declare a file handle closed on exit */
         FileHandle handle = {};
         ON_SCOPE_EXIT {
-            RESULT_ABORT_UNLESS(handle.Close());
+            RESULT_DISCARD(handle.Close());
         };
 
         /* Open file handle */
         RESULT_TRY(this->OpenFile(std::addressof(handle), path, OpenMode::Read));
         /* Get file size */
-        size_t       file_size   = 0;
+        size_t file_size = 0;
         RESULT_TRY(this->GetFileSize(std::addressof(file_size), std::addressof(handle)));
 
         /* Align alignment */
@@ -59,8 +59,8 @@ namespace awn::res {
             RESULT_RETURN_IF(file_load_context->file == nullptr, ResultFailedToAllocateFileMemory);
 
             /* Set output file sizes */
-            file_load_context->file_size                    = file_size;
-            file_load_context->file_alignment               = output_alignment;
+            file_load_context->file_size = file_size;
+            file_load_context->file_alignment = output_alignment;
             file_load_context->out_is_file_memory_allocated = true;
         }
 
@@ -105,7 +105,7 @@ namespace awn::res {
         /* Open write dest */
         FileHandle handle = {};
         ON_SCOPE_EXIT {
-            RESULT_ABORT_UNLESS(handle.Close());
+            RESULT_DISCARD(handle.Close());
         };
         RESULT_TRY(this->CreateFile(std::addressof(handle), path, file_save_info->file_size));
 
@@ -124,14 +124,14 @@ namespace awn::res {
         /* Open source */
         FileHandle src_handle = {};
         ON_SCOPE_EXIT {
-            src_handle.Close();
+            RESULT_DISCARD(src_handle.Close());
         };
         RESULT_TRY(this->OpenFile(std::addressof(src_handle), source_path, OpenMode::Read));
 
         /* Open dest */
         FileHandle dst_handle = {};
         ON_SCOPE_EXIT {
-            dst_handle.Close();
+            RESULT_DISCARD(dst_handle.Close());
         };
         RESULT_TRY(this->OpenFile(std::addressof(dst_handle), dest_path, OpenMode::Write));
 

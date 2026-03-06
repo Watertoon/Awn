@@ -42,7 +42,7 @@ namespace awn::para::impl {
             DocumentTree m_document_tree;
             vp::util::HeapArray<TypedParamParentHandle> m_typed_param_parent_handle_array;
             HandleAllocator m_typed_param_parent_handle_index_allocator;
-            vp::util::AtomicRingBuffer<u64> m_remove_queue;
+            vp::util::AtomicRingBuffer<u64, false> m_remove_queue;
             sys::Mutex m_bind_cs;
             sys::Mutex m_load_cs;
         public:
@@ -58,10 +58,10 @@ namespace awn::para::impl {
             u16 AcquireTypedParamHandle(TypedParam *typed_param);
 
             constexpr TypedParam *GetParentByHandle(const u16 handle, const u32 free_index) {
-                return ((handle != HandleAllocator::cInvalidHandle) & (m_typed_param_parent_handle_array[handle].free_count == free_index)) ? m_typed_param_parent_handle_array[handle].typed_param : nullptr;
+                return ((handle != HandleAllocator::cInvalidEntryIndex) & (m_typed_param_parent_handle_array[handle].free_count == free_index)) ? m_typed_param_parent_handle_array[handle].typed_param : nullptr;
             }
             constexpr TypedParam *GetParentByHandle(const u16 handle, const u32 free_index) const {
-                return ((handle != HandleAllocator::cInvalidHandle) & (m_typed_param_parent_handle_array[handle].free_count == free_index)) ? m_typed_param_parent_handle_array[handle].typed_param : nullptr;
+                return ((handle != HandleAllocator::cInvalidEntryIndex) & (m_typed_param_parent_handle_array[handle].free_count == free_index)) ? m_typed_param_parent_handle_array[handle].typed_param : nullptr;
             }
 
             constexpr u32 GetFreeCountByHandle(const u16 handle) { return m_typed_param_parent_handle_array[handle].free_count; }
@@ -71,7 +71,7 @@ namespace awn::para::impl {
             constexpr ALWAYS_INLINE DocumentManager() : m_app_impl(), m_resource_factory(), m_document_tree(), m_typed_param_parent_handle_array(), m_typed_param_parent_handle_index_allocator(), m_remove_queue(), m_bind_cs(), m_load_cs() {/*...*/}
             constexpr ALWAYS_INLINE ~DocumentManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, const DocumentManagerInfo *mgr_info);
+            Result Initialize(mem::Heap *heap, const DocumentManagerInfo *mgr_info);
             void Finalize();
 
             void Calculate();
@@ -82,7 +82,7 @@ namespace awn::para::impl {
 
 namespace awn::para {
 
-    constexpr TypedParam::TypedParam() : m_parent_name(""), m_parent_document_binder(), m_parent_free_count(0), m_parent_handle(impl::DocumentManager::HandleAllocator::cInvalidHandle), m_handle(impl::DocumentManager::HandleAllocator::cInvalidHandle) {/*...*/}
+    constexpr TypedParam::TypedParam() : m_parent_name(""), m_parent_document_binder(), m_parent_free_count(0), m_parent_handle(impl::DocumentManager::HandleAllocator::cInvalidEntryIndex), m_handle(impl::DocumentManager::HandleAllocator::cInvalidEntryIndex) {/*...*/}
 
     constexpr TypedParam *TypedParam::GetParent() {
         if (!m_parent_document_binder.IsValid()) { return nullptr; }

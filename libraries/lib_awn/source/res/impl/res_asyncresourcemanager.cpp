@@ -21,66 +21,35 @@ namespace awn::res::impl {
 
     void AsyncResourceManager::RequestAdjustReference(ResourceUnit *unit) {
 
-        /* Get index of res unit */
-        const u32 index = m_resource_unit_allocator.GetResourceUnitIndex(unit);
-
-        /* Lock frame */
-        std::scoped_lock l(m_adjust_ref_frame_cs);
-
         /* Decrement deferred ref count */
-        const u32 frame_index = m_adjust_ref_frame_buffer.GetCurrentFrameIndex();
-        const s32 new_count   = --unit->m_deferred_adjust_count[frame_index];
+        const s32 ref = vp::util::InterlockedFetchDecrementRelaxed(std::addressof(unit->m_deferred_adjust_count));
+        if (ref != 0) { return; }
 
-        /* Request ref change if out of ref */
-        if (new_count != -1) { return; }
-
-        /* Push to frame */
-        vp::util::FrameArray<u16> *frame = m_adjust_ref_frame_buffer.GetCurrentFrameArray();
-        frame->PushValue(index);
+        /* Schedule adjust */
+        const u32 index = m_resource_unit_allocator.GetResourceUnitIndex(unit);
+        m_adjust_ref_id_ring.PushBack(index + 1);
 
         return;
     }
 
     void AsyncResourceManager::RequestUnload(ResourceUnit *unit) {
 
-        /* Get index of res unit */
+        /* Process unload */
+        this->ProcessUnload();
+
+        /* Schedule unload */
         const u32 index = m_resource_unit_allocator.GetResourceUnitIndex(unit);
-
-        /* Lock frame */
-        std::scoped_lock l(m_unload_frame_cs);
-
-        /* Push to frame */
-        vp::util::FrameArray<u16> *frame = m_unload_frame_buffer.GetCurrentFrameArray();
-        frame->PushValue(index);
+        m_unload_cancel_conn.InterlockedClearBit(index);
+        m_unload_id_ring.PushBack(index + 1);
 
         return;
     }
 
     void AsyncResourceManager::CancelUnloadRequest(ResourceUnit *unit) {
 
-        /* Get index of res unit */
+        /* Set cancel bit */
         const u32 index = m_resource_unit_allocator.GetResourceUnitIndex(unit);
-
-        /* Lock frame */
-        std::scoped_lock l(m_unload_frame_cs);
-
-        /* Stub index in frame */
-        vp::util::FrameArray<u16> *frame1 = m_unload_frame_buffer.GetFrameArray(1);
-        const u32 count1 = frame1->GetUsedCount();
-        for (u32 i = 0; i < count1; ++i) {
-            if ((*frame1)[i] == index) {
-                frame1->RemoveRange(i, 1);
-                return;
-            }
-        }
-        vp::util::FrameArray<u16> *frame0 = m_unload_frame_buffer.GetFrameArray(0);
-        const u32 count0 = frame0->GetUsedCount();
-        for (u32 i = 0; i < count0; ++i) {
-            if ((*frame0)[i] == index) {
-                frame0->RemoveRange(i, 1);
-                return;
-            }
-        }
+        m_unload_cancel_conn.InterlockedSetBit(index);
 
         return;
     }
@@ -89,13 +58,8 @@ namespace awn::res::impl {
 
         /* Get index of res unit */
         const u32 index = m_resource_unit_allocator.GetResourceUnitIndex(unit);
-
-        /* Lock frame */
-        std::scoped_lock l(m_heap_adjust_frame_cs);
-
-        /* Push to frame */
-        vp::util::FrameArray<u16> *frame = m_heap_adjust_frame_buffer.GetCurrentFrameArray();
-        frame->PushValue(index);
+        m_unload_cancel_conn.InterlockedClearBit(index);
+        m_heap_adjust_id_ring.PushBack(index + 1);
 
         return;
     }
@@ -104,27 +68,7 @@ namespace awn::res::impl {
 
         /* Get index of res unit */
         const u32 index = m_resource_unit_allocator.GetResourceUnitIndex(unit);
-
-        /* Lock frame */
-        std::scoped_lock l(m_heap_adjust_frame_cs);
-
-        /* Stub index in frame */
-        vp::util::FrameArray<u16> *frame1 = m_heap_adjust_frame_buffer.GetFrameArray(1);
-        const u32 count1 = frame1->GetUsedCount();
-        for (u32 i = 0; i < count1; ++i) {
-            if ((*frame1)[i] == index) {
-                frame1->RemoveRange(i, 1);
-                return;
-            }
-        }
-        vp::util::FrameArray<u16> *frame0 = m_heap_adjust_frame_buffer.GetFrameArray(0);
-        const u32 count0 = frame0->GetUsedCount();
-        for (u32 i = 0; i < count0; ++i) {
-            if ((*frame0)[i] == index) {
-                frame0->RemoveRange(i, 1);
-                return;
-            }
-        }
+        m_heap_adjust_cancel_conn.InterlockedSetBit(index);
 
         return;
     }
@@ -144,31 +88,20 @@ namespace awn::res::impl {
     void AsyncResourceManager::ProcessAdjustReference() {
 
         /* Ensure back ring has elements */
-        const u32 frame_index = m_adjust_ref_frame_buffer.GetCurrentFrameIndex();
-        vp::util::FrameArray<u16> *frame = m_adjust_ref_frame_buffer.GetFrameArray(frame_index);
-        const u32 used_count = frame->GetUsedCount();
+        const u32 used_count = m_adjust_ref_id_ring.GetUsedCount();
         if (used_count == 0) { return; }
 
-        /* Advance frame */
-        {
-            std::scoped_lock l(m_adjust_ref_frame_cs);
-            m_adjust_ref_frame_buffer.AdvanceFrameArray();
-        }
-
         /* Adjust references for previous frame */
-        for (const u16 &index : *frame) {
-
-            /* Get resource unit */
-            ResourceUnit *unit = m_resource_unit_allocator.GetResourceUnitByIndex(index);
-            if (unit == nullptr) { continue; }
+        for (;;) {
+            const u32 id = static_cast<u32>(m_adjust_ref_id_ring.RemoveFrontWeak());
+            if (id == 0) { return; }
+            const u32 index = id - 1;
 
             /* Adjust the deferred ref count */
-            unit->AdjustReferenceCount(unit->m_deferred_adjust_count[frame_index]);
-            unit->m_deferred_adjust_count[frame_index] = 0;
-            if (0 < unit->GetReferenceCount()) { continue; }
-
-            /* Schedule unload for out of ref */
-            this->RequestUnload(unit);
+            ResourceUnit *unit = m_resource_unit_allocator.GetResourceUnitByIndex(index);
+            const u32 adj_count = vp::util::InterlockedExchangeRelaxed(std::addressof(unit->m_deferred_adjust_count), 0);
+            unit->AdjustReferenceCount(adj_count);
+            unit->ScheduleUnload();
         }
 
         return;
@@ -177,16 +110,8 @@ namespace awn::res::impl {
     void AsyncResourceManager::ProcessUnload() {
 
         /* Ensure back ring has elements */
-        const u32 frame_index = m_adjust_ref_frame_buffer.GetCurrentFrameIndex();
-        vp::util::FrameArray<u16> *frame = m_adjust_ref_frame_buffer.GetFrameArray(frame_index);
-        const u32 used_count = frame->GetUsedCount();
+        const u32 used_count = m_unload_id_ring.GetUsedCount();
         if (used_count == 0) { return; }
-
-        /* Advance frame */
-        {
-            std::scoped_lock l(m_adjust_ref_frame_cs);
-            m_adjust_ref_frame_buffer.AdvanceFrameArray();
-        }
 
         /* Setup unload push info constants */
         async::AsyncTaskPushInfo push_info = {
@@ -195,16 +120,19 @@ namespace awn::res::impl {
             .result_function = std::addressof(m_unload_result),
             .priority        = 0xd,
         };
-        /* Schedule unload operations for previous frame */
-        for (const u16 &index : *frame) {
+        for (;;) {
+            /* Get unload id */
+            const u32 id = static_cast<u32>(m_unload_id_ring.RemoveFrontWeak());
+            if (id == 0) { return; }
+            const u32 index = id - 1;
 
-            /* Get resource unit */
+            /* Check for cancel */
+            if (m_unload_cancel_conn.InterlockedClearBit(index)) { continue; }
+
+            /* Defer unload until the resource unit is ready */
             ResourceUnit *unit = m_resource_unit_allocator.GetResourceUnitByIndex(index);
-            if (unit == nullptr) { continue; }
-
-            /* Defer unload again while the unit is busy */
             if (!unit->IsUnloadable()) {
-                this->RequestUnload(unit);
+                m_unload_id_ring.PushBack(id);
                 continue;
             }
 
@@ -219,24 +147,21 @@ namespace awn::res::impl {
     void AsyncResourceManager::ProcessHeapAdjust() {
 
         /* Ensure back ring has elements */
-        const u32 frame_index = m_heap_adjust_frame_buffer.GetCurrentFrameIndex();
-        vp::util::FrameArray<u16> *frame = m_heap_adjust_frame_buffer.GetFrameArray(frame_index);
-        const u32 used_count = frame->GetUsedCount();
+        const u32 used_count = m_heap_adjust_id_ring.GetUsedCount();
         if (used_count == 0) { return; }
 
-        /* Advance frame */
-        {
-            std::scoped_lock l(m_heap_adjust_frame_cs);
-            m_heap_adjust_frame_buffer.AdvanceFrameArray();
-        }
-
         /* Heap adjust */
-        for (const u16 &index : *frame) {
+        for (;;) {
+            const u32 id = static_cast<u32>(m_heap_adjust_id_ring.RemoveFrontWeak());
+            if (id == 0) { return; }
+            const u32 index = id - 1;
+
+            /* Check cancel */
+            if (m_heap_adjust_cancel_conn.GetBit(index)) { continue; }
 
             /* Heap adjust resource unit */
             ResourceUnit *unit = m_resource_unit_allocator.GetResourceUnitByIndex(index);
-            if (unit == nullptr) { continue; }
-            unit->HeapAdjust();
+            RESULT_DISCARD(unit->HeapAdjust());
         }
 
         return;
@@ -256,7 +181,7 @@ namespace awn::res::impl {
         resource_unit->m_state.SetBit(ResourceUnit::State_IsFinalized);
         resource_unit->CancelUnload(this);
         resource_unit->UnregisterFromResourceUnitManager();
-        resource_unit->ClearCache();
+        RESULT_DISCARD(resource_unit->ClearCache());
 
         if (resource_unit->m_status == ResourceUnit::Status::Freed) {
 
@@ -269,21 +194,6 @@ namespace awn::res::impl {
             /* Free to resource unit allocator */
             this->FreeResourceUnit(resource_unit);
         }
-
-        return;
-    }
-
-    void AsyncResourceManager::FreeResourceUnitFromBinder(ResourceBinder *binder) {
-
-        /* Ensure binder has unit */
-        ResourceUnit *unit = binder->m_resource_unit;
-        if (unit == nullptr) { return; }
-
-        /* Clear unit from binder */
-        binder->m_resource_unit = nullptr;
-
-        /* Release resource unit reference */
-        this->RequestAdjustReference(unit);
 
         return;
     }
@@ -318,7 +228,7 @@ namespace awn::res::impl {
         /* Force process cleanup tasks again to free units */
         m_thread_memory->GetQueue()->ForceCalcSyncOnThread(m_thread_memory, 7);
 
-        /* Allocate a resource unit */
+        /* Try allocate a resource unit */
         resource_unit = m_resource_unit_allocator.Allocate();
         VP_ASSERT(resource_unit != nullptr);
 
@@ -356,7 +266,7 @@ namespace awn::res::impl {
         resource_unit->ChangeLoadPriority(std::addressof(m_queue_memory), std::addressof(m_queue_load), priority);
 
         /* Reference unit */
-        load_info->m_resource_binder->m_status = (resource_unit->m_reference_count == 1) ? ResourceBinder::Status::Reclaimed : ResourceBinder::Status::Referenced;
+        load_info->m_resource_binder->m_status = (resource_unit->m_reference_count == 1) ? ResourceBinder::Status::FromCache : ResourceBinder::Status::Referenced;
 
         return true;
     }
@@ -366,7 +276,7 @@ namespace awn::res::impl {
         /* Get user data of load task */
         LoadTask::LoadUserData *load_info = reinterpret_cast<LoadTask::LoadUserData*>(load_task_user_data_arg);
 
-        /* Adjust reference counts and schedule pending unloads */
+        /* Process adjust ref and unload request queues */
         this->ProcessAdjustReference();
         this->ProcessUnload();
 
@@ -407,7 +317,7 @@ namespace awn::res::impl {
         /* Initialize resource unit */
         const bool is_res_initializable = resource_factory->IsInitializeOnCreate();
         const bool is_boost_compose = resource_factory->IsBoostCompose();
-        const bool is_compose = (is_res_initializable && load_info->m_async_load_info.is_compose && this->IsComposeEnabled() && load_info->m_resource_binder != nullptr && load_info->m_async_load_info.resource_user_context != nullptr);
+        const bool is_compose = (is_res_initializable && load_info->m_async_load_info.is_compose && this->IsComposeEnabled() && load_info->m_resource_binder != nullptr && load_info->m_async_load_info.compose_info != nullptr);
         ResourceUnitInfo unit_info = {
             .async_resource_info   = std::addressof(load_info->m_async_load_info),
             .resource_binder       = load_info->m_resource_binder,
@@ -437,13 +347,14 @@ namespace awn::res::impl {
         };
         RESULT_ABORT_UNLESS(resource_unit->m_load_task.PushTask(std::addressof(push_info)));
 
-        load_info->m_resource_binder->m_status = ResourceBinder::Status::InLoad;
+        load_info->m_resource_binder->m_status = ResourceBinder::Status::Pending;
 
         return;
     }
 
     void AsyncResourceManager::LoadMemoryExe(void *resource_unit) {
-        reinterpret_cast<ResourceUnit*>(resource_unit)->LoadMemory();
+        AsyncResourceManager::GetInstance()->ProcessHeapAdjust();
+        RESULT_DISCARD(reinterpret_cast<ResourceUnit*>(resource_unit)->LoadMemory());
     }
 
     Result AsyncResourceManager::LoadMemoryResult(async::TaskResultInvokeInfo *result_info) {
@@ -452,7 +363,7 @@ namespace awn::res::impl {
     }
 
     void AsyncResourceManager::LoadFileExe(void *resource_unit) {
-        reinterpret_cast<ResourceUnit*>(resource_unit)->LoadFile();
+        RESULT_DISCARD(reinterpret_cast<ResourceUnit*>(resource_unit)->LoadFile());
     }
 
     Result AsyncResourceManager::LoadFileResult(async::TaskResultInvokeInfo *result_info) {
@@ -462,11 +373,10 @@ namespace awn::res::impl {
     }
 
     void AsyncResourceManager::ComposeExe(void *resource_unit) {
-        reinterpret_cast<ResourceUnit*>(resource_unit)->Compose();
+        RESULT_DISCARD(reinterpret_cast<ResourceUnit*>(resource_unit)->Compose());
     }
 
     void AsyncResourceManager::ReserveUnloadExe([[maybe_unused]] void *arg) {
-        /* Adjust reference counts and schedule pending unloads */
         this->ProcessAdjustReference();
         this->ProcessUnload();
     }
@@ -477,7 +387,7 @@ namespace awn::res::impl {
     }
 
     void AsyncResourceManager::HeapAdjustExe(void *resource_unit) {
-        reinterpret_cast<ResourceUnit*>(resource_unit)->HeapAdjust();
+        RESULT_DISCARD(reinterpret_cast<ResourceUnit*>(resource_unit)->HeapAdjust());
     }
 
     void AsyncResourceManager::UnloadForSyncExe(void *resource_unit) {
@@ -485,12 +395,15 @@ namespace awn::res::impl {
     }
 
     Result AsyncResourceManager::UnloadForSyncResult(async::TaskResultInvokeInfo *result_info) {
-        reinterpret_cast<ResourceUnit*>(result_info->user_data)->ScheduleUnload();
+        const bool is_unload = reinterpret_cast<ResourceUnit*>(result_info->user_data)->ScheduleUnload();
+        if (is_unload) {
+            result_info->is_cancelled = false;
+        }
         RESULT_RETURN_SUCCESS;
     }
 
     void AsyncResourceManager::UnloadExe(void *resource_unit) {
-        reinterpret_cast<ResourceUnit*>(resource_unit)->Unload();
+        RESULT_DISCARD(reinterpret_cast<ResourceUnit*>(resource_unit)->Unload());
     }
 
     void AsyncResourceManager::AddResourceUnitToFinalizeList(ResourceUnit *resource_unit) {
@@ -552,7 +465,7 @@ namespace awn::res::impl {
     }
 
     void AsyncResourceManager::ClearCacheExe(void *resource_unit) {
-        reinterpret_cast<ResourceUnit*>(resource_unit)->ClearCache();
+        RESULT_DISCARD(reinterpret_cast<ResourceUnit*>(resource_unit)->ClearCache());
     }
 
     Result AsyncResourceManager::ClearCacheResult(async::TaskResultInvokeInfo *result_info) {
@@ -562,7 +475,8 @@ namespace awn::res::impl {
 
     void AsyncResourceManager::CalculateExe([[maybe_unused]] void *arg) {
 
-        /* Adjust reference counts and schedule pending unloads */
+        /* Process adjust ref and unload request queues */
+        m_resource_unit_allocator.FreeCache(false);
         this->ProcessAdjustReference();
         this->ProcessUnload();
         
@@ -591,9 +505,13 @@ namespace awn::res::impl {
         }
 
         /* High priority clear cache for keep alloc size */
-        {            
-            ++m_clear_cache_tick_counter;
-            if (m_clear_cache_tick_count <= m_clear_cache_tick_counter && m_task_for_clear_cache_for_allocate->IsSchedulable()) {
+        {
+            u32 tick_count = m_clear_cache_tick_counter;
+            if (tick_count < m_clear_cache_tick_count) {
+                ++tick_count;
+                m_clear_cache_tick_count = tick_count;
+            }
+            if (m_clear_cache_tick_count <= tick_count && m_task_for_clear_cache_for_allocate->IsSchedulable()) {
                 m_clear_cache_tick_counter = 0;
                 async::AsyncTaskPushInfo push_info = {
                     .queue_thread = m_thread_memory,
@@ -762,8 +680,8 @@ namespace awn::res::impl {
 
             /* Ensure a loading thread is not suspended */
             if (this->IsLoadThreadSuspended()) {
-                binder->m_status = ResourceBinder::Status::RequiresReprocess;
-                binder->Complete(push_load_info->resource_user_context);
+                binder->m_status = ResourceBinder::Status::NoExecute;
+                binder->Compose(push_load_info->compose_info);
                 RESULT_RETURN(ResultInactiveLoadThread);
             }
 
@@ -782,7 +700,7 @@ namespace awn::res::impl {
 
         /* Complete load */
         binder->WaitForLoad();
-        binder->Complete(push_load_info->resource_user_context);
+        binder->Compose(push_load_info->compose_info);
 
         RESULT_RETURN_SUCCESS;
     }
@@ -822,53 +740,59 @@ namespace awn::res::impl {
     }
 
     /* System api */
-    void AsyncResourceManager::Initialize(mem::Heap *heap, AsyncResourceManagerInfo *manager_info) {
+    Result AsyncResourceManager::Initialize(mem::Heap *heap, AsyncResourceManagerInfo *manager_info) {
+
+        /* Integirty checks */
+        RESULT_RETURN_UNLESS(0 < manager_info->max_resource_unit_count, ResultRangeNG);
+        RESULT_RETURN_UNLESS(0 < manager_info->load_thread_count, ResultRangeNG);
 
         /* Set application impl */
         IAsyncResourceApplicationImpl *app_impl = manager_info->app_impl;
-        m_app_impl = app_impl;
         VP_ASSERT(app_impl != nullptr);
+        m_app_impl = app_impl;
 
         /* Create system heap */
-        mem::Heap *system_heap = mem::ExpHeap::TryCreate("awn::res::AsyncResourceManager", heap, 0, alignof(size_t), false);
+        mem::ExpHeap *system_heap = mem::ExpHeap::TryCreate("awn::res::AsyncResourceManager", heap, 0, alignof(size_t), false);
+        RESULT_RETURN_UNLESS(system_heap != nullptr, ResultNoMemory);
         m_system_heap = system_heap;
-        VP_ASSERT(system_heap != nullptr);
+        auto fail_guard0 = SCOPE_GUARD { this->Finalize(); };
 
         /* Initialize memory manager */
         ResourceMemoryManagerInfo memory_manager_info = {
-            .name              = "awn::res::ResourceMemoryManager_Main",
+            .name = "awn::res::ResourceMemoryManager_Main",
             .manager_heap_type = ManagerHeapType::VirtualAddressHeap,
         };
-        m_memory_manager.Initialize(system_heap, std::addressof(memory_manager_info));
+        RESULT_TRY(m_memory_manager.Initialize(system_heap, std::addressof(memory_manager_info)));
 
         /* Initialize extension manager with application extensions */
         ExtensionManagerInfo ext_mgr_info = {
             .extension_count = app_impl->GetExtensionArrayCount(),
             .extension_info_array = app_impl->GetExtensionArray(),
         };
-        m_extension_manager.Initialize(system_heap, std::addressof(ext_mgr_info));
+        RESULT_TRY(m_extension_manager.Initialize(system_heap, std::addressof(ext_mgr_info)));
 
         /* Initialize thread local archive manager */
-        m_thread_local_archive_manager.Initialize(system_heap, manager_info->max_thread_local_archive_count);
+        RESULT_TRY(m_thread_local_archive_manager.Initialize(system_heap, manager_info->max_thread_local_archive_count));
 
         /* Initialize resource unit allocator */
-        VP_ASSERT(0 < manager_info->max_resource_unit_count);
-        m_resource_unit_allocator.Initialize(system_heap, manager_info->max_resource_unit_count);
+        RESULT_TRY(m_resource_unit_allocator.Initialize(system_heap, manager_info->max_resource_unit_count));
 
         /* Initialize frame buffers */
-        m_unload_frame_buffer.Initialize(system_heap, manager_info->max_resource_unit_count);
-        m_adjust_ref_frame_buffer.Initialize(system_heap, manager_info->max_resource_unit_count);
-        m_heap_adjust_frame_buffer.Initialize(system_heap, manager_info->max_resource_unit_count);
+        RESULT_TRY(m_unload_id_ring.Initialize(system_heap, manager_info->max_resource_unit_count));
+        RESULT_TRY(m_unload_cancel_conn.Initialize(system_heap, manager_info->max_resource_unit_count));
+        RESULT_TRY(m_adjust_ref_id_ring.Initialize(system_heap, manager_info->max_resource_unit_count));
+        RESULT_TRY(m_heap_adjust_id_ring.Initialize(system_heap, manager_info->max_resource_unit_count));
+        RESULT_TRY(m_heap_adjust_cancel_conn.Initialize(system_heap, manager_info->max_resource_unit_count));
 
         /* Initialize task allocator */
         auto load_task_create_lambda = []([[maybe_unused]] async::AsyncTaskAllocator*, mem::Heap *heap) { 
             return new (heap, alignof(LoadTask)) LoadTask(); 
         };
         auto load_task_create_function = vp::util::MakeLambdaFunction<async::AsyncTaskForAllocator*(async::AsyncTaskAllocator*, mem::Heap*)>(load_task_create_lambda);
-        m_async_task_allocator_load.Initialize(system_heap, std::addressof(load_task_create_function), manager_info->load_task_count);
+        RESULT_TRY(m_async_task_allocator_load.Initialize(system_heap, std::addressof(load_task_create_function), manager_info->load_task_count));
 
         /* Initialize queue and thread impl */
-        auto init_queue = [&](async::AsyncQueue *queue, u32 priority_level_count, u32 thread_count) { 
+        auto init_queue = [&](mem::Heap *heap, async::AsyncQueue *queue, u32 priority_level_count, u32 thread_count) -> Result { 
             const async::AsyncQueuePerSetCount per_set_count = {
                 .thread_count_primary = static_cast<u8>(thread_count),
             };
@@ -877,13 +801,14 @@ namespace awn::res::impl {
                 .thread_set_count = 1,
                 .per_set_count_array = std::addressof(per_set_count),
             };
-            queue->Initialize(system_heap, std::addressof(control_queue_info));
+            RESULT_RETURN(queue->Initialize(heap, std::addressof(control_queue_info)));
         };
-        auto init_thread = [&](async::AsyncQueue *queue, AsyncResourceThreadCreateAnyFunction *create_function, AsyncResourceThreadInfo *info) {
+        auto init_thread = [&](async::AsyncQueueThread **out_thread, mem::Heap *heap, async::AsyncQueue *queue, AsyncResourceThreadCreateFunction *create_function, AsyncResourceThreadInfo *info) -> Result {
 
             async::AsyncQueueThread *thread;
-            if (create_function->IsValid()) {
-                thread = create_function->Invoke(system_heap, queue, info);
+            if (create_function != nullptr && create_function->IsValid()) {
+                thread = create_function->Invoke(heap, queue, info);
+                RESULT_RETURN_UNLESS(thread != nullptr, ResultNoMemory);
             } else {
                 async::AsyncQueueThreadInfo thread_info = {
                     .name = info->name,
@@ -891,25 +816,26 @@ namespace awn::res::impl {
                     .stack_size = info->stack_size,
                     .priority = info->priority,
                 };
-                thread = new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread();
-                RESULT_ABORT_UNLESS(thread->Initialize(system_heap, std::addressof(thread_info)));
+                thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread();
+                RESULT_RETURN_UNLESS(thread != nullptr, ResultNoMemory);
+                RESULT_TRY(thread->Initialize(heap, std::addressof(thread_info)));
             }
-            VP_ASSERT(thread != nullptr);
             VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(thread->GetRuntimeTypeInfo()));
             thread->SetCoreMask((1 << (info->core_number & 0x3f)));
             thread->StartThread();
-            return thread;
+            *out_thread = thread;
+            RESULT_RETURN_SUCCESS;
         };
-        auto init_thread_array = [&](async::AsyncQueue *queue, AsyncResourceThreadCreateAnyFunction *create_function, AsyncQueueThreadArray *thread_array, AsyncResourceThreadInfo *info_array, u32 info_count) {
+        auto init_thread_array = [&](mem::Heap *heap, async::AsyncQueue *queue, AsyncResourceThreadCreateFunction *create_function, AsyncQueueThreadArray *thread_array, AsyncResourceThreadInfo *info_array, u32 info_count) -> Result {
 
-            thread_array->Initialize(system_heap, info_count);
-            if (create_function->IsValid()) {
+            RESULT_TRY(thread_array->Initialize(heap, info_count));
+            if (create_function != nullptr && create_function->IsValid()) {
                 for (u32 i = 0; i < info_count; ++i) {
-                    async::AsyncQueueThread *thread = create_function->Invoke(system_heap, queue, std::addressof(info_array[i]));
-                    VP_ASSERT(thread != nullptr);
+                    async::AsyncQueueThread *thread = create_function->Invoke(heap, queue, std::addressof(info_array[i]));
+                    RESULT_RETURN_UNLESS(thread != nullptr, ResultNoMemory);
                     VP_ASSERT(async::AsyncQueueThread::CheckRuntimeTypeInfoStatic(thread->GetRuntimeTypeInfo()));
                     thread_array->PushPointer(thread);
-        
+
                     thread->SetCoreMask((1 << (info_array[i].core_number & 0x3f)));
                     thread->StartThread();
                 }
@@ -921,31 +847,43 @@ namespace awn::res::impl {
                         .stack_size = info_array[i].stack_size,
                         .priority = info_array[i].priority,
                     };
-                    async::AsyncQueueThread *thread = new (system_heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread();
-                    VP_ASSERT(thread != nullptr);
-                    RESULT_ABORT_UNLESS(thread->Initialize(system_heap, std::addressof(thread_info)));
+                    async::AsyncQueueThread *thread = new (heap, alignof(async::AsyncQueueThread)) async::AsyncQueueThread();
+                    RESULT_RETURN_UNLESS(thread != nullptr, ResultNoMemory);
+                    RESULT_TRY(thread->Initialize(heap, std::addressof(thread_info)));
                     thread_array->PushPointer(thread);
 
                     thread->SetCoreMask((1 << (info_array[i].core_number & 0x3f)));
                     thread->StartThread();
                 }
             }
-            return;
+            RESULT_RETURN_SUCCESS;
         };
 
         /* Initialize control queue and thread */
-        init_queue(std::addressof(m_queue_control), cControlPriorityLevelCount, 1);
-        m_thread_control = init_thread(std::addressof(m_queue_control), std::addressof(manager_info->control_thread_create_function), std::addressof(manager_info->control_thread_info));
+        RESULT_TRY(init_queue(system_heap, std::addressof(m_queue_control), cControlPriorityLevelCount, 1));
+        RESULT_TRY(init_thread(std::addressof(m_thread_control), system_heap, std::addressof(m_queue_control), manager_info->control_thread_create_function, std::addressof(manager_info->control_thread_info)));
 
         /* Initialize memory queue and thread */
-        init_queue(std::addressof(m_queue_memory), cMemoryPriorityLevelCount, 1);
-        m_thread_memory = init_thread(std::addressof(m_queue_memory), std::addressof(manager_info->memory_thread_create_function), std::addressof(manager_info->memory_thread_info));
+        RESULT_TRY(init_queue(system_heap, std::addressof(m_queue_memory), cMemoryPriorityLevelCount, 1));
+        RESULT_TRY(init_thread(std::addressof(m_thread_memory), system_heap, std::addressof(m_queue_memory), manager_info->memory_thread_create_function, std::addressof(manager_info->memory_thread_info)));
 
         /* Initialize load queue and threads */
-        init_queue(std::addressof(m_queue_load), cLoadPriorityLevelCount, manager_info->load_thread_count);
-        init_thread_array(std::addressof(m_queue_load), std::addressof(manager_info->load_thread_create_function), std::addressof(m_load_thread_array), manager_info->load_thread_info_array, manager_info->load_thread_count);
+        mem::FrameHeap *load_heap = mem::FrameHeap::TryCreate("awn::res::LoadThreadHeap", system_heap, mem::Heap::cWholeSize, alignof(size_t), false);
+        RESULT_RETURN_UNLESS(load_heap != nullptr, ResultNoMemory);
+        m_load_thread_heap = load_heap;
+        RESULT_TRY(init_queue(load_heap, std::addressof(m_queue_load), cLoadPriorityLevelCount, manager_info->load_thread_count));
+        RESULT_TRY(init_thread_array(load_heap, std::addressof(m_queue_load), manager_info->load_thread_create_function, std::addressof(m_load_thread_array), manager_info->load_thread_info_array, manager_info->load_thread_count));
+        load_heap->AdjustHeap();
 
-        /* TODO; Initialize compose */
+        /* Initialize compose queue and threads */
+        if (0 < manager_info->compose_thread_count) {            
+            mem::FrameHeap *compose_heap = mem::FrameHeap::TryCreate("awn::res::ComposeThreadHeap", system_heap, mem::Heap::cWholeSize, alignof(size_t), false);
+            RESULT_RETURN_UNLESS(compose_heap != nullptr, ResultNoMemory);
+            m_compose_thread_heap = compose_heap;
+            RESULT_TRY(init_queue(compose_heap, std::addressof(m_queue_load), cLoadPriorityLevelCount, manager_info->compose_thread_count));
+            RESULT_TRY(init_thread_array(compose_heap, std::addressof(m_queue_compose), manager_info->compose_thread_create_function, std::addressof(m_compose_thread_array), manager_info->compose_thread_info_array, manager_info->compose_thread_count));
+            compose_heap->AdjustHeap();
+        }
 
         /* Initialize system tasks */
         m_task_for_calculate                = new (system_heap, alignof(LoadTask)) LoadTask();
@@ -954,22 +892,31 @@ namespace awn::res::impl {
         m_task_for_force_reserve_unload     = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
         m_task_for_force_clear_all_caches   = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
         m_task_for_heap_adjust              = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
+        RESULT_RETURN_UNLESS(m_task_for_calculate != nullptr, ResultNoMemory);
+        RESULT_RETURN_UNLESS(m_task_for_load_sync != nullptr, ResultNoMemory);
+        RESULT_RETURN_UNLESS(m_task_for_clear_cache_for_allocate != nullptr, ResultNoMemory);
+        RESULT_RETURN_UNLESS(m_task_for_force_reserve_unload != nullptr, ResultNoMemory);
+        RESULT_RETURN_UNLESS(m_task_for_force_clear_all_caches != nullptr, ResultNoMemory);
+        RESULT_RETURN_UNLESS(m_task_for_heap_adjust != nullptr, ResultNoMemory);
 
         /* Initialize decompressor manager with a decompressor set for each load thread */
-        m_decompressor_manager.Initialize(system_heap, manager_info->load_thread_count);
+        RESULT_TRY(m_decompressor_manager.Initialize(system_heap, manager_info->load_thread_count));
 
         /* Create Zsdic Heap */
-        if (manager_info->zsdic_heap_size != 0) {
-            m_zsdic_heap = mem::FrameHeap::TryCreate("awn::res::ZsDicHeap", system_heap, manager_info->zsdic_heap_size, 0x20, false);
+        if (0 < manager_info->zsdic_heap_size) {
+            mem::Heap *dic_heap = mem::FrameHeap::TryCreate("awn::res::ZsDicHeap", system_heap, manager_info->zsdic_heap_size, 0x20, false);
+            RESULT_RETURN_UNLESS(dic_heap != nullptr, ResultNoMemory);
+            m_zsdic_heap = dic_heap;
         }
 
         /* Initialize resource size table manager with main table path */
-        m_resource_size_table_manager.Initialize(manager_info->resource_size_table_path);
+        RESULT_TRY(m_resource_size_table_manager.Initialize(manager_info->resource_size_table_path));
 
         /* Adjust system heap */
         system_heap->AdjustHeap();
 
-        return;
+        fail_guard0.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void AsyncResourceManager::Finalize() {
@@ -983,10 +930,12 @@ namespace awn::res::impl {
         this->SuspendLoadThreads();
         this->CancelLoadTasks();
 
-        /* Free free frame buffer */
-        m_unload_frame_buffer.Finalize();
-        m_adjust_ref_frame_buffer.Finalize();
-        m_heap_adjust_frame_buffer.Finalize();
+        /* Free request queues*/
+        m_unload_id_ring.Finalize();
+        m_unload_cancel_conn.Finalize();
+        m_adjust_ref_id_ring.Finalize();
+        m_heap_adjust_id_ring.Finalize();
+        m_heap_adjust_cancel_conn.Finalize();
 
         /* Finalize resource size table manager */
         m_resource_size_table_manager.Finalize();
@@ -1037,7 +986,7 @@ namespace awn::res::impl {
 
         /* Finalize resource unit allocator */
         m_resource_unit_allocator.Finalize();
-        
+
         /* Finalize thread local archive manager */
         m_thread_local_archive_manager.Finalize();
 
@@ -1065,19 +1014,27 @@ namespace awn::res::impl {
         m_queue_control.Finalize();
         m_queue_memory.Finalize();
         m_queue_load.Finalize();
+        m_queue_compose.Finalize();
+
+        if (m_load_thread_heap != nullptr) {
+            delete m_load_thread_heap;
+            m_load_thread_heap = nullptr;
+        }
+        if (m_compose_thread_heap != nullptr) {
+            delete m_compose_thread_heap;
+            m_compose_thread_heap = nullptr;
+        }
 
         /* Finalize memory manager */
         m_memory_manager.Finalize();
 
         /* Finalize zsdic heap */
         if (m_zsdic_heap != nullptr) {
-            m_zsdic_heap->Finalize();
             delete m_zsdic_heap;
             m_zsdic_heap = nullptr;
         }
 
         /* Destroy manager heap */
-        m_system_heap->Finalize();
         delete m_system_heap;
         m_system_heap = nullptr;
 
@@ -1217,18 +1174,13 @@ namespace awn::res::impl {
 
     bool AsyncResourceManager::IsCurrentThreadLoadThread() {
         const sys::ThreadBase *current_thread = sys::GetCurrentThread();
-        for (async::AsyncQueueThread *&thread : m_load_thread_array) {
-            if (current_thread == thread) { return true; }
-        }
-        return false;
+        return m_load_thread_heap->FrameHeap::IsAddressInHeap(current_thread);
     }
 
     bool AsyncResourceManager::IsCurrentThreadComposeThread() {
+        if (m_compose_thread_heap == nullptr) { return false; }
         const sys::ThreadBase *current_thread = sys::GetCurrentThread();
-        for (async::AsyncQueueThread *&thread : m_compose_thread_array) {
-            if (current_thread == thread) { return true; }
-        }
-        return false;
+        return m_compose_thread_heap->FrameHeap::IsAddressInHeap(current_thread);
     }
 
     void AsyncResourceManager::SetPersistantThreadArray(PersistantThreadArray *array) {
@@ -1321,7 +1273,7 @@ namespace awn::res::impl {
     
         /* Get alignment, minimum 0x20 */
         const s32 alignment_base = prepare_info->file_alignment;
-        const s32 alignment      = (alignment_base < 0x20) ? 0x20 : alignment_base;
+        const s32 alignment = (alignment_base < 0x20) ? 0x20 : alignment_base;
 
         /* Get file device from user, the default archive device if an archive is available, or either the user default device or system default device */
         FileDeviceBase *file_device = prepare_info->file_device;
@@ -1367,7 +1319,7 @@ namespace awn::res::impl {
             /* Open file */
             FileHandle file_handle = {};
             ON_SCOPE_EXIT {
-                file_handle.Close();
+                RESULT_DISCARD(file_handle.Close());
             };
             const Result open_result = file_device->OpenFile(std::addressof(file_handle), prepare_info->formatted_path, OpenMode::Read);
             if (RESULT_FAILED(open_result)) { return; }
@@ -1392,14 +1344,72 @@ namespace awn::res::impl {
 
         /* Calculate resource size fallback */
         const ResourceFactoryBase *resource_factory = prepare_info->resource_factory;
-        const float  size_scale               = resource_factory->GetDefaultFallbackSizeScale();
-        const float  scaled_size              = static_cast<float>(vp::util::AlignUp(file_size, 0x20)) * size_scale;
-        const size_t extra_size               = resource_factory->GetDefaultExtraResourceSize();
-        const size_t res_data_size            = resource_factory->GetResourceSize() + 0x740;
+        const float  size_scale    = resource_factory->GetDefaultFallbackSizeScale();
+        const float  scaled_size   = static_cast<float>(vp::util::AlignUp(file_size, 0x20)) * size_scale;
+        const size_t extra_size    = resource_factory->GetDefaultExtraResourceSize();
+        const size_t res_data_size = resource_factory->GetResourceSize() + 0x740;
 
         out_result->resource_size =  static_cast<size_t>(scaled_size) + res_data_size + extra_size + (0.0f < scaled_size && static_cast<s32>(scaled_size) != scaled_size);
 
         return;
+    }
+
+    /* Standalone load */
+    Result AsyncResourceManager::LoadSync(Resource **out_resource, const char *path, const AsyncResourceLoadInfo *info) {
+
+        AsyncResourceLoadInfo load_info = (info == nullptr) ? AsyncResourceLoadInfo{} : *info;
+
+        /* Acquire default resource factory for file type */
+        MaxExtensionString extension;
+        vp::util::GetExtension(std::addressof(extension), path);
+        const ResourceFactoryBase *resource_factory = load_info.resource_factory;
+        if (resource_factory == nullptr) {                    
+            resource_factory = ResourceFactoryManager::GetInstance()->FindResourceFactory(extension.GetString());
+            load_info.resource_factory = resource_factory;
+        }
+
+        /* Set file alignment to factory default if not provided */
+        if (load_info.file_alignment == 0) {                    
+            load_info.file_alignment = resource_factory->GetFileAlignment();
+        }
+
+        /* Set compression type to factory default if not provided */
+        if (load_info.compression_type == static_cast<u32>(CompressionType::Auto)) {                    
+            load_info.compression_type = static_cast<u32>(resource_factory->GetDefaultCompressionType());
+        }
+
+        /* Initialize resource unit */
+        ResourceUnit resource_unit;
+        const bool is_res_initializable = resource_factory->IsInitializeOnCreate();
+        const bool is_boost_compose = false;
+        const bool is_compose = false;
+        ResourceUnitInfo unit_info = {
+            .async_resource_info = std::addressof(load_info),
+            .resource_binder = nullptr,
+            .resource_unit_manager = nullptr,
+            .file_path = path,
+            .is_initialize_resource = is_res_initializable,
+            .is_compose = is_compose,
+            .is_boost_compose = is_boost_compose,
+            .is_no_add_to_memory_manager = true,
+        };
+        resource_unit.Initialize(std::addressof(unit_info));
+        RESULT_TRY(resource_unit.LoadMemory());
+        auto error_guard = SCOPE_GUARD {
+            if (resource_unit.m_resource != nullptr) {
+                delete resource_unit.m_resource;
+            }
+        };
+        if (resource_unit.IsInLoad()) {
+            RESULT_TRY(resource_unit.LoadFile());
+        }
+        if (!resource_unit.IsResourceInitialized()) {
+            resource_unit.ComposeResource(nullptr);
+        }
+        *out_resource = resource_unit.m_resource;
+
+        error_guard.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     /* Zsdic api */
@@ -1420,7 +1430,7 @@ namespace awn::res::impl {
     //    return;
     //}
 
-    //void AsyncResourceManager::LoadZstandardDictionaryArchive(const char *zs_dic_path) {
+    //void AsyncResourceManager::LoadZsDictionaryArchive(const char *zs_dic_path) {
     //
     //    /* Release existing zsdics */
     //    this->ReleaseZsDic();

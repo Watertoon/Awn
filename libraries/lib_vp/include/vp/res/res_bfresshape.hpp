@@ -51,7 +51,7 @@ namespace vp::res {
         void                        *runtime_user_pointer;
         u32                          base_gpu_region_offset;
         u8                           attribute_count;
-        u8                           vertex_buffer_count;
+        u8                           buffer_count;
         u16                          section_index;
         u32                          vertex_count;
         u8                           vertex_skin_weight_count;

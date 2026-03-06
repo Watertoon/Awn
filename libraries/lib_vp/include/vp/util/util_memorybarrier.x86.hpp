@@ -19,7 +19,7 @@ namespace vp::util {
 
     constexpr ALWAYS_INLINE void MemoryBarrierInnerReadWrite() {
         if (std::is_constant_evaluated()) { return; }
-        __builtin_ia32_mfence();
+        __atomic_thread_fence(__ATOMIC_SEQ_CST);
         return;
     }
 

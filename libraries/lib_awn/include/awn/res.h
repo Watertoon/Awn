@@ -21,8 +21,10 @@
 
 #ifdef VP_TARGET_PLATFORM_win32
     #include <awn/res/res_systemfiledevice.win32.h>
-#elif VP_TARGET_PLATFORM_nx
+#elifdef VP_TARGET_PLATFORM_nx
     #include <awn/res/res_systemfiledevice.nx.h>
+#elif VP_TARGET_PLATFORM_linux
+    #include <awn/res/res_systemfiledevice.linux.h>
 #endif
 
 #include <awn/res/impl/res_filedevicemanager.h>

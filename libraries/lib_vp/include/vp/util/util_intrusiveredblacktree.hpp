@@ -31,7 +31,7 @@ namespace vp::util {
         public:
             IntrusiveRedBlackTreeNodeBase                    *m_left;
             IntrusiveRedBlackTreeNodeBase                    *m_right;
-            PointerBitFlag<IntrusiveRedBlackTreeNodeBase, 1>  m_parent_color;
+            PointerBitMask<IntrusiveRedBlackTreeNodeBase, 1>  m_parent_color;
         public:
             constexpr ALWAYS_INLINE  IntrusiveRedBlackTreeNodeBase() : m_left(nullptr), m_right(nullptr), m_parent_color() {/*...*/}
             constexpr ALWAYS_INLINE ~IntrusiveRedBlackTreeNodeBase() {/*...*/}
@@ -47,7 +47,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE void ForceUnlink() {
                 m_left  = nullptr;
                 m_right = nullptr;
-                m_parent_color.SetFlagsAndClearPointer(0);
+                m_parent_color.SetBitMaskAndClearPointer(0);
             }
 
             IntrusiveRedBlackTreeNodeBase *GetNext();
@@ -210,7 +210,7 @@ namespace vp::util {
                 /* Set node state */
                 insert->m_left  = nullptr;
                 insert->m_right = nullptr;
-                insert->m_parent_color.SetPointerAndClearFlags(node_iter);
+                insert->m_parent_color.SetPointerAndClearBitMask(node_iter);
 
                 /* Insert fixup */
                 this->InsertFixup(insert, { trace_mask, traversal_count });
@@ -218,7 +218,7 @@ namespace vp::util {
                 return;
             }
 
-            void RemoveImpl(key_type key) {
+            node_type *RemoveImpl(key_type key) {
 
                 /* Integrity check tree is not empty */
                 VP_ASSERT(m_root != nullptr);
@@ -247,7 +247,7 @@ namespace vp::util {
                 remove_node->m_left  = nullptr;
                 remove_node->m_right = nullptr;
 
-                return;
+                return remove_node;
             }
 
             static ALWAYS_INLINE node_type *FindImpl(node_type *iter, key_type key) {
@@ -275,7 +275,7 @@ namespace vp::util {
                 this->InsertImpl(node);
 
                 /* Paint root black */
-                m_root->m_parent_color.SetFlagsAndClearPointer(1);
+                m_root->m_parent_color.SetBitMaskAndClearPointer(1);
 
                 return;
             }
@@ -285,11 +285,12 @@ namespace vp::util {
             }
             ALWAYS_INLINE void Remove(node_type *node) {
                 this->RemoveImpl(node->GetKey());
-                if (m_root != nullptr) { m_root->m_parent_color.SetFlagsAndClearPointer(1); }
+                if (m_root != nullptr) { m_root->m_parent_color.SetBitMaskAndClearPointer(1); }
             }
-            ALWAYS_INLINE void Remove(key_type hash) {
-                this->RemoveImpl(hash);
-                if (m_root != nullptr) { m_root->m_parent_color.SetFlagsAndClearPointer(1); }
+            ALWAYS_INLINE pointer Remove(key_type hash) {
+                node_type *iter = this->RemoveImpl(hash);
+                if (m_root != nullptr) { m_root->m_parent_color.SetBitMaskAndClearPointer(1); }
+                return Traits::GetParent(iter);
             }
 
             ALWAYS_INLINE pointer Find(key_type hash) {

@@ -77,7 +77,7 @@ namespace awn::para {
         const u32 real_count = (0 < m_typed_param_max) ? m_typed_param_max : byaml_iterator.GetDataCount();
 
         /* Finalize array if necessary */
-        if (m_array.IsValid() == true) {
+        if (m_array.IsValid()) {
 
             /* Finalize typed params over max */
             const u32 array_count = m_array.GetUsedCount();
@@ -91,7 +91,7 @@ namespace awn::para {
         } else {
 
             /* Initialize array */
-            m_array.Initialize(heap, real_count);
+            RESULT_DISCARD(m_array.Initialize(heap, real_count));
         }
 
         /* Create typed params */
@@ -128,11 +128,11 @@ namespace awn::para {
             this->FinalizeTypedParamImpl(0, m_array.GetUsedCount());
 
             /* Unlink parent if necessary*/
-            if (is_unlink_parent == true) { m_parent = nullptr; }
+            if (is_unlink_parent) { m_parent = nullptr; }
         } else if (m_array.IsValid() == false) {
 
             /* Initialize default array */
-            m_array.Initialize(heap, default_count);
+            RESULT_DISCARD(m_array.Initialize(heap, default_count));
             
             /* Create typed params */
             const u64 class_hash = this->GetBaseClassHash();

@@ -89,7 +89,7 @@ namespace awn::async {
             constexpr  DependencyJobGraph() : m_job_node_allocator(), m_register_link_allocator(), m_user_link_allocator(), m_register_id_iter(), m_user_id_to_register_id_map() {/*...*/}
             constexpr ~DependencyJobGraph() {/*...*/}
 
-            void Initialize(mem::Heap *heap, const DependencyJobGraphInfo *job_graph_info);
+            Result Initialize(mem::Heap *heap, const DependencyJobGraphInfo *job_graph_info);
             void Finalize();
 
             RegisterId RegisterJob(JobGraphRegisterInfo *register_info);

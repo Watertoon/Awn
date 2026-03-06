@@ -17,7 +17,7 @@
 
 namespace awn::sys {
 
-    using ThreadFunction = vp::util::IFunction<void(size_t)>;
+    using ThreadFunction = vp::util::IFunction<void(u64)>;
 
     class FunctionThread : public Thread {
         private:
@@ -25,7 +25,7 @@ namespace awn::sys {
         public:
             VP_RTTI_DERIVED(FunctionThread, Thread);
         private:
-            virtual void ThreadMain(size_t message) override {
+            virtual void ThreadMain(u64 message) override {
                 m_function->Invoke(message);
             }
         public:
@@ -40,7 +40,7 @@ namespace awn::sys {
     };
 
     template <typename T>
-    using ThreadMemberFunction = vp::util::MemberFunction<T, void(size_t)>;
+    using ThreadMemberFunction = vp::util::MemberFunction<T, void(u64)>;
 
-    using ThreadStaticFunction = vp::util::StaticFunction<void(size_t)>;
+    using ThreadStaticFunction = vp::util::StaticFunction<void(u64)>;
 }

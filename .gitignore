@@ -1,5 +1,8 @@
 test_programs
 libraries/lib_vp/third_party
+*.linux.hpp
+*.linux.h
+*.linux.cpp
 *.nx.hpp
 *.nx.h
 *.nx.cpp

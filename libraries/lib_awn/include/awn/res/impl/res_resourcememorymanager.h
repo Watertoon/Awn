@@ -55,7 +55,7 @@ namespace awn::res::impl {
             constexpr  ResourceMemoryManager() : m_resource_heap(), m_resource_unit_list(), m_resource_unit_free_cache_list(), m_max_allocatable_size(), m_memory_mgr_mutex() {/*...*/}
             constexpr ~ResourceMemoryManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, ResourceMemoryManagerInfo *manager_info);
+            Result Initialize(mem::Heap *heap, ResourceMemoryManagerInfo *manager_info);
             void Finalize();
 
             void AddResourceUnitToFreeCache(ResourceUnit *res_unit);

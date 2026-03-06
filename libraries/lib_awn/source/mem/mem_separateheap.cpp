@@ -26,7 +26,7 @@ namespace awn::mem {
         /* Construct free list */
         SeparateMemoryBlock *block_start = reinterpret_cast<SeparateMemoryBlock*>(reinterpret_cast<uintptr_t>(management_area) + sizeof(SeparateHeap));
         const u32 block_count = (management_size - sizeof(SeparateHeap)) / sizeof(SeparateMemoryBlock);
-        heap->m_block_allocator.SetMemoryAndClear(block_start, block_count);
+        heap->m_block_allocator.SetMemory(block_start, block_count);
         heap->m_total_count = block_count;
 
         return heap;

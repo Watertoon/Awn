@@ -19,43 +19,59 @@ namespace vp::util {
 
     template<typename T>
         requires (std::is_pointer_v<T>)
-    ALWAYS_INLINE T AlignUp(T value, size_t align) {
-        const size_t alignment = align - 1;
-        return reinterpret_cast<T>((reinterpret_cast<uintptr_t>(value) + alignment) & (~alignment));
+    ALWAYS_INLINE T AlignUp(T value, size_t alignment) {
+        const size_t align = alignment - 1;
+        return reinterpret_cast<T>((reinterpret_cast<uintptr_t>(value) + align) & (~align));
     }
 
     template<typename T>
         requires (!std::is_pointer_v<T>)
-    constexpr ALWAYS_INLINE T AlignUp(T value, size_t align) {
-        const size_t alignment = align - 1;
-        return static_cast<T>((value + alignment) & ~alignment);
+    constexpr ALWAYS_INLINE T AlignUp(T value, size_t alignment) {
+        const size_t align = alignment - 1;
+        return static_cast<T>((value + align) & ~align);
     }
 
     template<typename T>
         requires (std::is_pointer_v<T>)
-    ALWAYS_INLINE T AlignDown(T value, size_t align) {
-        const size_t alignment = align - 1;
-        return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(value) & (~alignment));
+    ALWAYS_INLINE T AlignDown(T value, size_t alignment) {
+        const size_t align = alignment - 1;
+        return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(value) & (~align));
     }
 
     template<typename T>
         requires (!std::is_pointer_v<T>)
-    constexpr ALWAYS_INLINE T AlignDown(T value, size_t align) {
-        const size_t alignment = align - 1;
-        return static_cast<T>(value & (~alignment));
+    constexpr ALWAYS_INLINE T AlignDown(T value, size_t alignment) {
+        const size_t align = alignment - 1;
+        return static_cast<T>(value & (~align));
     }
 
     template<typename T>
         requires (std::is_pointer_v<T>)
-    ALWAYS_INLINE bool IsAligned(T value, size_t align) {
-        const size_t alignment = align - 1;
-        return (reinterpret_cast<uintptr_t>(value) & alignment) == 0;
+    ALWAYS_INLINE bool IsAligned(T value, size_t alignment) {
+        const size_t align = alignment - 1;
+        return (reinterpret_cast<uintptr_t>(value) & align) == 0;
     }
 
     template<typename T>
         requires (!std::is_pointer_v<T>)
-    constexpr ALWAYS_INLINE bool IsAligned(T value, size_t align) {
-        const size_t alignment = align - 1;
-        return (value & alignment) == 0;
+    constexpr ALWAYS_INLINE bool IsAligned(T value, size_t alignment) {
+        const size_t align = alignment - 1;
+        return (value & align) == 0;
+    }
+
+    template<typename T>
+        requires (std::is_unsigned_v<T>)
+    constexpr ALWAYS_INLINE T AlignPow2(T value) {
+        const T high_bit = static_cast<T>(1u) << (BITSIZEOF(T) - 1u);
+        VP_ASSERT(high_bit > value);
+        const T align = high_bit >> (CountLeftZeroBits(value - 1u) - 1u);
+        return align;
+    }
+
+    template<typename T>
+        requires (std::is_unsigned_v<T>)
+    constexpr ALWAYS_INLINE bool IsAlignedPow2(T value) {
+        const bool is_one_bit = (CountOneBits(value) == 1);
+        return is_one_bit;
     }
 }

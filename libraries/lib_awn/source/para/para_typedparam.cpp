@@ -33,7 +33,7 @@ namespace awn::para {
         impl::DocumentManager *manager = impl::DocumentManager::GetInstance();
         u16 last_handle;
         u16 new_handle = manager->AcquireTypedParamHandle(parent);
-        if (!vp::util::InterlockedCompareExchange(std::addressof(last_handle), std::addressof(parent->m_handle), new_handle, impl::DocumentManager::HandleAllocator::cInvalidHandle)) { manager->ReleaseTypedParamHandle(new_handle); new_handle = last_handle; }
+        if (!vp::util::InterlockedCompareExchange(std::addressof(last_handle), std::addressof(parent->m_handle), new_handle, impl::DocumentManager::HandleAllocator::cInvalidEntryIndex)) { manager->ReleaseTypedParamHandle(new_handle); new_handle = last_handle; }
 
         /* Set parent handle */
         m_parent_handle     = new_handle;
@@ -45,8 +45,8 @@ namespace awn::para {
     void TypedParam::FreeParent() {
         m_parent_document_binder.Release();
 
-        const u16 handle = vp::util::InterlockedExchange(std::addressof(m_parent_handle), impl::DocumentManager::HandleAllocator::cInvalidHandle);
-        if (handle == impl::DocumentManager::HandleAllocator::cInvalidHandle) { return; }
+        const u16 handle = vp::util::InterlockedExchange(std::addressof(m_parent_handle), impl::DocumentManager::HandleAllocator::cInvalidEntryIndex);
+        if (handle == impl::DocumentManager::HandleAllocator::cInvalidEntryIndex) { return; }
 
         impl::DocumentManager::GetInstance()->ReleaseTypedParamHandle(handle);
 
@@ -60,8 +60,8 @@ namespace awn::para {
     
     void TypedParam::ReleaseHandle() {
 
-        const u16 handle = vp::util::InterlockedExchange(std::addressof(m_handle), impl::DocumentManager::HandleAllocator::cInvalidHandle);
-        if (handle == impl::DocumentManager::HandleAllocator::cInvalidHandle) { return; }
+        const u16 handle = vp::util::InterlockedExchange(std::addressof(m_handle), impl::DocumentManager::HandleAllocator::cInvalidEntryIndex);
+        if (handle == impl::DocumentManager::HandleAllocator::cInvalidEntryIndex) { return; }
 
         impl::DocumentManager::GetInstance()->ReleaseTypedParamHandle(handle); 
     }
@@ -164,7 +164,7 @@ namespace awn::para {
                 RESULT_RETURN_SUCCESS;
             };
             auto resolve_composite_func = vp::util::MakeLargeLambdaFunction<Result(CompositeLoopInfo*)>(resolve_composite_parent);
-            this->LoopComposites(std::addressof(resolve_composite_func));
+            RESULT_DISCARD(this->LoopComposites(std::addressof(resolve_composite_func)));
         };
 
         /* Check if no parent name */
@@ -261,7 +261,7 @@ namespace awn::para {
             RESULT_RETURN_SUCCESS;
         };
         auto prop_loop_func = vp::util::MakeLambdaFunction<Result(PropertyLoopInfo*)>(prop_loop_lambda);
-        this->LoopProperties(std::addressof(prop_loop_func));
+        RESULT_DISCARD(this->LoopProperties(std::addressof(prop_loop_func)));
 
         /* Load embeds */
         const auto embed_loop_lambda = [=](EmbeddedLoopInfo *embed_info) {
@@ -298,7 +298,7 @@ namespace awn::para {
             RESULT_RETURN_SUCCESS;
         };
         auto embed_loop_func = vp::util::MakeLambdaFunction<Result(EmbeddedLoopInfo*)>(embed_loop_lambda);
-        this->LoopEmbeds(std::addressof(embed_loop_func));
+        RESULT_DISCARD(this->LoopEmbeds(std::addressof(embed_loop_func)));
 
         /* Load composites */
         const auto comp_loop_lambda = [&](CompositeLoopInfo *comp_info) {
@@ -324,7 +324,7 @@ namespace awn::para {
             RESULT_RETURN_SUCCESS;
         };
         auto comp_loop_func = vp::util::MakeLambdaFunction<Result(CompositeLoopInfo*)>(comp_loop_lambda);
-        this->LoopComposites(std::addressof(comp_loop_func));
+        RESULT_DISCARD(this->LoopComposites(std::addressof(comp_loop_func)));
 
         /* Get parent path */
         byaml_iterator.TryGetStringByKey(std::addressof(m_parent_name), "$parent");
@@ -341,7 +341,7 @@ namespace awn::para {
             RESULT_RETURN_SUCCESS;
         };
         auto prop_loop_func = vp::util::MakeLambdaFunction<Result(PropertyLoopInfo*)>(prop_loop_lambda);
-        this->LoopProperties(std::addressof(prop_loop_func));
+        RESULT_DISCARD(this->LoopProperties(std::addressof(prop_loop_func)));
 
         /* Set default embeds */
         const auto embed_loop_lambda = [=](EmbeddedLoopInfo *embed_info) {
@@ -360,7 +360,7 @@ namespace awn::para {
             RESULT_RETURN_SUCCESS;
         };
         auto embed_loop_func = vp::util::MakeLambdaFunction<Result(EmbeddedLoopInfo*)>(embed_loop_lambda);
-        this->LoopEmbeds(std::addressof(embed_loop_func));
+        RESULT_DISCARD(this->LoopEmbeds(std::addressof(embed_loop_func)));
 
         /* Set default composites */
         const auto comp_loop_lambda = [=](CompositeLoopInfo *comp_info) {
@@ -374,7 +374,7 @@ namespace awn::para {
             RESULT_RETURN_SUCCESS;
         };
         auto comp_loop_func = vp::util::MakeLambdaFunction<Result(CompositeLoopInfo*)>(comp_loop_lambda);
-        this->LoopComposites(std::addressof(comp_loop_func));
+        RESULT_DISCARD(this->LoopComposites(std::addressof(comp_loop_func)));
 
         /* Complete if not unlinking parents */
         if (!is_force_unlink_parents) { return; }
@@ -397,7 +397,7 @@ namespace awn::para {
             RESULT_RETURN_SUCCESS;
         };
         auto comp_loop_func = vp::util::MakeLambdaFunction<Result(CompositeLoopInfo*)>(comp_loop_lambda);
-        this->LoopComposites(std::addressof(comp_loop_func));
+        RESULT_DISCARD(this->LoopComposites(std::addressof(comp_loop_func)));
 
         /* Reset embeds */
         const auto embed_loop_lambda = [=](EmbeddedLoopInfo *embed_info) {
@@ -412,7 +412,7 @@ namespace awn::para {
             RESULT_RETURN_SUCCESS;
         };
         auto embed_loop_func = vp::util::MakeLambdaFunction<Result(EmbeddedLoopInfo*)>(embed_loop_lambda);
-        this->LoopEmbeds(std::addressof(embed_loop_func));
+        RESULT_DISCARD(this->LoopEmbeds(std::addressof(embed_loop_func)));
 
         /* Release parent */
         this->ReleaseParent();

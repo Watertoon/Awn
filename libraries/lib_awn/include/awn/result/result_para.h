@@ -20,4 +20,8 @@ namespace awn::para {
     DECLARE_RESULT_MODULE(28);
     DECLARE_RESULT(NoComposite,    1);
     DECLARE_RESULT(FoundComposite, 2);
+    DECLARE_RESULT(NoInstance, 3);
+    DECLARE_RESULT(InvalidPathType, 4);
+    DECLARE_RESULT(RangeNG, 5);
+    DECLARE_RESULT(NoEnumClass, 6);
 }

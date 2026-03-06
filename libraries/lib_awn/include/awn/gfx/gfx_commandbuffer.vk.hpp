@@ -22,20 +22,29 @@ namespace awn::gfx {
         Linear  = 1,
     };
 
+    struct TextureSubresource {
+        u32 base_mip_level = 0;
+        u32 base_array_layer = 0;
+    };
     struct TextureArrayRegion {
         u32 base_array_layer = 0;
         u32 layer_count = 1;
     };
 
     struct CommandList {
-        impl::CommandListUnit *unit;
+        VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
+        impl::CommandPoolId pool_id = impl::cInvalidCommandPoolId;
 
         constexpr bool IsValid() const {
-            return this->unit != nullptr;
+            return this->vk_command_buffer != VK_NULL_HANDLE && this->pool_id != impl::cInvalidCommandPoolId;
         }
 
         constexpr QueueType GetQueueType() const {
-            return impl::CommandPoolManager::GetInstance()->GetQueueType(this->unit->pool_id);
+            return impl::CommandPoolManager::GetInstance()->GetQueueType(this->pool_id);
+        }
+
+        constexpr VkCommandBuffer GetVkCommandBuffer() const {
+            return this->vk_command_buffer;
         }
     };
     static constexpr CommandList cInvalidCommandList = {};
@@ -53,21 +62,11 @@ namespace awn::gfx {
         }
     };
 
-    size_t EstimateDescriptorMemorySize(u32 max_draw_dispatch_count, u32 max_descriptor_count);
-
     struct CommandBufferBeginInfo {
-        size_t descriptor_memory_size;
         bool is_primary;
 
         constexpr void SetDefaults() {
-            this->descriptor_memory_size = vp::util::c2KB;
             this->is_primary = false;
-        }
-        void EstimateMemorySize(u32 max_draw_dispatch_count, u32 max_descriptor_count) {
-            this->descriptor_memory_size = gfx::EstimateDescriptorMemorySize(max_draw_dispatch_count, max_descriptor_count);
-        }
-        constexpr void SetMemorySize(size_t memory_size) {
-            this->descriptor_memory_size = memory_size;
         }
         constexpr void SetIsPrimary(bool is_primary) {
             this->is_primary = is_primary;
@@ -82,21 +81,15 @@ namespace awn::gfx {
 
     class CommandBuffer {
         protected:
-            impl::CommandListUnit *m_command_list_unit;
+            CommandList m_command_list;
             impl::CommandPoolId m_pool_id;
             QueueType m_queue_type;
             bool m_is_rendering;
+            bool m_is_render_target_dirty;
             RenderTargetClearType m_trigger_clear_type;
             u32 m_color_target_count;
             TextureViewBinder *m_color_target_array[cTargetMaxBoundRenderTargetColorCount];
             TextureViewBinder *m_depth_stencil_target;
-            bool m_is_render_target_dirty;
-            bool m_is_preserve_descriptors_between_commit;
-            bool m_is_dirty_texture;
-            bool m_is_dirty_buffer;
-            s32 m_texture_commit_size;
-            s32 m_buffer_commit_size;
-            void *m_staging_memory;
         protected:
             struct SyncScopeInfo {
                 u32 vk_src_stage_mask;
@@ -105,26 +98,17 @@ namespace awn::gfx {
                 u32 vk_dst_access_mask;
             };
         protected:
-            void *GetDescriptorMemoryTextureSamplerImageSeparate();
-            void *GetDescriptorMemoryUniformBufferStorageBuffer();
-
-            void TransitionRenderTargetsImpl(TextureViewBinder **color_target_array, u32 color_target_count, TextureViewBinder *depth_stencil_target, SyncScopeInfo *sync_scope, VkImageLayout image_layout);
-
-            size_t CommitDescriptorMemory(void *desc_memory, u32 memory_size);
-            void CommitDescriptors();
-
             void BeginRenderingIfNotRendering();
             void EndRenderingIfRendering();
         public:
-            constexpr CommandBuffer() : m_command_list_unit(), m_pool_id(impl::CommandPoolManager::cInvalidCommandPoolId), m_queue_type(), m_is_rendering(), m_trigger_clear_type(),  m_color_target_count(), m_color_target_array(), m_depth_stencil_target(), m_is_render_target_dirty(), m_is_preserve_descriptors_between_commit(), m_is_dirty_texture(), m_is_dirty_buffer(), m_texture_commit_size(-1), m_buffer_commit_size(-1), m_staging_memory() {/*...*/}
-            constexpr ~CommandBuffer() {/*...*/}
+            constexpr CommandBuffer() : m_command_list(cInvalidCommandList), m_pool_id(impl::cInvalidCommandPoolId), m_queue_type(), m_is_rendering(), m_is_render_target_dirty(), m_trigger_clear_type(),  m_color_target_count(), m_color_target_array(), m_depth_stencil_target() {/*...*/}
+            constexpr ~CommandBuffer() = default;
 
             Result Initialize(const CommandBufferInfo *command_buffer_info);
-            void Finalize() ;
+            void Finalize();
 
-            constexpr void SetPreserveDescriptors(bool is_preserve) {
-                m_is_preserve_descriptors_between_commit = is_preserve;
-            }
+            constexpr bool IsRecording() const { return m_command_list.IsValid(); }
+            constexpr QueueType GetQueueType() const { return m_queue_type; }
         public:
             Result Begin(const CommandBufferBeginInfo *info);
             Result End(CommandList *out_cmd_list);
@@ -133,13 +117,11 @@ namespace awn::gfx {
 
             void CallCommands(CommandList secondary_command_list);
 
-            void TransitionRenderTargetsToAttachment(TextureViewBinder **color_target_array, u32 color_target_count, TextureViewBinder *depth_stencil_target);
-            void TransitionRenderTargetsToPresent(TextureViewBinder **color_target_array, u32 color_target_count, TextureViewBinder *depth_stencil_target);
-
             void FlushMemory(GpuAccessFlags gpu_access_flags);
             void InvalidateMemory(GpuAccessFlags gpu_access_flags);
 
             void BlitImage(Texture *source_texture, const TextureCopyRegion *source_copy_region, Texture *dest_texture, const TextureCopyRegion *dest_copy_region, CopyFilter copy_filter);
+            void CopyImage(Texture *source_texture, const TextureCopyRegion *source_copy_region, Texture *dest_texture, const TextureSubresource *dest_subresource, const Int3 &dest_base_offset);
             void ResolveImage(Texture *source_texture, Texture *dest_texture);
             void ClearColor(TextureViewBinder *target_color, const TextureArrayRegion *array_region, vp::util::Color4f color);
             void ClearDepthStencil(TextureViewBinder *target_depth_stencil, const TextureArrayRegion *array_region, float depth, u32 stencil);
@@ -159,12 +141,7 @@ namespace awn::gfx {
 
             void SetShader(const Shader *shader);
 
-            void SetTextureSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot);
-            void SetImage(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
-            void SetUniformBuffer(u32 location, gfx::ShaderStage shader_stage, GpuAddress gpu_address, size_t size);
-            void SetStorageBuffer(u32 location, gfx::ShaderStage shader_stage, GpuAddress gpu_address, size_t size);
-            void SetSeparateTexture(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot);
-            void SetSeparateSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot sampler_slot);
+            void SetResourceSet(const ResourceSet *resource_set);
 
             void SetBlendState(const BlendState *blend_state);
             void SetDepthStencilState(const DepthStencilState *depth_stencil_state);
@@ -174,18 +151,6 @@ namespace awn::gfx {
 
             void SetLineWidth(float line_width);
         public:
-            constexpr ALWAYS_INLINE VkCommandBuffer GetVkCommandBuffer() const { return (m_command_list_unit == nullptr) ? VK_NULL_HANDLE : m_command_list_unit->vk_command_buffer; }
-    };
-
-    class ScopedCommandBufferPreserveDescriptors {
-        private:
-            CommandBuffer *m_cmd_buf;
-        public:
-            constexpr ScopedCommandBufferPreserveDescriptors(CommandBuffer *command_buffer) : m_cmd_buf(command_buffer) {
-                command_buffer->SetPreserveDescriptors(true);
-            }
-            constexpr ~ScopedCommandBufferPreserveDescriptors() {
-                m_cmd_buf->SetPreserveDescriptors(false);
-            }
+            constexpr ALWAYS_INLINE VkCommandBuffer GetVkCommandBuffer() const { return m_command_list.GetVkCommandBuffer(); }
     };
 }

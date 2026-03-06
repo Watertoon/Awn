@@ -48,7 +48,7 @@ namespace awn::res {
         const ResourceFactoryBase *resource_factory;
         FileDeviceBase            *file_device;
         ResourceBinder            *archive_binder;
-        ResourceUserContext       *resource_user_context;
+        IComposeInfo              *compose_info;
 
         constexpr void SetDefaults() {
             this->options = 0;
@@ -64,7 +64,7 @@ namespace awn::res {
             this->resource_factory = nullptr;
             this->file_device = nullptr;
             this->archive_binder = nullptr;
-            this->resource_user_context = nullptr;
+            this->compose_info = nullptr;
         }
         constexpr void SetPriority(u32 priority) {
             this->priority = priority;
@@ -90,7 +90,7 @@ namespace awn::res {
         constexpr void SetIsCacheOnUnload(bool is_cache_on_unload) {
             this->is_cache_on_unload = is_cache_on_unload;
         }
-        constexpr void SetIsCompose(bool is_compose) {
+        constexpr void SetIsComposeAsync(bool is_compose) {
             this->is_compose = is_compose;
         }
         constexpr void SetCompressionType(CompressionType compression_type) {
@@ -117,8 +117,8 @@ namespace awn::res {
         constexpr void SetArchiveBinder(ResourceBinder *archive_binder) {
             this->archive_binder = archive_binder;
         }
-        constexpr void SetResourceUserContext(ResourceUserContext *resource_user_context) {
-            this->resource_user_context = resource_user_context;
+        constexpr void SetComposeInfo(IComposeInfo *info) {
+            this->compose_info = info;
         }
     };
 
@@ -133,22 +133,22 @@ namespace awn::res {
             friend class impl::AsyncResourceManager;
         public:
             enum class Status : u32 {
-                Uninitialized               = 0,
-                ResourceInitialized         = 1,
-                Referenced                  = 2,
-                Reclaimed                   = 3,
-                InLoad                      = 4,
+                RequestOk    = 0,
+                Composed     = 1,
+                Referenced   = 2,
+                FromCache    = 3,
+                Pending      = 4,
                 /* Error statuses */
-                UnknownError                = 5,
-                RequiresReprocess           = 6,
-                FileNotFound                = 7,
-                FailedToGetDecompressedSize = 8,
-                FailedToInitializeResource  = 9,
-                InvalidUserResourceSize     = 10,
-                InvalidResourceSize         = 11,
-                FileNotAvailable            = 12,
-                MemoryAllocationFailure     = 13,
-                NoResourceUnitOnFinalize    = 14,
+                Unknown      = 5,
+                NoExecute    = 6,
+                NoFile       = 7,
+                SizeZero     = 8,
+                ComposeNG    = 9,
+                AllocSizeNG  = 10,
+                HeapSizeNG   = 11,
+                FileDeviceNG = 12,
+                NoMemory     = 13,
+                Cancelled    = 14,
             };
             enum class Type : u8 {
                 Uninitialized = 0,
@@ -162,7 +162,7 @@ namespace awn::res {
                     u8 m_is_initialized : 1;
                     u8 m_load_guard     : 1;
                     u8 m_is_finalize    : 1;
-                    u8 m_complete_guard : 1;
+                    u8 m_compose_guard : 1;
                     u8 m_reserve0       : 4;
                 };
             };
@@ -174,10 +174,10 @@ namespace awn::res {
             void HandleMemoryAllocationError() {/*...*/}
             void HandleResourceUnitError();
 
-            void InitializeResource(ResourceUserContext *resource_user_context);
+            void ComposeResource(IComposeInfo *compose_info);
             Resource *GetResourceDirect() const;
         public:
-            constexpr  ResourceBinder() : m_state_mask(), m_type(Type::Uninitialized), m_status(Status::Uninitialized), m_resource_unit(), m_watcher() {/*...*/}
+            constexpr  ResourceBinder() : m_state_mask(), m_type(Type::Uninitialized), m_status(Status::RequestOk), m_resource_unit(), m_watcher() {/*...*/}
             ~ResourceBinder() { this->Release(); }
 
             void Release();
@@ -187,7 +187,7 @@ namespace awn::res {
 
             Result TryLoadAsync(const char *file_path, const AsyncResourceLoadInfo *bind_info);
             void WaitForLoad();
-            bool Complete(ResourceUserContext *resource_user_context);
+            bool Compose(IComposeInfo *compose_info);
 
             template <typename T>
                 requires (Resource::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()))
@@ -205,16 +205,16 @@ namespace awn::res {
             Result ReferenceLocalArchiveSync();
         public:
             constexpr Status GetStatus() const { return m_status; }
-            constexpr bool IsErrorStatus() const { return static_cast<u32>(Status::UnknownError) <= static_cast<u32>(m_status); }
+            constexpr bool IsError() const { return static_cast<u32>(Status::Unknown) <= static_cast<u32>(m_status); }
 
             constexpr bool IsLoadGuard() const { return m_load_guard; }
-            constexpr bool IsCompleteGuard() const { return m_complete_guard; }
+            constexpr bool IsComposeGuard() const { return m_compose_guard; }
 
             constexpr bool IsReferenceBinder() const { return m_type == Type::Reference; }
 
             bool IsLoading() const;
             bool IsLoaded() const;
             bool IsFailed() const;
-            bool IsCompleted() const;
+            bool IsComposed() const;
     };
 }

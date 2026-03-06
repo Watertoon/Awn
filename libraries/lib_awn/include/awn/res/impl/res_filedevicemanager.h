@@ -28,11 +28,19 @@ namespace awn::res::impl {
             ContentFileDevice *m_content_file_device;
             SaveFileDevice *m_save_file_device;
             CacheFileDevice *m_cache_file_device;
+#if defined(VP_TARGET_PLATFORM_win32) || defined(VP_TARGET_PLATFORM_linux)
             MaxPathString m_current_directory;
+            NativeFileHandle m_current_directory_handle;
+#endif
         public:
             AWN_SINGLETON_TRAITS(FileDeviceManager);
         public:
-            constexpr ALWAYS_INLINE  FileDeviceManager() : m_device_tree_rwlock(), m_mounted_file_device_tree(), m_content_file_device(), m_save_file_device(), m_cache_file_device(), m_current_directory()
+            constexpr ALWAYS_INLINE  FileDeviceManager() : m_device_tree_rwlock(), m_mounted_file_device_tree(), m_content_file_device(), m_save_file_device(), m_cache_file_device()
+#ifdef VP_TARGET_PLATFORM_win32
+            , m_current_directory(), m_current_directory_handle()
+#elifdef VP_TARGET_PLATFORM_linux
+            , m_current_directory(), m_current_directory_handle(-1)
+#endif
             {/*...*/}
             constexpr ALWAYS_INLINE ~FileDeviceManager() {/*...*/}
 
@@ -52,6 +60,9 @@ namespace awn::res::impl {
             FileDeviceBase *GetFileDeviceByPath(const char *path);
 
             constexpr FileDeviceBase *GetDefaultFileDevice() { return m_content_file_device; }
-            constexpr MaxPathString *GetCurrentDirectory() { return std::addressof(m_current_directory); }
+#if defined(VP_TARGET_PLATFORM_win32) || defined(VP_TARGET_PLATFORM_linux)
+            constexpr const MaxPathString *GetCurrentDirectory() const { return std::addressof(m_current_directory); }
+            constexpr NativeFileHandle GetCurrentDirectoryHandle() const { return m_current_directory_handle; }
+#endif
     };
 }

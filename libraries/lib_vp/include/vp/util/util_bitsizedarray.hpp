@@ -30,17 +30,18 @@ namespace vp::util {
 			constexpr  BitSizedArray() : m_element_count(), m_bit_array() {/*...*/}
 			constexpr ~BitSizedArray() {/*...*/}
 
-            void Initialize(vp::imem::IHeap *heap, u32 element_count) {
+            Result Initialize(vp::imem::IHeap *heap, u32 element_count) {
 
                 /* Get count */
                 const u32 count = element_count / cElementsPerIndex + ((element_count % cElementsPerIndex) != 0);
 
                 /* Set counts */
+                IndexType *id_type = new (heap, alignof(IndexType)) IndexType[count];
+                RESULT_RETURN_UNLESS(m_bit_array != nullptr, ResultNoMemory);
+                m_bit_array = id_type;
                 m_element_count = element_count;
-                m_bit_array     = new (heap, alignof(IndexType)) IndexType[count];
-                VP_ASSERT(m_bit_array != nullptr);
 
-                return;
+                RESULT_RETURN_SUCCESS;
             }
 
             void Finalize() {
@@ -53,7 +54,7 @@ namespace vp::util {
 
                 return;
             }
-
+		public:
 			constexpr IndexType GetElement(u32 index) const {
                 VP_ASSERT(index < m_element_count);
 				return (m_bit_array[index / cElementsPerIndex] >> (index % cElementsPerIndex)) & cElementMask;
@@ -63,6 +64,39 @@ namespace vp::util {
 
                 /* Set new value while preserving old values */
                 VP_ASSERT(index < m_element_count);
+                const u32       array_index    = index / cElementsPerIndex;
+                const u32       element_offset = index % cElementsPerIndex;
+                const IndexType last_value     = m_bit_array[array_index] & ~(cElementMask << element_offset);
+                const IndexType new_value      = last_value | ((value & cElementMask) << element_offset);
+                m_bit_array[array_index]       = new_value;
+
+                return;
+            }
+	};
+    
+    
+	template <typename IndexType, size_t BitSize, size_t Count>
+		requires ((vp::util::CountOneBits(BitSize) == true) && (BitSize & ((8 * sizeof(IndexType)) - 1)) != 0)
+	class FixedBitSizedArray {
+		public:
+			static constexpr u32 cElementsPerIndex = (8 * sizeof(IndexType)) / BitSize;
+			static constexpr u32 cElementMask      = (1 << BitSize) - 1;
+			static constexpr u32 cArrayCount	   = Count / cElementsPerIndex + ((Count % cElementsPerIndex) != 0);
+		private:
+			IndexType m_bit_array[cArrayCount];
+		public:
+			constexpr  FixedBitSizedArray() : m_bit_array() {/*...*/}
+			constexpr ~FixedBitSizedArray() {/*...*/}
+
+			constexpr IndexType GetElement(u32 index) const {
+                VP_ASSERT(index < Count);
+				return (m_bit_array[index / cElementsPerIndex] >> (index % cElementsPerIndex)) & cElementMask;
+			}
+
+            constexpr void SetElement(u32 index, IndexType value) {
+
+                /* Set new value while preserving old values */
+                VP_ASSERT(index < Count);
                 const u32       array_index    = index / cElementsPerIndex;
                 const u32       element_offset = index % cElementsPerIndex;
                 const IndexType last_value     = m_bit_array[array_index] & ~(cElementMask << element_offset);

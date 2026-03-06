@@ -17,180 +17,6 @@
 
 namespace awn::gfx {
 
-    size_t EstimateDescriptorMemorySize(u32 max_draw_dispatch_count, u32 max_descriptor_count) {
-
-        /* Find worst case amount of memory to cover max of X descriptors across Y descriptor buffer bindings */
-        impl::Context *context = impl::Context::GetInstance();
-        const size_t desc_size = context->GetMaxDescriptorSize();
-        const size_t bind_align = context->GetDescriptorOffsetAlignment();
-        const u32 desc_per_block_count = (0 != desc_size) ? (bind_align / desc_size) + ((bind_align % desc_size) != 0) : 0;
-        size_t command_memory_size;
-        if (1 < desc_per_block_count) {
-            const u32 real_count = max_draw_dispatch_count * impl::Context::cMaxPerStageBindCount;
-            const u32 bind_count = vp::util::Min(real_count, max_descriptor_count);
-            constexpr const u32 cMaxDescPerBind = vp::util::Max(impl::Context::cTargetMaxPerStageTextureSamplerCombinedCount * impl::Context::cTargetMaxShaderStageCount, impl::Context::cTargetMaxPerStageBufferCombinedCount * impl::Context::cTargetMaxShaderStageCount);
-            const u32 avg_desc_per_bind_count = (max_descriptor_count / bind_count) + ((max_descriptor_count % bind_count) != 0);
-            const u32 wc_desc_per_bind_count = vp::util::Min(avg_desc_per_bind_count, cMaxDescPerBind);
-            const u32 bind_worst_case_block_count = (wc_desc_per_bind_count / desc_per_block_count) + ((wc_desc_per_bind_count % desc_per_block_count) != 0);
-            command_memory_size = bind_worst_case_block_count * desc_size * desc_per_block_count * bind_count;
-        } else {
-            command_memory_size = vp::util::Max(desc_size * max_descriptor_count, bind_align);
-        }
-
-        return command_memory_size;
-    }
-
-    void *CommandBuffer::GetDescriptorMemoryTextureSamplerImageSeparate() {
-        return m_staging_memory;
-    }
-
-    void *CommandBuffer::GetDescriptorMemoryUniformBufferStorageBuffer() {
-        const size_t ts_i_size = impl::DescriptorMemoryManager::GetInstance()->GetCombinedTextureSize();
-        const size_t base_offset = ts_i_size;
-        return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_staging_memory) + base_offset);
-    }
-
-    //void CommandBuffer::TransitionRenderTargetsImpl(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target, SyncScopeInfo *sync_scope, VkImageLayout image_layout) {
-    //
-    //    /* Setup color target barriers */
-    //    VkImageMemoryBarrier2 barrier_array[cTargetMaxBoundRenderTargetColorCount + 1];
-    //    for (u32 i = 0; i < color_target_count; ++i) {
-    //        barrier_array[i].sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-    //        barrier_array[i].pNext               = nullptr;
-    //        barrier_array[i].srcStageMask        = sync_scope->vk_src_stage_mask;
-    //        barrier_array[i].srcAccessMask       = sync_scope->vk_src_access_mask;
-    //        barrier_array[i].dstStageMask        = sync_scope->vk_dst_stage_mask;
-    //        barrier_array[i].dstAccessMask       = sync_scope->vk_dst_access_mask;
-    //        barrier_array[i].oldLayout           = color_target_array[i]->GetVkImageLayout();
-    //        barrier_array[i].newLayout           = image_layout;
-    //        barrier_array[i].srcQueueFamilyIndex = 0;
-    //        barrier_array[i].dstQueueFamilyIndex = 0;
-    //        barrier_array[i].image               = color_target_array[i]->GetVkImage();
-    //        barrier_array[i].subresourceRange.aspectMask     = color_target_array[i]->GetVkAspectMask();
-    //        barrier_array[i].subresourceRange.baseMipLevel   = 0;
-    //        barrier_array[i].subresourceRange.levelCount     = 1;
-    //        barrier_array[i].subresourceRange.baseArrayLayer = 0;
-    //        barrier_array[i].subresourceRange.layerCount     = color_target_array[i]->GetViewCount();
-    //
-    //        color_target_array[i]->SetVkImageLayout(image_layout);
-    //    }
-    //
-    //    if (depth_stencil_target != nullptr && image_layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
-    //        barrier_array[color_target_count].sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-    //        barrier_array[color_target_count].pNext               = nullptr;
-    //        barrier_array[color_target_count].srcStageMask        = (sync_scope->vk_src_stage_mask == VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT) ? VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT : sync_scope->vk_src_stage_mask;
-    //        barrier_array[color_target_count].srcAccessMask       = (sync_scope->vk_src_access_mask == VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT) ? VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT : sync_scope->vk_src_access_mask;
-    //        barrier_array[color_target_count].dstStageMask        = sync_scope->vk_dst_stage_mask;
-    //        barrier_array[color_target_count].dstAccessMask       = sync_scope->vk_dst_access_mask;
-    //        barrier_array[color_target_count].oldLayout           = depth_stencil_target->GetVkImageLayout();
-    //        barrier_array[color_target_count].newLayout           = (image_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : image_layout;
-    //        barrier_array[color_target_count].srcQueueFamilyIndex = 0;
-    //        barrier_array[color_target_count].dstQueueFamilyIndex = 0;
-    //        barrier_array[color_target_count].image               = depth_stencil_target->GetVkImage();
-    //        barrier_array[color_target_count].subresourceRange.aspectMask     = depth_stencil_target->GetVkAspectMask();
-    //        barrier_array[color_target_count].subresourceRange.baseMipLevel   = 0;
-    //        barrier_array[color_target_count].subresourceRange.levelCount     = 1;
-    //        barrier_array[color_target_count].subresourceRange.baseArrayLayer = 0;
-    //        barrier_array[color_target_count].subresourceRange.layerCount     = depth_stencil_target->GetViewCount();
-    //
-    //        depth_stencil_target->SetVkImageLayout(image_layout);
-    //        color_target_count = color_target_count + 1;
-    //    }
-    //
-    //    const VkDependencyInfo dep_info = {
-    //        .sType                   = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-    //        .imageMemoryBarrierCount = color_target_count,
-    //        .pImageMemoryBarriers    = barrier_array
-    //    }; 
-    //    ::pfn_vkCmdPipelineBarrier2(m_command_list_unit->vk_command_buffer, std::addressof(dep_info));
-    //
-    //    return;
-    //}
-
-    size_t CommandBuffer::CommitDescriptorMemory(void *desc_memory, u32 memory_size) {
-
-        /* Copy descriptors to gpu */
-        void *memory = m_command_list_unit->AllocateDescriptorMemory(memory_size);
-        ::memcpy(memory, desc_memory, memory_size);
-
-        /* Set per stage offset */
-        const size_t gpu_offset = reinterpret_cast<uintptr_t>(memory) - reinterpret_cast<uintptr_t>(impl::DescriptorMemoryManager::GetInstance()->GetBindlessDescriptorMemory());
-        return gpu_offset;
-    }
-
-    void CommandBuffer::CommitDescriptors() {
-
-        const auto commit_desc_lambda = [this](bool is_texture) {
-
-            /* Allocate descriptor buffer space, copy descriptor memory to buffer, and update binding offsets for each changed stage */
-            impl::Context *context = impl::Context::GetInstance();
-            const s32 size = (is_texture) ? m_texture_commit_size : m_buffer_commit_size;
-            const auto memory_desc_lambda = [this, context, is_texture](s32 size) -> size_t {                
-                if (-1 < size) {
-                    void *desc_memory = (is_texture) ? this->GetDescriptorMemoryTextureSamplerImageSeparate() : this->GetDescriptorMemoryUniformBufferStorageBuffer();
-                    return this->CommitDescriptorMemory(desc_memory, size);
-                }
-                return 0ull;
-            };
-            const size_t offset = memory_desc_lambda(size);
-
-            /* Reset descriptor memory commit sizes */
-            if (!m_is_preserve_descriptors_between_commit) {                
-                if (is_texture) {
-                    m_texture_commit_size = -1;
-                } else {
-                    m_buffer_commit_size = -1;
-                }
-            }
-
-            return offset;
-        };
-        /* Commit texture sampler descriptors */
-        u32 base_set = 0xffff'ffff;
-        u32 set_count = 0;
-        VkDeviceSize offset_array[2];
-        u32 indices[2];
-        if (m_is_dirty_texture) {
-            const size_t offset = commit_desc_lambda(true);
-            m_is_dirty_texture = false;
-            base_set = impl::Context::cTargetPerStageTextureSamplerLayoutSet;
-            offset_array[set_count] = offset;
-            indices[set_count] = impl::Context::cTargetDescriptorBufferIndexPerStage;
-            ++set_count;
-        }
-        /* Commit buffer descriptors */
-        if (m_is_dirty_buffer) {
-            const size_t offset = commit_desc_lambda(false);
-            m_is_dirty_buffer = false;
-            base_set = (base_set == 0xffff'ffff) ? impl::Context::cTargetPerStageBufferLayoutSet : base_set;
-            offset_array[set_count] = offset;
-            indices[set_count] = impl::Context::cTargetDescriptorBufferIndexPerStage;
-            ++set_count;
-        }
-
-        /* Set desc buffer offsets */
-        if (set_count == 0) { return; }
-        VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
-        if (m_queue_type == QueueType::Graphics) {
-            vk_pipeline_layout = impl::Context::GetInstance()->GetVkPipelineLayoutGraphics();
-        } else if (m_queue_type == QueueType::Compute) {
-            vk_pipeline_layout = impl::Context::GetInstance()->GetVkPipelineLayoutCompute();
-        }
-        const VkSetDescriptorBufferOffsetsInfoEXT offsets_info = {
-            .sType = VK_STRUCTURE_TYPE_SET_DESCRIPTOR_BUFFER_OFFSETS_INFO_EXT,
-            .pNext = nullptr,
-            .stageFlags = VK_SHADER_STAGE_ALL,
-            .layout = vk_pipeline_layout,
-            .firstSet = base_set,
-            .setCount = set_count,
-            .pBufferIndices = indices,
-            .pOffsets = offset_array,
-        };
-        ::pfn_vkCmdSetDescriptorBufferOffsets2EXT(m_command_list_unit->vk_command_buffer, std::addressof(offsets_info));
-
-        return;
-    }
-
     void CommandBuffer::BeginRenderingIfNotRendering() {
 
         /* Ignore if still rendering */
@@ -276,7 +102,7 @@ namespace awn::gfx {
         }
 
         /* Set render targets */
-        const vp::util::Int2 size = key->texture->GetSize2d();
+        const Int2 size = key->texture->GetSize2d();
         const u32 layer_count = key->array_layer_count;
         const u32 view_mask = 0;
         const VkRenderingInfo rendering_info = {
@@ -299,7 +125,7 @@ namespace awn::gfx {
             .pDepthAttachment     = selected_depth_attachment_info,
             .pStencilAttachment   = selected_stencil_attachment_info,
         };
-        ::pfn_vkCmdBeginRendering(m_command_list_unit->vk_command_buffer, std::addressof(rendering_info));
+        ::pfn_vkCmdBeginRendering(this->GetVkCommandBuffer(), std::addressof(rendering_info));
 
         ///* Map image indices */
         //VkRenderingAttachmentLocationInfoKHR attachment_location_info = {
@@ -307,7 +133,7 @@ namespace awn::gfx {
         //    .colorAttachmentCount = m_color_target_count,
         //    .pColorAttachmentLocations = color_attachment_index_array,
         // };
-        //::pfn_vkCmdSetRenderingAttachmentLocations(m_command_list_unit->vk_command_buffer, std::addressof(attachment_location_info));
+        //::pfn_vkCmdSetRenderingAttachmentLocations(this->GetVkCommandBuffer(), std::addressof(attachment_location_info));
 
         return;
     }
@@ -323,21 +149,22 @@ namespace awn::gfx {
         if (!m_is_rendering) { return; }
         m_is_rendering = false;
 
-        ::pfn_vkCmdEndRendering(m_command_list_unit->vk_command_buffer);
+        ::pfn_vkCmdEndRendering(this->GetVkCommandBuffer());
 
         return;
     }
 
     void CommandBuffer::SetSystemDescriptorBuffers() {
 
+    #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+        /* Set descriptor heaps */
+        impl::DescriptorMemoryManager *desc_memory_mgr = impl::DescriptorMemoryManager::GetInstance();
+        ::pfn_vkCmdBindResourceHeapEXT(this->GetVkCommandBuffer(), desc_memory_mgr->GetVkBindHeapInfoResource());
+        ::pfn_vkCmdBindSamplerHeapEXT(this->GetVkCommandBuffer(), desc_memory_mgr->GetVkBindHeapInfoSampler());
+    #else
         /* Set bindless and per stage descriptor buffer */
         impl::DescriptorMemoryManager *desc_memory_mgr = impl::DescriptorMemoryManager::GetInstance();
-        const VkDescriptorBufferBindingInfoEXT binding_info = {
-            .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT,
-            .address = desc_memory_mgr->GetDescriptorBufferAddress().vk_device_address,
-            .usage   = VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT,
-        };
-        ::pfn_vkCmdBindDescriptorBuffersEXT(m_command_list_unit->vk_command_buffer, 1, std::addressof(binding_info));
+        ::pfn_vkCmdBindDescriptorBuffersEXT(this->GetVkCommandBuffer(), 1, desc_memory_mgr->GetBindingInfo());
 
         /* Map bindless */
         const size_t gpu_offset = 0;
@@ -357,7 +184,8 @@ namespace awn::gfx {
             .pBufferIndices = std::addressof(impl::Context::cTargetDescriptorBufferIndexBindless),
             .pOffsets = std::addressof(gpu_offset),
         };
-        ::pfn_vkCmdSetDescriptorBufferOffsets2EXT(m_command_list_unit->vk_command_buffer, std::addressof(offsets_info));
+        ::pfn_vkCmdSetDescriptorBufferOffsets2EXT(this->GetVkCommandBuffer(), std::addressof(offsets_info));
+    #endif
 
         return;
     }
@@ -365,59 +193,41 @@ namespace awn::gfx {
     Result CommandBuffer::Initialize(const CommandBufferInfo *info) {
         this->Finalize();
 
-        /* Allocate descriptor staging memory */
-        impl::DescriptorMemoryManager *desc_mgr = impl::DescriptorMemoryManager::GetInstance();
-        void *staging_memory = desc_mgr->AllocateStagingMemory();
-        RESULT_RETURN_IF(staging_memory == nullptr, ResultOutOfStagingMemory);
-        auto fail_guard = SCOPE_GUARD {
-            desc_mgr->FreeStagingMemory(staging_memory);
-        };
-
         /* Allocate command pool */
         RESULT_TRY(impl::CommandPoolManager::GetInstance()->CreateCommandPool(std::addressof(m_pool_id), info->queue_type));
-
         m_queue_type = info->queue_type;
-        m_staging_memory = staging_memory;
-        fail_guard.Cancel();
+
+        //m_staging_memory = staging_memory;
+        //fail_guard.Cancel();
         RESULT_RETURN_SUCCESS;
     }
 
     void CommandBuffer::Finalize() {
-        impl::DescriptorMemoryManager *desc_mgr = impl::DescriptorMemoryManager::GetInstance();
-        if (m_command_list_unit != nullptr) {
-            desc_mgr->FreeCommandListUnit(m_command_list_unit);
-            m_command_list_unit = nullptr;
+        if (m_command_list.IsValid()) {
+            gfx::FinalizeCommandList(m_command_list);
+            m_command_list = cInvalidCommandList;
         }
-        if (m_staging_memory != nullptr) {
-            impl::DescriptorMemoryManager::GetInstance()->FreeStagingMemory(m_staging_memory);
-            m_staging_memory = nullptr;
-        }
-        if (m_pool_id != impl::CommandPoolManager::cInvalidCommandPoolId) {
+        if (m_pool_id != impl::cInvalidCommandPoolId) {
             impl::CommandPoolManager::GetInstance()->FreeCommandPool(m_pool_id);
-            m_pool_id = impl::CommandPoolManager::cInvalidCommandPoolId;
+            m_pool_id = impl::cInvalidCommandPoolId;
         }
     }
 
     Result CommandBuffer::Begin(const CommandBufferBeginInfo *info) {
-        //this->ResetDescriptorMemory();
 
-        /* Allocate new command list */
-        impl::DescriptorMemoryManager *desc_mgr = impl::DescriptorMemoryManager::GetInstance();
-        if (m_command_list_unit != nullptr) {
-            desc_mgr->FreeCommandListUnit(m_command_list_unit);
-            m_command_list_unit = nullptr;
+        /* Create command buffer */
+        if (m_command_list.IsValid()) {
+            gfx::FinalizeCommandList(m_command_list);
+            m_command_list = cInvalidCommandList;
         }
-        RESULT_TRY(desc_mgr->AllocateCommandListUnit(std::addressof(m_command_list_unit), info->descriptor_memory_size, m_pool_id, info->is_primary));
+        RESULT_TRY(impl::CommandPoolManager::GetInstance()->CreateCommandBuffer(std::addressof(m_command_list.vk_command_buffer), m_pool_id, info->is_primary));
+        m_command_list.pool_id = m_pool_id;
         auto fail_guard = SCOPE_GUARD {
-            if (m_command_list_unit != nullptr) {
-                desc_mgr->FreeCommandListUnit(m_command_list_unit);
-                m_command_list_unit = nullptr;
+            if (m_command_list.IsValid()) {
+                gfx::FinalizeCommandList(m_command_list);
+                m_command_list = cInvalidCommandList;
             }
         };
-
-        /* Reset descriptor memory commit sizes */
-        m_texture_commit_size = -1;
-        m_buffer_commit_size = -1;
 
         /* Begin command buffer */
         const VkCommandBufferInheritanceInfo inheritance_info = {
@@ -428,7 +238,7 @@ namespace awn::gfx {
             .flags            = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
             .pInheritanceInfo = (info->is_primary) ? nullptr : std::addressof(inheritance_info),
         };
-        const VkResult vk_result = ::pfn_vkBeginCommandBuffer(m_command_list_unit->vk_command_buffer, std::addressof(begin_info));
+        const VkResult vk_result = ::pfn_vkBeginCommandBuffer(this->GetVkCommandBuffer(), std::addressof(begin_info));
         RESULT_TRY(impl::ConvertVkResultToResult(vk_result));
 
         fail_guard.Cancel();
@@ -441,50 +251,23 @@ namespace awn::gfx {
         this->EndRenderingIfRendering();
 
         /* End command buffer */
-        const VkResult vk_result = ::pfn_vkEndCommandBuffer(m_command_list_unit->vk_command_buffer);
+        const VkResult vk_result = ::pfn_vkEndCommandBuffer(this->GetVkCommandBuffer());
         RESULT_TRY(impl::ConvertVkResultToResult(vk_result));
 
         /* Set command list */
-        out_cmd_list->unit = m_command_list_unit;
-        m_command_list_unit = nullptr;
+        *out_cmd_list = m_command_list;
+        m_command_list = cInvalidCommandList;
 
         RESULT_RETURN_SUCCESS;
     }
 
     void CommandBuffer::CallCommands(CommandList secondary_command_list) {
-        ::pfn_vkCmdExecuteCommands(m_command_list_unit->vk_command_buffer, 1, std::addressof(secondary_command_list.unit->vk_command_buffer));
+        VkCommandBuffer cmd_buf = secondary_command_list.GetVkCommandBuffer();
+        ::pfn_vkCmdExecuteCommands(this->GetVkCommandBuffer(), 1, std::addressof(cmd_buf));
     }
 
-    //void CommandBuffer::TransitionRenderTargetsToAttachment(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
-    //
-    //    this->EndRenderingIfRendering();
-    //
-    //    SyncScopeInfo scope_info = {
-    //        .vk_src_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-    //        .vk_src_access_mask = VK_ACCESS_2_NONE,
-    //        .vk_dst_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-    //        .vk_dst_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT,
-    //    };
-    //    TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_GENERAL);
-    //    return;
-    //}
-    //
-    //void CommandBuffer::TransitionRenderTargetsToPresent(RenderTargetColor **color_target_array, u32 color_target_count, RenderTargetDepthStencil *depth_stencil_target) {
-    //
-    //    this->EndRenderingIfRendering();
-    //
-    //    SyncScopeInfo scope_info = {
-    //        .vk_src_stage_mask  = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-    //        .vk_src_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT,
-    //        .vk_dst_stage_mask  = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
-    //        .vk_dst_access_mask = VK_ACCESS_2_NONE,
-    //    };
-    //    TransitionRenderTargetsImpl(color_target_array, color_target_count, depth_stencil_target, std::addressof(scope_info), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    //    return;
-    //}
-
     void CommandBuffer::FlushMemory(GpuAccessFlags access_flags) {
-        //this->EndRenderingIfRendering();
+        this->EndRenderingIfRendering();
         VP_UNUSED(access_flags);
         const VkMemoryBarrier2 memory_barrier = {
             .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2,
@@ -498,11 +281,11 @@ namespace awn::gfx {
             .memoryBarrierCount = 1,
             .pMemoryBarriers = std::addressof(memory_barrier),
         };
-        ::pfn_vkCmdPipelineBarrier2(m_command_list_unit->vk_command_buffer, std::addressof(dep_info));
+        ::pfn_vkCmdPipelineBarrier2(this->GetVkCommandBuffer(), std::addressof(dep_info));
     }
 
     void CommandBuffer::InvalidateMemory(GpuAccessFlags access_flags) {
-        //this->EndRenderingIfRendering();
+        this->EndRenderingIfRendering();
         VP_UNUSED(access_flags);
         const VkMemoryBarrier2 memory_barrier = {
             .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2,
@@ -516,7 +299,7 @@ namespace awn::gfx {
             .memoryBarrierCount = 1,
             .pMemoryBarriers = std::addressof(memory_barrier),
         };
-        ::pfn_vkCmdPipelineBarrier2(m_command_list_unit->vk_command_buffer, std::addressof(dep_info));
+        ::pfn_vkCmdPipelineBarrier2(this->GetVkCommandBuffer(), std::addressof(dep_info));
     }
 
     void CommandBuffer::BlitImage(Texture *source_texture, const TextureCopyRegion *source_copy_region, Texture *dest_texture, const TextureCopyRegion *dest_copy_region, CopyFilter copy_filter) {
@@ -572,7 +355,55 @@ namespace awn::gfx {
             .pRegions       = std::addressof(image_blit),
             .filter         = (copy_filter == CopyFilter::Linear) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST,
         };
-        ::pfn_vkCmdBlitImage2(m_command_list_unit->vk_command_buffer, std::addressof(blit_image_2));
+        ::pfn_vkCmdBlitImage2(this->GetVkCommandBuffer(), std::addressof(blit_image_2));
+
+        return;
+    }
+
+    void CommandBuffer::CopyImage(Texture *source_texture, const TextureCopyRegion *source_copy_region, Texture *dest_texture, const TextureSubresource *dest_subresource, const Int3 &dest_base_offset) {
+
+        this->EndRenderingIfRendering();
+
+        const VkImageCopy2 image_copy = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2,
+            .srcSubresource = {
+                .aspectMask     = source_texture->GetVkAspectMask(),
+                .mipLevel       = source_copy_region->base_mip_level,
+                .baseArrayLayer = source_copy_region->base_array_layer,
+                .layerCount     = source_copy_region->layer_count,
+            },
+            .srcOffset = {
+                .x = static_cast<s32>(source_copy_region->base_x),
+                .y = static_cast<s32>(source_copy_region->base_y),
+                .z = static_cast<s32>(source_copy_region->base_z),
+            },
+            .dstSubresource = {
+                .aspectMask     = dest_texture->GetVkAspectMask(),
+                .mipLevel       = dest_subresource->base_mip_level,
+                .baseArrayLayer = dest_subresource->base_array_layer,
+                .layerCount     = source_copy_region->layer_count,
+            },
+            .dstOffset = {
+                .x = static_cast<s32>(dest_base_offset[0]),
+                .y = static_cast<s32>(dest_base_offset[1]),
+                .z = static_cast<s32>(dest_base_offset[2]),
+            },
+            .extent = {
+                .width = source_copy_region->width,
+                .height = source_copy_region->height,
+                .depth = source_copy_region->depth,
+            },
+        };
+        const VkCopyImageInfo2 copy_image = {
+            .sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2,
+            .srcImage = source_texture->GetVkImage(),
+            .srcImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .dstImage = dest_texture->GetVkImage(),
+            .dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .regionCount = 1,
+            .pRegions = std::addressof(image_copy),
+        };
+        ::pfn_vkCmdCopyImage2(this->GetVkCommandBuffer(), std::addressof(copy_image));
 
         return;
     }
@@ -605,7 +436,7 @@ namespace awn::gfx {
             .regionCount = 1,
             .pRegions = std::addressof(image_resolve_2),
         };
-        ::pfn_vkCmdResolveImage2(m_command_list_unit->vk_command_buffer, std::addressof(resolve_image_2_info));
+        ::pfn_vkCmdResolveImage2(this->GetVkCommandBuffer(), std::addressof(resolve_image_2_info));
     }
 
     void CommandBuffer::ClearColor(TextureViewBinder *target_color, const TextureArrayRegion *array_region, vp::util::Color4f color) {
@@ -629,14 +460,14 @@ namespace awn::gfx {
                 .baseArrayLayer = array_region->base_array_layer,
                 .layerCount = array_region->layer_count,
             };
-            ::pfn_vkCmdClearColorImage(m_command_list_unit->vk_command_buffer, target_color->GetTextureViewKey()->texture->GetVkImage(), VK_IMAGE_LAYOUT_GENERAL, std::addressof(color_value), 1, std::addressof(subresource_range));
+            ::pfn_vkCmdClearColorImage(this->GetVkCommandBuffer(), target_color->GetTextureViewKey()->texture->GetVkImage(), VK_IMAGE_LAYOUT_GENERAL, std::addressof(color_value), 1, std::addressof(subresource_range));
             return;
         }
 
         this->BeginRenderingIfNotRendering();
 
         const impl::TextureViewKey *key = target_color->GetTextureViewKey();
-        const vp::util::Int2 size = key->texture->GetSize2d();
+        const Int2 size = key->texture->GetSize2d();
         const VkClearAttachment attachment = {
             .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             .colorAttachment = target_index,
@@ -660,7 +491,7 @@ namespace awn::gfx {
             .baseArrayLayer = array_region->base_array_layer,
             .layerCount = array_region->layer_count,
         };
-        ::pfn_vkCmdClearAttachments(m_command_list_unit->vk_command_buffer, 1, std::addressof(attachment), 1, std::addressof(rect));
+        ::pfn_vkCmdClearAttachments(this->GetVkCommandBuffer(), 1, std::addressof(attachment), 1, std::addressof(rect));
 
         return;
     }
@@ -680,13 +511,13 @@ namespace awn::gfx {
                 .baseArrayLayer = array_region->base_array_layer,
                 .layerCount = array_region->layer_count,
             };
-            ::pfn_vkCmdClearDepthStencilImage(m_command_list_unit->vk_command_buffer, target_depth_stencil->GetTextureViewKey()->texture->GetVkImage(), VK_IMAGE_LAYOUT_GENERAL, std::addressof(depth_stencil_value), 1, std::addressof(subresource_range));
+            ::pfn_vkCmdClearDepthStencilImage(this->GetVkCommandBuffer(), target_depth_stencil->GetTextureViewKey()->texture->GetVkImage(), VK_IMAGE_LAYOUT_GENERAL, std::addressof(depth_stencil_value), 1, std::addressof(subresource_range));
             return;
         }
 
         this->BeginRenderingIfNotRendering();
 
-        const vp::util::Int2 size = key->texture->GetSize2d();
+        const Int2 size = key->texture->GetSize2d();
         const VkClearAttachment attachment = {
             .aspectMask = vp::res::GfxTextureDepthStencilModeToVkImageAspectFlags(static_cast<TextureDepthStencilMode>(key->depth_stencil_mode)),
             .clearValue = {
@@ -707,56 +538,50 @@ namespace awn::gfx {
             .baseArrayLayer = array_region->base_array_layer,
             .layerCount = array_region->layer_count,
         };
-        ::pfn_vkCmdClearAttachments(m_command_list_unit->vk_command_buffer, 1, std::addressof(attachment), 1, std::addressof(rect));
+        ::pfn_vkCmdClearAttachments(this->GetVkCommandBuffer(), 1, std::addressof(attachment), 1, std::addressof(rect));
 
         return;
     }
 
     void CommandBuffer::Draw(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count) {
-        this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
-        ::pfn_vkCmdSetPrimitiveTopology(m_command_list_unit->vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
-        ::pfn_vkCmdDraw(m_command_list_unit->vk_command_buffer, vertex_count, 1, base_vertex, 0);
+        ::pfn_vkCmdSetPrimitiveTopology(this->GetVkCommandBuffer(), vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
+        ::pfn_vkCmdDraw(this->GetVkCommandBuffer(), vertex_count, 1, base_vertex, 0);
     }
 
     void CommandBuffer::DrawInstanced(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count, u32 base_instance, u32 instance_count) {
-        this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
-        ::pfn_vkCmdSetPrimitiveTopology(m_command_list_unit->vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
-        ::pfn_vkCmdDraw(m_command_list_unit->vk_command_buffer, vertex_count, instance_count, base_vertex, base_instance);
+        ::pfn_vkCmdSetPrimitiveTopology(this->GetVkCommandBuffer(), vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
+        ::pfn_vkCmdDraw(this->GetVkCommandBuffer(), vertex_count, instance_count, base_vertex, base_instance);
     }
 
     void CommandBuffer::DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, BufferAddress index_buffer_address, u32 index_count, u32 base_vertex) {
-        this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
-        ::pfn_vkCmdSetPrimitiveTopology(m_command_list_unit->vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
+        ::pfn_vkCmdSetPrimitiveTopology(this->GetVkCommandBuffer(), vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
         const VkIndexType index_type = vp::res::GfxIndexFormatToVkIndexType(index_format);
         const u32 index_size0 = (index_format == IndexFormat::U32) ? sizeof(u32) : sizeof(u16);
         const u32 index_size1 = (index_format == IndexFormat::U16) ? index_size0 : sizeof(u8);
-        ::pfn_vkCmdBindIndexBuffer2(m_command_list_unit->vk_command_buffer, index_buffer_address.GetVkBuffer(), index_buffer_address.offset, index_count * index_size1, index_type);
-        ::pfn_vkCmdDrawIndexed(m_command_list_unit->vk_command_buffer, index_count, 1, 0, base_vertex, 0);
+        ::pfn_vkCmdBindIndexBuffer2(this->GetVkCommandBuffer(), index_buffer_address.GetVkBuffer(), index_buffer_address.offset, index_count * index_size1, index_type);
+        ::pfn_vkCmdDrawIndexed(this->GetVkCommandBuffer(), index_count, 1, 0, base_vertex, 0);
     }
 
     void CommandBuffer::DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, BufferAddress index_buffer_address, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count) {
-        this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
-        ::pfn_vkCmdSetPrimitiveTopology(m_command_list_unit->vk_command_buffer, vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
+        ::pfn_vkCmdSetPrimitiveTopology(this->GetVkCommandBuffer(), vp::res::GfxPrimitiveTopologyToVkPrimitiveTopology(primitive_topology));
         const VkIndexType index_type = vp::res::GfxIndexFormatToVkIndexType(index_format);
         const u32 index_size0 = (index_format == IndexFormat::U32) ? sizeof(u32) : sizeof(u16);
         const u32 index_size1 = (index_format == IndexFormat::U16) ? index_size0 : sizeof(u8);
-        ::pfn_vkCmdBindIndexBuffer2(m_command_list_unit->vk_command_buffer, index_buffer_address.GetVkBuffer(), index_buffer_address.offset, index_count * index_size1, index_type);
-        ::pfn_vkCmdDrawIndexed(m_command_list_unit->vk_command_buffer, index_count, instance_count, 0, base_vertex, base_instance);
+        ::pfn_vkCmdBindIndexBuffer2(this->GetVkCommandBuffer(), index_buffer_address.GetVkBuffer(), index_buffer_address.offset, index_count * index_size1, index_type);
+        ::pfn_vkCmdDrawIndexed(this->GetVkCommandBuffer(), index_count, instance_count, 0, base_vertex, base_instance);
     }
 
     void CommandBuffer::DrawMeshTasks(u32 x, u32 y, u32 z) {
-        this->CommitDescriptors();
         this->BeginRenderingIfNotRendering();
-        ::pfn_vkCmdDrawMeshTasksEXT(m_command_list_unit->vk_command_buffer, x, y, z);
+        ::pfn_vkCmdDrawMeshTasksEXT(this->GetVkCommandBuffer(), x, y, z);
     }
 
     void CommandBuffer::Dispatch(u32 x, u32 y, u32 z) {
-        this->CommitDescriptors();
-        ::pfn_vkCmdDispatch(m_command_list_unit->vk_command_buffer, x, y, z);
+        ::pfn_vkCmdDispatch(this->GetVkCommandBuffer(), x, y, z);
     }
 
     void CommandBuffer::SetVertexBuffer(BufferAddress vertex_buffer_address, u32 binding, u32 stride, u32 size) {
@@ -764,7 +589,7 @@ namespace awn::gfx {
         const VkDeviceSize device_size = size;
         const VkDeviceSize device_stride = stride;
         VkBuffer vk_buffer = vertex_buffer_address.GetVkBuffer();
-        ::pfn_vkCmdBindVertexBuffers2(m_command_list_unit->vk_command_buffer, binding, 1, std::addressof(vk_buffer), std::addressof(device_offset), std::addressof(device_size), std::addressof(device_stride));
+        ::pfn_vkCmdBindVertexBuffers2(this->GetVkCommandBuffer(), binding, 1, std::addressof(vk_buffer), std::addressof(device_offset), std::addressof(device_size), std::addressof(device_stride));
     }
 
     void CommandBuffer::SetRenderTargets(TextureViewBinder **color_target_array, u32 color_target_count, TextureViewBinder *depth_stencil_target, RenderTargetClearType clear_type) {
@@ -796,240 +621,18 @@ namespace awn::gfx {
         const u32 stage_count = (is_compute) ? 1 : impl::Context::cTargetMaxShaderStageCount - ((!gfx::IsOptionalFeature(OptionalFeature::SupportsMeshShaders)) * 2);
         const VkShaderStageFlagBits *stage_array = (is_compute) ? cShaderStageFlagBitsArray + 5 : cShaderStageFlagBitsArray;
         const VkShaderEXT *shader_array = (is_compute) ? shader->GetVkShaderArray() + 5 : shader->GetVkShaderArray();
-        ::pfn_vkCmdBindShadersEXT(m_command_list_unit->vk_command_buffer, stage_count, stage_array, shader_array);
+        ::pfn_vkCmdBindShadersEXT(this->GetVkCommandBuffer(), stage_count, stage_array, shader_array);
     }
 
-    void CommandBuffer::SetTextureSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot, DescriptorSlot sampler_slot) {
-        VP_UNUSED(shader_stage);
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler();
-        const u32              desc_size     = context->GetTextureSamplerDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseTextureSampler();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-        
-        /* Get memory offset */
-        void *desc_memory   = this->GetDescriptorMemoryTextureSamplerImageSeparate();
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-        
-        /* Cache descriptor */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        const VkImageView image_view = tex_samp_manager->GetVkImageView(texture_slot);
-        const VkSampler sampler = tex_samp_manager->GetVkSampler(sampler_slot);
-        const VkDescriptorImageInfo image_info = {
-            .sampler     = sampler,
-            .imageView   = image_view,
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .data = {
-                .pCombinedImageSampler = std::addressof(image_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-        
-        /* Set max binding */
-        const s32 prev = m_texture_commit_size;
-        m_texture_commit_size = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
-        m_is_dirty_texture = true;
-
-        return;
-    }
-
-    void CommandBuffer::SetImage(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot) {
-        VP_UNUSED(shader_stage);
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler();
-        const u32              desc_size     = context->GetImageDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseImage();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-
-        /* Get memory offset */
-        void *desc_memory   = this->GetDescriptorMemoryTextureSamplerImageSeparate();
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-
-        /* Cache descriptor */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        const VkImageView image_view = tex_samp_manager->GetVkImageView(texture_slot);
-        const VkDescriptorImageInfo image_info = {
-            .imageView   = image_view,
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-            .data = {
-                .pStorageImage  = std::addressof(image_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-
-        /* Set max binding */
-        const s32 prev = m_texture_commit_size;
-        m_texture_commit_size = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
-        m_is_dirty_texture = true;
-
-        return;
-    }
-
-    void CommandBuffer::SetUniformBuffer(u32 location, gfx::ShaderStage shader_stage, GpuAddress gpu_address, size_t size) {
-        VP_UNUSED(shader_stage);
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedBuffer();
-        const u32              desc_size     = context->GetUniformBufferDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseUniformBuffer();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-
-        /* Get memory offset */
-        void *desc_memory   = this->GetDescriptorMemoryUniformBufferStorageBuffer();
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-
-        /* Cache descriptor */
-        const VkDescriptorAddressInfoEXT address_info = {
-            .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT,
-            .address = gpu_address.vk_device_address,
-            .range   = size,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .data  = {
-                .pUniformBuffer = std::addressof(address_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-
-        /* Set max binding */
-        const s32 prev = m_buffer_commit_size;
-        m_buffer_commit_size = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
-        m_is_dirty_buffer = true;
-
-        return;
-    }
-
-    void CommandBuffer::SetStorageBuffer(u32 location, gfx::ShaderStage shader_stage, GpuAddress gpu_address, size_t size) {
-        VP_UNUSED(shader_stage);
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedBuffer();
-        const u32              desc_size     = context->GetStorageBufferDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseStorageBuffer();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-        
-        /* Get memory offset */
-        void *desc_memory   = this->GetDescriptorMemoryUniformBufferStorageBuffer();
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-        
-        /* Cache descriptor */
-        const VkDescriptorAddressInfoEXT address_info = {
-            .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT,
-            .address = gpu_address.vk_device_address,
-            .range   = size,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .data  = {
-                .pStorageBuffer = std::addressof(address_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-        
-        /* Set max binding */
-        const s32 prev = m_buffer_commit_size;
-        m_buffer_commit_size = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
-        m_is_dirty_buffer = true;
-
-        return;
-    }
-
-    void CommandBuffer::SetSeparateTexture(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot texture_slot) {
-        VP_UNUSED(shader_stage);
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler();
-        const u32              desc_size     = context->GetSeparateTextureDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseSeparateTexture();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-
-        /* Get staging memory offset */
-        void *desc_memory   = this->GetDescriptorMemoryTextureSamplerImageSeparate();
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-
-        /* Cache descriptor to staging */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        VP_ASSERT(tex_samp_manager->IsTextureViewSlotValid(texture_slot));
-        const impl::TextureViewSamplerManager::TextureViewUnit *unit = tex_samp_manager->GetTextureViewUnit(texture_slot.index);
-        ::memcpy(memory_offset, unit->descriptor_memory, desc_size);
-
-        /* Set max binding */
-        const s32 prev = m_texture_commit_size;
-        m_texture_commit_size = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
-        m_is_dirty_texture = true;
-
-        return;
-    }
-
-    void CommandBuffer::SetSeparateSampler(u32 location, gfx::ShaderStage shader_stage, DescriptorSlot sampler_slot) {
-        VP_UNUSED(shader_stage);
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler();
-        const u32              desc_size     = context->GetSeparateSamplerDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseSeparateSampler();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-
-        /* Get staging memory offset */
-        void *desc_memory   = this->GetDescriptorMemoryTextureSamplerImageSeparate();
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_memory) + desc_offset);
-
-        /* Cache descriptor to staging */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        VP_ASSERT(tex_samp_manager->IsSamplerSlotValid(sampler_slot));
-        const impl::TextureViewSamplerManager::SamplerUnit *unit = tex_samp_manager->GetSamplerUnit(sampler_slot.index);
-        ::memcpy(memory_offset, unit->descriptor_memory, desc_size);
-
-        /* Set max binding */
-        const s32 prev = m_texture_commit_size;
-        m_texture_commit_size = vp::util::Max(prev, static_cast<s32>(desc_offset + desc_size));
-        m_is_dirty_texture = true;
-
-        return;
+    void CommandBuffer::SetResourceSet(const ResourceSet *resource_set) {
+        resource_set->BindImpl(this);
     }
 
     void CommandBuffer::SetBlendState(const BlendState *blend_state) {
 
-        ::pfn_vkCmdSetLogicOpEnableEXT(m_command_list_unit->vk_command_buffer, blend_state->is_enable_logic_op);
+        ::pfn_vkCmdSetLogicOpEnableEXT(this->GetVkCommandBuffer(), blend_state->is_enable_logic_op);
         const VkLogicOp logic_op = vp::res::GfxLogicOperationToVkLogicOp(static_cast<LogicOperation>(blend_state->logic_op));
-        ::pfn_vkCmdSetLogicOpEXT(m_command_list_unit->vk_command_buffer, logic_op);
+        ::pfn_vkCmdSetLogicOpEXT(this->GetVkCommandBuffer(), logic_op);
 
         VkColorBlendEquationEXT blend_equation_array[cTargetMaxBlendTargetStateCount];
         VkBool32                blend_enable_array[cTargetMaxBlendTargetStateCount];
@@ -1044,69 +647,69 @@ namespace awn::gfx {
             blend_equation_array[i].alphaBlendOp        = vp::res::GfxBlendEquationToVkBlendOp(static_cast<BlendEquation>(blend_state->blend_target_state_array[i].blend_equation_alpha));
             channel_mask_array[i]                       = blend_state->blend_target_state_array[i].channel_mask;
         }
-        ::pfn_vkCmdSetColorBlendEnableEXT(m_command_list_unit->vk_command_buffer, 0, blend_state->blend_target_state_count, blend_enable_array);
-        ::pfn_vkCmdSetColorBlendEquationEXT(m_command_list_unit->vk_command_buffer, 0, blend_state->blend_target_state_count, blend_equation_array);
-        ::pfn_vkCmdSetColorWriteMaskEXT(m_command_list_unit->vk_command_buffer, 0, blend_state->blend_target_state_count, channel_mask_array);
+        ::pfn_vkCmdSetColorBlendEnableEXT(this->GetVkCommandBuffer(), 0, blend_state->blend_target_state_count, blend_enable_array);
+        ::pfn_vkCmdSetColorBlendEquationEXT(this->GetVkCommandBuffer(), 0, blend_state->blend_target_state_count, blend_equation_array);
+        ::pfn_vkCmdSetColorWriteMaskEXT(this->GetVkCommandBuffer(), 0, blend_state->blend_target_state_count, channel_mask_array);
 
-        ::pfn_vkCmdSetBlendConstants(m_command_list_unit->vk_command_buffer, std::addressof(blend_state->blend_constant_color.r));
+        ::pfn_vkCmdSetBlendConstants(this->GetVkCommandBuffer(), std::addressof(blend_state->blend_constant_color.r));
 
         return;
     }
 
     void CommandBuffer::SetDepthStencilState(const DepthStencilState *depth_stencil_state) {
 
-        ::pfn_vkCmdSetDepthTestEnable(m_command_list_unit->vk_command_buffer, depth_stencil_state->is_enable_depth_test);
-        ::pfn_vkCmdSetDepthWriteEnable(m_command_list_unit->vk_command_buffer, depth_stencil_state->is_enable_depth_write);
+        ::pfn_vkCmdSetDepthTestEnable(this->GetVkCommandBuffer(), depth_stencil_state->is_enable_depth_test);
+        ::pfn_vkCmdSetDepthWriteEnable(this->GetVkCommandBuffer(), depth_stencil_state->is_enable_depth_write);
 
         const VkCompareOp depth_op = static_cast<VkCompareOp>(depth_stencil_state->depth_comparison_function);
-        ::pfn_vkCmdSetDepthCompareOp(m_command_list_unit->vk_command_buffer, depth_op);
+        ::pfn_vkCmdSetDepthCompareOp(this->GetVkCommandBuffer(), depth_op);
 
-        ::pfn_vkCmdSetDepthBoundsTestEnable(m_command_list_unit->vk_command_buffer, false);
+        ::pfn_vkCmdSetDepthBoundsTestEnable(this->GetVkCommandBuffer(), false);
 
-        ::pfn_vkCmdSetStencilTestEnable(m_command_list_unit->vk_command_buffer, depth_stencil_state->is_enable_stencil_test);
-        ::pfn_vkCmdSetStencilCompareMask(m_command_list_unit->vk_command_buffer, VK_STENCIL_FACE_FRONT_AND_BACK, depth_stencil_state->stencil_value_mask);
-        ::pfn_vkCmdSetStencilWriteMask(m_command_list_unit->vk_command_buffer, VK_STENCIL_FACE_FRONT_AND_BACK, depth_stencil_state->stencil_write_mask);
+        ::pfn_vkCmdSetStencilTestEnable(this->GetVkCommandBuffer(), depth_stencil_state->is_enable_stencil_test);
+        ::pfn_vkCmdSetStencilCompareMask(this->GetVkCommandBuffer(), VK_STENCIL_FACE_FRONT_AND_BACK, depth_stencil_state->stencil_value_mask);
+        ::pfn_vkCmdSetStencilWriteMask(this->GetVkCommandBuffer(), VK_STENCIL_FACE_FRONT_AND_BACK, depth_stencil_state->stencil_write_mask);
 
         const VkStencilOp fail_op_front = static_cast<VkStencilOp>(depth_stencil_state->front_face_stencil_fail_op);
         const VkStencilOp depth_pass_op_front = static_cast<VkStencilOp>(depth_stencil_state->front_face_stencil_depth_pass_op);
         const VkStencilOp depth_fail_op_front = static_cast<VkStencilOp>(depth_stencil_state->front_face_stencil_depth_fail_op);
         const VkCompareOp compare_op_front = static_cast<VkCompareOp>(depth_stencil_state->front_face_stencil_comparison_function);
-        ::pfn_vkCmdSetStencilOp(m_command_list_unit->vk_command_buffer,VK_STENCIL_FACE_FRONT_BIT, fail_op_front, depth_pass_op_front, depth_fail_op_front, compare_op_front);
-        ::pfn_vkCmdSetStencilReference(m_command_list_unit->vk_command_buffer, VK_STENCIL_FACE_FRONT_BIT, depth_stencil_state->front_face_stencil_reference);
+        ::pfn_vkCmdSetStencilOp(this->GetVkCommandBuffer(),VK_STENCIL_FACE_FRONT_BIT, fail_op_front, depth_pass_op_front, depth_fail_op_front, compare_op_front);
+        ::pfn_vkCmdSetStencilReference(this->GetVkCommandBuffer(), VK_STENCIL_FACE_FRONT_BIT, depth_stencil_state->front_face_stencil_reference);
         const VkStencilOp fail_op_back = static_cast<VkStencilOp>(depth_stencil_state->back_face_stencil_fail_op);
         const VkStencilOp depth_pass_op_back = static_cast<VkStencilOp>(depth_stencil_state->back_face_stencil_depth_pass_op);
         const VkStencilOp depth_fail_op_back = static_cast<VkStencilOp>(depth_stencil_state->back_face_stencil_depth_fail_op);
         const VkCompareOp compare_op_back = static_cast<VkCompareOp>(depth_stencil_state->back_face_stencil_comparison_function);
-        ::pfn_vkCmdSetStencilOp(m_command_list_unit->vk_command_buffer,VK_STENCIL_FACE_BACK_BIT, fail_op_back, depth_pass_op_back, depth_fail_op_back, compare_op_back);
-        ::pfn_vkCmdSetStencilReference(m_command_list_unit->vk_command_buffer, VK_STENCIL_FACE_BACK_BIT, depth_stencil_state->back_face_stencil_reference);
+        ::pfn_vkCmdSetStencilOp(this->GetVkCommandBuffer(),VK_STENCIL_FACE_BACK_BIT, fail_op_back, depth_pass_op_back, depth_fail_op_back, compare_op_back);
+        ::pfn_vkCmdSetStencilReference(this->GetVkCommandBuffer(), VK_STENCIL_FACE_BACK_BIT, depth_stencil_state->back_face_stencil_reference);
 
         return;
     }
 
     void CommandBuffer::SetRasterizerState(const RasterizerState *rasterizer_state) {
 
-        ::pfn_vkCmdSetRasterizerDiscardEnable(m_command_list_unit->vk_command_buffer, rasterizer_state->is_enable_rasterizer_discard);
+        ::pfn_vkCmdSetRasterizerDiscardEnable(this->GetVkCommandBuffer(), rasterizer_state->is_enable_rasterizer_discard);
 
         const VkConservativeRasterizationModeEXT rasterization_mode = static_cast<VkConservativeRasterizationModeEXT>(rasterizer_state->is_enable_conservative_rasterizer);
-        ::pfn_vkCmdSetConservativeRasterizationModeEXT(m_command_list_unit->vk_command_buffer, rasterization_mode);
-        ::pfn_vkCmdSetExtraPrimitiveOverestimationSizeEXT(m_command_list_unit->vk_command_buffer, 0.0f);
+        ::pfn_vkCmdSetConservativeRasterizationModeEXT(this->GetVkCommandBuffer(), rasterization_mode);
+        ::pfn_vkCmdSetExtraPrimitiveOverestimationSizeEXT(this->GetVkCommandBuffer(), 0.0f);
 
         const VkSampleCountFlagBits sample_count_flags = static_cast<VkSampleCountFlagBits>(rasterizer_state->sample_count);
-        ::pfn_vkCmdSetRasterizationSamplesEXT(m_command_list_unit->vk_command_buffer, sample_count_flags);
-        ::pfn_vkCmdSetSampleMaskEXT(m_command_list_unit->vk_command_buffer, sample_count_flags, std::addressof(rasterizer_state->sample_mask));
+        ::pfn_vkCmdSetRasterizationSamplesEXT(this->GetVkCommandBuffer(), sample_count_flags);
+        ::pfn_vkCmdSetSampleMaskEXT(this->GetVkCommandBuffer(), sample_count_flags, std::addressof(rasterizer_state->sample_mask));
 
-        ::pfn_vkCmdSetAlphaToCoverageEnableEXT(m_command_list_unit->vk_command_buffer, rasterizer_state->is_enable_alpha_to_coverage);
-        ::pfn_vkCmdSetDepthClampEnableEXT(m_command_list_unit->vk_command_buffer, rasterizer_state->is_enable_depth_clamp);
+        ::pfn_vkCmdSetAlphaToCoverageEnableEXT(this->GetVkCommandBuffer(), rasterizer_state->is_enable_alpha_to_coverage);
+        ::pfn_vkCmdSetDepthClampEnableEXT(this->GetVkCommandBuffer(), rasterizer_state->is_enable_depth_clamp);
 
         const VkPolygonMode polygon_mode = vp::res::GfxFillModeToVkPolygonMode(static_cast<FillMode>(rasterizer_state->fill_mode));
         const VkCullModeFlags cull_mode = vp::res::GfxCullModeToVkCullModeFlags(static_cast<CullMode>(rasterizer_state->cull_mode));
         const VkFrontFace front_face = vp::res::GfxFrontFaceToVkFrontFace(static_cast<FrontFace>(rasterizer_state->front_face));
-        ::pfn_vkCmdSetPolygonModeEXT(m_command_list_unit->vk_command_buffer, polygon_mode);
-        ::pfn_vkCmdSetCullMode(m_command_list_unit->vk_command_buffer, cull_mode);
-        ::pfn_vkCmdSetFrontFace(m_command_list_unit->vk_command_buffer, front_face);
+        ::pfn_vkCmdSetPolygonModeEXT(this->GetVkCommandBuffer(), polygon_mode);
+        ::pfn_vkCmdSetCullMode(this->GetVkCommandBuffer(), cull_mode);
+        ::pfn_vkCmdSetFrontFace(this->GetVkCommandBuffer(), front_face);
 
-        ::pfn_vkCmdSetDepthBiasEnable(m_command_list_unit->vk_command_buffer, true);
-        ::pfn_vkCmdSetDepthBias(m_command_list_unit->vk_command_buffer, rasterizer_state->polygon_offset_constant_factor, rasterizer_state->polygon_offset_clamp, rasterizer_state->polygon_offset_slope_factor);
+        ::pfn_vkCmdSetDepthBiasEnable(this->GetVkCommandBuffer(), true);
+        ::pfn_vkCmdSetDepthBias(this->GetVkCommandBuffer(), rasterizer_state->polygon_offset_constant_factor, rasterizer_state->polygon_offset_clamp, rasterizer_state->polygon_offset_slope_factor);
 
         return;
     }
@@ -1125,14 +728,14 @@ namespace awn::gfx {
         }
         for (u32 i = 0; i < vertex_state->vertex_attribute_state_count; ++i) {
             vertex_attribute_description_array[i].sType    = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT;
-            vertex_attribute_description_array[i].pNext     = nullptr;
+            vertex_attribute_description_array[i].pNext    = nullptr;
             vertex_attribute_description_array[i].location = vertex_state->vertex_attribute_state_array[i].interface_slot;
             vertex_attribute_description_array[i].binding  = vertex_state->vertex_attribute_state_array[i].binding;
             vertex_attribute_description_array[i].format   = vp::res::GfxAttributeFormatToVkFormat(static_cast<AttributeFormat>(vertex_state->vertex_attribute_state_array[i].attribute_format));
             vertex_attribute_description_array[i].offset   = vertex_state->vertex_attribute_state_array[i].offset;
         }
-        ::pfn_vkCmdSetVertexInputEXT(m_command_list_unit->vk_command_buffer, vertex_state->vertex_buffer_state_count, vertex_binding_description_array, vertex_state->vertex_attribute_state_count, vertex_attribute_description_array);
-        ::pfn_vkCmdSetPrimitiveRestartEnable(m_command_list_unit->vk_command_buffer, false);
+        ::pfn_vkCmdSetVertexInputEXT(this->GetVkCommandBuffer(), vertex_state->vertex_buffer_state_count, vertex_binding_description_array, vertex_state->vertex_attribute_state_count, vertex_attribute_description_array);
+        ::pfn_vkCmdSetPrimitiveRestartEnable(this->GetVkCommandBuffer(), false);
     }
 
     void CommandBuffer::SetViewportScissorState(const ViewportScissorState *viewport_scissor_state) {
@@ -1168,13 +771,13 @@ namespace awn::gfx {
                 scissor_array[i].extent.height = 0x7fff'ffff;
             }
         }
-        ::pfn_vkCmdSetViewportWithCount(m_command_list_unit->vk_command_buffer, viewport_scissor_state->state_count, viewport_array);
-        ::pfn_vkCmdSetScissorWithCount(m_command_list_unit->vk_command_buffer, viewport_scissor_state->state_count, scissor_array);
+        ::pfn_vkCmdSetViewportWithCount(this->GetVkCommandBuffer(), viewport_scissor_state->state_count, viewport_array);
+        ::pfn_vkCmdSetScissorWithCount(this->GetVkCommandBuffer(), viewport_scissor_state->state_count, scissor_array);
 
         return;
     }
 
     void CommandBuffer::SetLineWidth(float line_width) {
-        ::pfn_vkCmdSetLineWidth(m_command_list_unit->vk_command_buffer, line_width);
+        ::pfn_vkCmdSetLineWidth(this->GetVkCommandBuffer(), line_width);
     }
 }

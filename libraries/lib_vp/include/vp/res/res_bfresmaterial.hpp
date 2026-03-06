@@ -33,40 +33,40 @@ namespace vp::res {
     static_assert(sizeof(ResBfresRenderInfo) == 0x10);
 
     enum class BfresShaderParamDataType : u8 {
-        Bool                      = 0x0,
-        BoolVector2               = 0x1,
-        BoolVector3               = 0x2,
-        BoolVector4               = 0x3,
-        S32                       = 0x4,
-        S32Vector2                = 0x5,
-        S32Vector3                = 0x6,
-        S32Vector4                = 0x7,
-        U32                       = 0x8,
-        U32Vector2                = 0x9,
-        U32Vector3                = 0xa,
-        U32Vector4                = 0xb,
-        Float                     = 0xc,
-        FloatVector2              = 0xd,
-        FloatVector3              = 0xe,
-        FloatVector4              = 0xf,
-        FloatColumnMajor2x2       = 0x11,
-        FloatColumnMajor2x3       = 0x12,
-        FloatColumnMajor2x4       = 0x13,
-        FloatColumnMajor3x2       = 0x15,
-        FloatColumnMajor3x3       = 0x16,
-        FloatColumnMajor3x4       = 0x17,
-        FloatColumnMajor4x2       = 0x19,
-        FloatColumnMajor4x3       = 0x1a,
-        FloatColumnMajor4x4       = 0x1b,
-        Srt2d                     = 0x1c,
-        Srt3d                     = 0x1d,
-        SrtTexture                = 0x1e,
+        Bool = 0x0,
+        Bool2 = 0x1,
+        Bool3 = 0x2,
+        Bool4 = 0x3,
+        S32 = 0x4,
+        Int2 = 0x5,
+        Int3 = 0x6,
+        Int4 = 0x7,
+        U32 = 0x8,
+        UInt2 = 0x9,
+        UInt3 = 0xa,
+        UInt4 = 0xb,
+        Float = 0xc,
+        Float2 = 0xd,
+        Float3 = 0xe,
+        Float4 = 0xf,
+        FloatColumnMajor2x2 = 0x11,
+        FloatColumnMajor2x3 = 0x12,
+        FloatColumnMajor2x4 = 0x13,
+        FloatColumnMajor3x2 = 0x15,
+        FloatColumnMajor3x3 = 0x16,
+        FloatColumnMajor3x4 = 0x17,
+        FloatColumnMajor4x2 = 0x19,
+        FloatColumnMajor4x3 = 0x1a,
+        FloatColumnMajor4x4 = 0x1b,
+        Srt2d = 0x1c,
+        Srt3d = 0x1d,
+        SrtTexture = 0x1e,
         //SrtTextureWithUserPointer = 0x1f,
     };
 
     struct ResBfresSrt2d {
         util::Float2 scale;
-        float        rotate;
+        float rotate;
         util::Float2 translate;
 
         constexpr void ConvertSrt2d(float *out_matrix) const {
@@ -75,12 +75,12 @@ namespace vp::res {
              * | sr sr t |
              * | sr sr t |
              */
-            out_matrix[0] = sincos.y * this->scale.x;
-            out_matrix[1] = sincos.x * this->scale.x;
-            out_matrix[2] = sincos.x * -this->scale.y;
-            out_matrix[3] = sincos.y * this->scale.y;
-            out_matrix[4] = this->translate.x;
-            out_matrix[5] = this->translate.y;
+            out_matrix[0] = sincos[1] * this->scale[0];
+            out_matrix[1] = sincos[0] * this->scale[0];
+            out_matrix[2] = sincos[0] * -this->scale[1];
+            out_matrix[3] = sincos[1] * this->scale[1];
+            out_matrix[4] = this->translate[0];
+            out_matrix[5] = this->translate[1];
             return;
         }
     };
@@ -90,10 +90,10 @@ namespace vp::res {
         util::Float3 rotate;
         util::Float3 translate;
 
-        //constexpr void ConvertSrt3d(vp::util::FloatColumnMajor4x3 *out_matrix) const {
-        //    const vp::util::MatrixRowMajor4x3f matrix = vp::util::ScaleRotationTranslationToMatrixEuler(this->scale, this->rotate, this->translate);
-        //    *out_matrix = vp::util::ConvertMajor(matrix);
-        //}
+        constexpr void ConvertSrt3d(vp::util::FloatColumnMajor4x3 *out_matrix) const {
+            const vp::util::MatrixRowMajor4x3f matrix = vp::util::SRTEulerXYZToMatrix<vp::util::MatrixRowMajor4x3f>(this->scale, vp::util::Convert<vp::util::Vector3f>(this->rotate), this->translate);
+            *out_matrix = vp::util::ConvertMajor<vp::util::FloatColumnMajor4x3>(matrix);
+        }
     };
 
     enum class BfresSrtMode : u32 {
@@ -109,34 +109,31 @@ namespace vp::res {
         util::Float2 translate;
 
         constexpr void ConvertTextureSrt(float *out_matrix) const {
+            const vp::util::Float2 sincos = vp::util::SampleSinCos(this->rotate);
+            const float sin = sincos[0];
+            const float cos = sincos[1];
             if (this->srt_mode == BfresSrtMode::Maya) {
-                const vp::util::Float2 sincos = vp::util::SampleSinCos(this->rotate);
-                const float sin = sincos.x;
-                const float cos = sincos.y;
                 /* 
                  * | sr sr t |
                  * | sr sr t |
                  */
-                out_matrix[0] = cos * this->scale.x;
-                out_matrix[1] = sin * -this->scale.y;
-                out_matrix[2] = sin * this->scale.x;
-                out_matrix[3] = cos * this->scale.y;
-                out_matrix[4] = ((cos * -0.5f - (sin * 0.5f + -0.5f)) - this->translate.x) * this->scale.x;
-                out_matrix[5] = ((cos * -0.5f + (sin * 0.5f + -0.5f)) + this->translate.y) * this->scale.y;
+                out_matrix[0] = cos * this->scale[0];
+                out_matrix[1] = sin * -this->scale[1];
+                out_matrix[2] = sin * this->scale[0];
+                out_matrix[3] = cos * this->scale[1];
+                out_matrix[4] = ((cos * -0.5f - (sin * 0.5f + -0.5f)) - this->translate[0]) * this->scale[0];
+                out_matrix[5] = ((cos * -0.5f + (sin * 0.5f + -0.5f)) + this->translate[1]) * this->scale[1];
             } else if (this->srt_mode == BfresSrtMode::Max) {
-                const vp::util::Float2 sincos = vp::util::SampleSinCos(this->rotate);
-                const float sin = sincos.x;
-                const float cos = sincos.y;
                 /* 
                  * | sr sr t |
                  * | sr sr t |
                  */
-                out_matrix[0] = cos * this->scale.x;
-                out_matrix[1] = sin * -this->scale.y;
-                out_matrix[2] = sin * this->scale.x;
-                out_matrix[3] = cos * this->scale.y;
-                out_matrix[4] = ((sin * this->scale.x) * (this->translate.y + -0.5f) - (cos * this->scale.x) * (this->translate.x + 0.5f)) + 0.5f;
-                out_matrix[5] = ((sin * this->scale.y) * (this->translate.x + 0.5f) + (cos * this->scale.y) * (this->translate.y + -0.5f)) + 0.5f;
+                out_matrix[0] = cos * this->scale[0];
+                out_matrix[1] = sin * -this->scale[1];
+                out_matrix[2] = sin * this->scale[0];
+                out_matrix[3] = cos * this->scale[1];
+                out_matrix[4] = ((sin * this->scale[0]) * (this->translate[1] + -0.5f) - (cos * this->scale[0]) * (this->translate[0] + 0.5f)) + 0.5f;
+                out_matrix[5] = ((sin * this->scale[1]) * (this->translate[0] + 0.5f) + (cos * this->scale[1]) * (this->translate[1] + -0.5f)) + 0.5f;
             } else {
                 VP_UNEXPECTED_DEFAULT();
             }

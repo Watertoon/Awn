@@ -53,7 +53,7 @@ namespace awn::para {
                     .priority              = 1,
                     .is_allow_loose_files  = true,
                     .resource_factory      = impl::DocumentManager::GetInstance()->GetResourceFactory(),
-                    .resource_user_context = std::addressof(create_info),
+                    .compose_info          = std::addressof(create_info),
                 };
                 ResourceDocument *document_res = this->LoadSyncImpl(path.GetString(), std::addressof(load_info));
 

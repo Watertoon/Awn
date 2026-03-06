@@ -38,10 +38,12 @@ namespace vp::util {
 
     using Spheref = Sphere<float>;
     using SphereVf = SphereV<float>;
+    static_assert(sizeof(Spheref) == 0x10);
+    static_assert(sizeof(SphereVf) == 0x20);
 
     template <typename T>
     constexpr SphereV<T> CastSphereV(const Sphere<T> &sphere) {
-        const TVector<T, 3, true> position = vp::util::CastVector<TVector<T,3,true>>(sphere.position);
+        const TVector<T, 3, true> position = vp::util::Convert<TVector<T,3,true>>(sphere.position);
         const float radius = sphere.radius;
         const SphereV<T> ret = SphereV<T> { position, radius, };
         return ret;

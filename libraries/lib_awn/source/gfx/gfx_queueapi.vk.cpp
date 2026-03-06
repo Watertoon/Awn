@@ -26,6 +26,6 @@ namespace awn::gfx {
     }
 
     void FinalizeCommandList(CommandList command_list) {
-        impl::DescriptorMemoryManager::GetInstance()->FreeCommandListUnit(command_list.unit);
+        impl::CommandPoolManager::GetInstance()->FreeCommandBuffer(command_list.GetVkCommandBuffer(), command_list.pool_id);
     }
 }

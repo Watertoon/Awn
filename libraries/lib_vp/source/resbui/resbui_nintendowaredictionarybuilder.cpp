@@ -94,7 +94,7 @@ namespace vp::resbui {
         VP_ASSERT(build_result == true);
 
         /* Add relocation entry */
-        relocation_table_stream->AddEntry(std::addressof(header->root_node.key), i + 1, 1, 1);
+        RESULT_ABORT_UNLESS(relocation_table_stream->AddEntry(std::addressof(header->root_node.key), i + 1, 1, 1));
 
         return;
     }

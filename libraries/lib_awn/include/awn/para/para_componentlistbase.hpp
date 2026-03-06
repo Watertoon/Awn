@@ -22,14 +22,11 @@ namespace awn::para {
         PropertyMap<const char*>  Components = {};
         const char               *Label      = "";
 
-        AWN_PARA_LAYOUT_TYPE_TRAITS(ComponentListBase_Layout);
+        AWN_PARA_TYPED_PARAM_LAYOUT_TRAITS(ComponentListBase_Layout);
     };
 
-    AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(
+    AWN_PARA_DECLARE_TYPED_PARAM(
         awn__para__ComponentListBase, ComponentListBase,
-        TypedParam, ComponentListBase_Layout,
-        Label,
-        Category,
-        Components
+        TypedParam, ComponentListBase_Layout
     );
 }

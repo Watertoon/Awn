@@ -35,7 +35,7 @@ namespace vp::resbui {
 			/* Readd string if it is no longer colliding */
 			if (no_longer_colliding_string != nullptr) {
 				no_longer_colliding_string->m_pool_builder_node.Unlink();
-				this->AddString(no_longer_colliding_string);
+				RESULT_ABORT_UNLESS(this->AddString(no_longer_colliding_string));
 			}
 		}
 

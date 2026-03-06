@@ -35,7 +35,7 @@ namespace awn::res::impl {
 			constexpr ResourceSizeTableManager() : m_extractor(), m_fallback_list(), m_resource() {/*...*/}
 			constexpr ~ResourceSizeTableManager() {/*...*/}
 
-			void Initialize(const char *path);
+			Result Initialize(const char *path);
 			void Finalize();
 			void Clear();
 

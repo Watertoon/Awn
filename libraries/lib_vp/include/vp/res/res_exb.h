@@ -50,7 +50,7 @@ namespace vp::res {
         Jump                = 0x1d,
     };
 
-    enum class ExbDataType : u8 {
+    enum class ExbDataType_Old : u8 {
         Invalid  = 0x0,
         Void     = 0x1,
         Bool     = 0x2,
@@ -59,9 +59,29 @@ namespace vp::res {
         String   = 0x5,
         Vector3f = 0x6,
     };
+    enum class ExbDataType : u8 {
+        Invalid  = 0x0,
+        Void     = 0x1,
+        Bool     = 0x2,
+        S32      = 0x3,
+        U32      = 0x4,
+        Float    = 0x5,
+        String   = 0x6,
+        Vector3f = 0x7,
+    };
 
     template <typename T>
-        requires (std::is_same_v<T, bool> || std::is_same_v<T, s32> || std::is_same_v<T, float> || std::is_same_v<T, const char*> || std::is_same_v<T, vp::util::Float3>)
+    concept IsExbDataType = (std::is_same_v<T, bool> || std::is_same_v<T, s32> || std::is_same_v<T, float> || std::is_same_v<T, const char*> || std::is_same_v<T, vp::util::Float3> || std::is_same_v<T, u32>);
+
+    constexpr ExbDataType FixupExbDataType(u8 data_type, u32 version) {
+        if (version == 1 || version == 2) {            
+            return static_cast<ExbDataType>((3 < data_type) ? data_type + 1 : data_type); /* Fixup from ExbDataType_Old */
+        }
+        return static_cast<ExbDataType>(data_type);
+    }
+
+    template <typename T>
+        requires (IsExbDataType<T>)
     ExbDataType TGetExbDataTypeAuto() {
         
         if constexpr (std::is_same_v<T, bool>) {
@@ -74,6 +94,8 @@ namespace vp::res {
             return ExbDataType::String;
         } else if constexpr (std::is_same_v<T, vp::util::Float3>) {
             return ExbDataType::Vector3f;
+        } else if constexpr (std::is_same_v<T, u32>) {
+            return ExbDataType::U32;
         }
     }
 

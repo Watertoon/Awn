@@ -20,13 +20,13 @@ namespace awn::mem {
     static constexpr size_t cPageSize = vp::util::c4KB;
 
     Result AllocateAddressRegion(void **out_address_region, size_t memory_size);
-    void FreeAddressRegion(void *address_region);
+    void FreeAddressRegion(void *address_region, size_t memory_size);
 
     Result AllocateMemoryPages(void *address_region, size_t memory_size);
     void FreeMemoryPages(void *address_region, size_t free_size);
 
     Result AllocateLargeAddressRegionWithMemoryPages(void **out_large_address_region, size_t large_memory_size);
-    void FreeLargeAddressRegionWithMemoryPages(void *large_address_region);
+    void FreeLargeAddressRegionWithMemoryPages(void *large_address_region, size_t large_memory_size);
 
     Result GetFreeVirtualMemory(size_t *out_memory_size);
 }

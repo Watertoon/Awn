@@ -38,7 +38,7 @@ namespace vp::util {
             constexpr ALWAYS_INLINE FixedHandleTable() : m_counter_array{}, m_object_array{},  m_indice_iter(-1), m_active_handles(0), m_counter_value(1) {/*...*/}
             constexpr ~FixedHandleTable() {/*...*/}
 
-            constexpr ALWAYS_INLINE void Initialize() {
+            constexpr void Initialize() {
 
                 /* Initialize handle table to valid state */
                 m_active_handles = 0;

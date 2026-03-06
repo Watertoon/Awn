@@ -18,18 +18,25 @@
 namespace awn::gfx {
 
     void Sync::Initialize(bool is_for_present) {
+        this->InitializeImpl(nullptr, is_for_present);
+        return;
+    }
+
+    void Sync::InitializeImpl(const void *pnext, bool is_binary) {
 
         /* Intialize semaphore */
         const VkSemaphoreTypeCreateInfo semaphore_type_info = {
-            .sType         = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
-            .semaphoreType = (is_for_present) ?  VK_SEMAPHORE_TYPE_BINARY : VK_SEMAPHORE_TYPE_TIMELINE,
-            .initialValue  = 0,
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+            .pNext = pnext,
+            .semaphoreType = (is_binary) ?  VK_SEMAPHORE_TYPE_BINARY : VK_SEMAPHORE_TYPE_TIMELINE,
+            .initialValue = 0,
         };
         const VkSemaphoreCreateInfo semaphore_info = {
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             .pNext = std::addressof(semaphore_type_info),
         };
-        const VkResult vk_result = ::pfn_vkCreateSemaphore(impl::Context::GetInstance()->GetVkDevice(), std::addressof(semaphore_info), impl::Context::GetInstance()->GetVkAllocationCallbacks(), std::addressof(m_vk_semaphore));
+        impl::Context *context = impl::Context::GetInstance();
+        const VkResult vk_result = ::pfn_vkCreateSemaphore(context->GetVkDevice(), std::addressof(semaphore_info), context->GetVkAllocationCallbacks(), std::addressof(m_vk_semaphore));
         RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(vk_result));
 
         /* Set next expected */
@@ -103,5 +110,12 @@ namespace awn::gfx {
         ++m_expected_value;
 
         return;
+    }
+
+    u64 Sync::GetValue() const {
+        u64 counter = 0;
+        const VkResult result0 = ::pfn_vkGetSemaphoreCounterValue(impl::Context::GetInstance()->GetVkDevice(), m_vk_semaphore, std::addressof(counter));
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
+        return counter;
     }
 }

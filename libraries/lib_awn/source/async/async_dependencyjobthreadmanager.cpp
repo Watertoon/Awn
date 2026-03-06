@@ -40,25 +40,23 @@ namespace awn::async {
 
         /* Add thread controls to queue */
         const u32 current_core = sys::GetCurrentCoreNumber();
-        for (u32 i = 0; i < m_thread_array.GetCount(); ++i) {
+        const sys::CoreMask current_core_mask = (1ull << current_core);
+        for (DependencyJobThread &thread : m_thread_array) {
             
             /* Skip unactive threads */
-            const u64 thread_core_mask = m_thread_array[i].GetCoreMask();
-            if ((m_is_process_in_mainthread && thread_core_mask == (1ull << current_core)) || (m_all_core_mask & thread_core_mask) == 0) { continue; }
+            const sys::CoreMask thread_core_mask = thread.GetCoreMask();
+            if ((m_is_process_in_mainthread && thread_core_mask == current_core_mask) || (m_all_core_mask & thread_core_mask) == 0) { continue; }
 
             /* Add thread control to queue */
-            m_queue->m_thread_control_array.PushPointer(std::addressof(m_thread_array[i].m_thread_control));
+            m_queue->m_thread_control_array.PushPointer(std::addressof(thread.m_thread_control));
 
             /* Set active mask */
-            m_active_core_mask |= (1u << i);
+            m_active_core_mask |= thread_core_mask;
         }
 
         /* Clear thread control state */
-        u32 i = 0;
         for (DependencyJobThread &thread : m_thread_array) {
-            const bool is_active = ((m_active_core_mask >> i) & 1);
-            ++i;
-            if (!is_active) { continue; }
+            if (!thread.IsActive(m_active_core_mask)) { continue; }
             vp::util::MemoryBarrierInnerReadWrite();
 
             thread.m_thread_control.m_next_job = nullptr;
@@ -75,11 +73,8 @@ namespace awn::async {
     void DependencyJobThreadManager::StartThreads() {
 
         /* Start threads for job processing */
-        u32 i = 0;
         for (DependencyJobThread &thread : m_thread_array) {
-            const bool is_active = ((m_active_core_mask >> i) & 1);
-            ++i;
-            if (!is_active) { continue; }
+            if (!thread.IsActive(m_active_core_mask)) { continue; }
 
             vp::util::InterlockedOr(std::addressof(thread.m_thread_control.m_is_ready_to_exit), 1u);
             thread.SendMessage(1);
@@ -115,10 +110,16 @@ namespace awn::async {
         return;
     }
 
-    void DependencyJobThreadManager::Initialize(mem::Heap *heap) {
+    Result DependencyJobThreadManager::Initialize(mem::Heap *heap, const DependencyJobThreadManagerInfo *info) {
 
         /* Initialize thread array */
-        m_thread_array.Initialize(heap, sys::GetProcessCoreCount());
+        sys::CoreConnection core_connection;
+        core_connection.SetBitMask(0, info->per_core_worker_core_mask);
+        const u32 thread_count = core_connection.CountOneBits();
+        RESULT_RETURN_UNLESS(0 < thread_count, ResultRangeNG);
+        RESULT_RETURN_UNLESS(thread_count <= sys::cMaxCoreCount, ResultRangeNG);
+        RESULT_TRY(m_thread_array.Initialize(heap, thread_count));
+        auto fail_guard0 = SCOPE_GUARD { this->Finalize(); };
 
         /* Clear state */
         m_all_core_mask    = 0;
@@ -129,21 +130,22 @@ namespace awn::async {
         DependencyJobThreadInfo thread_info = {
             .name = thread_name.GetString(),
             .thread_manager = this,
-            .stack_size = 0x20000,
-            .priority = sys::cPriorityNormal,
+            .stack_size = info->worker_stack_size,
+            .priority = info->worker_priority,
         };
-        u32 i = 0;
-        for (DependencyJobThread &thread : m_thread_array) {
-            thread_name.Format("DepWorker%d", i);
-            const u32 bit = 1u << i;
-            ++i;
-            RESULT_ABORT_UNLESS(thread.Initialize(heap, std::addressof(thread_info)));
-            thread.SetCoreMask(bit);
-            thread.StartThread();
-            m_all_core_mask |= bit;
+        for (const u32 core_id : core_connection) {
+            for (DependencyJobThread &thread : m_thread_array) {
+                thread_name.Format("%s_Core%d", info->name, core_id);
+                const sys::CoreMask bit = 1ull << core_id;
+                RESULT_TRY(thread.Initialize(heap, std::addressof(thread_info)));
+                thread.SetCoreMask(bit);
+                thread.StartThread();
+                m_all_core_mask |= bit;
+            }
         }
 
-        return;
+        fail_guard0.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void DependencyJobThreadManager::Finalize() {
@@ -184,14 +186,14 @@ namespace awn::async {
         /* Process on mainthread */
         if (m_is_process_in_mainthread) {
 
-            const u32 current_core = sys::GetCurrentCoreNumber();
-
             /* Try to abort any workers on the same core */
+            const u32 current_core = sys::GetCurrentCoreNumber();
+            const sys::CoreMask current_core_mask = (1ull << current_core);
             for (DependencyJobThread &thread : m_thread_array) {
-                if (thread.GetCoreMask() != (1ull << current_core)) { continue; }
+                if (thread.GetCoreMask() != current_core_mask) { continue; }
 
                 /* Signal thread control to exit */
-                vp::util::InterlockedOr(std::addressof(thread.m_thread_control.m_is_ready_to_exit), (1u << 1));
+                vp::util::InterlockedOrRelaxed(std::addressof(thread.m_thread_control.m_is_ready_to_exit), (1u << 1));
             }
 
             /* Update main core */
@@ -202,11 +204,8 @@ namespace awn::async {
         }
 
         /* Wait for all threads to complete */
-        u32 i = 0;
         for (DependencyJobThread &thread : m_thread_array) {
-            const bool is_active = ((m_active_core_mask >> i) & 1);
-            ++i;
-            if (!is_active) { continue; }
+            if (!thread.IsActive(m_active_core_mask)) { continue; }
             thread.m_finish_event.Wait();
         }
 

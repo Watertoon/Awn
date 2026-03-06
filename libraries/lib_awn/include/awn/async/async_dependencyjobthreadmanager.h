@@ -22,7 +22,7 @@ namespace awn::async {
     struct DependencyJobThreadInfo {
         const char *name;
         DependencyJobThreadManager *thread_manager;
-        u32 stack_size;
+        u64 stack_size;
         u32 priority;
     };
 
@@ -37,7 +37,7 @@ namespace awn::async {
             sys::Event m_finish_event;
             DependencyJobQueue *m_queue;
             DependencyJobThreadManager *m_thread_manager;
-            size_t m_message_array[cMessageCount];
+            u64 m_message_array[cMessageCount];
         public:
             VP_RTTI_DERIVED(DependencyJobThread, sys::Thread);
         public:
@@ -59,10 +59,18 @@ namespace awn::async {
                 RESULT_RETURN_SUCCESS;
             }
 
-            virtual void ThreadMain(size_t message) override;
+            virtual void ThreadMain(u64 message) override;
 
             constexpr void SetJobQueue(DependencyJobQueue *queue) { m_queue = queue; }
             constexpr DependencyJobThreadManager *GetThreadManager() { return m_thread_manager; }
+            constexpr bool IsActive(sys::CoreMask active_mask) { return (active_mask & this->GetCoreMask()) != 0; }
+    };
+
+    struct DependencyJobThreadManagerInfo {
+        sys::CoreMask per_core_worker_core_mask;
+        const char *name = "DepWorker";
+        u64 worker_stack_size = 0x20000;
+        u32 worker_priority = sys::cPriorityNormal;
     };
 
     class DependencyJobThreadManager {
@@ -71,8 +79,8 @@ namespace awn::async {
         private:
             DependencyJobThreadArray m_thread_array;
             DependencyJobThreadControl m_main_thread_control;
-            u64 m_all_core_mask;
-            u64 m_active_core_mask;
+            sys::CoreMask m_all_core_mask;
+            sys::CoreMask m_active_core_mask;
             union {
                 u32 m_core_flags;
                 struct {
@@ -89,7 +97,7 @@ namespace awn::async {
             constexpr  DependencyJobThreadManager() : m_thread_array(), m_main_thread_control(), m_all_core_mask(), m_active_core_mask(), m_core_flags(), m_queue()  {/*...*/}
             constexpr ~DependencyJobThreadManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap);
+            Result Initialize(mem::Heap *heap, const DependencyJobThreadManagerInfo *info);
             void Finalize();
 
             void SubmitGraph(DependencyJobQueue *job_queue, DependencyJobGraph *graph);

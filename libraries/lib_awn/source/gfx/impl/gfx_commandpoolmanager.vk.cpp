@@ -20,8 +20,8 @@ namespace awn::gfx::impl {
     AWN_SINGLETON_TRAITS_IMPL(CommandPoolManager);
 
     void CommandPoolManager::Initialize(mem::Heap *heap, u32 pool_count) {
-        m_handle_allocator.Initialize(heap, pool_count);
-        m_unit_array.Initialize(heap, pool_count);
+        RESULT_ABORT_UNLESS(m_handle_allocator.Initialize(heap, pool_count));
+        RESULT_ABORT_UNLESS(m_unit_array.Initialize(heap, pool_count));
     }
 
     void CommandPoolManager::Finalize() {

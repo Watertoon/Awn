@@ -39,19 +39,19 @@ namespace awn::mem {
             virtual size_t GetTotalFreeSize() override;
             virtual size_t GetMaximumAllocatableSize(s32 alignment) override;
 
-            virtual bool IsEmpty() const override { return m_iter == reinterpret_cast<uintptr_t>(m_start_address) + sizeof(FrameHeap); }
+            virtual bool IsEmpty() const override;
     };
 
-    class GpuFrameHeap : public FrameHeap {
-        public:
-            GpuFrameHeap(const char *name, Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : FrameHeap(name, parent_heap, start_address, size, is_thread_safe) {/*...*/}
-            virtual ~GpuFrameHeap() override {/*...*/}
-
-            static GpuFrameHeap *TryCreate(const char *name, mem::Heap *cpu_heap, mem::Heap *gpu_heap, size_t size, s32 alignment, bool is_thread_safe);
-
-            virtual void FreeAll() override;
-
-            virtual constexpr bool IsGpuHeap() const override { return true; }
-            virtual bool IsEmpty() const override { return m_iter == reinterpret_cast<uintptr_t>(m_start_address); }
-    };
+    //class GpuFrameHeap : public FrameHeap {
+    //    public:
+    //        GpuFrameHeap(const char *name, Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : FrameHeap(name, parent_heap, start_address, size, is_thread_safe) {/*...*/}
+    //        virtual ~GpuFrameHeap() override {/*...*/}
+    //
+    //        static GpuFrameHeap *TryCreate(const char *name, mem::Heap *cpu_heap, mem::Heap *gpu_heap, size_t size, s32 alignment, bool is_thread_safe);
+    //
+    //        virtual void FreeAll() override;
+    //
+    //        virtual constexpr bool IsGpuHeap() const override { return true; }
+    //        virtual bool IsEmpty() const override { return m_iter == reinterpret_cast<uintptr_t>(m_start_address); }
+    //};
 }

@@ -49,7 +49,7 @@ namespace awn::hid::impl {
             static constexpr const u32 cReportRateHz = 200;
             static constexpr const u32 cMaxMessageCount = 32;
         public:
-            enum Message : size_t {
+            enum Message : u64 {
                 Message_Disconnect = 0x1'0000'0000,
                 Message_ExitCode = 0x7fff'ffff'ffff'ffff,
             };
@@ -60,7 +60,7 @@ namespace awn::hid::impl {
         public:
             sys::FunctionThread m_thread;
             sys::ThreadMemberFunction<KeyboardManager> m_function;
-            size_t m_message_memory[cMaxMessageCount];
+            u64 m_message_memory[cMaxMessageCount];
             HWND m_hwnd;
             KeyboardArray m_keyboard_array;
             sys::Mutex m_used_cs;
@@ -71,7 +71,7 @@ namespace awn::hid::impl {
         private:
             static long long int KeyboardWindowProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
-            void ThreadMain(size_t message);
+            void ThreadMain(u64 message);
 
             void InitializeRawInput();
             void FinalizeRawInput();

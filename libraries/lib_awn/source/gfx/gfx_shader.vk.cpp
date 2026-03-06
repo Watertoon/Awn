@@ -17,6 +17,7 @@
 
 namespace awn::gfx {
 
+#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
     Result Shader::InitializeImpl(void **code_array, u32 *code_size_array, const ShaderStage *stage_array, u32 stage_count, ShaderCodeType code_type, VkShaderCreateFlagsEXT create_flags) {
 
         /* Build create info from provided stages */
@@ -114,12 +115,13 @@ namespace awn::gfx {
         static constexpr u32 cStageCount = sizeof(cStageArray) / sizeof(ShaderStage);
         return this->InitializeImpl(std::addressof(shader_info->code_compute), std::addressof(shader_info->code_size_compute), cStageArray, cStageCount, code_type, create_flags);
     }
+#endif
 
     Result Shader::Initialize(vp::res::ResBnshShaderProgram *res_program) {
 
         /* Set the shader program atomically, handle someone else getting here first */
         vp::res::ResBnshShaderProgram *prev_program;
-        const bool is_set_program = vp::util::InterlockedCompareExchange(std::addressof(prev_program), std::addressof(m_res_program), res_program, static_cast<vp::res::ResBnshShaderProgram*>(nullptr));
+        const bool is_set_program = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(prev_program), std::addressof(m_res_program), res_program, static_cast<vp::res::ResBnshShaderProgram*>(nullptr));
         if (!is_set_program) {
             if (res_program == prev_program) {
                 m_init_event.Wait();
@@ -135,43 +137,141 @@ namespace awn::gfx {
         const VkShaderCodeTypeEXT vk_code_type = (code_type == vp::res::GfxShaderCodeType::Binary) ? VK_SHADER_CODE_TYPE_BINARY_EXT : VK_SHADER_CODE_TYPE_SPIRV_EXT;
 
         /* Setup mesh, fragment, and the optional task shader info */
-        vp::res::ResBnshShaderCodeInfo **code_info_array = res_program->code_info_array;
         u32 compile_count = 0;
         gfx::ShaderStage stage_array[cMaxShaderStageCount];
         VkShaderCreateInfoEXT vk_shader_create_info_array[cMaxShaderStageCount];
-        const u32 max_shader_count = cMaxShaderStageCount - (2 * (!gfx::IsOptionalFeature(OptionalFeature::SupportsMeshShaders)));
+    #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+        VkShaderDescriptorSetAndBindingMappingInfoEXT binding_info_array[cMaxShaderStageCount];
+        VkDescriptorSetAndBindingMappingEXT mapping_array_storage[230 * cMaxShaderStageCount];
+        const u32 desc_count = 0;
+        const VkDescriptorSetLayout *desc_layout = nullptr;
+    #else
         const u32 desc_count = impl::Context::cMaxCombinedSetCountGraphics;
         const VkDescriptorSetLayout *desc_layout = impl::Context::GetInstance()->GetPerStageDescriptorLayoutArray();
+    #endif
+        const u32 max_shader_count = cMaxShaderStageCount - (2 * (!gfx::IsOptionalFeature(OptionalFeature::SupportsMeshShaders)));
         for (u32 i = 0; i < max_shader_count; ++i) {
 
             /* Increment reference  */
-            vp::res::ResBnshShaderCodeInfo *code_info = code_info_array[i];
+            const ShaderStage shader_stage = static_cast<ShaderStage>(i);
+            vp::res::ResBnshShaderCodeInfo *code_info = res_program->GetShaderCodeInfo(shader_stage);
             if (code_info == nullptr) { continue; }
             
             /* Resolve stage and next stage */
-            const ShaderStage shader_stage = static_cast<ShaderStage>(i);
             stage_array[compile_count] = shader_stage;
             const VkShaderStageFlags vk_shader_stage = vp::res::GfxShaderStageToVkShaderStageFlags(shader_stage);
             VkShaderStageFlags vk_next_shader_stage = 0;
             u32 flags = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT;
             if (i < 4) {
                 for (u32 j = i + 1; j < 5; ++j) {
-                    if (code_info_array[j] == nullptr) { continue; }
                     const ShaderStage next_shader_stage = static_cast<ShaderStage>(j);
+                    if (res_program->GetShaderCodeInfo(next_shader_stage) == nullptr) { continue; }
                     vk_next_shader_stage = vp::res::GfxShaderStageToVkShaderStageFlags(next_shader_stage);
                     break;
                 }
-            } else if (i == 6) {
-                vk_next_shader_stage = VK_SHADER_STAGE_MESH_BIT_EXT;
             } else if (i == 7) {
+                vk_next_shader_stage = VK_SHADER_STAGE_MESH_BIT_EXT;
+            } else if (i == 8) {
                 if (compile_count < 1 || stage_array[compile_count - 1] != ShaderStage::Task) {
                     flags |= VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT;
                 }
                 vk_next_shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT;
             }
 
+            const void *pnext = nullptr;
+    #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+            flags |= VK_SHADER_CREATE_DESCRIPTOR_HEAP_BIT_EXT;
+            /* Build descriptor heap interface */
+            u32 mapping_count = 0;
+            VkDescriptorSetAndBindingMappingEXT *mapping_array = mapping_array_storage + (i * 230);
+            vp::res::ResBnshShaderInterfaceInfo *interface_info = (res_program->shader_interface_info_table != nullptr) ? res_program->shader_interface_info_table->GetShaderInterfaceInfo(shader_stage) : nullptr;
+            if (interface_info != nullptr) {
+
+                static constexpr VkDescriptorType cGfxShaderInterfaceTypeToVkDescriptorType[] = {
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    VK_DESCRIPTOR_TYPE_SAMPLER,
+                };
+                static constexpr VkDescriptorMappingSourceEXT cGfxShaderInterfaceTypeToVkDescriptorMappingSource[] = {
+                    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT,
+                    VK_DESCRIPTOR_MAPPING_SOURCE_INDIRECT_ADDRESS_EXT,
+                    VK_DESCRIPTOR_MAPPING_SOURCE_INDIRECT_ADDRESS_EXT,
+                    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT,
+                    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT,
+                    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT,
+                };
+                static_assert(vp::util::TEnumTraits<ShaderInterfaceType>::cEnumCount - 2 == sizeof(cGfxShaderInterfaceTypeToVkDescriptorType) / sizeof(VkDescriptorType));
+                for (u32 j = 2; j < vp::util::TEnumTraits<ShaderInterfaceType>::cEnumCount; ++j) {
+                    const ShaderInterfaceType interface_type = vp::util::TEnumTraits<ShaderInterfaceType>::GetValueByIndex(j);
+                    const u32 interface_count = interface_info->GetInterfaceCount(interface_type);
+                    if (0 < interface_count) {
+                        const u32 *slot_array = interface_info->GetInterfaceSlotArray(interface_type);
+                        const VkDescriptorMappingSourceEXT source = cGfxShaderInterfaceTypeToVkDescriptorMappingSource[j-2];
+                        for (u32 k = 0; k < interface_count; ++k) {
+                            const u32 slot = slot_array[k];
+                            if (slot == vp::res::ResBnshShaderInterfaceInfo::cInvalidInterfaceSlot) { continue; }
+                            VP_ASSERT(mapping_count < 230);
+                            VkDescriptorSetAndBindingMappingEXT *mapping = mapping_array + mapping_count;
+                            ++mapping_count;
+                            mapping->sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT;
+                            mapping->descriptorSet = i;
+                            mapping->firstBinding = slot;
+                            mapping->bindingCount = 1;
+                            mapping->resourceMask = VK_SPIRV_RESOURCE_TYPE_ALL_EXT;
+                            mapping->source = source;
+                            if (source == VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT) {
+                                if (VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER == cGfxShaderInterfaceTypeToVkDescriptorType[j-2]) {
+                                    mapping->sourceData = VkDescriptorMappingSourceDataEXT{
+                                        .indirectIndex = {
+                                            .heapOffset = 0,
+                                            .pushOffset = static_cast<u32>(i * sizeof(u64)),
+                                            .addressOffset = static_cast<u32>(slot * sizeof(u64)),
+                                            .heapIndexStride = sizeof(u64),
+                                            .heapArrayStride = 1,
+                                            .useCombinedImageSamplerIndex = VK_TRUE,
+                                            .samplerHeapOffset = 0,
+                                            .samplerPushOffset = static_cast<u32>(i * sizeof(u64)),
+                                            .samplerAddressOffset = static_cast<u32>(slot * sizeof(u64)),
+                                            .samplerHeapIndexStride = sizeof(u64),
+                                            .samplerHeapArrayStride = 1,
+                                        },
+                                    };
+                                } else {
+                                    mapping->sourceData = VkDescriptorMappingSourceDataEXT{
+                                        .indirectIndex = {
+                                            .heapOffset = 0,
+                                            .pushOffset = static_cast<u32>(i * sizeof(u64)),
+                                            .addressOffset = static_cast<u32>(slot * sizeof(u64)),
+                                            .heapIndexStride = sizeof(u64),
+                                            .heapArrayStride = 1,
+                                        },
+                                    };
+                                }
+                            } else {
+                                mapping->sourceData = VkDescriptorMappingSourceDataEXT{
+                                    .indirectAddress = {
+                                        .pushOffset = static_cast<u32>(i * sizeof(u64)),
+                                        .addressOffset = static_cast<u32>(slot * sizeof(u64)),
+                                    },
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            binding_info_array[compile_count].sType = VK_STRUCTURE_TYPE_SHADER_DESCRIPTOR_SET_AND_BINDING_MAPPING_INFO_EXT;
+            binding_info_array[compile_count].pNext = nullptr;
+            binding_info_array[compile_count].mappingCount = mapping_count;
+            binding_info_array[compile_count].pMappings = mapping_array;
+            pnext = std::addressof(binding_info_array[compile_count]);
+    #endif
+
+            /* Write shader create info */
             vk_shader_create_info_array[compile_count].sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
-            vk_shader_create_info_array[compile_count].pNext                  = nullptr;
+            vk_shader_create_info_array[compile_count].pNext                  = pnext;
             vk_shader_create_info_array[compile_count].flags                  = flags;
             vk_shader_create_info_array[compile_count].stage                  = static_cast<VkShaderStageFlagBits>(vk_shader_stage);
             vk_shader_create_info_array[compile_count].nextStage              = vk_next_shader_stage;
@@ -226,43 +326,8 @@ namespace awn::gfx {
     }
 
     u32 Shader::GetInterfaceSlot(ShaderStage shader_stage, ShaderInterfaceType interface_type, const char *key) {
-
-        /* Fail if no res program */
         if (m_res_program == nullptr) { return cInvalidInterfaceSlot; }
-
-        /* Select interface if our shader stage is not out of bounds */
-        const u32 stage_index = static_cast<u32>(shader_stage);
-        if (7 < stage_index) { return cInvalidInterfaceSlot; }
-        vp::res::ResBnshShaderInterfaceInfoTable *interface_info_table = m_res_program->shader_interface_info_table;
-        if (interface_info_table == nullptr) { return cInvalidInterfaceSlot; }
-        vp::res::ResBnshShaderInterfaceInfo *interface_info = interface_info_table->interface_info_array[stage_index];
-        if (interface_info == nullptr) { return cInvalidInterfaceSlot; }
-
-        /* Select base index and dictionary for interface type */
-        vp::res::ResNintendoWareDictionary *dictionary = nullptr;
-        u32 base_index = 0;
-        const u32 interface_type_index = static_cast<u32>(interface_type);
-        if (interface_type_index < static_cast<u32>(ShaderInterfaceType::Image)) {
-            dictionary = interface_info->base_dictionary_array[interface_type_index];
-            base_index = (interface_type_index == 0) ? 0 : interface_info->base_base_index_array[interface_type_index - 1];
-        } else if (interface_type == ShaderInterfaceType::Image) {
-            dictionary = interface_info->image_dictionary;
-            base_index = interface_info->base_index_image;
-        } else if (interface_type_index <= static_cast<u32>(ShaderInterfaceType::SeparateSampler)) {
-            if (interface_info->extended_interface_info == nullptr) { return cInvalidInterfaceSlot; }
-            const u32 adj_index = interface_type_index - static_cast<u32>(ShaderInterfaceType::Image);
-            dictionary = interface_info->extended_interface_info->ext_dictionary_array[adj_index];
-            base_index = interface_info->extended_interface_info->ext_base_index_array[adj_index];
-        }
-        if (dictionary == nullptr) { return cInvalidInterfaceSlot; }
-
-        /* Lookup local slot index */
-        const u32 index = dictionary->TryGetEntryIndexByKey(key);
-        if (index == vp::res::ResNintendoWareDictionary::cInvalidEntryIndex) { return cInvalidInterfaceSlot; }
-
-        /* Get slot from global slot array */
-        const u32 slot_index = base_index + index;
-        return interface_info->interface_slot_array[slot_index];
+        return m_res_program->GetInterfaceSlot(shader_stage, interface_type, key);
     }
 
     Result Shader::GetBinarySize(size_t *out_size, ShaderStage stage) {

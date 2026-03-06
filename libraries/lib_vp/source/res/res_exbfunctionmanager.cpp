@@ -26,8 +26,8 @@ namespace vp::res {
         return sExbFunctionManagerInstance;
     }
     
-    void ExbFunctionManager::Initialize(vp::imem::IHeap *heap, u32 function_count) {
-        m_function_array.Initialize(heap, function_count);
+    Result ExbFunctionManager::Initialize(vp::imem::IHeap *heap, u32 function_count) {
+        RESULT_RETURN(m_function_array.Initialize(heap, function_count));
     }
 
     void ExbFunctionManager::Finalize() {
@@ -46,11 +46,11 @@ namespace vp::res {
         new_function->function_object    = function_object;
     }
 
-    void ExbFunctionTable::Initialize(vp::imem::IHeap *heap, vp::res::ResExb *res_exb) {
+    Result ExbFunctionTable::Initialize(vp::imem::IHeap *heap, vp::res::ResExb *res_exb) {
 
         /* Initialize indice array */
         vp::res::ResExbSignatureTable *signature_table = res_exb->GetSignatureTable();
-        m_function_index_array.Initialize(heap, signature_table->signature_count);
+        RESULT_TRY(m_function_index_array.Initialize(heap, signature_table->signature_count));
 
         /* Resolve function indices */
         ExbFunctionManager *function_manager = GetExbFunctionManager();
@@ -59,7 +59,7 @@ namespace vp::res {
             m_function_index_array[i] = function_manager->GetFunctionIndexByName(res_exb->GetString(signature_table->signature_offset_array[i]));
         }
 
-        return;
+        RESULT_RETURN_SUCCESS;
     }
 
     void ExbFunctionTable::Finalize() {

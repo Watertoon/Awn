@@ -36,7 +36,7 @@ namespace awn::async {
                 return std::addressof(task);
             }
 
-            m_acquire_event.TimedWait(vp::TimeSpan::FromTick(vp::util::GetSystemTickFrequency() / 1000));
+            sys::SleepThread(vp::TimeSpan::FromTick(vp::util::GetSystemTickFrequency() / 1000));
         }
 
         return nullptr;
@@ -82,35 +82,34 @@ namespace awn::async {
         return;
     }
     
-    void AsyncTaskAllocator::Initialize(mem::Heap *heap, AsyncTaskCreateFunction *create_function, u32 count) {
-
-        /* Integrity checks */
-        VP_ASSERT(create_function != nullptr);
+    Result AsyncTaskAllocator::Initialize(mem::Heap *heap, AsyncTaskCreateFunction *create_function, u32 count) {
 
         /* Initialize events */
-        m_acquire_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
         m_available_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
 
         /* Initialize task pointer array */
-        m_task_array.Initialize(heap, count);
+        RESULT_TRY(m_task_array.Initialize(heap, count));
+        auto fail_guard0 = SCOPE_GUARD {
+            this->Finalize();
+        };
 
         /* Create and add tasks to acquire list */
         for (u32 i = 0; i < count; ++i) {
             AsyncTaskForAllocator *allocator_task = create_function->Invoke(this, heap);
-            VP_ASSERT(allocator_task != nullptr);
+            RESULT_RETURN_IF(allocator_task != nullptr, ResultNoMemory);
 
             allocator_task->m_is_free_for_allocator = true;
             m_task_array.PushPointer(allocator_task);
             m_task_list[m_list_index].PushBack(*allocator_task);
         }
 
-        return;
+        fail_guard0.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void AsyncTaskAllocator::Finalize() {
 
         /* Finalize events */
-        m_acquire_event.Finalize();
         m_available_event.Finalize();
 
         /* Free all tasks */

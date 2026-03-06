@@ -20,6 +20,7 @@ namespace vp::res {
     enum class BfresBoneAnimRotationType : u32 {
         EulerXYZ = 0,
         Quaternion = 1,
+        PerBoneRotationType = 2,
     };
     enum class BfresBoneAnimCurveType : u16 {
         ScaleX       = (1 << 0),
@@ -158,7 +159,7 @@ namespace vp::res {
             /* Try get scale in order anim -> bone -> cZero */
             uintptr_t result_iter = reinterpret_cast<uintptr_t>(this->default_result);
             if (!this->is_use_scale) {
-                const vp::util::Float3 *scale = (bone != nullptr) ? std::addressof(bone->scale) : std::addressof(vp::util::Float3::cZero);
+                const vp::util::Float3 *scale = (bone != nullptr) ? std::addressof(bone->scale) : std::addressof(vp::util::VectorConstant<vp::util::Float3>::cZero);
                 out_result->scale = *scale;
             } else {
                 const vp::util::Float3 *scale = reinterpret_cast<const vp::util::Float3*>(result_iter);
@@ -176,19 +177,19 @@ namespace vp::res {
                         out_result->rotation_type = static_cast<u32>(BfresBoneAnimRotationType::Quaternion);
                     }
                 } else {
-                    rotation = std::addressof(vp::util::Float4::cUnitW);
+                    rotation = std::addressof(vp::util::VectorConstant<vp::util::Float4>::cUnit[3]);
                     out_result->rotation_type = this->rotation_type;
                 }
-                out_result->rotation_quat = vp::util::CastVector4f(*rotation);
+                out_result->rotation_quat = vp::util::Convert<vp::util::Vector4f>(*rotation);
             } else {
                 const vp::util::Float4 *rotation = reinterpret_cast<const vp::util::Float4*>(result_iter);
-                out_result->rotation_quat = vp::util::CastVector4f(*rotation);
+                out_result->rotation_quat = vp::util::Convert<vp::util::Vector4f>(*rotation);
                 out_result->rotation_type = this->rotation_type;
                 result_iter += sizeof(vp::util::Float4);
             }
             /* Try get translation in order anim -> bone -> cZero */
             if (!this->is_use_scale) {
-                const vp::util::Float3 *translation = (bone != nullptr) ? std::addressof(bone->translation) : std::addressof(vp::util::Float3::cZero);
+                const vp::util::Float3 *translation = (bone != nullptr) ? std::addressof(bone->translation) : std::addressof(vp::util::VectorConstant<vp::util::Float3>::cZero);
                 out_result->translation = *translation;
             } else {
                 const vp::util::Float3 *translation = reinterpret_cast<const vp::util::Float3*>(result_iter);
@@ -211,7 +212,7 @@ namespace vp::res {
                 BfresAnimFrameCache *cache = std::addressof(cache_array[0]);
                 vp::util::Vector4f quat = this->anim_curve_array[0].EvaluateQuaternion(cache, frame);
                 const u8 result_offset = this->anim_curve_array[0].base_result_offset;
-                vp::util::Store4(std::addressof(reinterpret_cast<float*>(out_result)[result_offset]), std::addressof(quat.v));
+                vp::util::Store(std::addressof(reinterpret_cast<float*>(out_result)[result_offset]), quat);
             }
 
             /* Evaluate float curves */
@@ -238,7 +239,7 @@ namespace vp::res {
                 BfresAnimFrameCache cache = {};
                 vp::util::Vector4f quat = this->anim_curve_array[0].EvaluateQuaternion(std::addressof(cache), frame);
                 const u8 result_offset = this->anim_curve_array[0].base_result_offset;
-                vp::util::Store4(std::addressof(reinterpret_cast<float*>(out_result)[result_offset]), std::addressof(quat.v));
+                vp::util::Store(std::addressof(reinterpret_cast<float*>(out_result)[result_offset]), quat);
             }
 
             /* Evaluate float curves */

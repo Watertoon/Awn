@@ -51,7 +51,7 @@ namespace awn::mem {
 
         /* Assert memory granularities */
         VP_ASSERT(sys::GetPageSize()              == vp::util::c4KB);
-        VP_ASSERT(sys::GetAllocationGranularity() == vp::util::c64KB);
+        VP_ASSERT(sys::GetAllocationGranularity() <= vp::util::c64KB);
 
         /* Get memory size for heap */
         size_t total_size = 0;
@@ -74,7 +74,7 @@ namespace awn::mem {
     void VirtualAddressHeap::Delete() {
         if (sVirtualAddressHeap == nullptr) { return; }
         std::destroy_at(sVirtualAddressHeap);
-        mem::FreeAddressRegion(sVirtualAddressHeap);
+        mem::FreeAddressRegion(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(sVirtualAddressHeap) - sizeof(VirtualHeapSmallMemoryBlock)), cSmallMemoryRegionSize);
         sVirtualAddressHeap = nullptr;
         return;
     }
@@ -243,13 +243,15 @@ namespace awn::mem {
         if ((address_t & (cSmallMemoryRegionSize - 1)) == 0) {
 
             /* Remove from map */
+            size_t memory_size;
             {
-                ScopedHeapLock l(this);              
-                m_large_memory_map.Remove(address_t);
+                ScopedHeapLock l(this);
+                VirtualHeapLargeMemoryBlock *large_block = m_large_memory_map.Remove(address_t);
+                memory_size = large_block->memory_size;
             }
 
             /* Free address range */
-            mem::FreeAddressRegion(address);
+            mem::FreeAddressRegion(address, memory_size);
 
             return;
         }
@@ -275,7 +277,7 @@ namespace awn::mem {
             /* Remove block from lists and free address region */
             if (last_page_mask == 0xffff) { m_filled_small_memory_list.Remove(*block); }
             else { m_free_small_memory_list.Remove(*block); }
-            mem::FreeAddressRegion(base_address);
+            mem::FreeAddressRegion(base_address, cSmallMemoryRegionSize);
 
             return;
         }
@@ -315,7 +317,7 @@ namespace awn::mem {
             /* Free address region unless start */
             if (free_small_iter == m_filled_small_memory_list.begin()) {
                 m_filled_small_memory_list.Remove(*region);
-                mem::FreeAddressRegion(region);
+                mem::FreeAddressRegion(region, cSmallMemoryRegionSize);
                 continue;
             }
 
@@ -332,7 +334,7 @@ namespace awn::mem {
             /* Free address region unless start */
             m_filled_small_memory_list.Remove(*region);
             if (fill_small_iter == m_filled_small_memory_list.begin()) {
-                mem::FreeAddressRegion(region);
+                mem::FreeAddressRegion(region, cSmallMemoryRegionSize);
                 continue;
             }
 
@@ -353,7 +355,7 @@ namespace awn::mem {
             m_large_memory_map.Remove(region);
 
             void *base_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(region) + sizeof(VirtualHeapLargeMemoryBlock) - region->memory_size);
-            mem::FreeAddressRegion(base_address);
+            mem::FreeAddressRegion(base_address, region->memory_size);
         }
 
         m_start_address = this;

@@ -35,11 +35,11 @@ namespace awn::para {
     }
 
     const char *CellIterator::GetRowKey() const {
-        return (m_is_col_iter) ? m_key : *reinterpret_cast<CombinationDataCellBase*>((*m_iter).typed_param)->GetRowKey();
+        return (m_is_col_iter) ? m_key : reinterpret_cast<CombinationDataCellBase*>((*m_iter).typed_param)->GetProperty<"RowKey">();
     }
 
     const char *CellIterator::GetColumnKey() const {
-        return (!m_is_col_iter) ? m_key : *reinterpret_cast<CombinationDataCellBase*>((*m_iter).typed_param)->GetColumnKey();
+        return (!m_is_col_iter) ? m_key : reinterpret_cast<CombinationDataCellBase*>((*m_iter).typed_param)->GetProperty<"ColumnKey">();
     }
 
     void CellIterator::SetArrangement(CellArrangement arrangment) {
@@ -71,7 +71,7 @@ namespace awn::para {
 
             /* Succeed if we are the same key */
             CombinationDataCellBase *next = reinterpret_cast<CombinationDataCellBase*>((*m_iter).typed_param);
-            const char              *key = (m_is_col_iter) ? *next->GetRowKey() : *next->GetColumnKey();
+            const char              *key = (m_is_col_iter) ? next->GetProperty<"RowKey">() : next->GetProperty<"ColumnKey">();
             if (vp::util::TStringCompare(key, m_key, 0x400'0000)) { break; }
 
             ++m_iter;

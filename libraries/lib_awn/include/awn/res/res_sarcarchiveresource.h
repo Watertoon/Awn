@@ -26,7 +26,7 @@ namespace awn::res {
             constexpr SarcArchiveResource() : ArchiveResource(), m_sarc_extractor() {/*...*/}
             virtual ~SarcArchiveResource() override {/*...*/}
 
-            virtual Result OnFileLoad(mem::Heap *heap, mem::Heap *gpu_heap, void *file, size_t file_size) override;
+            virtual Result OnFileLoad(mem::Heap *heap, void *file, size_t file_size) override;
 
             virtual u32 TryGetEntryIndex(const char *path) const override;
 

@@ -20,7 +20,7 @@ namespace awn::async {
     struct AsyncQueueThreadInfo {
         const char *name;
         AsyncQueue *queue;
-        u32 stack_size;
+        size_t stack_size;
         u32 priority;
         u32 requests_per_yield;
         u32 thread_set;
@@ -33,7 +33,7 @@ namespace awn::async {
             friend class AsyncTask;
             friend class AsyncQueue;
         public:
-            enum class Message : size_t {
+            enum class Message : u64 {
                 Exit     = 0,
                 Continue = 1,
                 Suspend  = 2,
@@ -59,7 +59,7 @@ namespace awn::async {
             AsyncQueue *m_queue;
             sys::Event  m_execute_event;
             sys::Event  m_suspend_event;
-            size_t      m_message_array[8];
+            u64         m_message_array[8];
         public:
             VP_RTTI_BASE(AsyncQueueThread);
         public:
@@ -69,7 +69,7 @@ namespace awn::async {
             Result Initialize(mem::Heap *heap, const AsyncQueueThreadInfo *info) {
                 const sys::ThreadInfo thread_info = {
                     .name = info->name,
-                    .exit_code = 0x7fff'ffff,
+                    .exit_code = 0x7fff'ffff'ffff'ffff,
                     .run_mode = sys::ThreadRunMode::WaitForMessage,
                     .message_count = 8,
                     .message_memory = m_message_array,

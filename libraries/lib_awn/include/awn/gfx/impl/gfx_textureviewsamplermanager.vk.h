@@ -113,24 +113,30 @@ namespace awn::gfx::impl {
             struct SamplerUnit {
                 vp::util::IntrusiveRedBlackTreeNode<SamplerKey> rb_node;
                 u32 reference_count;
-                u16 free_count;
+                u32 free_count;
+            #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
                 VkSampler vk_sampler;
                 char descriptor_memory[Context::cTargetMaxSeparateSamplerDescriptorSize];
+            #endif
 
-                constexpr  SamplerUnit() : rb_node(), reference_count(), free_count(), vk_sampler() {/*...*/}
-                constexpr ~SamplerUnit() {/*...*/}
+                constexpr  SamplerUnit() : rb_node(), reference_count(), free_count()
+            #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+                , vk_sampler()
+            #endif
+                {/*...*/}
+                constexpr ~SamplerUnit()= default;
 
                 constexpr void IncrementFreeCount() {
-                    const u16 next_free_count = (this->free_count == (cInvalidDescriptorSlotFreeCount - 1)) ? 0 : this->free_count + 1;
+                    const u32 next_free_count = (this->free_count == (cInvalidDescriptorSlotFreeCount - 1)) ? 0 : this->free_count + 1;
                     this->free_count = next_free_count;
                 }
 
                 constexpr u32 IncrementReferenceCount() {
-                    return vp::util::InterlockedIncrement(std::addressof(this->reference_count));
+                    return vp::util::InterlockedIncrementRelaxed(std::addressof(this->reference_count));
                 }
 
                 constexpr u32 DecrementReferenceCount() {
-                    return vp::util::InterlockedDecrement(std::addressof(this->reference_count));
+                    return vp::util::InterlockedDecrementRelaxed(std::addressof(this->reference_count));
                 }
 
                 constexpr bool IncrementReferenceCountIfValid() {
@@ -138,7 +144,7 @@ namespace awn::gfx::impl {
                     u32 last_ref_count = this->reference_count;
                     while (last_ref_count != 0) {
                         const u32  next_ref_count = last_ref_count + 1;
-                        const bool result = vp::util::InterlockedCompareExchange(std::addressof(last_ref_count), std::addressof(this->reference_count), last_ref_count, next_ref_count);
+                        const bool result = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(last_ref_count), std::addressof(this->reference_count), last_ref_count, next_ref_count);
                         if (result) { return true; }
                     }
 
@@ -149,38 +155,28 @@ namespace awn::gfx::impl {
             struct TextureViewUnit {
                 TextureViewKey key;
                 u32 reference_count;
-                u16 free_count;
+                u32 free_count;
                 VkImageView vk_image_view;
+            #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
                 char descriptor_memory[Context::cTargetMaxSeparateTextureDescriptorSize];
+            #endif
 
                 static constexpr inline size_t cInvalidMemoryOffset = 0xffff'ffff'ffff'ffff;
 
-                constexpr  TextureViewUnit() : reference_count(), free_count(), vk_image_view() {/*...*/}
-                ~TextureViewUnit() {/*...*/}
+                constexpr  TextureViewUnit() : key(), reference_count(), free_count() , vk_image_view() {/*...*/}
+                constexpr ~TextureViewUnit() = default;
 
                 constexpr void IncrementFreeCount() {
-                    const u16 next_free_count = (this->free_count == (cInvalidDescriptorSlotFreeCount - 1)) ? 0 : this->free_count + 1;
+                    const u32 next_free_count = (this->free_count == (cInvalidDescriptorSlotFreeCount - 1)) ? 0 : this->free_count + 1;
                     this->free_count = next_free_count;
                 }
 
                 constexpr u32 IncrementReferenceCount() {
-                    return vp::util::InterlockedIncrement(std::addressof(this->reference_count));
+                    return vp::util::InterlockedIncrementRelaxed(std::addressof(this->reference_count));
                 }
 
                 constexpr u32 DecrementReferenceCount() {
-                    return vp::util::InterlockedDecrement(std::addressof(this->reference_count));
-                }
-
-                constexpr bool IncrementReferenceCountIfValid() {
-
-                    u32 last_ref_count = this->reference_count;
-                    while (last_ref_count != 0) {
-                        const u32  next_ref_count = last_ref_count + 1;
-                        const bool result = vp::util::InterlockedCompareExchange(std::addressof(last_ref_count), std::addressof(this->reference_count), last_ref_count, next_ref_count);
-                        if (result) { return true; }
-                    }
-
-                    return false;
+                    return vp::util::InterlockedDecrementRelaxed(std::addressof(this->reference_count));
                 }
             };
         public:
@@ -192,21 +188,27 @@ namespace awn::gfx::impl {
             using SamplerSlotAllocator = vp::util::AtomicIndexAllocator<SamplerSlotType>;
             using SamplerMap           = vp::util::IntrusiveRedBlackTreeTraits<SamplerUnit, &SamplerUnit::rb_node, SamplerKeyCompare>::Tree;
         private:
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             size_t                m_texture_base_offset;
             size_t                m_sampler_base_offset;
+        #endif
             TextureSlotAllocator  m_texture_slot_allocator;
             TextureViewUnitArray  m_texture_view_unit_array;
             SamplerMap            m_sampler_map;
             SamplerSlotAllocator  m_sampler_slot_allocator;
             SamplerUnitArray      m_sampler_unit_array;
-            sys::Mutex            m_sampler_cs;
+            sys::ReaderWriterLock m_sampler_rwlock;
         public:
             AWN_SINGLETON_TRAITS(TextureViewSamplerManager);
         public:
-            constexpr TextureViewSamplerManager() : m_texture_slot_allocator(), m_texture_view_unit_array(), m_sampler_map(), m_sampler_slot_allocator(), m_sampler_unit_array(), m_sampler_cs() {/*...*/}
+            constexpr TextureViewSamplerManager() :
+    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+            m_texture_base_offset(), m_sampler_base_offset(),
+    #endif
+            m_texture_slot_allocator(), m_texture_view_unit_array(), m_sampler_map(), m_sampler_slot_allocator(), m_sampler_unit_array(), m_sampler_rwlock() {/*...*/}
             constexpr ~TextureViewSamplerManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, mem::Heap *gpu_heap, const TextureViewSamplerManagerInfo *manager_info);
+            void Initialize(mem::Heap *heap, const TextureViewSamplerManagerInfo *manager_info);
             void Finalize();
 
             Result RegisterTextureView(DescriptorSlot *out_texture_slot, const TextureViewInfo *texture_view_info);
@@ -222,38 +224,60 @@ namespace awn::gfx::impl {
             constexpr bool IsTextureViewSlotValid(DescriptorSlot texture_view_slot) const {
 
                 /* Ensure free count is not invalid */
-                const u16 free_count = texture_view_slot.free_count;
+                const u32 free_count = texture_view_slot.free_count;
                 if (free_count == cInvalidDescriptorSlotFreeCount) { return false; }
                 /* Ensure index is in range */
                 const DescriptorSlotIndexType index = texture_view_slot.index;
                 if (m_texture_view_unit_array.GetCount() <= index) { return false; }
                 /* Ensure free count is valid */
-                TextureViewUnit *texture_view_unit = std::addressof(m_texture_view_unit_array[index]);
+                const TextureViewUnit *texture_view_unit = std::addressof(m_texture_view_unit_array[index]);
                 if (texture_view_unit->free_count != free_count) { return false; }
 
                 return true;
             }
-            constexpr bool IsSameInfo(DescriptorSlot texture_view_slot, const gfx::TextureViewInfo *texture_view_info) const { return (this->IsTextureViewSlotValid(texture_view_slot)) ? impl::IsSameInfo(m_texture_view_unit_array[texture_view_slot.index].key, texture_view_info) : false; }
+            constexpr bool IsSameInfo(DescriptorSlot texture_view_slot, const gfx::TextureViewInfo *texture_view_info) const {
+                return (this->IsTextureViewSlotValid(texture_view_slot)) ? impl::IsSameInfo(m_texture_view_unit_array[texture_view_slot.index].key, texture_view_info) : false;
+            }
 
             constexpr bool IsSamplerSlotValid(DescriptorSlot sampler_slot) const {
 
                 /* Ensure free count is not invalid */
-                const u16 free_count = sampler_slot.free_count;
+                const u32 free_count = sampler_slot.free_count;
                 if (free_count == cInvalidDescriptorSlotFreeCount) { return false; }
                 /* Ensure index is in range */
                 const DescriptorSlotIndexType index = sampler_slot.index;
                 if (m_sampler_unit_array.GetCount() <= index) { return false; }
                 /* Ensure free count is valid */
-                SamplerUnit *sampler_unit = std::addressof(m_sampler_unit_array[index]);
+                const SamplerUnit *sampler_unit = std::addressof(m_sampler_unit_array[index]);
                 if (sampler_unit->free_count != free_count) { return false; }
 
                 return true;
             }
         public:
-            constexpr VkImageView GetVkImageView(DescriptorSlot texture_view_slot) const { return (this->IsTextureViewSlotValid(texture_view_slot)) ? m_texture_view_unit_array[texture_view_slot.index].vk_image_view : VK_NULL_HANDLE; }
-            constexpr const void *GetSeparateTextureDescriptor(DescriptorSlot texture_view_slot) const { return (this->IsTextureViewSlotValid(texture_view_slot)) ? m_texture_view_unit_array[texture_view_slot.index].descriptor_memory : nullptr; }
-            constexpr VkSampler GetVkSampler(DescriptorSlot sampler_slot) const { return (this->IsSamplerSlotValid(sampler_slot)) ? m_sampler_unit_array[sampler_slot.index].vk_sampler : VK_NULL_HANDLE; }
-            constexpr const void *GetSeparateSamplerDescriptor(DescriptorSlot sampler_slot) const { return (this->IsSamplerSlotValid(sampler_slot)) ? m_sampler_unit_array[sampler_slot.index].descriptor_memory : nullptr; }
+            constexpr VkImageView GetVkImageView(DescriptorSlot texture_view_slot) const { return m_texture_view_unit_array[texture_view_slot.index].vk_image_view; }
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+            constexpr VkSampler GetVkSampler(DescriptorSlot sampler_slot) const { return m_sampler_unit_array[sampler_slot.index].vk_sampler; }
+            constexpr const void *GetSeparateTextureDescriptor(DescriptorSlot texture_view_slot) const { return m_texture_view_unit_array[texture_view_slot.index].descriptor_memory; }
+            constexpr const void *GetSeparateSamplerDescriptor(DescriptorSlot sampler_slot) const { return m_sampler_unit_array[sampler_slot.index].descriptor_memory; }
+        #else
+            constexpr u32 GetTextureSamplerDescriptorHandle(DescriptorSlot texture_view_slot, DescriptorSlot sampler_slot) {
+                VP_ASSERT(this->IsTextureViewSlotValid(texture_view_slot));
+                VP_ASSERT(this->IsSamplerSlotValid(sampler_slot));
+                return (texture_view_slot.index & 0xf'ffff) | ((sampler_slot.index & 0xfff) << 0x14);
+            }
+            constexpr u32 GetImageDescriptorHandle(DescriptorSlot texture_view_slot) {
+                VP_ASSERT(this->IsTextureViewSlotValid(texture_view_slot));
+                return texture_view_slot.index + m_texture_view_unit_array.GetCount();
+            }
+            constexpr u32 GetSeperateTextureDescriptorHandle(DescriptorSlot texture_view_slot) {
+                VP_ASSERT(this->IsTextureViewSlotValid(texture_view_slot));
+                return texture_view_slot.index;
+            }
+            constexpr u32 GetSeperateSamplerDescriptorHandle(DescriptorSlot sampler_slot) {
+                VP_ASSERT(this->IsSamplerSlotValid(sampler_slot));
+                return sampler_slot.index;
+            }
+        #endif
         public:
             constexpr const TextureViewUnit *GetTextureViewUnit(u32 index) const { return std::addressof(m_texture_view_unit_array[index]); }
             constexpr const SamplerUnit *GetSamplerUnit(u32 index) const { return std::addressof(m_sampler_unit_array[index]); }

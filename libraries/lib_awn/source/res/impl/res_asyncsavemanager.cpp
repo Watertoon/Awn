@@ -50,7 +50,7 @@ namespace awn::res::impl {
 
         /* Get file size */
         FileDeviceBase *file_device = (m_user_file_device == nullptr) ? m_save_file_device : m_user_file_device;
-        file_device->GetFileSize(std::addressof(m_output_size), m_save_path.GetString());
+        RESULT_DISCARD(file_device->GetFileSize(std::addressof(m_output_size), m_save_path.GetString()));
 
         return;
     }
@@ -71,7 +71,7 @@ namespace awn::res::impl {
             .file        = m_output,
             .file_size   = m_output_size,
         };
-        file_device->SaveFile(m_save_path.GetString(), std::addressof(save_file_info));
+        RESULT_DISCARD(file_device->SaveFile(m_save_path.GetString(), std::addressof(save_file_info)));
 
         return;
     }
@@ -88,7 +88,7 @@ namespace awn::res::impl {
 
         /* Commit writes */
         FileDeviceBase *file_device = (m_user_file_device == nullptr) ? m_save_file_device : m_user_file_device;
-        file_device->Commit();
+        RESULT_DISCARD(file_device->Commit());
 
         return;
     }
@@ -137,13 +137,18 @@ namespace awn::res::impl {
         return;
     }
 
-    void AsyncSaveManager::Initialize(mem::Heap *heap, const char *thread_name, u32 priority, sys::CoreMask core_mask) {
+    Result AsyncSaveManager::Initialize(mem::Heap *heap, const char *thread_name, u32 priority, sys::CoreMask core_mask) {
 
         /* Allocate save file device */
-        m_save_file_device = new (heap, alignof(SaveFileDevice)) SaveFileDevice();
+        SaveFileDevice *device = new (heap, alignof(SaveFileDevice)) SaveFileDevice();
+        RESULT_RETURN_UNLESS(device != nullptr, ResultNoMemory);
+        m_save_file_device = device;
+        auto fail_guard0 = SCOPE_GUARD { this->Finalize(); };
 
         /* Initialize thread */
-        m_save_thread = new (heap, alignof(sys::FunctionThread)) sys::FunctionThread();
+        sys::FunctionThread *save_thread = new (heap, alignof(sys::FunctionThread)) sys::FunctionThread();
+        RESULT_RETURN_UNLESS(save_thread != nullptr, ResultNoMemory);
+        m_save_thread = save_thread;
         sys::ThreadInfo thread_info = {
             .name = thread_name,
             .exit_code = 0,
@@ -152,11 +157,12 @@ namespace awn::res::impl {
             .stack_size = 0x4000,
             .priority = priority,
         };
-        RESULT_ABORT_UNLESS(m_save_thread->Initialize(heap, std::addressof(thread_info), std::addressof(m_delegate)));
-        m_save_thread->SetCoreMask(core_mask);
-        m_save_thread->StartThread();
+        RESULT_ABORT_UNLESS(save_thread->Initialize(heap, std::addressof(thread_info), std::addressof(m_delegate)));
+        save_thread->SetCoreMask(core_mask);
+        save_thread->StartThread();
 
-        return;
+        fail_guard0.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
     void AsyncSaveManager::Finalize() {
         if (m_save_thread != nullptr) {

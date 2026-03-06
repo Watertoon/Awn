@@ -68,4 +68,13 @@ namespace awn::gfx::impl {
     void DestroyVkImageView(VkImageView vk_image_view);
 
     GpuAddress GetGpuAddress(VkBuffer vk_buffer);
+
+#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+    void GetTextureSamplerDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot, gfx::DescriptorSlot sampler_slot);
+    void GetImageDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot);
+    void GetUniformBufferDescriptor(void *memory, u32 location, GpuAddress gpu_address, size_t size);
+    void GetStorageBufferDescriptor(void *memory, u32 location, GpuAddress gpu_address, size_t size);
+    void GetSeparateTextureDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot);
+    void GetSeparateSamplerDescriptor(void *memory, u32 location, gfx::DescriptorSlot sampler_slot);
+#endif
 }

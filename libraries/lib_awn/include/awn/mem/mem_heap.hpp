@@ -126,7 +126,7 @@ namespace awn::mem {
 
             constexpr ALWAYS_INLINE bool IsThreadSafe() { return m_is_thread_safe; }
 
-            virtual constexpr bool IsGpuHeap() const { return false; }
+           // virtual constexpr bool IsGpuHeap() const { return false; }
     };
 
     constexpr ScopedHeapLock::ScopedHeapLock(Heap *heap) : m_heap(heap) {

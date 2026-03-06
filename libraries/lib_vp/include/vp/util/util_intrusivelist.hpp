@@ -22,22 +22,33 @@ namespace vp::util {
             IntrusiveListNode *m_prev;
             IntrusiveListNode *m_next;
         public:
-            constexpr ALWAYS_INLINE  IntrusiveListNode() : m_prev(this), m_next(this) {/*...*/}
-            constexpr ALWAYS_INLINE ~IntrusiveListNode() {/*...*/}
+            constexpr  IntrusiveListNode() : m_prev(this), m_next(this) {/*...*/}
+            constexpr ~IntrusiveListNode() {/*...*/}
 
-            constexpr ALWAYS_INLINE IntrusiveListNode *next() const {
+            constexpr IntrusiveListNode *next() const {
                 return m_next;
             }
 
-            constexpr ALWAYS_INLINE IntrusiveListNode *prev() const {
+            constexpr IntrusiveListNode *prev() const {
                 return m_prev;
             }
 
-            constexpr ALWAYS_INLINE bool IsLinked() const {
+            constexpr bool IsLinked() const {
                 return this != m_next;
             }
 
-            constexpr ALWAYS_INLINE void LinkNext(IntrusiveListNode *new_node) {
+            constexpr void MoveTo(IntrusiveListNode *dest_node) {
+                VP_ASSERT(!dest_node->IsLinked());
+                if (!this->IsLinked()) { return; }
+                dest_node->m_next = m_next;
+                dest_node->m_prev = m_prev;
+                m_next->m_prev = dest_node;
+                m_prev->m_next = dest_node;
+                m_next = this;
+                m_prev = this;
+            }
+
+            constexpr void LinkNext(IntrusiveListNode *new_node) {
                 IntrusiveListNode *old_next = new_node->m_next;
                 new_node->m_next = m_next;
                 old_next->m_prev = this;
@@ -45,7 +56,7 @@ namespace vp::util {
                 m_next           = old_next;
             }
 
-            constexpr ALWAYS_INLINE void LinkPrev(IntrusiveListNode *new_node) {
+            constexpr void LinkPrev(IntrusiveListNode *new_node) {
                 IntrusiveListNode *new_prev = new_node->m_prev;
                 new_node->m_prev = m_prev;
                 new_prev->m_next = this;
@@ -53,7 +64,7 @@ namespace vp::util {
                 m_prev           = new_prev;
             }
 
-            constexpr ALWAYS_INLINE void Unlink() {
+            constexpr void Unlink() {
                 m_prev->m_next = m_next;
                 m_next->m_prev = m_prev;
                 m_next = this;
@@ -125,26 +136,26 @@ namespace vp::util {
         private:
             IntrusiveListNode m_list;
         public:
-            constexpr ALWAYS_INLINE  IntrusiveList() : m_list() {/*...*/}
-            constexpr ALWAYS_INLINE ~IntrusiveList() {/*...*/}
+            constexpr  IntrusiveList() : m_list() {/*...*/}
+            constexpr ~IntrusiveList() {/*...*/}
 
-            constexpr ALWAYS_INLINE iterator begin() {
+            constexpr iterator begin() {
                 return iterator(m_list.m_next);
             }
-            constexpr ALWAYS_INLINE const_iterator begin() const {
+            constexpr const_iterator begin() const {
                 return const_iterator(m_list.m_next);
             }
-            constexpr ALWAYS_INLINE const_iterator cbegin() const {
+            constexpr const_iterator cbegin() const {
                 return const_iterator(m_list.m_next);
             }
 
-            constexpr ALWAYS_INLINE iterator end() {
+            constexpr iterator end() {
                 return iterator(std::addressof(m_list));
             }
-            constexpr ALWAYS_INLINE const_iterator end() const {
+            constexpr const_iterator end() const {
                 return const_iterator(std::addressof(m_list));
             }
-            constexpr ALWAYS_INLINE const_iterator cend() const {
+            constexpr const_iterator cend() const {
                 return const_iterator(std::addressof(m_list));
             }
 
@@ -160,10 +171,6 @@ namespace vp::util {
             }
             ALWAYS_INLINE const_reference Back() const {
                 return Traits::GetParentReference(m_list.m_prev);
-            }
-
-            constexpr ALWAYS_INLINE bool IsEmpty() const {
-                return !m_list.IsLinked();
             }
 
             ALWAYS_INLINE reference GetNext(reference obj) {
@@ -239,18 +246,6 @@ namespace vp::util {
                 VP_UNEXPECTED_DEFAULT();
             }
 
-            constexpr ALWAYS_INLINE size_t GetCount() const {
-                size_t count = 0;
-                for ([[maybe_unused]] const_reference node : *this) {
-                    ++count;
-                }
-                return count;
-            }
-
-            static constexpr ALWAYS_INLINE void Remove(reference obj) {
-                Traits::GetListNode(std::addressof(obj))->Unlink();
-            }
-
             static constexpr ALWAYS_INLINE iterator IteratorTo(reference obj) {
                 return iterator(Traits::GetListNode(std::addressof(obj)));
             }
@@ -261,6 +256,22 @@ namespace vp::util {
 
             static constexpr pointer GetNext(IntrusiveListNode *node) {
                 return Traits::GetParent(node->next());
+            }
+
+            static constexpr ALWAYS_INLINE void Remove(reference obj) {
+                Traits::GetListNode(std::addressof(obj))->Unlink();
+            }
+        public:
+            constexpr ALWAYS_INLINE bool IsEmpty() const {
+                return !m_list.IsLinked();
+            }
+    
+            constexpr ALWAYS_INLINE size_t GetCount() const {
+                size_t count = 0;
+                for ([[maybe_unused]] const_reference node : *this) {
+                    ++count;
+                }
+                return count;
             }
         public:
             constexpr void SortByAddress() {
@@ -284,6 +295,10 @@ namespace vp::util {
                     }
                 }
                 return;
+            }
+
+            constexpr void MoveTo(IntrusiveList *list) {
+                this->m_list.MoveTo(std::addressof(list->m_list));
             }
     };
 
@@ -335,7 +350,7 @@ namespace vp::util {
                 while (iter = prev, iter != nullptr) {
                     vp::util::IntrusiveListNode *n = iter->next();
                     vp::util::IntrusiveListNode *next = (n == m_end) ? nullptr : n;
-                    ret = vp::util::InterlockedCompareExchangeWeak(std::addressof(prev), std::addressof(m_iter), next, prev);
+                    ret = vp::util::InterlockedCompareExchangeRelaxed(std::addressof(prev), std::addressof(m_iter), next, prev);
                     if (ret) {
                         *out_obj = Traits::GetParent(iter);
                         return ret;

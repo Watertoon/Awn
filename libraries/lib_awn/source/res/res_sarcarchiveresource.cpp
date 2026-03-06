@@ -17,8 +17,8 @@
 
 namespace awn::res {
 
-	Result SarcArchiveResource::OnFileLoad(mem::Heap *heap, mem::Heap *gpu_heap, void *file, size_t file_size) {
-		VP_UNUSED(heap, gpu_heap, file_size);
+	Result SarcArchiveResource::OnFileLoad(mem::Heap *heap, void *file, size_t file_size) {
+		VP_UNUSED(heap, file_size);
 		RESULT_RETURN_IF(!m_sarc_extractor.Initialize(file), ResultInvalidFile);
 		RESULT_RETURN_SUCCESS;
 	}

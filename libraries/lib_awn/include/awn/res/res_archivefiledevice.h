@@ -32,7 +32,7 @@ namespace awn::res {
 
             virtual Result OpenDirectoryImpl(DirectoryHandle *out_directory_handle, const char *path) override;
             virtual Result CloseDirectoryImpl(DirectoryHandle *directory_handle) override;
-            virtual Result ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) override;
+            virtual Result ReadDirectoryImpl(u32 *out_read_count, DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) override;
             virtual Result CheckDirectoryExistsImpl(const char *path) override;
 
             virtual Result FormatPath(MaxPathString *out_formatted_path, const char *path) override;

@@ -160,17 +160,56 @@ namespace awn::gfx::impl {
                     .required_feature = RequiredFeature::SupportsExternalMemoryHost,
                     .is_optional = false,
                 },
+#elifdef VP_TARGET_PLATFORM_linux
+                {
+                    .extension = VK_EXT_PHYSICAL_DEVICE_DRM_EXTENSION_NAME,
+                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                    .is_optional = false,
+                },
+                {
+                    .extension = VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                    .is_optional = false,
+                },
+                {
+                    .extension = VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
+                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                    .is_optional = false,
+                },
+                {
+                    .extension = VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME,
+                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                    .is_optional = false,
+                },
+                {
+                    .extension = VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME,
+                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                    .is_optional = false,
+                },
+                {
+                    .extension = VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME,
+                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                    .is_optional = false,
+                },
 #endif
                 {
                     .extension = VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
                     .required_feature = RequiredFeature::SupportsShaderObject,
                     .is_optional = false,
                 },
+            #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
                 {
                     .extension = VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
                     .required_feature = RequiredFeature::SupportsDescriptorBuffer,
                     .is_optional = false,
                 },
+            #else
+                {
+                    .extension = VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
+                    .required_feature = RequiredFeature::SupportsDescriptorBuffer,
+                    .is_optional = false,
+                },
+            #endif
                 {
                     .extension = VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,
                     .required_feature = RequiredFeature::SupportsMutableDescriptors,
@@ -249,11 +288,18 @@ namespace awn::gfx::impl {
                 .pNext = prev_property,
             };
             prev_property = (missing_features->IsOptionalFeature(OptionalFeature::SupportsRobustness2)) ? std::addressof(robustness_2_properties) : prev_property;
-
+#ifdef VP_TARGET_PLATFORM_linux
+            VkPhysicalDeviceDrmPropertiesEXT drm_props = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT,
+                .pNext = prev_property,
+            };
+            prev_property = std::addressof(drm_props);
+#endif
             VkPhysicalDeviceNestedCommandBufferPropertiesEXT nested_command_buffer_properties = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
                 .pNext = prev_property,
             };
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             VkPhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
                 .pNext = std::addressof(nested_command_buffer_properties),
@@ -262,6 +308,16 @@ namespace awn::gfx::impl {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
                 .pNext = std::addressof(descriptor_buffer_properties),
             };
+        #else
+            VkPhysicalDeviceDescriptorHeapPropertiesEXT descriptor_heap_properties = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_PROPERTIES_EXT,
+                .pNext = std::addressof(nested_command_buffer_properties),
+            };
+            VkPhysicalDeviceShaderObjectPropertiesEXT shader_object_properties = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
+                .pNext = std::addressof(descriptor_heap_properties),
+            };
+        #endif
             VkPhysicalDeviceVulkan14Properties properties_14 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
                 .pNext = std::addressof(shader_object_properties),
@@ -319,6 +375,7 @@ namespace awn::gfx::impl {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
                 .pNext = std::addressof(nested_command_buffer_features),
             };
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptor_buffer_features = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
                 .pNext = std::addressof(mutable_descriptor_features),
@@ -327,6 +384,16 @@ namespace awn::gfx::impl {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
                 .pNext = std::addressof(descriptor_buffer_features),
             };
+        #else
+            VkPhysicalDeviceDescriptorHeapFeaturesEXT descriptor_heap_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
+                .pNext = std::addressof(mutable_descriptor_features),
+            };
+            VkPhysicalDeviceShaderObjectFeaturesEXT shader_object_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+                .pNext = std::addressof(descriptor_heap_features),
+            };
+        #endif
             VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
                 .pNext = std::addressof(shader_object_features),
@@ -429,7 +496,7 @@ namespace awn::gfx::impl {
             /* 1.2 feature checks */
             if (!features_12.shaderFloat16)                                 { missing_features->SetMissing(RequiredFeature::SupportsShaderFloat16); }
             if (!features_12.descriptorIndexing)                            { missing_features->SetMissing(RequiredFeature::SupportsDescriptorIndexing); }
-            if (!features_12.shaderInputAttachmentArrayDynamicIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderInputAttachmentArrayDynamicIndexing); }
+            //if (!features_12.shaderInputAttachmentArrayDynamicIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderInputAttachmentArrayDynamicIndexing); }
             if (!features_12.shaderUniformBufferArrayNonUniformIndexing)    { missing_features->SetMissing(RequiredFeature::SupportsShaderUniformBufferArrayNonUniformIndexing); }
             if (!features_12.shaderSampledImageArrayNonUniformIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderSampledImageArrayNonUniformIndexing); }
             if (!features_12.shaderStorageBufferArrayNonUniformIndexing)    { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageBufferArrayNonUniformIndexing); }
@@ -464,9 +531,10 @@ namespace awn::gfx::impl {
             /* SupportsShaderObject checks */
             if (!shader_object_features.shaderObject) { missing_features->SetMissing(RequiredFeature::SupportsShaderObject); }
 
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             /* SupportsDescriptorBuffer checks */
             if (!descriptor_buffer_features.descriptorBuffer)                   { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (!descriptor_buffer_features.descriptorBufferImageLayoutIgnored) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+            //if (!descriptor_buffer_features.descriptorBufferImageLayoutIgnored) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
             //if (!descriptor_buffer_features.descriptorBufferPushDescriptors)    { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
             if (descriptor_buffer_properties.combinedImageSamplerDescriptorSize > Context::cTargetMaxTextureSamplerDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
             if (descriptor_buffer_properties.robustUniformBufferDescriptorSize > Context::cTargetMaxUniformBufferDescriptorSize)   { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
@@ -474,6 +542,13 @@ namespace awn::gfx::impl {
             if (descriptor_buffer_properties.storageImageDescriptorSize > Context::cTargetMaxImageDescriptorSize)                  { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
             if (descriptor_buffer_properties.sampledImageDescriptorSize > Context::cTargetMaxSeparateTextureDescriptorSize)        { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
             if (descriptor_buffer_properties.samplerDescriptorSize > Context::cTargetMaxSeparateSamplerDescriptorSize)             { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+        #else
+            /* SupportsDescriptorBuffer checks (heap) */
+            if (!descriptor_heap_features.descriptorHeap) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+            if (descriptor_heap_properties.imageDescriptorSize > Context::cTargetMaxSeparateTextureDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+            if (descriptor_heap_properties.imageDescriptorSize > Context::cTargetMaxImageDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+            if (descriptor_heap_properties.samplerDescriptorSize > Context::cTargetMaxSeparateSamplerDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+        #endif
 
             /* SupportsMutableDescriptors checks */
             if (!mutable_descriptor_features.mutableDescriptorType) { missing_features->SetMissing(RequiredFeature::SupportsMutableDescriptors); }
@@ -481,7 +556,7 @@ namespace awn::gfx::impl {
             /* SupportsNestedCommandBuffers checks */
             if (!nested_command_buffer_features.nestedCommandBuffer)                { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
             if (!nested_command_buffer_features.nestedCommandBufferRendering)       { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
-            if (!nested_command_buffer_features.nestedCommandBufferSimultaneousUse) { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
+            //if (!nested_command_buffer_features.nestedCommandBufferSimultaneousUse) { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
 
             /* SupportsShaderMaximalReconvergence checks */
             if (!shader_maximal_reconvergence_features.shaderMaximalReconvergence) { missing_features->SetMissing(OptionalFeature::SupportsShaderMaximalReconvergence); }
@@ -493,8 +568,8 @@ namespace awn::gfx::impl {
             if (!robustness_2_features.robustBufferAccess2) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
             if (!robustness_2_features.robustImageAccess2)  { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
             if (!robustness_2_features.nullDescriptor)      { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (robustness_2_properties.robustStorageBufferAccessSizeAlignment > cTargetStorageBufferAlignment) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (robustness_2_properties.robustUniformBufferAccessSizeAlignment > cTargetUniformBufferAlignment) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+            if (robustness_2_properties.robustStorageBufferAccessSizeAlignment > Context::cTargetStorageBufferAlignment) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+            if (robustness_2_properties.robustUniformBufferAccessSizeAlignment > Context::cTargetUniformBufferAlignment) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
 
             /* SupportsVertexAttributeRobustness checks */
             if (!vertex_attribute_robustness_features.vertexAttributeRobustness) { missing_features->SetMissing(OptionalFeature::SupportsVertexAttributeRobustness); }
@@ -509,6 +584,10 @@ namespace awn::gfx::impl {
 
             /* SupportsCommandBufferInheritance checks */
             if (!command_buffer_inheritance_features.commandBufferInheritance) { missing_features->SetMissing(OptionalFeature::SupportsCommandBufferInheritance); }
+
+#ifdef VP_TARGET_PLATFORM_linux
+            if (!IsWaylandCompatibleVkPhysicalDevice(std::addressof(drm_props))) { missing_features->SetMissing(RequiredFeature::SupportsExternalMemoryHost); }
+#endif
 
             return;
         }
@@ -625,14 +704,19 @@ namespace awn::gfx::impl {
             #endif
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
+#ifdef VP_TARGET_PLATFORM_win32
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+#elifdef VP_TARGET_PLATFORM_linux
+            VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
+#endif
             VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME,
         };
         constexpr const u32 cInstanceExtensionCount = sizeof(cInstanceExtensionArray) / sizeof(const char*);
 
         #if defined(AWN_VK_DEBUG)
+        /* Note; sync validation currently crashes Layer presentation on Linux as of 1.4.341 */
         const VkValidationFeatureEnableEXT validation_feature_enable_array[] = {
-            VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+            //VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
         };
         const VkValidationFeaturesEXT validation_features = {
             .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
@@ -689,6 +773,7 @@ namespace awn::gfx::impl {
         //m_is_ext_bindless_nv = (this->GetTextureSamplerDescriptorSize() == sizeof(size_t));
 
         /* Get queue family indices in enum order */
+        /* Todo; make sure each are unique, or combine families */
         const QueueType queue_type_array[] = {
             QueueType::Graphics,
             QueueType::Compute,
@@ -697,7 +782,7 @@ namespace awn::gfx::impl {
             QueueType::VideoEncode,
             QueueType::OpticalFlow,
         };
-        const u32 queue_count = sizeof(queue_type_array) / sizeof(QueueType);
+        const u32 queue_count = 1;
         FindQueueFamilyIndices(vk_physical_device, queue_type_array, queue_count, m_queue_family_index_array_enum);
 
         /* Build linear queue family indice array */
@@ -709,6 +794,51 @@ namespace awn::gfx::impl {
         }
 
         m_vk_physical_device = vk_physical_device;
+
+#ifdef VP_TARGET_PLATFORM_linux
+        /* Create gbm device */
+        //int dir_fd = ::open("/dev/dri/", O_RDONLY | O_DIRECTORY);
+        //VP_ASSERT(0 <= dir_fd);
+        //ON_SCOPE_EXIT {
+        //    ::close(dir_fd);
+        //};
+        //DIR *dir = ::fdopendir(dir_fd);
+        //VP_ASSERT(dir != nullptr);
+        //ON_SCOPE_EXIT {
+        //    ::closedir(dir);
+        //};
+        //const VkPhysicalDeviceDrmPropertiesEXT *drm_props = std::addressof(m_vk_physical_device_drm_properties);
+        //const dev_t primary = ::makedev(drm_props->primaryMajor, drm_props->primaryMinor);
+        //const dev_t render = ::makedev(drm_props->renderMajor, drm_props->renderMinor);
+        //struct dirent *ent;
+        //while ((ent = ::readdir(dir), ent != nullptr)) {
+        //    if (ent->d_type != DT_CHR) { continue; }
+        //    struct stat s;
+        //    if (::fstatat(dir_fd, ent->d_name, std::addressof(s), 0) != 0) { continue; }
+        //    const bool is_primary = drm_props->hasPrimary && s.st_rdev == primary;
+        //    const bool is_render = drm_props->hasRender && s.st_rdev == render;
+        //    ::printf("dev_t(%s): %d, %d\n", ent->d_name, ::major(s.st_rdev), ::minor(s.st_rdev));
+        //    if (is_primary || is_render) {
+        //        errno = 0;
+        //        const int fd = ::openat(dir_fd, ent->d_name, O_RDWR);
+        //        if (fd < 0) {
+        //            ::printf("errno: %d\n", errno);
+        //            continue;
+        //        }
+        //        auto fail_guard0 = SCOPE_GUARD {
+        //            ::close(fd);
+        //        };
+        //        struct gbm_device *device = ::gbm_create_device(fd);
+        //        VP_ASSERT(device != nullptr);
+        //        fail_guard0.Cancel();
+        //        m_drm_fd = fd;
+        //        m_gbm_device = device;
+        //        break;
+        //    }
+        //}
+        //VP_ASSERT(0 <= m_drm_fd);
+        //VP_ASSERT(m_gbm_device != nullptr);
+#endif
 
         return;
     }
@@ -724,11 +854,23 @@ namespace awn::gfx::impl {
             VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
             VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
 #endif
+#ifdef VP_TARGET_PLATFORM_linux
+            VK_EXT_PHYSICAL_DEVICE_DRM_EXTENSION_NAME,
+            VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+            VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
+            VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME,
+            VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME,
+            VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME,
+#endif
 #ifdef AWN_VK_DEBUG
-            VK_EXT_DEVICE_FAULT_EXTENSION_NAME,
+            //VK_EXT_DEVICE_FAULT_EXTENSION_NAME,
 #endif
             VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
+        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
+        #else
+            VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
+        #endif
             VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,
             VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
         };
@@ -867,33 +1009,31 @@ namespace awn::gfx::impl {
         pnext = (is_maximal_reconvergance) ? std::addressof(shader_maximal_reconvergence_features) : pnext;
         
 #ifdef AWN_VK_DEBUG
-        VkPhysicalDeviceFaultFeaturesEXT fault_features = {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
-            .pNext = pnext,
-            .deviceFault = VK_TRUE,
-        };
+        //VkPhysicalDeviceFaultFeaturesEXT fault_features = {
+        //    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
+        //    .pNext = pnext,
+        //    .deviceFault = VK_TRUE,
+        //};
+        //pnext = std::addressof(fault_features);
 #endif
         VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
-#ifdef AWN_VK_DEBUG
-            .pNext = std::addressof(fault_features),
-#else
             .pNext = pnext,
-#endif
             .nestedCommandBuffer = VK_TRUE,
             .nestedCommandBufferRendering = VK_TRUE,
-            .nestedCommandBufferSimultaneousUse = VK_TRUE,
+            //.nestedCommandBufferSimultaneousUse = VK_TRUE,
         };
         VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutable_descriptor_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
             .pNext = std::addressof(nested_command_buffer_features),
             .mutableDescriptorType = VK_TRUE,
         };
+    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
         VkPhysicalDeviceDescriptorBufferFeaturesEXT target_descriptor_buffer_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
             .pNext = std::addressof(mutable_descriptor_features),
             .descriptorBuffer = VK_TRUE,
-            .descriptorBufferImageLayoutIgnored = VK_TRUE,
+            //.descriptorBufferImageLayoutIgnored = VK_TRUE,
             //.descriptorBufferPushDescriptors = VK_TRUE,
         };
         VkPhysicalDeviceShaderObjectFeaturesEXT target_shader_object_features = {
@@ -901,6 +1041,18 @@ namespace awn::gfx::impl {
             .pNext = std::addressof(target_descriptor_buffer_features),
             .shaderObject = VK_TRUE,
         };
+    #else
+        VkPhysicalDeviceDescriptorHeapFeaturesEXT target_descriptor_heap_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
+            .pNext = std::addressof(mutable_descriptor_features),
+            .descriptorHeap = VK_TRUE,
+        };
+        VkPhysicalDeviceShaderObjectFeaturesEXT target_shader_object_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+            .pNext = std::addressof(target_descriptor_heap_features),
+            .shaderObject = VK_TRUE,
+        };
+    #endif
         VkPhysicalDeviceVulkan14Features target_1_4_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
             .pNext = std::addressof(target_shader_object_features),
@@ -927,7 +1079,7 @@ namespace awn::gfx::impl {
             //.uniformAndStorageBuffer8BitAccess             = VK_TRUE,
             .shaderFloat16                                 = VK_TRUE,
             .descriptorIndexing                            = VK_TRUE,
-            .shaderInputAttachmentArrayDynamicIndexing     = VK_TRUE,
+            //.shaderInputAttachmentArrayDynamicIndexing     = VK_TRUE,
             .shaderUniformBufferArrayNonUniformIndexing    = VK_TRUE,
             .shaderSampledImageArrayNonUniformIndexing     = VK_TRUE,
             .shaderStorageBufferArrayNonUniformIndexing    = VK_TRUE,
@@ -1026,6 +1178,7 @@ namespace awn::gfx::impl {
         }
     }
 
+#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
     void Context::InitializePipelineLayout(const ContextInfo *context_info) {
 
 		/* Create bindless descriptor layout */
@@ -1231,6 +1384,7 @@ namespace awn::gfx::impl {
         finalize_per_stage_desc_lambda(std::addressof(m_per_stage_descriptor_layout));
         return;
     }
+#endif
 
 	void Context::Initialize(const ContextInfo *context_info) {
         VP_UNUSED(context_info);
@@ -1273,8 +1427,10 @@ namespace awn::gfx::impl {
 		/* Initialize device */
         this->InitializeLogicalDevice(context_info);
 
+    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
         /* Initialize pipeline layout */
         this->InitializePipelineLayout(context_info);
+    #endif
 
         return;
 	}
@@ -1284,13 +1440,25 @@ namespace awn::gfx::impl {
         /* Ensure all device operations complete */
         ::pfn_vkDeviceWaitIdle(m_vk_device);
 
+    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
         /* Finalize pipeline layout */
         this->FinalizePipelineLayout();
+    #endif
 
 		/* Finalize device */
         this->FinalizeLogicalDevice();
 
         m_vk_physical_device = VK_NULL_HANDLE;
+#ifdef VP_TARGET_PLATFORM_linux
+        //if (m_gbm_device != nullptr) {
+        //    ::gbm_device_destroy(m_gbm_device);
+        //    m_gbm_device = nullptr;
+        //}
+        //if (0 <= m_drm_fd) {
+        //    ::close(m_drm_fd);
+        //    m_drm_fd = -1;
+        //}
+#endif
 
         #if defined(AWN_VK_DEBUG)
             /* Destroy debugging utilities */
@@ -1316,7 +1484,7 @@ namespace awn::gfx::impl {
         VkCommandBufferSubmitInfo command_buffer_submit_info = {
             .sType         = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
             .pNext         = nullptr,
-            .commandBuffer = command_list.unit->vk_command_buffer,
+            .commandBuffer = command_list.GetVkCommandBuffer(),
             .deviceMask    = 0,
         };
         VkSemaphoreSubmitInfo wait_semaphore_array[cMaxQueueWaitSyncCount];
@@ -1368,7 +1536,7 @@ namespace awn::gfx::impl {
             VP_ASSERT(queue_type == static_cast<u32>(command_list_array[i].GetQueueType()));
             command_buffer_submit_info_array[i].sType         = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
             command_buffer_submit_info_array[i].pNext         = nullptr;
-            command_buffer_submit_info_array[i].commandBuffer = command_list_array[i].unit->vk_command_buffer;
+            command_buffer_submit_info_array[i].commandBuffer = command_list_array[i].GetVkCommandBuffer();
             command_buffer_submit_info_array[i].deviceMask    = 0;
         }
         VkSemaphoreSubmitInfo wait_semaphore_array[cMaxQueueWaitSyncCount];

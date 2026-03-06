@@ -96,7 +96,7 @@ namespace vp::util {
             float m_near_div_hypotenuse;
             float m_top_div_near;
             float m_aspect;
-            vp::util::Float2 m_offset;
+            Float2 m_offset;
         public:
             VP_RTTI_DERIVED(PerspectiveProjection, Projection);
         public:
@@ -126,7 +126,7 @@ namespace vp::util {
                 const float reciprocal_b = 1.0f / t_sub_b;
                 const float reciprocal_c = 1.0f / (m_far - m_near);
 
-                /* Row major style projection matrix */
+                /* Row-major style projection matrix */
                 /* | 2n/(r-l),    0,            0,              0, | */
                 /* | 0,           2n/(t-b),     0,              0, | */
                 /* | (r+l)/(r-l), (t+b)/(t-b), -((f+n)/(f-n)), -1, | */
@@ -169,23 +169,45 @@ namespace vp::util {
 
             constexpr virtual void CalculateProjectionMatrix(MatrixRowMajor4x4f *out_proj_matrix) const override {
 
-                const float r_add_l = (m_right + m_left) / 2.0f;
-                const float r_sub_l = (m_right - m_left) / 2.0f;
-                const float t_add_b = (m_top + m_bottom) / 2.0f;
-                const float t_sub_b = (m_top - m_bottom) / 2.0f;
+                const float r_add_l = (m_right + m_left) * 0.5f;
+                const float r_sub_l = (m_right - m_left) * 0.5f;
+                const float t_add_b = (m_top + m_bottom) * 0.5f;
+                const float t_sub_b = (m_top - m_bottom) * 0.5f;
 
                 const float rec_fn = 1.0f / (m_far - m_near);
                 const float neg_fn = -(m_near + m_far);
 
-                const Vector4f row0 = { 1.0f / r_sub_l,    0.0f,               0.0f,            0.0f, };
-                const Vector4f row1 = { 0.0f,              1.0f / t_sub_b,     0.0f,            0.0f, };
-                const Vector4f row2 = { 0.0f,              0.0f,              -2.0f * rec_fn,   0.0f, };
-                const Vector4f row3 = { r_add_l / r_sub_l, t_add_b / t_sub_b,  neg_fn * rec_fn, 1.0f, };
+                /* Row-major style projection matrix */
+                /* |  2/(r-l),      0,            0,           0, | */
+                /* |  0,            2/(t-b),      0,           0, | */
+                /* |  0,            0,           -2/(f-n),    -1, | */
+                /* | -(r+l)/(r-l), -(t+b)/(t-b), -(f+n)/(f-n), 0, | */
+                const Vector4f row0 = {  1.0f / r_sub_l,     0.0f,               0.0f,            0.0f, };
+                const Vector4f row1 = {  0.0f,               1.0f / t_sub_b,     0.0f,            0.0f, };
+                const Vector4f row2 = {  0.0f,               0.0f,              -2.0f * rec_fn,   0.0f, };
+                const Vector4f row3 = { -r_add_l / r_sub_l, -t_add_b / t_sub_b,  neg_fn * rec_fn, 1.0f, };
 
                 StoreRow(out_proj_matrix, row0, 0);
                 StoreRow(out_proj_matrix, row1, 1);
                 StoreRow(out_proj_matrix, row2, 2);
                 StoreRow(out_proj_matrix, row3, 3);
+            }
+
+            constexpr Vector3f GetOrthoCameraPosition() const {
+                const Vector3f pos = {
+                    (m_left + m_right) * 0.5f,
+                    (m_top + m_bottom) * 0.5f,
+                    m_near,
+                };
+                return pos;
+            }
+            constexpr Vector3f GetOrthoCameraAt() const {
+                const Vector3f at = {
+                    (m_left + m_right) * 0.5f,
+                    (m_top + m_bottom) * 0.5f,
+                    m_near - 1.0f,
+                };
+                return at;
             }
     };
 }

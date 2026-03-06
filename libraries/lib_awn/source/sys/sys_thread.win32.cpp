@@ -97,19 +97,45 @@ namespace awn::sys {
     //}
 
     void Thread::SleepThread(vp::TimeSpan timeout_ns) {
+        if (timeout_ns.GetNanoSeconds() < 1) { ::SwitchToThread(); return; }
 
-        const LARGE_INTEGER timeout_100ns = { .QuadPart = -(timeout_ns.GetNanoSeconds() / 100)};
+        const LARGE_INTEGER timeout_100ns = { .QuadPart = -(timeout_ns.GetNanoSeconds() / 100), };
         const bool is_set = ::SetWaitableTimer(m_waitable_timer_for_sleep, std::addressof(timeout_100ns), 0, nullptr, nullptr, false);
-        //if (!is_set) {
-        //    ::printf("LastError: %ld\n", ::GetLastError());
-        //}
         VP_ASSERT(is_set);
 
         const u32 result0 = ::WaitForSingleObjectEx(m_waitable_timer_for_sleep, INFINITE, false);
-        //if (result0 != WAIT_OBJECT_0) {
-        //    ::printf("LastError: %ld\n", ::GetLastError());
-        //}
         VP_ASSERT(result0 == WAIT_OBJECT_0);
+
+        return;
+    }
+
+    void Thread::SleepThreadPrecise(vp::TimeSpan timeout_ns) {
+        if (timeout_ns.GetNanoSeconds() < 1) { return; }
+
+        /* Win32 high res timer minimum is supposedly .5 ms, in practice an exact 500 us wait seems to incur up to a period of error */
+        static constexpr const TimeSpan cMinWaitGranularity = TimeSpan::FromMicroSeconds(500);
+        TimeSpan post_time = timeout_ns;
+        if ((cMinWaitGranularity.GetNanoSeconds() * 2) <= timeout_ns.GetNanoSeconds()) {
+            /* Our timeout can be considered (periods * cMinWaitGranularity + residual), so wait for periods-1 and remove waited tick time from our timeout */
+            const u64 pre_tick = vp::util::GetSystemTick();
+            const s64 period_count = timeout_ns.GetNanoSeconds() / cMinWaitGranularity.GetNanoSeconds();
+            const s64 round_down_time = cMinWaitGranularity.GetNanoSeconds() * (period_count - 1);
+            const LARGE_INTEGER timeout_100ns = { .QuadPart = -(round_down_time / 100), };
+            const bool is_set = ::SetWaitableTimer(m_waitable_timer_for_sleep, std::addressof(timeout_100ns), 0, nullptr, nullptr, false);
+            VP_ASSERT(is_set);
+
+            const u32 result0 = ::WaitForSingleObjectEx(m_waitable_timer_for_sleep, INFINITE, false);
+            VP_ASSERT(result0 == WAIT_OBJECT_0);
+            const u64 post_tick = vp::util::GetSystemTick();
+            post_time = post_time - TimeSpan::FromTick(post_tick - pre_tick);
+        }
+
+        /* Busy wait for last up to 1 millisecond; this may seriously dog other threads for odd periods */
+        const TickSpan wake_tick = TimeSpan::GetAbsoluteTimeToWakeup(post_time);
+        if (wake_tick == TimeSpan::cMaxTime) { return; }
+        while (vp::util::GetSystemTick() < wake_tick) {
+            vp::util::x86::pause();
+        }
 
         return;
     }

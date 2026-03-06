@@ -28,13 +28,13 @@ namespace awn::gfx {
 
         u32 stride = 0;
         if ((shape_format & ShapeFormat::Position) == ShapeFormat::Position) {
-            stride += sizeof(vp::util::Float3);
+            stride += sizeof(Float3);
         }
         if ((shape_format & ShapeFormat::Normal) == ShapeFormat::Normal) {
-            stride += sizeof(vp::util::Float3);
+            stride += sizeof(Float3);
         }
         if ((shape_format & ShapeFormat::TextureCoordinate) == ShapeFormat::TextureCoordinate) {
-            stride += sizeof(vp::util::Float2);
+            stride += sizeof(Float2);
         }
 
         return stride;

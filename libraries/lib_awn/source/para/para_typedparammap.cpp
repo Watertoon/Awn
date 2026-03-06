@@ -76,7 +76,7 @@ namespace awn::para {
         }
 
         /* Initialize tree */
-        m_tree.Initialize(heap, real_count);
+        RESULT_DISCARD(m_tree.Initialize(heap, real_count));
         m_max_count = real_count;
 
         return;

@@ -50,7 +50,7 @@ namespace awn::res::impl {
 			constexpr  ThreadLocalArchiveManager() : m_tls_slot(sys::cInvalidTlsSlot), m_cs(), m_archive_tree_allocator(), m_free_archive_ring_buffer(), m_archive_binder_array(), m_registered_thread_ring() {/*...*/}
 			constexpr ~ThreadLocalArchiveManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, u32 max_thread_count);
+            Result Initialize(mem::Heap *heap, u32 max_thread_count);
             void Finalize();
 
             void Calculate();
@@ -64,6 +64,7 @@ namespace awn::res::impl {
             void UnregisterCurrentThread();
 
 			bool SetThreadLocalArchive(ResourceBinder *binder_to_reference);
+			bool ReferenceThreadLocalArchiveToBinder(ResourceBinder *binder_to_set);
 
             bool IsThreadLocalArchiveInReference();
             

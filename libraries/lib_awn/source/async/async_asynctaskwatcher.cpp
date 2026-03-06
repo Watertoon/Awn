@@ -40,9 +40,9 @@ namespace awn::async {
         /* Reference watcher */
         this->Reference();
 
-        /* Wait for task to finish (if not out of reference) */
-        if (m_async_task != nullptr && m_async_task->m_queue != nullptr) {
-            m_async_task->m_queue->CancelTask(m_async_task, true);                    
+        /* Cancel task */
+        if (m_async_task != nullptr) {
+            m_async_task->CancelTask();
         }
 
         /* Unreference watcher */

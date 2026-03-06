@@ -29,7 +29,6 @@ namespace awn::res::impl {
 
             void Finalize();
 
-
             void RegisterResourceUnit(ResourceUnit *resource_unit);
             void UnregisterResourceUnit(ResourceUnit *resource_unit);
 

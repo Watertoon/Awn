@@ -21,7 +21,7 @@ namespace awn::gfx {
         private:
             gfx::DescriptorSlot m_sampler_slot;
         public:
-            constexpr SamplerBinder() : m_sampler_slot() {/*...*/}
+            constexpr SamplerBinder() : m_sampler_slot(cInvalidDescriptorSlot) {/*...*/}
             ~SamplerBinder() { this->Release(); }
 
             Result RegisterSampler(const SamplerInfo *sampler_info);
@@ -29,10 +29,7 @@ namespace awn::gfx {
 
             void Release();
 
-            constexpr DescriptorSlot GetDescriptorSlot() const {
-                impl::TextureViewSamplerManager *tex_view_samp_mgr = impl::TextureViewSamplerManager::GetInstance();
-                if (!tex_view_samp_mgr->IsSamplerSlotValid(m_sampler_slot)) { return DescriptorSlot{}; }
-                return m_sampler_slot; 
-            }
+            constexpr DescriptorSlot GetDescriptorSlot() const { return m_sampler_slot;  }
+            constexpr bool IsValid() const { return (m_sampler_slot != cInvalidDescriptorSlot); }
     };
 }

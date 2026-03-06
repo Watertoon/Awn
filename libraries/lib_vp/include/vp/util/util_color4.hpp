@@ -17,24 +17,36 @@
 
 namespace vp::util {
 
-    constexpr float ConvertUnorm8ToFloat(u8 value) {
+    constexpr float Unorm8ToFloat(u8 value) {
         return static_cast<float>(value) / 255.0f;
     }
 
-    constexpr u8 ConvertFloatToUnorm8(float value) {
+    constexpr u8 FloatToUnorm8(float value) {
         const float clamp0 = Min(value, 1.0f);
         const float clamp1 = Max(clamp0, 0.0f);
-        return static_cast<u8>((clamp1 * 255.0f) + 0.5f);
+        return static_cast<u8>(clamp1 * 255.0f);
     }
 
-    constexpr s16 ConvertFloatToSnorm16(float value) {
+    constexpr u8 FloatToUnorm16(float value) {
+        const float clamp0 = Min(value, 1.0f);
+        const float clamp1 = Max(clamp0, 0.0f);
+        return static_cast<u16>(clamp1 * 65535.0f);
+    }
+
+    constexpr u32 FloatToUnorm32(float value) {
+        const float clamp0 = Min(value, 1.0f);
+        const float clamp1 = Max(clamp0, 0.0f);
+        return static_cast<u32>(static_cast<double>(clamp1) * 4'294'967'295.0);
+    }
+
+    constexpr s16 FloatToSnorm16(float value) {
         const s32 base = static_cast<s32>(value * 32767.0f);
         const s32 clamp0 = Max(base, -32768);
         const s32 clamp1 = Min(clamp0, 32767);
         return static_cast<s16>(clamp1);
     }
 
-    constexpr s16 ConvertSnorm16ToFloat(s16 value) {
+    constexpr s16 Snorm16ToFloat(s16 value) {
         const float base = (value < 0) ? static_cast<float>(value) / 32768.0f : static_cast<float>(value) / 32767.0f;
         const float clamp0 = Min(base, 1.0f);
         const float clamp1 = Max(clamp0, -1.0f);
@@ -65,23 +77,23 @@ namespace vp::util {
                 float b;
                 float a;
             };
-            vp::util::Float4 v;
+            Float4 v;
         };
 
         constexpr ALWAYS_INLINE Color4f &operator=(const Color4u8 &rhs) {
-            r = ConvertUnorm8ToFloat(rhs.r);
-            g = ConvertUnorm8ToFloat(rhs.g);
-            b = ConvertUnorm8ToFloat(rhs.b);
-            a = ConvertUnorm8ToFloat(rhs.a);
+            r = Unorm8ToFloat(rhs.r);
+            g = Unorm8ToFloat(rhs.g);
+            b = Unorm8ToFloat(rhs.b);
+            a = Unorm8ToFloat(rhs.a);
             return *this;
         }
     };
 
     constexpr ALWAYS_INLINE Color4u8 &Color4u8::operator=(const Color4f &rhs) {
-        r = ConvertFloatToUnorm8(rhs.r);
-        g = ConvertFloatToUnorm8(rhs.g);
-        b = ConvertFloatToUnorm8(rhs.b);
-        a = ConvertFloatToUnorm8(rhs.a);
+        r = FloatToUnorm8(rhs.r);
+        g = FloatToUnorm8(rhs.g);
+        b = FloatToUnorm8(rhs.b);
+        a = FloatToUnorm8(rhs.a);
         return *this;
     }
 

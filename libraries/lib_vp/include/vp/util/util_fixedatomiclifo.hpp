@@ -66,7 +66,7 @@ namespace vp::util {
 
             void ReadState(T *state) {
 
-                /* Try read most recent state */
+                /* Try read most recent state while one exists */
                 u32 count = vp::util::InterlockedLoadAcquire(std::addressof(m_count));
                 count = vp::util::Min(1u, count);
                 while (0 < count) {

@@ -27,11 +27,12 @@
     #include <awn/grr/impl/grr_dxgiinterfaceext.win32.h>
     #include <awn/grr/impl/grr_dxgicontext11.win32.h>
 
-    #include <awn/grr/impl/grr_dragdrophandler.win32.h>
-    #include <awn/grr/grr_nativewindow.win32.h>
-    #include <awn/grr/grr_display.win32.h>
-    #include <awn/grr/impl/grr_displaymanager.win32.h>
-    #include <awn/grr/grr_displaymanagerapi.win32.h>
+    //#include <awn/grr/impl/grr_dragdrophandler.win32.h>
+    //#include <awn/grr/grr_nativewindow.win32.h>
+    //#include <awn/grr/grr_display.win32.h>
+    //#include <awn/grr/impl/grr_displaymanager.win32.h>
+    //#include <awn/grr/grr_displaymanagerapi.win32.h>
 
-#elif VP_TARGET_PLATFORM_nx
+#elifdef VP_TARGET_PLATFORM_nx
+#elifdef VP_TARGET_PLATFORM_linux
 #endif

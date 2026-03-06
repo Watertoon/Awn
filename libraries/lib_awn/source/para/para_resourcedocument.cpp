@@ -39,16 +39,12 @@ namespace awn::para {
         return document;
     }
 
-    Result ResourceDocument::Initialize(mem::Heap *heap, mem::Heap *gpu_heap, res::ResourceUserContext *user_context, void *file, size_t file_size) {
-
-        /* Unused */
-        VP_UNUSED(gpu_heap, file_size);
-
-        /* Get user context */
-        if (user_context == nullptr || ResourceDocument::CreateInfo::CheckRuntimeTypeInfoStatic(user_context) == false) { RESULT_RETURN_SUCCESS; }
+    Result ResourceDocument::Compose(mem::Heap *heap, res::IComposeInfo *info, void *file, size_t file_size) {
+        VP_UNUSED(file_size);
 
         /* Create document */
-        CreateInfo *create_info = reinterpret_cast<CreateInfo*>(user_context);
+        CreateInfo *create_info = vp::util::DynamicCast<CreateInfo*>(info);
+        if (create_info == nullptr) { RESULT_RETURN_SUCCESS; }
         Document *document = CreateDocument(heap, create_info->m_file_name, create_info->m_class_name, file);
         VP_ASSERT(document != nullptr);
 

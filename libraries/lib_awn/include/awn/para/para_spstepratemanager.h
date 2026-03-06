@@ -20,13 +20,12 @@ namespace awn::para {
     struct SpStepRateCell_Layout {
         float SpStepRate = 1.0f;
 
-        AWN_PARA_LAYOUT_TYPE_TRAITS(SpStepRateCell_Layout);
+        AWN_PARA_TYPED_PARAM_LAYOUT_TRAITS(SpStepRateCell_Layout);
     };
 
-    AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(
+    AWN_PARA_DECLARE_TYPED_PARAM(
         awn__para__SpStepRateCell, SpStepRateCell,
-        CombinationDataCellBase,   SpStepRateCell_Layout,
-        SpStepRate
+        CombinationDataCellBase,   SpStepRateCell_Layout
     );
 
     static constexpr u32 cMaxSpStepRateTargetCount = 0x8;
@@ -59,7 +58,7 @@ namespace awn::para {
             constexpr SpStepRateManager() : m_document_sp_step_rate_table(), m_sp_rate_event_array() {/*...*/}
             ~SpStepRateManager() {/*...*/}
 
-            bool Initialize(mem::Heap *heap, const char *sp_step_rate_table_path_no_ext, const char *sp_event_enum_class, const char *sp_target_enum_class);
+            Result Initialize(mem::Heap *heap, const char *sp_step_rate_table_path_no_ext, const char *sp_event_enum_class, const char *sp_target_enum_class);
             void Finalize();
 
             u32 GetSpStepRateTargets(float *out_sp_step_rate_target_array, bool is_advance_tick);

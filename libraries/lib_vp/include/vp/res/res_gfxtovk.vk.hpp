@@ -241,6 +241,16 @@ namespace vp::res {
         return flags;
     }
 
+    constexpr inline VkFormatFeatureFlags2 GfxGpuAccessFlagsToVkFormatFeatureFlags2(GfxGpuAccessFlags access_flags) {
+
+        u64 flags = 0;
+        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::Texture)) != 0)             { flags |= VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT; }
+        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::RenderTargetColor)) != 0)   { flags |= VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BIT; }
+        if ((static_cast<u32>(access_flags) & static_cast<u32>(GfxGpuAccessFlags::RenderTargetDepth)) != 0)   { flags |= VK_FORMAT_FEATURE_2_DEPTH_STENCIL_ATTACHMENT_BIT; }
+
+        return flags;
+    }
+
     constexpr inline VkBufferUsageFlags GfxGpuAccessFlagsToVkBufferUsageFlags(GfxGpuAccessFlags access_flags) {
 
         u32 flags = 0;

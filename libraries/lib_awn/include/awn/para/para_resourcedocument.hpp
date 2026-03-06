@@ -19,14 +19,14 @@ namespace awn::para {
 
     class ResourceDocument : public res::Resource {
         public:
-            class CreateInfo : public res::ResourceUserContext {
+            class CreateInfo : public res::IComposeInfo {
                 public:
                     const char *m_file_name;
                     const char *m_class_name;
                 public:
-                    VP_RTTI_DERIVED(CreateInfo, res::ResourceUserContext);
+                    VP_RTTI_DERIVED(CreateInfo, res::IComposeInfo);
                 public:
-                    constexpr CreateInfo(const char *file_name, const char *class_name) : ResourceUserContext(), m_file_name(file_name), m_class_name(class_name) {/*...*/}
+                    constexpr CreateInfo(const char *file_name, const char *class_name) : IComposeInfo(), m_file_name(file_name), m_class_name(class_name) {/*...*/}
                     virtual ~CreateInfo() override {/*...*/}
             };
         public:
@@ -40,9 +40,9 @@ namespace awn::para {
             constexpr ResourceDocument() : Resource(), m_document(), m_resource_binder_bgyml() {/*...*/}
             virtual ~ResourceDocument() override {/*...*/}
 
-            virtual constexpr bool IsRequireInitializeOnCreate() const override { return true; }
+            virtual constexpr bool IsRequireCompose() const override { return true; }
 
-            virtual Result Initialize(mem::Heap *heap, mem::Heap *gpu_heap, res::ResourceUserContext *user_context, void *file, size_t file_size) override;
+            virtual Result Compose(mem::Heap *heap, res::IComposeInfo *compose_info, void *file, size_t file_size) override;
             virtual void Finalize() override;
             virtual Result PreFinalize() override;
 

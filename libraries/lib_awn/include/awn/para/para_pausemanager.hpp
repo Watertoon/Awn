@@ -20,13 +20,12 @@ namespace awn::para {
     struct PauseCell_Layout {
         bool IsPause = false;
 
-        AWN_PARA_LAYOUT_TYPE_TRAITS(PauseCell_Layout);
+        AWN_PARA_TYPED_PARAM_LAYOUT_TRAITS(PauseCell_Layout);
     };
 
-    AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(
+    AWN_PARA_DECLARE_TYPED_PARAM(
         awn__para__PauseCell,     PauseCell,
-        CombinationDataCellBase,  PauseCell_Layout,
-        IsPause
+        CombinationDataCellBase,  PauseCell_Layout
     );
 
     class PauseManager {
@@ -84,7 +83,7 @@ namespace awn::para {
                 if (target_count < 1) { return false; }
 
                 /* Build pause target map */
-                const TypedParamMap<CombinationDataCellBase> *cell_list = data_table->GetCellList();
+                const TypedParamMap<CombinationDataCellBase> *cell_list = data_table->GetComposite<"CellList">();
                 u32 target_index = 0;
                 CellIterator target_iter(cell_list, CellArrangement::Row);
                 while (target_iter.IsValid()) {
@@ -124,12 +123,12 @@ namespace awn::para {
                         };
                         if (cMaxPauseTargetCount <= key_target_index) { continue; }
                         PauseCell *pause_cell = key_target_iter.GetTypedParam<PauseCell>();
-                        const bool is_target_paused = pause_cell->GetIsPause();
+                        const bool is_target_paused = pause_cell->GetProperty<"IsPause">();
                         if (!is_target_paused) { continue; }
                         pause_key->pause_target_mask.SetBit(target_index);
                     }
                 }
-                m_pause_key_array.SortOn<&PauseKey::hash>();
+                m_pause_key_array.Sort(PauseKeyArray::DefaultCompareLessMember<&PauseKey::hash>());
 
                 document_fail_guard.Cancel();
                 key_array_fail_guard.Cancel();
@@ -169,17 +168,15 @@ namespace awn::para {
             }
 
             constexpr void RequestPause(u32 pause_key_hash) {
-                u32 key_index = 0;
-                const bool is_valid = m_pause_key_array.BinarySearchOn<&PauseKey::hash>(std::addressof(key_index), pause_key_hash);
-                if (!is_valid) { return; }
-                m_pause_key_array[key_index].AcquireReference();
+                PauseKeyArray::Iterator key_iter = m_pause_key_array.BinarySearch(pause_key_hash, PauseKeyArray::DefaultCompareLessSearchMember<&PauseKey::hash>());
+                if (key_iter == m_pause_key_array.end()) { return; }
+                (*key_iter).AcquireReference();
             }
 
             constexpr void ReleasePause(u32 pause_key_hash) {
-                u32 key_index = 0;
-                const bool is_valid = m_pause_key_array.BinarySearchOn<&PauseKey::hash>(std::addressof(key_index), pause_key_hash);
-                if (!is_valid) { return; }
-                m_pause_key_array[key_index].ReleaseReference();
+                PauseKeyArray::Iterator key_iter = m_pause_key_array.BinarySearch(pause_key_hash, PauseKeyArray::DefaultCompareLessSearchMember<&PauseKey::hash>());
+                if (key_iter == m_pause_key_array.end()) { return; }
+                (*key_iter).ReleaseReference();
             }
 	};
 }

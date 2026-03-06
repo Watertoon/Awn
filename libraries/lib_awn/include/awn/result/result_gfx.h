@@ -43,6 +43,8 @@ namespace awn::gfx {
     DECLARE_RESULT(OutOfCommandUnits,                       23);
     DECLARE_RESULT(OutOfStagingMemory,                      24);
     DECLARE_RESULT(InvalidShaderStage,                      25);
+    DECLARE_RESULT(RangeNG,                                 26);
+    DECLARE_RESULT(NoMemory,                                27);
 
     /* Vulkan converted results */
     DECLARE_RESULT(UnknownApiError,                         50);

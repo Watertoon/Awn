@@ -105,7 +105,7 @@ namespace awn::async {
             constexpr  AsyncQueue() : m_task_list(), m_task_count(), m_priority_level_array(), m_task_thread_array(), m_thread_boost_array(), m_thread_set_array(), m_all_task_complete_event(), m_queue_mutex(), m_is_multi_set(), m_highest_priority(), m_current_thread_set() {/*...*/}
             constexpr ~AsyncQueue() {/*...*/}
 
-            void Initialize(mem::Heap *heap, const AsyncQueueInfo *queue_info);
+            Result Initialize(mem::Heap *heap, const AsyncQueueInfo *queue_info);
             void Finalize();
 
             void AddThread(AsyncQueueThread *thread, u32 thread_set, bool is_boost);

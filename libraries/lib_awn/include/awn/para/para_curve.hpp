@@ -31,25 +31,6 @@ namespace awn::para {
         Hermit2DSmooth   = 0xa,
         Hermit2DSplit    = 0xb,
     };
-    VP_ENUM_TRAITSV(
-        awn::para::CurveType, CurveType,
-        Linear,
-        Hermit,
-        Step,
-        Sin,
-        Cos,
-        SinPow2,
-        Linear2D,
-        Hermit2D,
-        Step2D,
-        NonuniformSpline,
-        Hermit2DSmooth,
-        Hermit2DSplit
-    );
-}
-VP_ENUM_TRAITS_AUTO(awn::para::CurveType);
-
-namespace awn::para {
 
     struct CurveInfo {
         u8 curve_type;
@@ -378,7 +359,7 @@ namespace awn::para {
                     const char *curve_type_name = "";
                     const bool result0 = iter.TryGetStringByKey(std::addressof(curve_type_name), "Type");
                     if (!result0 || !iter.TryGetStringByKey(std::addressof(curve_type_name), "type")) { return false; }
-                    const bool result1 = CurveTypeTraits::GetValueByString(reinterpret_cast<CurveTypeTraits::UnderlyingType*>(std::addressof(m_curve_type)), curve_type_name);
+                    const bool result1 = vp::util::TEnumTraits<CurveType>::GetValueByString(std::addressof(m_curve_type), curve_type_name);
                     if (!result1) { return false; }
                 }
 

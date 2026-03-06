@@ -18,7 +18,7 @@
 namespace vp::util {
 
     template <typename T>
-    class HeapArray {        
+    class HeapArray {
         public:
             class Iterator {
                 private:
@@ -55,90 +55,120 @@ namespace vp::util {
                     }
             };
         private:
-            T   *m_object_array;
-            u32  m_array_count;
+            u32  m_count;
+            T   *m_array;
         public:
-            static constexpr size_t GetWorkMemorySize(u32 count) {
-                return sizeof(T) * count;
-            }
         public:
-            constexpr ALWAYS_INLINE HeapArray() : m_object_array(), m_array_count() {/*...*/}
-            constexpr ALWAYS_INLINE ~HeapArray() {/*...*/}
+            constexpr HeapArray() : m_count(), m_array() {/*...*/}
+            constexpr ~HeapArray() {/*...*/}
 
-            bool Initialize(imem::IHeap *alloc_heap, u32 count) {
+            Result Initialize(imem::IHeap *heap, u32 count) {
 
-                /* Fail on invalid element count */
-                if (count == 0) { return false; }
+                /* Integrity checks */
+                RESULT_RETURN_IF(count < 1, ResultRangeNG);
 
                 /* Allocate an array of objects */
-                m_object_array = reinterpret_cast<T*>(::operator new(sizeof(T) * count, alloc_heap, alignof(T)));
-
-                /* Fail on nullptr */
-                if (m_object_array == nullptr) { return false; }
+                T *array = new (heap, alignof(T)) T[count];
+                RESULT_RETURN_IF(array == nullptr, ResultNoMemory);
 
                 /* Set count */
-                m_array_count = count;
+                m_count = count;
+                m_array = array;
 
-                /* Initialize every object */
-                for (u32 i = 0; i < m_array_count; ++i) {
-                    std::construct_at(std::addressof(m_object_array[i]));
-                }
-
-                return true;
+                RESULT_RETURN_SUCCESS;
             }
 
             void Finalize() {
-
-                /* Bail if there's no buffer */
-                if (m_object_array == nullptr) { return; }
-
-                /* Destruct every object */
-                for (u32 i = 0; i < m_array_count; ++i) {
-                    std::destroy_at(std::addressof(m_object_array[i]));
+                if (m_array == nullptr) { return; }
+                /* Manually destruct every object */
+                for (u32 i = 0; i < m_count; ++i) {
+                    std::destroy_at(std::addressof(m_array[i]));
                 }
-
-                /* Free buffer */
-                if (m_object_array != nullptr) {
-                    ::operator delete(m_object_array);
-                    m_object_array = nullptr;
-                    m_array_count  = 0;
-                }
-
+                ::operator delete(m_array);
+                m_array = nullptr;
+                m_count  = 0;
                 return;
+            }
+
+            static constexpr size_t GetRequiredMemorySize(u32 count) {
+                return sizeof(T) * count;
             }
 
             constexpr void SetMemory(T *memory, u32 count) {
-                m_object_array = memory;
-                m_array_count = count;
+                m_array = memory;
+                m_count = count;
                 return;
             }
-
+        public:
             constexpr Iterator begin() {
-                return Iterator(m_object_array);
+                return Iterator(m_array);
             }
             constexpr Iterator end() {
-                return Iterator(m_object_array + m_array_count);
+                return Iterator(m_array + m_count);
+            }
+
+            constexpr Iterator IteratorTo(T *array_location) {
+                return Iterator(array_location);
             }
 
             constexpr T &operator[](u32 index) {
-                VP_ASSERT(m_array_count > index);
-                return m_object_array[index];
+                VP_ASSERT(m_count > index);
+                return m_array[index];
             }
 
-            constexpr T &operator[](u32 index) const {
-                VP_ASSERT(m_array_count > index);
-                return m_object_array[index];
+            constexpr const T &operator[](u32 index) const {
+                VP_ASSERT(m_count > index);
+                return m_array[index];
             }
 
-            constexpr T *GetArray() { return m_object_array; }
-            constexpr u32 GetCount() const { return m_array_count; }
-
+            constexpr void Fill(const T &value) {
+                T *iter = m_array;
+                T *end = m_array + m_count;
+                while (iter != end) {
+                    *iter = value;
+                    ++iter;
+                }
+                return;
+            }
+            constexpr void FillRange(const T &value, u32 base, u32 count) {
+                VP_ASSERT(base < m_count);
+                VP_ASSERT(count < m_count);
+                T *iter = m_array + base;
+                T *end = m_array + count;
+                while (iter != end) {
+                    *iter = value;
+                    ++iter;
+                }
+                return;
+            }
+            constexpr void CopyFrom(const HeapArray<T> &array) {
+                const u32 copy_count = vp::util::Min(m_count, array.m_count);
+                T *iter = m_array;
+                T *r_iter = array.m_array;
+                T *end = m_array + copy_count;
+                while (iter != end) {
+                    *iter = *r_iter;
+                    ++r_iter;
+                    ++iter;
+                }
+                return;
+            }
+        public:
             constexpr u32 IndexOf(T *element) const {
-                return element - m_object_array;
+                return element - m_array;
             }
 
-            constexpr bool IsValid() const { return m_object_array != nullptr; }
-        private:
+            constexpr T *GetArray() { return m_array; }
+            constexpr const T *GetArray() const { return m_array; }
+            constexpr u32 GetCount() const { return m_count; }
+
+            constexpr bool IsValid() const { return m_array != nullptr; }
+            constexpr bool IsContainAddress(const T *element) const {
+                const bool is_start = (m_array <= element);
+                const bool is_end = (element < m_array + m_count);
+                return is_start && is_end;
+            }
+        public:
             struct DefaultCompareLess {
                 constexpr bool operator()(const T &lhs, const T &rhs) {
                     return lhs < rhs;
@@ -158,70 +188,247 @@ namespace vp::util {
             };
             template <auto Member>
             struct DefaultCompareLessMember {
-                constexpr bool operator()(const ParentType<Member> &lhs, const ParentType<Member> &rhs) {
+                static constexpr auto MemberPtr = Member;
+
+                constexpr bool operator()(const T &lhs, const T &rhs) {
                     return lhs.*Member < rhs.*Member;
                 }
-                constexpr bool operator()(const ParentType<Member> &lhs, const ParentType<Member> &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
+                constexpr bool operator()(const T &lhs, const T &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
                     const s32 cmp = ::strcmp(lhs.*Member, rhs.*Member);
                     return cmp < 0;
                 }
             };
+
+            template <auto Member>
+            struct DefaultCompareLessSearchMember {
+                static constexpr auto MemberPtr = Member;
+
+                constexpr bool operator()(const MemberType<Member> &lhs, const MemberType<Member> &rhs) {
+                    return lhs < rhs;
+                }
+                constexpr bool operator()(const MemberType<Member> &lhs, const MemberType<Member> &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
+                    const s32 cmp = ::strcmp(lhs, rhs);
+                    return cmp < 0;
+                }
+            };
         public:
-            template <typename CompareLess = DefaultCompareLess>
-            constexpr void Sort() {
-                std::sort(m_object_array, m_object_array + m_array_count, CompareLess());
+            template <typename CompareLess>
+            constexpr void Sort(CompareLess cmp) {
+                std::sort(m_array, m_array + m_count, cmp);
             }
 
-            template <typename CompareLess = DefaultCompareLess>
-            constexpr void HeapSort() {
-                std::sort_heap(m_object_array, m_object_array + m_array_count, CompareLess());
-            }
-
-            template <auto Member, typename CompareLessMember = DefaultCompareLessMember<Member>>
-                requires (std::is_same<ParentType<Member>, T>::value)
-            constexpr void SortOn() {
-                std::sort(m_object_array, m_object_array + m_array_count, CompareLessMember());
-            }
-
-            template <auto Member, typename CompareLessMember = DefaultCompareLessMember<Member>>
-                requires (std::is_same<ParentType<Member>, T>::value)
-            constexpr void HeapSortOn() {
-                std::sort_heap(m_object_array, m_object_array + m_array_count, CompareLessMember());
+            template <typename CompareLess>
+            constexpr void HeapSort(CompareLess cmp) {
+                std::sort_heap(m_array, m_array + m_count, cmp);
             }
 
             /* This function requires the heap array to be sorted */
-            template <auto MemberPtr>
-                requires (std::is_same<ParentType<MemberPtr>, T>::value)
-            constexpr bool BinarySearchOn(u32 *out_index, const MemberType<MemberPtr> &find_element) const {
+            template <typename CompareLessSearchMember>
+            constexpr Iterator BinarySearch(const MemberType<CompareLessSearchMember::MemberPtr> &find_element, CompareLessSearchMember cmp) const {
 
                 /* Binary search for find element */
-                u32  entry_index = m_array_count / 2;
-                u32  high_iter   = m_array_count;
-                u32  low_iter    = 0;
-                u32  i           = 0;
-                T   *current_obj = std::addressof(m_object_array[entry_index]);
-                while (find_element != current_obj->*MemberPtr) {
+                using Member = MemberType<CompareLessSearchMember::MemberPtr>;
+                constexpr auto MemberPtr = CompareLessSearchMember::MemberPtr;
+                T *iter = m_array;
+                u32 i = m_count;
+                while (1 < i) {
+                    const u32 h = i / 2;
+                    const Member &mber = iter[h-1].*MemberPtr;
+                    iter = (cmp(mber, find_element)) ? std::addressof(iter[h]) : iter;
+                    i -= h;
+                }
+                const Member &mber = iter[0].*MemberPtr;
+                iter += (cmp(mber, find_element));
+    
+                return Iterator(iter);
+            }
+    };
+    
+    
+    template <typename T, size_t Count>
+    class FixedArray {
+        public:
+            class Iterator {
+                private:
+                    T *m_array;
+                public:
+                    constexpr ALWAYS_INLINE Iterator(T *array) : m_array(array) {/*...*/}
 
-                    u32 result = entry_index;
-                    i = low_iter;
-                    if (find_element < current_obj->*MemberPtr) {
-                        i = high_iter;
-                        high_iter = entry_index;
-                        result = low_iter;
+                    constexpr ALWAYS_INLINE T &operator*() {
+                        return *m_array;
+                    }
+                    constexpr ALWAYS_INLINE const T &operator*() const {
+                        return *m_array;
                     }
 
-                    low_iter = result;
-                    if (i == entry_index) { return false; }
+                    constexpr ALWAYS_INLINE bool operator==(const Iterator &rhs) const {
+                        return m_array == rhs.m_array;
+                    }
 
-                    i = high_iter + low_iter;
+                    constexpr ALWAYS_INLINE bool operator!=(const Iterator &rhs) const {
+                        return m_array != rhs.m_array;
+                    }
 
-                    entry_index = i / 2;
-                    current_obj = std::addressof(m_object_array[entry_index]);
+                    constexpr ALWAYS_INLINE Iterator &operator++() {
+                        ++m_array;
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator++([[maybe_unused]]int) {
+                        ++m_array;
+                        return *this;
+                    }
+                    constexpr ALWAYS_INLINE Iterator &operator--() {
+                        --m_array;
+                        return *this;
+                    }
+            };
+        private:
+            T m_array[Count];
+        public:
+            constexpr FixedArray() : m_array{} {/*...*/}
+            constexpr ~FixedArray() {/*...*/}
+
+            constexpr Iterator begin() {
+                return Iterator(m_array);
+            }
+            constexpr Iterator end() {
+                return Iterator(m_array + Count);
+            }
+
+            constexpr Iterator IteratorTo(T *array_location) {
+                return Iterator(array_location);
+            }
+
+            constexpr T &operator[](u32 index) {
+                VP_ASSERT(Count > index);
+                return m_array[index];
+            }
+
+            constexpr const T &operator[](u32 index) const {
+                VP_ASSERT(Count > index);
+                return m_array[index];
+            }
+
+            constexpr void Fill(const T &value) {
+                T *iter = m_array;
+                T *end = m_array + Count;
+                while (iter != end) {
+                    *iter = value;
+                    ++iter;
                 }
+                return;
+            }
+            constexpr void FillRange(const T &value, u32 base, u32 count) {
+                VP_ASSERT(base < Count);
+                VP_ASSERT(count < Count);
+                T *iter = m_array + base;
+                T *end = m_array + count;
+                while (iter != end) {
+                    *iter = value;
+                    ++iter;
+                }
+                return;
+            }
+            constexpr void CopyFrom(const HeapArray<T> &array) {
+                const u32 copy_count = vp::util::Min(Count, array.Count);
+                T *iter = m_array;
+                T *r_iter = array.m_array;
+                T *end = m_array + copy_count;
+                while (iter != end) {
+                    *iter = *r_iter;
+                    ++r_iter;
+                    ++iter;
+                }
+                return;
+            }
+        public:
+            constexpr u32 IndexOf(T *element) const {
+                return element - m_array;
+            }
 
-                *out_index = entry_index;
+            constexpr T *GetArray() { return m_array; }
+            constexpr const T *GetArray() const { return m_array; }
+            constexpr u32 GetCount() const { return Count; }
+
+            constexpr bool IsValid() const { return m_array != nullptr; }
+            constexpr bool IsContainAddress(const T *element) const {
+                const bool is_start = (m_array <= element);
+                const bool is_end = (element < m_array + Count);
+                return is_start && is_end;
+            }
+        public:
+            struct DefaultCompareLess {
+                constexpr bool operator()(const T &lhs, const T &rhs) {
+                    return lhs < rhs;
+                }
+                constexpr bool operator()(const T &lhs, const T &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<T>> {
+                    const s32 cmp = ::strcmp(lhs, rhs);
+                    return cmp < 0;
+                }
+            };
+            struct DefaultCompareEqual {
+                constexpr bool operator()(const T &lhs, const T &rhs) {
+                    return lhs == rhs;
+                }
+                constexpr bool operator()(const T &lhs, const T &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<T>> {
+                    return vp::util::StringCompare(lhs, rhs);
+                }
+            };
+            template <auto Member>
+            struct DefaultCompareLessMember {
+                static constexpr auto MemberPtr = Member;
+
+                constexpr bool operator()(const T &lhs, const T &rhs) {
+                    return lhs.*Member < rhs.*Member;
+                }
+                constexpr bool operator()(const T &lhs, const T &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
+                    const s32 cmp = ::strcmp(lhs.*Member, rhs.*Member);
+                    return cmp < 0;
+                }
+            };
+
+            template <auto Member>
+            struct DefaultCompareLessSearchMember {
+                static constexpr auto MemberPtr = Member;
+
+                constexpr bool operator()(const MemberType<Member> &lhs, const MemberType<Member> &rhs) {
+                    return lhs < rhs;
+                }
+                constexpr bool operator()(const MemberType<Member> &lhs, const MemberType<Member> &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
+                    const s32 cmp = ::strcmp(lhs, rhs);
+                    return cmp < 0;
+                }
+            };
+        public:
+            template <typename CompareLess>
+            constexpr void Sort(CompareLess cmp) {
+                std::sort(m_array, m_array + Count, cmp);
+            }
+
+            template <typename CompareLess>
+            constexpr void HeapSort(CompareLess cmp) {
+                std::sort_heap(m_array, m_array + Count, cmp);
+            }
+
+            /* This function requires the heap array to be sorted */
+            template <typename CompareLessSearchMember>
+            constexpr Iterator BinarySearch(const MemberType<CompareLessSearchMember::MemberPtr> &find_element, CompareLessSearchMember cmp) const {
+
+                /* Binary search for find element */
+                using Member = MemberType<CompareLessSearchMember::MemberPtr>;
+                constexpr auto MemberPtr = CompareLessSearchMember::MemberPtr;
+                T *iter = m_array;
+                u32 i = Count;
+                while (1 < i) {
+                    const u32 h = i / 2;
+                    const Member &mber = iter[h-1].*MemberPtr;
+                    iter = (cmp(mber, find_element)) ? std::addressof(iter[h]) : iter;
+                    i -= h;
+                }
+                const Member &mber = iter[0].*MemberPtr;
+                iter += (cmp(mber, find_element));
     
-                return true;
+                return Iterator(iter);
             }
     };
 }

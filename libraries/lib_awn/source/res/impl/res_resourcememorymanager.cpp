@@ -83,24 +83,26 @@ namespace awn::res::impl {
         return;
     }
 
-    void ResourceMemoryManager::Initialize(mem::Heap *heap, ResourceMemoryManagerInfo *manager_info) {
+    Result ResourceMemoryManager::Initialize(mem::Heap *heap, ResourceMemoryManagerInfo *manager_info) {
 
         /* Create virtual address heap */
+        mem::Heap *r_heap = nullptr;
         if (manager_info->manager_heap_type == ManagerHeapType::VirtualAddressHeap) {                    
-            m_resource_heap = mem::VirtualAddressHeap::Create("VirtualAddressHeap");
-            VP_ASSERT(m_resource_heap != nullptr);
+            r_heap = mem::VirtualAddressHeap::Create("VirtualAddressHeap");
         } else if (manager_info->manager_heap_type == ManagerHeapType::ExpHeap) {
-            m_resource_heap = mem::ExpHeap::TryCreate(manager_info->name, heap, manager_info->heap_size, manager_info->heap_alignment, true);
+            r_heap = mem::ExpHeap::TryCreate(manager_info->name, heap, manager_info->heap_size, manager_info->heap_alignment, true);
         }
+        RESULT_RETURN_IF(r_heap == nullptr, ResultNoMemory);
+        m_resource_heap = r_heap;
 
-        return;
+        RESULT_RETURN_SUCCESS;
     }
 
     void ResourceMemoryManager::Finalize() {
 
         /* Destroy resource heap */
         if (m_resource_heap != nullptr) {
-            if (mem::VirtualAddressHeap::CheckRuntimeTypeInfoStatic(m_resource_heap->GetRuntimeTypeInfo()) == true) {
+            if (mem::VirtualAddressHeap::CheckRuntimeTypeInfoStatic(m_resource_heap->GetRuntimeTypeInfo())) {
                 m_resource_heap->Finalize();
             } else {
                 delete m_resource_heap;
@@ -132,21 +134,23 @@ namespace awn::res::impl {
         }
 
         /* Add resource unit to list */
-        m_resource_unit_list.PushBack(*resource_unit);
+        if (resource_unit != nullptr && !resource_unit->m_compression_flags.GetBit(ResourceUnit::CompressionFlag_IsNoAddToMemoryMgr)) {            
+            m_resource_unit_list.PushBack(*resource_unit);
+        }
 
         return new_heap;
     }
 
     void ResourceMemoryManager::TrackMemoryUsageGlobal(mem::Heap *heap) {
-        const size_t size = (mem::VirtualAddressHeap::CheckRuntimeTypeInfoStatic(m_resource_heap->GetRuntimeTypeInfo()) == true) ? reinterpret_cast<mem::VirtualAddressHeap*>(m_resource_heap)->GetSizeOfAllocation(heap) : heap->GetTotalSize();
+        const size_t size = (mem::VirtualAddressHeap::CheckRuntimeTypeInfoStatic(m_resource_heap->GetRuntimeTypeInfo())) ? reinterpret_cast<mem::VirtualAddressHeap*>(m_resource_heap)->GetSizeOfAllocation(heap) : heap->GetTotalSize();
         vp::util::InterlockedAdd(std::addressof(m_global_memory_usage), size);
     }
     void ResourceMemoryManager::TrackMemoryUsageActive(mem::Heap *heap) {
-        const size_t size = (mem::VirtualAddressHeap::CheckRuntimeTypeInfoStatic(m_resource_heap->GetRuntimeTypeInfo()) == true) ? reinterpret_cast<mem::VirtualAddressHeap*>(m_resource_heap)->GetSizeOfAllocation(heap) : heap->GetTotalSize();
+        const size_t size = (mem::VirtualAddressHeap::CheckRuntimeTypeInfoStatic(m_resource_heap->GetRuntimeTypeInfo())) ? reinterpret_cast<mem::VirtualAddressHeap*>(m_resource_heap)->GetSizeOfAllocation(heap) : heap->GetTotalSize();
         vp::util::InterlockedAdd(std::addressof(m_global_memory_usage), size);
     }
     void ResourceMemoryManager::ReleaseMemoryUsageGlobal(mem::Heap *heap) {
-        const size_t size = (mem::VirtualAddressHeap::CheckRuntimeTypeInfoStatic(m_resource_heap->GetRuntimeTypeInfo()) == true) ? reinterpret_cast<mem::VirtualAddressHeap*>(m_resource_heap)->GetSizeOfAllocation(heap) : heap->GetTotalSize();
+        const size_t size = (mem::VirtualAddressHeap::CheckRuntimeTypeInfoStatic(m_resource_heap->GetRuntimeTypeInfo())) ? reinterpret_cast<mem::VirtualAddressHeap*>(m_resource_heap)->GetSizeOfAllocation(heap) : heap->GetTotalSize();
         vp::util::InterlockedSubtract(std::addressof(m_global_memory_usage), size);
     }
     void ResourceMemoryManager::ReleaseMemoryUsageActive(mem::Heap *heap) {

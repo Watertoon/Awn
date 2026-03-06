@@ -17,32 +17,22 @@
 
 namespace awn::hid {
 
-    enum class MouseButton : u32 {
-        Left = 0,
-        Right = 1,
-        Middle = 2,
-        Forward = 3,
-        Backward = 4,
-    };
-    using MouseButtonSet = vp::util::FixedConnection<u32, 0x20>;
-    using MouseAttributeSet = vp::util::FixedConnection<u32, 0x20>;
-
     static constexpr u32 cMaxMouseStateCount = 0x10;
-    static constexpr vp::util::Int2 cInvalidMousePosition = { 0x7fff'ffff, 0x7fff'ffff, };
+    static constexpr Int2 cInvalidMousePosition = { 0x7fff'ffff, 0x7fff'ffff, };
 
     struct MouseState {
         s64 sampling_count;
-        vp::util::Int2 position;
-        vp::util::Int2 delta;
-        vp::util::Int2 delta_wheel;
+        Int2 position;
+        Int2 delta;
+        Int2 delta_wheel;
         MouseButtonSet button_set;
         MouseAttributeSet attribute_set;
 
         constexpr void SetDefaults() {
             this->sampling_count = 0;
             this->position = cInvalidMousePosition;
-            this->delta = vp::util::Int2::cZero;
-            this->delta_wheel = vp::util::Int2::cZero;
+            this->delta = VectorConstant<Int2>::cZero;
+            this->delta_wheel = VectorConstant<Int2>::cZero;
             this->button_set.Clear();
             this->attribute_set.Clear();
         }

@@ -19,7 +19,7 @@ namespace vp::util {
 
     template <typename Ret, typename T>
         requires (T::cIsMatrixType && 3 <= T::cRowCount && 3 <= T::cColumnCount && std::is_same_v<typename T::UnderlyingType, typename Ret::UnderlyingType> 
-        && Ret::cIsVectorType && 4 <= Ret::cVectorCount && std::is_floating_point_v<typename Ret::UnderlyingType>)
+        && Ret::cIsVectorType && 4 <= Ret::cCount && std::is_floating_point_v<typename Ret::UnderlyingType>)
     constexpr Ret MatrixToQuat(const T &matrix) {
         using Type = typename Ret::UnderlyingType;
         constexpr const Type cOne = static_cast<Type>(1);
@@ -46,7 +46,7 @@ namespace vp::util {
                     ret[1] = (matrix[1,0] + matrix[0,1]) * s;
                     ret[2] = (matrix[2,0] + matrix[0,2]) * s;
                     ret[3] = (matrix[1,2] - matrix[2,1]) * s;
-                    return;
+                    return ret;
                 }
                 goto __vp_util_matrix_to_quat_z_label;
             }
@@ -58,7 +58,7 @@ namespace vp::util {
                 ret[1] = (matrix[2,0] - matrix[0,2]) * s;
                 ret[2] = (matrix[0,1] - matrix[1,0]) * s;
                 ret[3] = qw;
-                return;
+                return ret;
             }
             goto __vp_util_matrix_to_quat_z_label;
         }
@@ -69,7 +69,7 @@ namespace vp::util {
             ret[1] = qy;
             ret[2] = (matrix[2,1] + matrix[1,2]) * s;
             ret[3] = (matrix[2,0] - matrix[0,2]) * s;
-            return;
+            return ret;
         }
         __vp_util_matrix_to_quat_z_label:
         const Type qz = SquareRoot(t2);
@@ -78,12 +78,12 @@ namespace vp::util {
         ret[1] = (matrix[1,2] + matrix[2,1]) * s;
         ret[2] = qz;
         ret[3] = (matrix[0,1] - matrix[1,0]) * s;
-        return;
+        return ret;
     }
 
     template <typename Ret, typename T>
         requires (Ret::cIsMatrixType && 3 <= Ret::cRowCount && 3 <= Ret::cColumnCount && std::is_same_v<typename Ret::UnderlyingType, typename T::UnderlyingType> 
-        && T::cIsVectorType && 4 <= T::cVectorCount && std::is_floating_point_v<typename Ret::UnderlyingType>)
+        && T::cIsVectorType && 4 <= T::cCount && std::is_floating_point_v<typename Ret::UnderlyingType>)
     constexpr Ret QuatToMatrix(const T &quaternion) {
         using Type = typename Ret::UnderlyingType;
         const Type x = quaternion[0];
@@ -100,12 +100,12 @@ namespace vp::util {
          * | 2xz - 2yw,       2yz - 2xw,       1 - 2x^2 - 2y^2, 0 |
          * | 0,               0,               0,               0 |
          */
-        using v4t = TVectorType<Type, 4>;
         if (Ret::cIsColumnMajor) {
+            using v4t = TVector<Type,Ret::cRowCount,Ret::cIsVectorized>;
             const v4t row_array[3] = {
-                { 1.0f - (m_y * y + m_z * z), m_y * x + m_z * w,       m_z * x - m_y * w,       0.0f, },
-                { m_y * x - m_z * w,          1.0f - (m_xx + m_z * z), m_z * y + m_xw,          0.0f, },
-                { m_z * x + m_y * w,          m_z * y - m_xw,          1.0f - (m_xx + m_y * y), 0.0f, },
+                { 1.0f - (m_y * y + m_z * z), m_y * x + m_z * w,       m_z * x - m_y * w, },
+                { m_y * x - m_z * w,          1.0f - (m_xx + m_z * z), m_z * y + m_xw, },
+                { m_z * x + m_y * w,          m_z * y - m_xw,          1.0f - (m_xx + m_y * y), },
             };
             Ret ret = {};
             for (u32 i = 0; i < 3; ++i) {
@@ -113,10 +113,11 @@ namespace vp::util {
             }
             return ret;
         } else {
+            using v4t = TVector<Type,Ret::cColumnCount,Ret::cIsVectorized>;
             const v4t col_array[3] = {
-                { 1.0f - (m_y * y + m_z * z), m_y * x - m_z * w,       m_z * x + m_y * w,       0.0f, },
-                { m_y * x + m_z * w,          1.0f - (m_xx + m_z * z), m_z * y - m_xw,          0.0f, },
-                { m_z * x - m_y * w,          m_z * y + m_xw,          1.0f - (m_xx + m_y * y), 0.0f, },
+                { 1.0f - (m_y * y + m_z * z), m_y * x - m_z * w,       m_z * x + m_y * w, },
+                { m_y * x + m_z * w,          1.0f - (m_xx + m_z * z), m_z * y - m_xw, },
+                { m_z * x - m_y * w,          m_z * y + m_xw,          1.0f - (m_xx + m_y * y), },
             };
             Ret ret = {};
             for (u32 i = 0; i < 3; ++i) {
@@ -150,7 +151,7 @@ namespace vp::util {
     }
 
     template <typename Ret, typename T>
-        requires (Ret::cIsVectorType && 3 <= Ret::cVectorCount && T::cIsVectorType && 4 <= T::cVectorCount)
+        requires (Ret::cIsVectorType && 3 <= Ret::cCount && T::cIsVectorType && 4 <= T::cCount)
     constexpr Ret QuatToEulerXYZ(const T &quat) {
         
         const float x = quat[0];
@@ -171,27 +172,34 @@ namespace vp::util {
         return Ret{ roll, pitch, yaw, };
     }
 
-    //constexpr Vector4f AxesToQuat(const Vector3f &axis0, const Vector3f &axis0) {
-    //    /*
-    //     *  .x = sin(r/2)cos(p/2)cos*(y/2)-cos(r/2)sin(p/2)sin(y/2)
-    //     *  .y = cos(r/2)sin(p/2)cos*(y/2)+sin(r/2)cos(p/2)sin(y/2)
-    //     *  .z = cos(r/2)cos(p/2)sin*(y/2)-sin(r/2)sin(p/2)cos(y/2)
-    //     *  .w = cos(r/2)cos(p/2)cos*(y/2)+sin(r/2)sin(p/2)sin(y/2)
-    //     */
-    //    using Type = typename T::UnderlyingType;
-    //    const Type q_x = ;
-    //    const Type q_y = ;
-    //    const Type q_z = ;
-    //    const Type q_w2 = ;
-    //    const Type q_x2 = ;
-    //    const Vector4f axis0 = {
-    //        ,
-    //        ,
-    //        ,
-    //        ,
-    //    };
-    //    return ret;
-    //}
+    template <typename Ret, typename T>
+        requires (Ret::cIsMatrixType && 3 <= Ret::cRowCount && 3 <= Ret::cColumnCount && std::is_same_v<typename Ret::UnderlyingType, typename T::UnderlyingType> 
+        && T::cIsVectorType && 3 == T::cCount && std::is_floating_point_v<typename Ret::UnderlyingType>)
+    constexpr Ret AxesToMatrix(const T &axis0, const T &axis1) {
+        using Type = typename T::UnderlyingType;
+        /* Construct 3rd unit axis */
+        const T axis2 = Cross(axis0, axis1);
+        const Type sum1 = SquaredSum(axis1);
+        const Type sum2 = SquaredSum(axis2);
+        /* Ensure non-zero */
+        VP_ASSERT(sum1 != static_cast<Type>(0.0) && sum2 != static_cast<Type>(0.0));
+        /* Fast normalize */
+        const Type m1 = static_cast<Type>(1.0) / SquareRoot(sum1);
+        const Type m2 = static_cast<Type>(1.0) / SquareRoot(sum2);
+        const T n_axis1 = axis1 * m1;
+        const T n_axis2 = axis2 * m2;
+        const T n_axis0 = Cross(n_axis1, n_axis2);
+        Ret ret = {};
+        StoreColumn(std::addressof(ret),n_axis0,0);
+        StoreColumn(std::addressof(ret),n_axis1,1);
+        StoreColumn(std::addressof(ret),n_axis2,2);
+        return ret;
+    }
+    constexpr Vector4f AxesToQuat(const Vector3f &axis0, const Vector3f &axis1) {
+        MatrixRowMajor4x3f mat = AxesToMatrix<MatrixRowMajor4x3f>(axis0,axis1);
+        const Vector4f ret = MatrixToQuat<Vector4f>(mat);
+        return ret;
+    }
 
     constexpr void QuatToAxes(Vector3f *out_axes, const Vector4f &quat) {
         const float x = quat[0];
@@ -218,11 +226,22 @@ namespace vp::util {
         return;
     }
 
-    //constexpr Vector3f QuatToEuler(const Vector4f &quat) {
-    //}
+    template <typename T>
+        requires (T::cIsVectorType && 4 <= T::cCount && std::is_floating_point_v<typename T::UnderlyingType>)
+    constexpr T QuatConjugate(const T &quat) {
+        T ret;
+        for (u32 i = 0; i < T::cCount; ++i) {
+            if (i < 3) {
+                ret[i] = -quat[i];
+            } else {
+                ret[i] = quat[i];
+            }
+        }
+        return ret;
+    }
 
     template <typename T>
-        requires (T::cIsVectorType && 4 <= T::cVectorCount && std::is_floating_point_v<typename T::UnderlyingType>)
+        requires (T::cIsVectorType && 4 <= T::cCount && std::is_floating_point_v<typename T::UnderlyingType>)
     constexpr T QuatMultiply(const T &quat_lhs, const T &quat_rhs) {
         /*
          *  (q1.w * q2.x) + (q1.x * q2.w) + (q1.y * q2.z) - (q1.z * q2.y)
@@ -253,7 +272,7 @@ namespace vp::util {
     }
 
     template <typename T, typename V>
-        requires (T::cIsVectorType && 4 <= T::cVectorCount && std::is_floating_point_v<typename T::UnderlyingType>)
+        requires (T::cIsVectorType && 4 <= T::cCount && std::is_floating_point_v<typename T::UnderlyingType>) && (V::cIsVectorType && 3 <= V::cCount)
     constexpr V QuatRotate(const T &quat, const V &point) {
         using Type = typename T::UnderlyingType;
         const Type q_x = quat[0];
@@ -282,8 +301,8 @@ namespace vp::util {
 
         /* Invert quat for neg  */
         const float dot = Dot(from, to);
-        const Vector4f dot_v = BroadcastVector4(dot);
-        const Vector4f b_mask = CompareGreaterThan(Vector4f::cZero, dot_v);
+        const Vector4f dot_v = Broadcast<Vector4f>(dot);
+        const Vector4f b_mask = CompareGreaterThan(VectorConstant<Vector4f>::cZero, dot_v);
         const Vector4f neg_to = -to;
         const Vector4f abs_to = InsertTrue(to, neg_to, b_mask);
 
@@ -291,14 +310,14 @@ namespace vp::util {
         const Vector4f lin = from + (abs_to - from) * time;
         const Vector4f lin_sq = lin * lin;
         float lin_sum = Sum(lin_sq);
-        const Vector4f lin_sum_b = BroadcastVector4(lin_sum);
+        const Vector4f lin_sum_b = Broadcast<Vector4f>(lin_sum);
         const Vector4f inv_mag = ReciprocalSquareRoot(lin_sum_b);
         const Vector4f value = lin * inv_mag;
 
         /* Epsilon mask result */
-        const Vector4f epsilon = BroadcastVector4(cFloatQuaternionEpsilon);
+        const Vector4f epsilon = Broadcast<Vector4f>(cFloatQuaternionEpsilon);
         const Vector4f ep_mask = CompareGreaterThan(epsilon, lin_sum_b);
-        const Vector4f ret = Vector4f{ .v = AndNot(value.v, ep_mask.v), };
+        const Vector4f ret = value & (~ep_mask);
         return ret;
     }
 
@@ -325,14 +344,14 @@ namespace vp::util {
             const Vector4f lin = Vector4f{ t_x, t_y, t_z, t_w, };
             const Vector4f lin_sq = lin * lin;
             float lin_sum = Sum(lin_sq);
-            const Vector4f lin_sum_b = BroadcastVector4(lin_sum);
+            const Vector4f lin_sum_b = Broadcast<Vector4f>(lin_sum);
             const Vector4f inv_mag = ReciprocalSquareRoot(lin_sum_b);
             const Vector4f value = lin * inv_mag;
 
             /* Epsilon mask result */
-            const Vector4f epsilon = BroadcastVector4(cFloatQuaternionEpsilon);
+            const Vector4f epsilon = Broadcast<Vector4f>(cFloatQuaternionEpsilon);
             const Vector4f ep_mask = CompareGreaterThan(epsilon, lin_sum_b);
-            const Vector4f ret = Vector4f{ .v = AndNot(value.v, ep_mask.v), };
+            const Vector4f ret = value & (~ep_mask);
             return ret;
         }
 

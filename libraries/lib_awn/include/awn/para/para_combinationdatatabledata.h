@@ -6,28 +6,24 @@ namespace awn::para {
         const char *RowKey    = "";
         const char *ColumnKey = "";
 
-        AWN_PARA_LAYOUT_TYPE_TRAITS(CombinationDataCellBase_Layout);
+        AWN_PARA_TYPED_PARAM_LAYOUT_TRAITS(CombinationDataCellBase_Layout);
     };
 
-    AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(
+    AWN_PARA_DECLARE_TYPED_PARAM(
         awn__para__CombinationDataCellBase, CombinationDataCellBase,
-        TypedParam,                         CombinationDataCellBase_Layout,
-        RowKey,
-        ColumnKey
+        TypedParam,                         CombinationDataCellBase_Layout
     );
 
 	struct CombinationDataTableData_Layout {
 		TypedParamMap<CombinationDataCellBase>  CellList  = {};
         const char                             *TableType = "";
 
-        AWN_PARA_LAYOUT_TYPE_TRAITS(CombinationDataTableData_Layout);
+        AWN_PARA_TYPED_PARAM_LAYOUT_TRAITS(CombinationDataTableData_Layout);
 	};
     
-    AWN_PARA_DECLARE_TYPED_PARAM_AUTOV(
+    AWN_PARA_DECLARE_TYPED_PARAM(
         awn__para__CombinationDataTableData, CombinationDataTableData,
-        TypedParam,                          CombinationDataTableData_Layout,
-        TableType,
-        CellList
+        TypedParam,                          CombinationDataTableData_Layout
     );
 
     enum class CellArrangement : bool {
@@ -81,11 +77,11 @@ namespace awn::para {
     };
 
     ALWAYS_INLINE CellIterator BeginRow(CombinationDataTableData *data_table) {
-        const TypedParamMap<CombinationDataCellBase> *map = data_table->GetCellList();
+        const TypedParamMap<CombinationDataCellBase> *map = data_table->GetComposite<"CellList">();
         return CellIterator(map, CellArrangement::Row);
     }
     ALWAYS_INLINE CellIterator BeginColumn(CombinationDataTableData *data_table) {
-        const TypedParamMap<CombinationDataCellBase> *map = data_table->GetCellList();
+        const TypedParamMap<CombinationDataCellBase> *map = data_table->GetComposite<"CellList">();
         return CellIterator(map, CellArrangement::Column);
     }
 

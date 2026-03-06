@@ -66,23 +66,20 @@ namespace vp::util {
     template <typename T>
         requires (std::is_floating_point_v<T>)
     constexpr T ModuloPi(T value) {
-        constexpr T pi = (sizeof(T) == sizeof(float)) ? cFloatPi : cDoublePi;
-        constexpr T one_div_pi2 = (sizeof(T) == sizeof(float)) ? cFloat1Divided2Pi : cDouble1Divided2Pi;
-        constexpr T pi2 = (sizeof(T) == sizeof(float)) ? cFloat2Pi : cDouble2Pi;
-        constexpr T pi_div_2 = (sizeof(T) == sizeof(float)) ? cFloatPiDivided2 : cDoublePiDivided2;
-        const T temp = value;
-        const T sel0 = (temp < 0.0f) ? -0.5f : 0.5f;
-        const s32 adj0 = static_cast<s32>(sel0 + (temp * one_div_pi2));
-        T adj1 = temp - (static_cast<T>(adj0) * pi2);
-        if (adj1 <= pi_div_2) {
-            if (adj1 < -pi_div_2) {
-                adj1 = -pi - adj1;
-            }
-        } else {
-            adj1 = pi - adj1;
-        }
-        const T fin = adj1;
-        return fin;
+        constexpr const T cPi = (sizeof(T) == sizeof(float)) ? cFloatPi : cDoublePi;
+        constexpr const T c1Div2Pi = (sizeof(T) == sizeof(float)) ? cFloat1Divided2Pi : cDouble1Divided2Pi;
+        constexpr const T c2Pi = (sizeof(T) == sizeof(float)) ? cFloat2Pi : cDouble2Pi;
+        constexpr const T cPiDiv2 = (sizeof(T) == sizeof(float)) ? cFloatPiDivided2 : cDoublePiDivided2;
+
+        /* Clamp to nearest range in -2pi to 2pi */
+        const T v = value;
+        const T p5 = (v < 0.0f) ? -0.5f : 0.5f;
+        const T r = static_cast<T>(static_cast<s32>(p5 + (v * c1Div2Pi)));
+        const T a = v - (r * c2Pi);
+        /* Modulus to -pi to pi range */
+        const T b = (cPiDiv2 < a) ? (cPi - a) : a;
+        const T c = (b < -cPiDiv2) ? (-cPi - b) : b;
+        return c;
     }
 
     template <typename T>

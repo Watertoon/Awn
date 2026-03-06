@@ -30,7 +30,7 @@ namespace awn::res {
         return;
     }
 
-    void ResourceBinder::InitializeResource(ResourceUserContext *resource_user_context) {
+    void ResourceBinder::ComposeResource(IComposeInfo *compose_info) {
 
         /* TODO; provide memory allocation error handling */
         auto finalize_on_error_guard = SCOPE_GUARD {
@@ -47,14 +47,14 @@ namespace awn::res {
 
         /* Try initialize resource */
         if (!m_resource_unit->IsResourceInitialized()) {
-            const bool result = m_resource_unit->InitializeResource(resource_user_context);
-            if (!result) { m_status = Status::FailedToInitializeResource; return; }
+            const bool result = m_resource_unit->ComposeResource(compose_info);
+            if (!result) { m_status = Status::ComposeNG; return; }
         }
         finalize_on_error_guard.Cancel();
 
         /* Update status for initialization */
-        if (m_status == Status::InLoad) {
-            m_status = Status::ResourceInitialized;
+        if (m_status == Status::Pending) {
+            m_status = Status::Composed;
         }
 
         return;
@@ -74,7 +74,7 @@ namespace awn::res {
         }
 
         /* Nothing else to do if no resource unit */
-        if (m_resource_unit == nullptr) { m_status = Status::NoResourceUnitOnFinalize; return; }
+        if (m_resource_unit == nullptr) { m_status = Status::Cancelled; return; }
 
         /* Finalize binder impl */
         impl::AsyncResourceManager *manager = impl::AsyncResourceManager::GetInstance();
@@ -88,7 +88,7 @@ namespace awn::res {
         /* Enforce load guard */
         RESULT_RETURN_IF(m_load_guard, ResultLoadGuardSet);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
-        m_status = Status::Uninitialized;
+        m_status = Status::RequestOk;
 
         impl::AsyncResourceManager *manager = impl::AsyncResourceManager::GetInstance();
         return manager->TryLoadSync(file_path, this, bind_info);
@@ -99,7 +99,7 @@ namespace awn::res {
         /* Enforce load guard */
         RESULT_RETURN_IF(m_load_guard, ResultLoadGuardSet);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
-        m_status = Status::Uninitialized;
+        m_status = Status::RequestOk;
 
         impl::AsyncResourceManager *manager = impl::AsyncResourceManager::GetInstance();
         return manager->TryLoadAsync(file_path, this, bind_info);
@@ -110,7 +110,7 @@ namespace awn::res {
         /* Enforce load guard */
         RESULT_RETURN_IF(m_load_guard, ResultLoadGuardSet);
         m_state_mask = (m_state_mask & 0xf0) | 0x2;
-        m_status = Status::Uninitialized;
+        m_status = Status::RequestOk;
 
         /* Set resource unit */
         impl::ResourceUnit *resource_unit = binder_to_reference->m_resource_unit;
@@ -128,10 +128,10 @@ namespace awn::res {
     Result ResourceBinder::ReferenceBinderSync(ResourceBinder *binder_to_reference) {
 
         /* Bind async */
-        this->ReferenceBinderAsync(binder_to_reference);
+        RESULT_TRY(this->ReferenceBinderAsync(binder_to_reference));
 
         /* Complete */
-        this->Complete(nullptr);
+        this->Compose(nullptr);
 
         RESULT_RETURN_SUCCESS;
     }
@@ -157,33 +157,33 @@ namespace awn::res {
         return;
     }
 
-    bool ResourceBinder::Complete(ResourceUserContext *resource_user_context) {
+    bool ResourceBinder::Compose(IComposeInfo *compose_info) {
 
         /* Succeed if we previously completed */
-        if (m_complete_guard) { return true; }
+        if (m_compose_guard) { return true; }
         /* Fail if we were finalized */
         if (m_is_finalize) { return false; }
         /* Fail if we are not loaded */
         if (!this->IsLoaded()) { return false; }
 
         /* Finalize for error on exit guard */
-        Status exit_status = Status::Uninitialized;
+        Status exit_status = Status::RequestOk;
         auto finalize_error_guard = SCOPE_GUARD {
             m_status = exit_status;
             this->Release();
         };
 
         /* Complete flag update guard */
-        auto complete_guard = SCOPE_GUARD {
-            m_complete_guard = true;
+        auto compose_guard = SCOPE_GUARD {
+            m_compose_guard = true;
         };
 
         /* Succeed if we don't have a resource unit as a result of the watcher getting cancelled */
-        if (m_resource_unit == nullptr && m_watcher.IsCancelled()) { exit_status = Status::NoResourceUnitOnFinalize; return true; }
-        /* Succeed if the binder had an error */
-        if (this->IsErrorStatus()) { exit_status = m_status; return true; }
+        if (m_resource_unit == nullptr && m_watcher.IsCancelled()) { exit_status = Status::Cancelled; return true; }
+        /* Succeed if the binder has an error status */
+        if (this->IsError()) { exit_status = m_status; return true; }
         /* Fail if the binder is uninitialized */
-        if (m_resource_unit == nullptr || m_status == Status::Uninitialized) { return false; }
+        if (m_resource_unit == nullptr || m_status == Status::RequestOk) { return false; }
 
         /* Switch for 5 cases of resource unit status:
          * Fail if uninitialized
@@ -196,25 +196,25 @@ namespace awn::res {
             case impl::ResourceUnit::Status::Uninitialized:
             case impl::ResourceUnit::Status::InLoad:
             default:
-                complete_guard.Cancel();
+                compose_guard.Cancel();
                 finalize_error_guard.Cancel();
                 return false;
             case impl::ResourceUnit::Status::Loaded:
             case impl::ResourceUnit::Status::InResourceInitialize:
             case impl::ResourceUnit::Status::ResourcePreFinalized:
             case impl::ResourceUnit::Status::ResourceInitialized:
-                this->InitializeResource(resource_user_context);
+                this->ComposeResource(compose_info);
                 break;
             case impl::ResourceUnit::Status::Error:
                 this->HandleResourceUnitError();
                 break;
             case impl::ResourceUnit::Status::FailedToInitializeResource:
             case impl::ResourceUnit::Status::FailedToPostInitializeResource:
-                exit_status = Status::FailedToInitializeResource;
+                exit_status = Status::ComposeNG;
                 return false;
             case impl::ResourceUnit::Status::ResourcePostInitialized:
-                if (m_status == Status::InLoad) {
-                    m_status = Status::ResourceInitialized;
+                if (m_status == Status::Pending) {
+                    m_status = Status::Composed;
                 }
                 if (!this->IsReferenceBinder()) {            
                     this->HandleMemoryAllocationError();
@@ -229,35 +229,38 @@ namespace awn::res {
 
     Resource *ResourceBinder::GetResourceDirect() const {
         /* Fail if the resource is not initialized */
-        if (!this->IsCompleted()) { return nullptr; }
+        if (!this->IsComposed()) { return nullptr; }
         /* Get resource */
         Resource *resource = m_resource_unit->m_resource;
         return resource;
     }
 
     bool ResourceBinder::IsLoading() const {
-        /* Fail if we have not scheduled a load */
-        if (!m_load_guard) { return false; }
         /* Succeed if the watcher is pending */
         if (m_watcher.IsPending()) { return true; }
+        /* Fail if we have not scheduled a load */
+        if (!m_load_guard) { return false; }
+        vp::util::MemoryBarrierInnerRead();
         /* Fail if we do not have a resource unit, as the control task is pending or it failed */
         if (m_resource_unit == nullptr) { return false; }
+        /* Loading completed if we are the compose thread */
+        if (impl::AsyncResourceManager::GetInstance()->IsCurrentThreadComposeThread()) { return m_resource_unit->m_load_task.IsPending(); }
         /* Defer to the resource unit */
         return m_resource_unit->IsInLoad();
     }
 
     bool ResourceBinder::IsLoaded() const {
-        /* Fail if we are complete */
-        if (m_complete_guard) { return false; }
+        /* Fail if we are not in load or already completed */
+        if ((m_state_mask & ((1 << 1) | (1 << 3))) != (1 << 1)) { return false; }
         /* Fail if we are in load */
         return !this->IsLoading();
     }
 
-    bool ResourceBinder::IsCompleted() const {
+    bool ResourceBinder::IsComposed() const {
         /* Fail if we are still in load */
         if (this->IsLoading()) { return false; }
         /* Fail if we are not complete */
-        if (!m_complete_guard) { return false; }
+        if (!m_compose_guard) { return false; }
         /* Fail if no resource unit */
         if (m_resource_unit == nullptr) { return false; }
         /* Defer to the resource unit */
@@ -269,6 +272,6 @@ namespace awn::res {
         if (this->IsLoading()) { return false; }
         /* If we or our resource unit has an error status, we failed */
         const bool is_res_unit_failed = (m_load_guard && m_resource_unit != nullptr) ? m_resource_unit->IsErrorStatus() : false;
-        return this->IsErrorStatus() | is_res_unit_failed;
+        return this->IsError() | is_res_unit_failed;
     }
 }

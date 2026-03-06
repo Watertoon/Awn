@@ -17,29 +17,29 @@
 
 namespace vp::codec {
 
-    void DecryptBlocksAes128CbcImpl(vp::util::v2sll *output, vp::util::v2sll *init_vector, const vp::util::v2sll *input, u32 block_count, Aes128Context *aes128_context) {
+    void DecryptBlocksAes128CbcImpl(vp::util::Vector2sll *output, vp::util::Vector2sll *init_vector, const vp::util::Vector2sll *input, u32 block_count, Aes128Context *aes128_context) {
 
-        const vp::util::v2sll key        = aes128_context->key;
-        const vp::util::v2sll round_key0 = aes128_context->round_key0;
-        const vp::util::v2sll round_key1 = aes128_context->round_key1;
-        const vp::util::v2sll round_key2 = aes128_context->round_key2;
-        const vp::util::v2sll round_key3 = aes128_context->round_key3;
-        const vp::util::v2sll round_key4 = aes128_context->round_key4;
-        const vp::util::v2sll round_key5 = aes128_context->round_key5;
-        const vp::util::v2sll round_key6 = aes128_context->round_key6;
-        const vp::util::v2sll round_key7 = aes128_context->round_key7;
-        const vp::util::v2sll round_key8 = aes128_context->round_key8;
-        const vp::util::v2sll round_key9 = aes128_context->round_key9;
+        const vp::util::Vector2sll key        = aes128_context->key;
+        const vp::util::Vector2sll round_key0 = aes128_context->round_key0;
+        const vp::util::Vector2sll round_key1 = aes128_context->round_key1;
+        const vp::util::Vector2sll round_key2 = aes128_context->round_key2;
+        const vp::util::Vector2sll round_key3 = aes128_context->round_key3;
+        const vp::util::Vector2sll round_key4 = aes128_context->round_key4;
+        const vp::util::Vector2sll round_key5 = aes128_context->round_key5;
+        const vp::util::Vector2sll round_key6 = aes128_context->round_key6;
+        const vp::util::Vector2sll round_key7 = aes128_context->round_key7;
+        const vp::util::Vector2sll round_key8 = aes128_context->round_key8;
+        const vp::util::Vector2sll round_key9 = aes128_context->round_key9;
 
-        vp::util::v2sll iv_iter = *init_vector;
+        vp::util::Vector2sll iv_iter = *init_vector;
 
         for (u32 i = 0; i < block_count; ++i) {
 
             /* Perform ten rounds of aes decryption on input */
-            const vp::util::v2sll input_i = *input;
-            vp::util::v2sll       round_iter;
+            const vp::util::Vector2sll input_i = *input;
+            vp::util::Vector2sll       round_iter;
 
-            round_iter = vp::util::v2sll{ .v = input_i.v ^ round_key9.v, };
+            round_iter = vp::util::Vector2sll{ .v = input_i.v ^ round_key9.v, };
             round_iter = Aesdec(round_iter, round_key8);
             round_iter = Aesdec(round_iter, round_key7);
             round_iter = Aesdec(round_iter, round_key6);
@@ -49,7 +49,7 @@ namespace vp::codec {
             round_iter = Aesdec(round_iter, round_key2);
             round_iter = Aesdec(round_iter, round_key1);
             round_iter = Aesdec(round_iter, round_key0);
-            *output    = vp::util::v2sll{ .v = iv_iter.v ^ Aesdeclast(round_iter, key).v };
+            *output    = vp::util::Vector2sll{ .v = iv_iter.v ^ Aesdeclast(round_iter, key).v };
 
             /* Advance iters */
             output  = output + 1;
@@ -71,33 +71,33 @@ namespace vp::codec {
             ::memcpy(iv_array, init_vector, 0x10);            
         }
 
-        DecryptBlocksAes128CbcImpl(reinterpret_cast<vp::util::v2sll*>(output), reinterpret_cast<vp::util::v2sll*>(iv_array), reinterpret_cast<const vp::util::v2sll*>(input), input_size / sizeof(vp::util::v2sll), std::addressof(context));
+        DecryptBlocksAes128CbcImpl(reinterpret_cast<vp::util::Vector2sll*>(output), reinterpret_cast<vp::util::Vector2sll*>(iv_array), reinterpret_cast<const vp::util::Vector2sll*>(input), input_size / sizeof(vp::util::Vector2sll), std::addressof(context));
 
         return;
     }
 
-    void EncryptBlocksAes128CbcImpl(vp::util::v2sll *output, vp::util::v2sll *init_vector, const vp::util::v2sll *input, u32 block_count, Aes128Context *aes128_context) {
+    void EncryptBlocksAes128CbcImpl(vp::util::Vector2sll *output, vp::util::Vector2sll *init_vector, const vp::util::Vector2sll *input, u32 block_count, Aes128Context *aes128_context) {
 
-        const vp::util::v2sll key        = aes128_context->key;
-        const vp::util::v2sll round_key0 = aes128_context->round_key0;
-        const vp::util::v2sll round_key1 = aes128_context->round_key1;
-        const vp::util::v2sll round_key2 = aes128_context->round_key2;
-        const vp::util::v2sll round_key3 = aes128_context->round_key3;
-        const vp::util::v2sll round_key4 = aes128_context->round_key4;
-        const vp::util::v2sll round_key5 = aes128_context->round_key5;
-        const vp::util::v2sll round_key6 = aes128_context->round_key6;
-        const vp::util::v2sll round_key7 = aes128_context->round_key7;
-        const vp::util::v2sll round_key8 = aes128_context->round_key8;
-        const vp::util::v2sll round_key9 = aes128_context->round_key9;
+        const vp::util::Vector2sll key        = aes128_context->key;
+        const vp::util::Vector2sll round_key0 = aes128_context->round_key0;
+        const vp::util::Vector2sll round_key1 = aes128_context->round_key1;
+        const vp::util::Vector2sll round_key2 = aes128_context->round_key2;
+        const vp::util::Vector2sll round_key3 = aes128_context->round_key3;
+        const vp::util::Vector2sll round_key4 = aes128_context->round_key4;
+        const vp::util::Vector2sll round_key5 = aes128_context->round_key5;
+        const vp::util::Vector2sll round_key6 = aes128_context->round_key6;
+        const vp::util::Vector2sll round_key7 = aes128_context->round_key7;
+        const vp::util::Vector2sll round_key8 = aes128_context->round_key8;
+        const vp::util::Vector2sll round_key9 = aes128_context->round_key9;
 
-        vp::util::v2sll iv_iter = *init_vector;
+        vp::util::Vector2sll iv_iter = *init_vector;
 
         for (u32 i = 0; i < block_count; ++i) {
 
             /* Perform ten rounds of aes decryption on input */
-            const vp::util::v2sll input_i = *input;
-            vp::util::v2sll       round_iter;
-            round_iter = vp::util::v2sll{ .v = input_i.v ^ key.v ^ iv_iter.v };
+            const vp::util::Vector2sll input_i = *input;
+            vp::util::Vector2sll       round_iter;
+            round_iter = vp::util::Vector2sll{ .v = input_i.v ^ key.v ^ iv_iter.v };
             round_iter = Aesenc(round_iter,     round_key0);
             round_iter = Aesenc(round_iter,     round_key1);
             round_iter = Aesenc(round_iter,     round_key2);
@@ -128,7 +128,7 @@ namespace vp::codec {
             ::memcpy(iv_array, init_vector, 0x10);            
         }
 
-        EncryptBlocksAes128CbcImpl(reinterpret_cast<vp::util::v2sll*>(output), reinterpret_cast<vp::util::v2sll*>(iv_array), reinterpret_cast<const vp::util::v2sll*>(input), input_size / sizeof(vp::util::v2sll), std::addressof(context));
+        EncryptBlocksAes128CbcImpl(reinterpret_cast<vp::util::Vector2sll*>(output), reinterpret_cast<vp::util::Vector2sll*>(iv_array), reinterpret_cast<const vp::util::Vector2sll*>(input), input_size / sizeof(vp::util::Vector2sll), std::addressof(context));
 
         return;
     }

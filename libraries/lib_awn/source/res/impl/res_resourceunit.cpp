@@ -18,8 +18,8 @@
 namespace awn::res::impl {
 
     ResourceUnit::ResourceUnit() : m_state(), m_compression_flags(), m_cache_unload_flags(), m_cache_unload_no_error_flags(), m_is_part_of_resource_unit_mgr(), m_status(Status::Uninitialized), m_reference_count(), m_deferred_adjust_count{}, m_compose_reference_count(), m_resource_initialize_guard(), m_user_resource_size(), m_file_alignment(), m_resource_unit_manager(),
-                     m_resource_unit_manager_tree_node(), m_file_path(), m_file_device(), m_resource_factory(), m_resource_user_context(), m_archive_binder(), m_archive_resource(), m_resource(), m_load_task(), m_compose_task(), m_unload_task(), 
-                     m_resource_heap(), m_gpu_heap(), m_memory_manager(), m_finalize_async_res_mgr_list_node(), m_memory_manager_node(), m_memory_manager_free_cache_node(), m_status_update_event(sys::SignalState::Cleared, sys::ResetMode::Manual) 
+                     m_resource_unit_manager_tree_node(), m_file_path(), m_file_device(), m_resource_factory(), m_compose_info(), m_archive_binder(), m_archive_resource(), m_resource(), m_load_task(), m_compose_task(), m_unload_task(), 
+                     m_resource_heap(), m_memory_manager(), m_finalize_async_res_mgr_list_node(), m_memory_manager_node(), m_memory_manager_free_cache_node(), m_status_update_event(sys::SignalState::Cleared, sys::ResetMode::Manual) 
     {/*...*/}
 
     ResourceUnit::~ResourceUnit() {
@@ -68,7 +68,7 @@ namespace awn::res::impl {
         }
 
         /* Release managed ref if last ref */
-        if (this->GetReferenceCount() != 1) {
+        if (this->GetReferenceCount() == 1) {
             this->ReleasePersistantReference();
         }
 
@@ -195,8 +195,6 @@ namespace awn::res::impl {
     bool ResourceUnit::IsInLoad() const {
         /* Check load task is pending */
         if (m_load_task.IsPending()) { return true; }
-        /* Loading completed if we are the compose thread */
-        if (AsyncResourceManager::GetInstance()->IsCurrentThreadComposeThread()) { return false; }
         /* Loading completed if the load task was cancelled */
         if (m_load_task.IsCancelled()) { return false; }
         /* Loading is not complete if we are composing, not the compose thread, and the compose task is pending */
@@ -206,9 +204,9 @@ namespace awn::res::impl {
     }
 
     bool ResourceUnit::IsUnloadable() const {
-        /* We are unload safe if not in compose */
-        if (!m_compose_task.IsPending()) { return true; }
-        /* We are unload safe if we are the compose thread and in post execute */
+        /* Ensure compose is complete */
+        if (m_compose_task.IsComplete()) { return true; }
+        /* We are safe if we are the compose thread */
         if (m_compose_task.IsExecutingOnCurrentThread()) { return true; }
         return false;
     }
@@ -527,15 +525,11 @@ namespace awn::res::impl {
         RESULT_RETURN(async::ResultRescheduled);
     }
 
-    void ResourceUnit::ScheduleUnload() {
+    bool ResourceUnit::ScheduleUnload() {
+        if (0 < this->GetReferenceCount()) { return false; }
         AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
-        async::AsyncTaskPushInfo push_info = {
-            .queue_thread    = manager->m_thread_memory,
-            .task_function   = std::addressof(manager->m_unload_exe),
-            .result_function = std::addressof(manager->m_unload_result),
-            .priority        = 0xd,
-        };
-        RESULT_ABORT_UNLESS(m_unload_task.PushTask(std::addressof(push_info)));
+        manager->RequestUnload(this);
+        return true;
     }
 
     Result ResourceUnit::LoadFile() {
@@ -566,7 +560,7 @@ namespace awn::res::impl {
         m_archive_binder.Release();
 
         /* Check if no resource or is not initializable */
-        if (m_resource == nullptr || !m_resource->IsRequireInitializeOnCreate()) {
+        if (m_resource == nullptr || !m_resource->IsRequireCompose()) {
             m_compression_flags.ClearBit(CompressionFlag_IsResourceInitializable);
             if (m_resource == nullptr) {
                 m_status = Status::Error;
@@ -598,7 +592,7 @@ namespace awn::res::impl {
             m_archive_resource = nullptr;
             m_archive_binder.Release();
         };
-        if (m_compression_flags.GetBit(CompressionFlag_IsCompose)) { return; }
+        if (!m_compression_flags.GetBit(CompressionFlag_IsCompose)) { return; }
         if (m_resource != nullptr && (!m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable) || !m_state.GetBit(State_IsRequireResourceInitialize))) { return; }
         if (m_status != Status::Loaded) { return; }
         release_archive_exit.Cancel();
@@ -652,7 +646,7 @@ namespace awn::res::impl {
 
     Result ResourceUnit::Compose() {
         ScopedThreadLocalArchive l(std::addressof(m_archive_binder));
-        this->InitializeResource(nullptr);
+        this->ComposeResource(nullptr);
         if (m_archive_resource != nullptr) {
             m_archive_resource = nullptr;
             m_archive_binder.Release();
@@ -823,7 +817,7 @@ namespace awn::res::impl {
 
             /* Clear cache sync */
             m_state.SetBit(State_IsFinalized);
-            this->ClearCache();
+            RESULT_DISCARD(this->ClearCache());
 
         } else {
 
@@ -857,9 +851,7 @@ namespace awn::res::impl {
 
         /* Transition to Freed */
         m_status = Status::Freed;
-        if (m_resource_heap == nullptr) {
-            RESULT_RETURN_SUCCESS;
-        }
+        if (m_resource_heap == nullptr) { RESULT_RETURN_SUCCESS; }
 
         /* Free resource and resource heap */
         AsyncResourceManager::GetInstance()->CancelHeapAdjustRequest(this);
@@ -901,6 +893,15 @@ namespace awn::res::impl {
         return result;
     }
 
+    bool ResourceUnit::CheckOrWaitUnloaded(bool is_wait) {
+        if (m_unload_task.IsComplete()) { return true; }
+        if (m_unload_task.IsExecutingOnCurrentThread()) { return true; }
+        if (is_wait) {
+            m_unload_task.Wait();
+        }
+        return is_wait;
+    }
+
     void ResourceUnit::CancelUnload(AsyncResourceManager *manager) {
         manager->CancelUnloadRequest(this);
         m_unload_task.CancelTask();
@@ -925,10 +926,10 @@ namespace awn::res::impl {
         RESULT_ABORT_UNLESS(m_unload_task.PushTask(std::addressof(push_info)));
     }
 
-    bool ResourceUnit::InitializeResource(ResourceUserContext *user_context) {
+    bool ResourceUnit::ComposeResource(IComposeInfo *info) {
 
         /* Guard resource initialize */
-        const u32 last_count = vp::util::InterlockedFetchIncrement(std::addressof(m_resource_initialize_guard));
+        const u32 last_count = vp::util::InterlockedFetchIncrementRelaxed(std::addressof(m_resource_initialize_guard));
         if (0 < last_count) {
             m_status_update_event.Wait();
             const Status status = static_cast<Status>(m_status);
@@ -940,10 +941,7 @@ namespace awn::res::impl {
             m_status_update_event.Signal();
         };
 
-        /* Wait for initialize */
-        //m_load_task.Wait();
-
-        /* Fail if resource is allocated */
+        /* Fail if we don't have a resource */
         if (m_resource == nullptr) {
             m_status = Status::FailedToInitializeResource;
             return false;
@@ -953,7 +951,7 @@ namespace awn::res::impl {
         if (!m_state.GetBit(State_IsRequireResourceInitialize)) { return true; }
 
         /* Release managed reference and update status on exit */
-        Status guard_status = Status::FailedToInitializeResource;
+        Status guard_status;
         auto no_resource_exit_guard = SCOPE_GUARD {
 
             /* Release managed reference */
@@ -971,16 +969,19 @@ namespace awn::res::impl {
         /* Initialize resource */
         if (m_status == Status::Loaded) {
             m_status = Status::InResourceInitialize;
-            const Result result = m_resource->Initialize(m_resource_heap, m_gpu_heap, user_context, m_resource->GetFile(), m_resource->GetFileSize());
+            const Result result = m_resource->Compose(m_resource_heap, info, m_resource->GetFile(), m_resource->GetFileSize());
+            guard_status = Status::FailedToInitializeResource;
             if (RESULT_FAILED(result)) { return false; }
-            guard_status = Status::ResourceInitialized;
-            if (m_resource == nullptr) { return false; }
         }
+
+        /* Skip post initialization if in the course of resource initialization our resource was deleted */
+        guard_status = Status::ResourceInitialized;
         m_status = Status::ResourceInitialized;
+        if (m_resource == nullptr) { return false; }
 
         /* Post initialize resource */
-        if (m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) {
-            const Result result = m_resource->PostInitialize(m_resource_heap, m_gpu_heap, user_context, m_resource->GetFile(), m_resource->GetFileSize());
+        if (m_state.GetBit(State_IsRequireResourceInitialize) && m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) {
+            const Result result = m_resource->PostCompose(m_resource_heap, info, m_resource->GetFile(), m_resource->GetFileSize());
             guard_status = Status::FailedToPostInitializeResource;
             if (RESULT_FAILED(result)) { return false; }
         }
@@ -1009,7 +1010,7 @@ namespace awn::res::impl {
 
         /* Release guard */
         m_resource_initialize_guard = 0;
-        m_status_update_event.Signal();
+        m_status_update_event.Clear();
 
         /* Update status */
         m_status = Status::ResourcePreFinalized;
@@ -1110,15 +1111,14 @@ namespace awn::res::impl {
         AsyncResourceLoadInfo *async_resource_load_info = unit_info->async_resource_info;
         m_status = Status::Uninitialized;
         m_reference_count = 0;
-        m_deferred_adjust_count[0]  = 0;
-        m_deferred_adjust_count[1]  = 0;
+        m_deferred_adjust_count = 0;
         m_resource_initialize_guard = 0;
-        m_state.SetBitMask(0, 0);
+        m_state.Clear();
 
         /* Set file device, resource factory, and resource user context */
-        m_file_device           = async_resource_load_info->file_device;
-        m_resource_factory      = async_resource_load_info->resource_factory;
-        m_resource_user_context = async_resource_load_info->resource_user_context;
+        m_file_device = async_resource_load_info->file_device;
+        m_resource_factory = async_resource_load_info->resource_factory;
+        m_compose_info = async_resource_load_info->compose_info;
 
         /* Set manager */
         m_resource_unit_manager = unit_info->resource_unit_manager;
@@ -1144,7 +1144,7 @@ namespace awn::res::impl {
 
         /* Set archive binder */
         if (async_resource_load_info->archive_binder != 0) {
-            m_archive_binder.ReferenceBinderSync(async_resource_load_info->archive_binder);
+            RESULT_DISCARD(m_archive_binder.ReferenceBinderSync(async_resource_load_info->archive_binder));
             ArchiveResource *archive_resource = m_archive_binder.GetResource<ArchiveResource>();
             m_archive_resource = archive_resource;
         }
@@ -1172,6 +1172,9 @@ namespace awn::res::impl {
         }
         if (unit_info->is_compose) {
             m_compression_flags.SetBit(CompressionFlag_IsCompose);
+        }
+        if (unit_info->is_no_add_to_memory_manager) {
+            m_compression_flags.SetBit(CompressionFlag_IsNoAddToMemoryMgr);
         }
         if (async_resource_load_info->is_require_heap_adjust) {
             m_state.SetBit(State_IsRequireHeapAdjust);

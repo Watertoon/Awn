@@ -19,7 +19,7 @@ namespace vp::util {
 
     consteval u16 TCharCode16(const char *string) {
         const size_t size = TStringLength(string, 3);
-        if (size != 2 || std::endian::native == std::endian::big) {
+        if (size > 2 || std::endian::native == std::endian::big) {
             _consteval_fail();
         }
 
@@ -30,7 +30,7 @@ namespace vp::util {
 
     consteval u32 TCharCode32(const char *string) {
         const size_t size = TStringLength(string, 5);
-        if (size != 4 || std::endian::native == std::endian::big) {
+        if (size > 4 || std::endian::native == std::endian::big) {
             _consteval_fail();
         }
 
@@ -43,7 +43,7 @@ namespace vp::util {
 
     consteval u64 TCharCode64(const char *string) {
         const size_t size = TStringLength(string, 9);
-        if (size != 8 || std::endian::native == std::endian::big) {
+        if (size > 8 || std::endian::native == std::endian::big) {
             _consteval_fail();
         }
 

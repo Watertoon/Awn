@@ -32,7 +32,6 @@ namespace awn::async {
             using AsyncTaskList  = vp::util::IntrusiveListTraits<AsyncTaskForAllocator, &AsyncTaskForAllocator::m_queue_list_node>::List;
             using AsyncTaskArray = vp::util::PointerArray<AsyncTaskForAllocator>;
         private:
-            sys::Event m_acquire_event;
             sys::Event m_available_event;
             sys::Mutex m_acquire_cs;
             sys::Mutex m_free_cs;
@@ -45,10 +44,10 @@ namespace awn::async {
         protected:
             void FreeTask(AsyncTaskForAllocator *task);
         public:
-            constexpr  AsyncTaskAllocator() : m_acquire_event(), m_available_event(), m_acquire_cs(), m_free_cs(), m_list_index(0), m_task_list{}, m_task_array()  {/*...*/}
+            constexpr  AsyncTaskAllocator() : m_available_event(), m_acquire_cs(), m_free_cs(), m_list_index(), m_task_list{}, m_task_array()  {/*...*/}
             constexpr ~AsyncTaskAllocator() {/*...*/}
 
-            void Initialize(mem::Heap *heap, AsyncTaskCreateFunction *create_function, u32 count);
+            Result Initialize(mem::Heap *heap, AsyncTaskCreateFunction *create_function, u32 count);
             void Finalize();
 
             Result ScheduleTask(AsyncTaskScheduleInfo *schedule_info);

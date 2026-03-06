@@ -88,7 +88,7 @@ namespace vp::codec {
 
             /* Start decompression with ddict if available */
             const size_t result0 = ::ZSTD_decompressBegin_usingDDict(stream_context->zstd_dctx, stream_context->zstd_ddict);
-            RESULT_RETURN_IF(::ZSTD_isError(result0) != 0, ResultZstdError);
+            if (::ZSTD_isError(result0) != 0) { stream_context->state = ZstdStreamContext::State::Error; return ZstdStreamContext::cInvalidStreamState; }
 
             stream_context->state = ZstdStreamContext::State::Streaming;
         }

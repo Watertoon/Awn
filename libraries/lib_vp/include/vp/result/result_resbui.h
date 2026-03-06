@@ -36,4 +36,5 @@ namespace vp::resbui {
     DECLARE_RESULT(InvalidFrame,               16);
     DECLARE_RESULT(MismatchedExt,              17);
     DECLARE_RESULT(MismatchedCurveType,        18);
+    DECLARE_RESULT(LabelTooLong,               19);
 }

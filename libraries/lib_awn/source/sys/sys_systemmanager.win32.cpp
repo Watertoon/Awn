@@ -34,8 +34,8 @@ namespace awn::sys {
     };
 
     namespace {
-        constinit vp::util::TypedStorage<SystemManager> sSystemManagerStorage   = {};
-        bool sSystemManagerInitGuard = false;
+        static constinit vp::util::TypedStorage<SystemManager> sSystemManagerStorage   = {};
+        static constinit bool sSystemManagerInitGuard = false;
 
         bool NegotiateLargePageRights() {
             HANDLE process_token = nullptr;

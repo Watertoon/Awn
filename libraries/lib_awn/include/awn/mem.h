@@ -18,8 +18,11 @@
 #ifdef VP_TARGET_PLATFORM_win32
     #include <awn/sys/sys_internalsynchronization.win32.h>
     #include <awn/sys/sys_mutex.win32.h>
-#elif VP_TARGET_PLATFORM_nx
+#elifdef VP_TARGET_PLATFORM_nx
     #include <awn/sys/sys_mutex.nx.hpp>
+#elifdef VP_TARGET_PLATFORM_linux
+    #include <awn/sys/sys_internalsynchronization.linux.h>
+    #include <awn/sys/sys_mutex.linux.h>
 #endif
 
 #include <awn/gfx/gfx_nngfxinteroperation.h>
@@ -43,8 +46,8 @@
 #include <awn/mem/impl/mem_new.hpp>
 
 #include <awn/mem/mem_frameheap.hpp>
-#include <awn/mem/mem_gpuexpheap.hpp>
+//#include <awn/mem/mem_gpuexpheap.hpp>
 
-#include <awn/mem/mem_gpuheapmanager.hpp>
+//#include <awn/mem/mem_gpuheapmanager.hpp>
 //#include <awn/mem/mem_gpuvirtualmemory.h>
 

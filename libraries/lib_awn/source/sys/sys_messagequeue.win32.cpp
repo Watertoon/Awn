@@ -263,9 +263,9 @@ namespace awn::sys {
         if (m_message_buffer != nullptr) {
             delete [] m_message_buffer;
             m_message_buffer = nullptr;
-            m_max            = 0;
+            m_max = 0;
         }
-        m_count  = 0;
+        m_count = 0;
         m_offset = 0;
 
         return;

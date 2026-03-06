@@ -117,11 +117,11 @@ namespace vp::res {
 
         /* Clamp to end key */
         const vp::util::Float4 *curve_array = reinterpret_cast<const vp::util::Float4*>(this->value_array);
-        if (index == this->key_frame_count - 1) { return vp::util::CastVector4f(curve_array[index]); }
+        if (index == this->key_frame_count - 1) { return vp::util::Convert<vp::util::Vector4f>(curve_array[index]); }
 
         /* Interpolate key frames */
-        vp::util::Vector4f from = vp::util::CastVector4f(curve_array[index]);
-        vp::util::Vector4f to = vp::util::CastVector4f(curve_array[index + 1]);
+        vp::util::Vector4f from = vp::util::Convert<vp::util::Vector4f>(curve_array[index]);
+        vp::util::Vector4f to = vp::util::Convert<vp::util::Vector4f>(curve_array[index + 1]);
         const float t = (frame - cache->start_key) / (cache->end_key - cache->start_key);
         return vp::util::ApproximateQuatSphericalLinearInterpolation(from, to, t, 0);
     }
@@ -134,19 +134,19 @@ namespace vp::res {
 
         /* Clamp to end key */
         const vp::util::Float4 *curve_array = reinterpret_cast<const vp::util::Float4*>(this->value_array);
-        if (index == this->key_frame_count - 1) { return vp::util::CastVector4f(curve_array[index]); }
+        if (index == this->key_frame_count - 1) { return vp::util::Convert<vp::util::Vector4f>(curve_array[index]); }
 
         /* Interpolate key frames */
-        vp::util::Vector4f from = vp::util::CastVector4f(curve_array[index]);
-        vp::util::Vector4f to = vp::util::CastVector4f(curve_array[index + 1]);
+        vp::util::Vector4f from = vp::util::Convert<vp::util::Vector4f>(curve_array[index]);
+        vp::util::Vector4f to = vp::util::Convert<vp::util::Vector4f>(curve_array[index + 1]);
         const float t = (frame - cache->start_key) / (cache->end_key - cache->start_key);
         return vp::util::ApproximateQuatNormalizedLinearInterpolation(from, to, t);
     }
 
     vp::util::Vector4f ResBfresAnimCurve::EvaluateQuaternionSlerp2(BfresAnimFrameCache *cache, float frame) const {
         VP_UNUSED(cache, frame);
-        VP_UNEXPECTED_DEFAULT();
-        return vp::util::Vector4f::cZero;
+        VP_NOT_IMPLEMENTED();
+        return vp::util::VectorConstant<vp::util::Vector4f>::cZero;
     }
 
     vp::util::Vector4f ResBfresAnimCurve::EvaluateQuaternion(BfresAnimFrameCache *cache, float frame) const {

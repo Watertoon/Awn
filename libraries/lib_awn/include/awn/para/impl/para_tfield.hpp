@@ -18,21 +18,21 @@
 namespace awn::para::impl {
 
     template <typename T>
-        requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null || (T::cIsVectorType && T::cVectorCount <= 4) || T::cIsCustomTypeForPropertyAccessor || !vp::util::TEnumTraits<T>::cIsDummy)
+        requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null || (T::cIsVectorType && T::cCount <= 4) || T::cIsCustomTypeForPropertyAccessor || !vp::util::TEnumTraits<T>::cIsDummy)
     consteval bool TIsProperty() { return true; }
 
     template <typename T>
     consteval bool TIsProperty() { return false; }
 
     template <typename T>
-        requires (std::is_pointer<T>::value && TypedParam::CheckRuntimeTypeInfoStatic(std::remove_pointer_t<T>::GetRuntimeTypeInfoStatic()))
+        requires (std::is_pointer_v<T> && TypedParam::CheckRuntimeTypeInfoStatic(std::remove_pointer_t<T>::GetRuntimeTypeInfoStatic()))
     consteval bool TIsEmbed() { return true; }
 
     template <typename T>
     consteval bool TIsEmbed() { return false; }
 
     template <typename T>
-        requires ((!std::is_pointer<T>::value && !TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) && Composite::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic())) || (std::is_pointer<T>::value && TypedParam::CheckRuntimeTypeInfoStatic(std::remove_pointer_t<T>::GetRuntimeTypeInfoStatic())))
+        requires ((!std::is_pointer_v<T> && !TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) && Composite::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic())) || (std::is_pointer_v<T> && TypedParam::CheckRuntimeTypeInfoStatic(std::remove_pointer_t<T>::GetRuntimeTypeInfoStatic())))
     consteval bool TIsComposite() { return true; }
 
     template <typename T>
@@ -87,8 +87,8 @@ namespace awn::para::impl {
     }
 
     /* Ensure common cases */
-    static_assert(TIsProperty<vp::util::Float3>() == true);
-    static_assert(TIsProperty<vp::util::Vector3f>() == true);
+    static_assert(TIsProperty<Float3>() == true);
+    static_assert(TIsProperty<Vector3f>() == true);
     static_assert(TIsProperty<Curvef>() == true);
     static_assert(TIsProperty<sys::RegionType>() == true);
     static_assert(TIsProperty<const char*>() == true);
@@ -186,4 +186,68 @@ namespace awn::para::impl {
     static_assert(TIsProperty<TypedParamArray<TypedParam>>() == false);
     static_assert(TIsEmbed<TypedParamArray<TypedParam>>() == false);
     static_assert(TIsComposite<TypedParamArray<TypedParam>>() == true);
+
+    /* TypedParam impl */
+    template <typename T>
+    consteval u32 VerifyIsValidFieldTypes() {
+        static constexpr auto ctx = std::meta::access_context::current();
+        static constexpr auto mem = std::define_static_array(std::meta::nonstatic_data_members_of(^^T, ctx));
+        template for (constexpr auto info : mem) {
+            using MemberType = [:std::meta::type_of(info):];
+            if constexpr (!TIsField<MemberType>()) { return false; }
+        }
+        return true;
+    }
+}
+
+namespace awn::para {
+
+    /* TypedParam Loop impl */
+    template <typename T, u32 i, u32 End>
+    Result TypedParam::LoopPropertiesImpl(T *layout, u8 *is_non_default_array, PropertyLoopFunction *loop_function) {
+        if constexpr (i < End) {
+            constexpr const u32 field_id = impl::GetFieldIndexByLayoutIndex<T>(i);
+            constexpr std::meta::info e = std::meta::nonstatic_data_members_of(^^T, std::meta::access_context::current())[field_id];
+            using MemberType = [:std::meta::type_of(e):];
+            if constexpr (impl::TIsProperty<MemberType>()) {
+                ::awn::para::impl::TPropertyAccessor<MemberType> accessor = ::awn::para::impl::TGetPropertyAccessor<MemberType>(std::addressof(layout->[:e:]));
+                constexpr MemberType cDefault = T{}.[:e:];
+                const Result result = this->LoopPropertyImpl(loop_function, std::addressof(accessor), std::meta::identifier_of(e).data(), GetRuntimeTypeInfoStatic(), std::addressof(is_non_default_array[field_id]), field_id, std::addressof(cDefault));
+                RESULT_TRY(result);
+            }
+            const Result result = LoopPropertiesImpl<T,i+1,End>(layout, is_non_default_array, loop_function);
+            RESULT_RETURN(result);
+        }
+        RESULT_RETURN_SUCCESS;
+    }
+    template <typename T, u32 i, u32 End>
+    Result TypedParam::LoopCompositesImpl(T *layout, u8 *is_non_default_array, CompositeLoopFunction *loop_function) {
+        if constexpr (i < End) {
+            constexpr const u32 field_id = impl::GetFieldIndexByLayoutIndex<T>(i);
+            constexpr std::meta::info e = std::meta::nonstatic_data_members_of(^^T, std::meta::access_context::current())[field_id];
+            using MemberType = [:std::meta::type_of(e):];
+            if constexpr (impl::TIsComposite<MemberType>()) {
+                const Result result = this->LoopCompositeImpl(loop_function, std::meta::identifier_of(e).data(), GetRuntimeTypeInfoStatic(), std::addressof(is_non_default_array[field_id]), field_id, std::addressof(layout->[:e:]));
+                RESULT_TRY(result);
+            }
+            const Result result = LoopCompositesImpl<T,i+1,End>(layout, is_non_default_array, loop_function);
+            RESULT_RETURN(result);
+        }
+        RESULT_RETURN_SUCCESS;
+    }
+    template <typename T, u32 i, u32 End>
+    Result TypedParam::LoopEmbedsImpl(T *layout, u8 *is_non_default_array, EmbeddedLoopFunction *loop_function) {
+        if constexpr (i < End) {
+            constexpr const u32 field_id = impl::GetFieldIndexByLayoutIndex<T>(i);
+            constexpr std::meta::info e = std::meta::nonstatic_data_members_of(^^T, std::meta::access_context::current())[field_id];
+            using MemberType = [:std::meta::type_of(e):];
+            if constexpr (impl::TIsEmbed<MemberType>()) {
+                const Result result = this->LoopEmbeddedImpl(loop_function, std::meta::identifier_of(e).data(), GetRuntimeTypeInfoStatic(), std::addressof(is_non_default_array[field_id]), field_id, ::awn::para::impl::TGetEmbedClassName<MemberType>(), ::awn::para::impl::TGetCompositeRtti<MemberType>(), std::addressof(layout->[:e:]));
+                RESULT_TRY(result);
+            }
+            const Result result = LoopEmbedsImpl<T,i+1,End>(layout, is_non_default_array, loop_function);
+            RESULT_RETURN(result);
+        }
+        RESULT_RETURN_SUCCESS;
+    }
 }

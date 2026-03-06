@@ -24,11 +24,27 @@ namespace {
     }
 }
 
-#define LOAD_INITIAL_VK_PROC(name)  pfn_##name = reinterpret_cast<PFN_##name>(::GetProcAddress(sVulkanDLL, #name)); if (pfn_##name == nullptr) { ProcAbort(#name); };
+#ifdef VP_TARGET_PLATFORM_win32
+    #define LOAD_INITIAL_VK_PROC(name) pfn_##name = reinterpret_cast<PFN_##name>(::GetProcAddress(sVulkanDLL, #name)); if (pfn_##name == nullptr) { ProcAbort(#name); };
+
+    HMODULE sVulkanDLL = nullptr;
+    void LoadVulkanLibrary() {
+        sVulkanDLL = ::LoadLibraryA("vulkan-1.dll");
+        VP_ASSERT(sVulkanDLL != nullptr);
+    }
+    
+#elifdef VP_TARGET_PLATFORM_linux
+    #define LOAD_INITIAL_VK_PROC(name) pfn_##name = reinterpret_cast<PFN_##name>(::dlsym(sVulkanDLL, #name)); if (pfn_##name == nullptr) { ProcAbort(#name); };
+
+    void *sVulkanDLL = nullptr;
+    void LoadVulkanLibrary() {
+        sVulkanDLL = ::dlopen("libvulkan.so.1", RTLD_NOW | RTLD_LOCAL);
+        VP_ASSERT(sVulkanDLL != nullptr);
+    }
+#endif
+
 #define LOAD_INSTANCE_VK_PROC(name) pfn_##name = reinterpret_cast<PFN_##name>(::pfn_vkGetInstanceProcAddr(instance, #name)); if (pfn_##name == nullptr) { ProcAbort(#name); };
 #define LOAD_DEVICE_VK_PROC(name)   pfn_##name = reinterpret_cast<PFN_##name>(::pfn_vkGetDeviceProcAddr(device, #name)); if (pfn_##name == nullptr) { ProcAbort(#name); };
-
-HMODULE sVulkanDLL = nullptr;
 
 /* Initial procs */
 DEFINE_VK_PROC(vkCreateInstance);
@@ -44,8 +60,7 @@ DEFINE_VK_PROC(vkEnumerateInstanceVersion);
 void LoadVkCProcsInitial() {
 
     /* Load vulkan dll */
-    HMODULE sVulkanDLL = ::LoadLibraryA("vulkan-1.dll");
-    VP_ASSERT(sVulkanDLL != nullptr);
+    LoadVulkanLibrary();
 
     /* Initial procs */
     LOAD_INITIAL_VK_PROC(vkCreateInstance);
@@ -98,9 +113,11 @@ DEFINE_VK_PROC(vkGetPhysicalDeviceSurfaceFormatsKHR);
 DEFINE_VK_PROC(vkGetPhysicalDeviceSurfacePresentModesKHR);
 DEFINE_VK_PROC(vkGetPhysicalDeviceSurfaceSupportKHR);
 
+#ifdef VP_TARGET_PLATFORM_win32
 /* Instance VK_KHR_win32_surface */
 DEFINE_VK_PROC(vkCreateWin32SurfaceKHR);
 DEFINE_VK_PROC(vkGetPhysicalDeviceWin32PresentationSupportKHR);
+#endif
 
 /* Instance VK_KHR_cooperative_matrix */
 DEFINE_VK_PROC(vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR);
@@ -157,9 +174,11 @@ void LoadVkCProcsInstance(VkInstance instance) {
     LOAD_INSTANCE_VK_PROC(vkGetPhysicalDeviceSurfacePresentModesKHR);
     LOAD_INSTANCE_VK_PROC(vkGetPhysicalDeviceSurfaceSupportKHR);
 
+#ifdef VP_TARGET_PLATFORM_win32
     /* Instance VK_KHR_win32_surface */
     LOAD_INSTANCE_VK_PROC(vkCreateWin32SurfaceKHR);
     LOAD_INSTANCE_VK_PROC(vkGetPhysicalDeviceWin32PresentationSupportKHR);
+#endif
 
     /* Instance VK_KHR_cooperative_matrix */
     LOAD_INSTANCE_VK_PROC(vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR);
@@ -393,12 +412,27 @@ DEFINE_VK_PROC(vkMapMemory2);
 DEFINE_VK_PROC(vkTransitionImageLayout);
 DEFINE_VK_PROC(vkUnmapMemory2);
 
+#ifdef VP_TARGET_PLATFORM_win32
 /* Device VK_KHR_external_memory_win32 */
 DEFINE_VK_PROC(vkGetMemoryWin32HandleKHR);
 DEFINE_VK_PROC(vkGetMemoryWin32HandlePropertiesKHR);
 
 /* Device VK_KHR_external_semaphore_win32 */
 DEFINE_VK_PROC(vkImportSemaphoreWin32HandleKHR);
+#endif
+
+#ifdef VP_TARGET_PLATFORM_linux
+/* Device VK_KHR_external_memory_fd */
+DEFINE_VK_PROC(vkGetMemoryFdKHR);
+DEFINE_VK_PROC(vkGetMemoryFdPropertiesKHR);
+
+/* Device VK_KHR_external_semaphore_fd */
+DEFINE_VK_PROC(vkImportSemaphoreFdKHR);
+DEFINE_VK_PROC(vkGetSemaphoreFdKHR);
+
+/* Device VK_EXT_image_drm_modifier */
+DEFINE_VK_PROC(vkGetImageDrmFormatModifierPropertiesEXT);
+#endif
 
 #ifdef AWN_VK_DEBUG
     /* Device VK_EXT_device_fault */
@@ -444,6 +478,17 @@ DEFINE_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);
 DEFINE_VK_PROC(vkCmdDrawMeshTasksEXT);
 DEFINE_VK_PROC(vkCmdDrawMeshTasksIndirectCountEXT);
 DEFINE_VK_PROC(vkCmdDrawMeshTasksIndirectEXT);
+
+/* Device VK_EXT_descriptor_heap */
+#ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+DEFINE_VK_PROC(vkCmdBindResourceHeapEXT);
+DEFINE_VK_PROC(vkCmdBindSamplerHeapEXT);
+DEFINE_VK_PROC(vkCmdPushDataEXT);
+DEFINE_VK_PROC(vkGetImageOpaqueCaptureDataEXT);
+DEFINE_VK_PROC(vkGetPhysicalDeviceDescriptorSizeEXT);
+DEFINE_VK_PROC(vkWriteResourceDescriptorsEXT);
+DEFINE_VK_PROC(vkWriteSamplerDescriptorsEXT);
+#endif
 
 void LoadVkCProcsDevice(VkDevice device) {
 
@@ -660,16 +705,31 @@ void LoadVkCProcsDevice(VkDevice device) {
     LOAD_DEVICE_VK_PROC(vkTransitionImageLayout);
     LOAD_DEVICE_VK_PROC(vkUnmapMemory2);
 
+#ifdef VP_TARGET_PLATFORM_win32
     /* Device VK_KHR_external_memory_win32 */
     LOAD_DEVICE_VK_PROC(vkGetMemoryWin32HandleKHR);
     LOAD_DEVICE_VK_PROC(vkGetMemoryWin32HandlePropertiesKHR);
 
     /* Device VK_KHR_external_semaphore_win32 */
     LOAD_DEVICE_VK_PROC(vkImportSemaphoreWin32HandleKHR);
+#endif
+
+#ifdef VP_TARGET_PLATFORM_linux
+    /* Device VK_KHR_external_memory_fd */
+    LOAD_DEVICE_VK_PROC(vkGetMemoryFdKHR);
+    LOAD_DEVICE_VK_PROC(vkGetMemoryFdPropertiesKHR);
+
+    /* Device VK_KHR_external_semaphore_fd */
+    LOAD_DEVICE_VK_PROC(vkImportSemaphoreFdKHR);
+    LOAD_DEVICE_VK_PROC(vkGetSemaphoreFdKHR);
+
+    /* Device VK_EXT_image_drm_modifier */
+    LOAD_DEVICE_VK_PROC(vkGetImageDrmFormatModifierPropertiesEXT);
+#endif
 
 #ifdef AWN_VK_DEBUG
     /* Device VK_EXT_device_fault */
-    LOAD_DEVICE_VK_PROC(vkGetDeviceFaultInfoEXT);
+    //LOAD_DEVICE_VK_PROC(vkGetDeviceFaultInfoEXT);
 #endif
 
     /* Device VK_EXT_external_memory_host*/
@@ -713,6 +773,17 @@ void LoadVkCProcsDevice(VkDevice device) {
         LOAD_DEVICE_VK_PROC(vkCmdDrawMeshTasksIndirectCountEXT);
         LOAD_DEVICE_VK_PROC(vkCmdDrawMeshTasksIndirectEXT);
     }
+
+    /* Device VK_EXT_descriptor_heap */
+    #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+    LOAD_DEVICE_VK_PROC(vkCmdBindResourceHeapEXT);
+    LOAD_DEVICE_VK_PROC(vkCmdBindSamplerHeapEXT);
+    LOAD_DEVICE_VK_PROC(vkCmdPushDataEXT);
+    LOAD_DEVICE_VK_PROC(vkGetImageOpaqueCaptureDataEXT);
+    LOAD_DEVICE_VK_PROC(vkGetPhysicalDeviceDescriptorSizeEXT);
+    LOAD_DEVICE_VK_PROC(vkWriteResourceDescriptorsEXT);
+    LOAD_DEVICE_VK_PROC(vkWriteSamplerDescriptorsEXT);
+    #endif
 
     return;
 }

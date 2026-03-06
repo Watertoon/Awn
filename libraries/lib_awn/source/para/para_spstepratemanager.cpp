@@ -19,20 +19,17 @@ namespace awn::para {
 
     AWN_PARA_DECLARE_TYPED_PARAM_IMPL(SpStepRateCell);
 
-    bool SpStepRateManager::Initialize(mem::Heap *heap, const char *sp_step_rate_table_path_no_ext, const char *sp_event_enum_u32_class, const char *sp_target_enum_u32_class) {
+    Result SpStepRateManager::Initialize(mem::Heap *heap, const char *sp_step_rate_table_path_no_ext, const char *sp_event_enum_u32_class, const char *sp_target_enum_u32_class) {
 
         /* Get enum dictionaries */
-        vp::util::EnumDictionaryManager *enum_dict_mgr = vp::util::GetEnumDictionaryManager();
-        const vp::util::EnumDictionary<u32> *event_dict  = enum_dict_mgr->GetEnumDictionary<u32>(sp_event_enum_u32_class);
-        if (event_dict == nullptr) { return false; }
-        const vp::util::EnumDictionary<u32> *target_dict = enum_dict_mgr->GetEnumDictionary<u32>(sp_target_enum_u32_class);
-        if (target_dict == nullptr) { return false; }
-
+        const vp::util::EnumDictionary<u32> *event_dict  = vp::util::FindEnumDictionary<u32>(sp_event_enum_u32_class);
+        RESULT_RETURN_IF(event_dict == nullptr, ResultNoEnumClass);
+        const vp::util::EnumDictionary<u32> *target_dict = vp::util::FindEnumDictionary<u32>(sp_target_enum_u32_class);
+        RESULT_RETURN_IF(target_dict == nullptr, ResultNoEnumClass);
         /* Try load document */
         m_document_sp_step_rate_table.LoadDocument(sp_step_rate_table_path_no_ext, "awn__para__CombinationDataTableData", false);
         CombinationDataTableData *table_data = m_document_sp_step_rate_table.GetTypedParam<CombinationDataTableData>();
-        const TypedParamMap<CombinationDataCellBase> *cell_list = table_data->GetCellList();
-        if (table_data == nullptr) { return false; }
+        const TypedParamMap<CombinationDataCellBase> *cell_list = table_data->GetComposite<"CellList">();
 
         /* Failure guard */
         auto release_document_guard = SCOPE_GUARD { 
@@ -41,15 +38,15 @@ namespace awn::para {
 
         /* Ensure valid row count  */
         const u32 target_row_count = para::GetRowCount(table_data);
-        if (target_row_count == 0) { return false; }
+        RESULT_RETURN_IF(target_row_count == 0, ResultRangeNG);
 
         /* Ensure valid column count */
         const u32 event_count = event_dict->GetEnumCount();
         const u32 event_col_count = para::GetColumnCount(table_data);
-        if (event_col_count == 0) { return false; }
+        RESULT_RETURN_IF(event_col_count == 0, ResultRangeNG);
 
         /* Create event array */
-        m_sp_rate_event_array.Initialize(heap, event_count);
+        RESULT_TRY(m_sp_rate_event_array.Initialize(heap, event_count));
 
         /* Failure guard */
         auto free_array_guard = SCOPE_GUARD { 
@@ -65,9 +62,8 @@ namespace awn::para {
 
             /* Get target index */
             const char *target_key   = target_iter.GetRowKey();
-            u32         target_index = 0;
-            const bool  result0      = target_dict->GetEnumIndexByName(std::addressof(target_index), target_key);
-            if (!result0 || cMaxSpStepRateTargetCount <= target_index) { continue; }
+            const u32 target_index = target_dict->GetEnumIndexByName(target_key);
+            if (target_index != vp::util::EnumDictionaryBase::cInvalidEntryIndex || cMaxSpStepRateTargetCount <= target_index) { continue; }
 
             /* Iterate events */
             CellIterator event_iter(cell_list, CellArrangement::Column);
@@ -77,15 +73,14 @@ namespace awn::para {
                 };
 
                 /* Get event index and set event name */
-                const char *event_key   = event_iter.GetColumnKey();
-                u32         event_index = 0;
-                const bool  result1     = event_dict->GetEnumIndexByName(std::addressof(event_index), event_key);
-                if (!result1 || event_count <= event_index) { continue; }
+                const char *event_key  = event_iter.GetColumnKey();
+                const u32 event_index = event_dict->GetEnumIndexByName(event_key);
+                if (event_index != vp::util::EnumDictionaryBase::cInvalidEntryIndex || event_count <= event_index) { continue; }
                 m_sp_rate_event_array[event_index].event_name = event_key;
 
                 /* Set sp step rate target */
                 const SpStepRateCell *sp_rate_cell = event_iter.GetTypedParam<SpStepRateCell>();
-                const float sp_step_rate = vp::util::Min(1.0f, *sp_rate_cell->GetSpStepRate());
+                const float sp_step_rate = vp::util::Min(1.0f, sp_rate_cell->GetProperty<"SpStepRate">());
                 m_sp_rate_event_array[event_index].sp_step_rate_target_array[target_index] = sp_step_rate;
             }
         }
@@ -93,7 +88,7 @@ namespace awn::para {
         /* Succeed */
         release_document_guard.Cancel();
         free_array_guard.Cancel();
-        return true;
+        RESULT_RETURN_SUCCESS;
     }
 
     void SpStepRateManager::Finalize() {

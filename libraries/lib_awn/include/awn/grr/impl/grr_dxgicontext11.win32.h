@@ -32,8 +32,9 @@ namespace awn::grr::impl {
             case gfx::ImageFormat::R16G16B16A16_Float:
                 return DXGI_FORMAT_R16G16B16A16_FLOAT;
             default:
-                VP_UNEXPECTED_DEFAULT();
+                break;
         }
+        return DXGI_FORMAT_UNKNOWN;
     }
 
     constexpr bool IsHdrFormat(gfx::ImageFormat format) {

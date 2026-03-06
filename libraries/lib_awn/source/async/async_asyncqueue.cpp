@@ -182,6 +182,7 @@ namespace awn::async {
         for (AsyncQueueThread *&thread : set->thread_array_boost) {
             loop_function->Invoke(thread);
         }
+        return;
     }
 
     void AsyncQueue::WakeThread(u32 thread_index, AsyncQueueThread *thread) {
@@ -194,13 +195,16 @@ namespace awn::async {
             if (is_sent) { return; }
             sys::SleepThread(0);
         }
+        return;
     }
 
     void AsyncQueue::WakeThreadSet(u32 set_index, AsyncQueueThread *this_thread) {
         const auto wake_lambda = [&](AsyncQueueThread *thread) {
             if (this_thread == thread) { return; }
             const u32 index = m_task_thread_array.IndexOf(thread);
+            VP_ASSERT(index != AsyncQueueThreadArray::cInvalidEntryIndex);
             this->WakeThread(index, thread);
+            return;
         };
         const auto wake_function = vp::util::MakeLambdaFunction<void(AsyncQueueThread*)>(wake_lambda);
         std::scoped_lock l(m_queue_mutex);
@@ -406,31 +410,33 @@ namespace awn::async {
         return (is_raise) ? this->RaisePriorityForThreadSet() : this->LowerPriorityForThreadSet();
     }
 
-	void AsyncQueue::Initialize(mem::Heap *heap, const AsyncQueueInfo *queue_info) {
+	Result AsyncQueue::Initialize(mem::Heap *heap, const AsyncQueueInfo *queue_info) {
 
         /* Integrity checks */
-        VP_ASSERT(queue_info != nullptr);
-        VP_ASSERT(0 < queue_info->priority_level_count);
-        VP_ASSERT(0 < queue_info->thread_set_count);
+        RESULT_RETURN_UNLESS(0 < queue_info->priority_level_count, ResultRangeNG);
+        RESULT_RETURN_UNLESS(0 < queue_info->thread_set_count, ResultRangeNG);
 
 		/* Initialize arrays */
-		m_priority_level_array.Initialize(heap, queue_info->priority_level_count);
+		RESULT_TRY(m_priority_level_array.Initialize(heap, queue_info->priority_level_count));
+        auto fail_guard0 = SCOPE_GUARD {
+            this->Finalize();
+        };
 
         u32 thread_count = 0;
-		m_thread_set_array.Initialize(heap, queue_info->thread_set_count);
+		RESULT_TRY(m_thread_set_array.Initialize(heap, queue_info->thread_set_count));
         for (u32 i = 0; i < queue_info->thread_set_count; ++i) {
             const u8 primary_count = queue_info->per_set_count_array[i].thread_count_primary;
             const u8 boost_count = queue_info->per_set_count_array[i].thread_count_boost;
-            VP_ASSERT(0 < primary_count);
-            m_thread_set_array[i].thread_array_primary.Initialize(heap, primary_count);
+            RESULT_RETURN_UNLESS(0 < primary_count, ResultRangeNG);
+            RESULT_TRY(m_thread_set_array[i].thread_array_primary.Initialize(heap, primary_count));
             thread_count += primary_count;
             if (boost_count < 1) { continue; }
-            m_thread_set_array[i].thread_array_boost.Initialize(heap, boost_count);
+            RESULT_TRY(m_thread_set_array[i].thread_array_boost.Initialize(heap, boost_count));
             thread_count += boost_count;
         }
 
-		m_task_thread_array.Initialize(heap, thread_count);
-		m_thread_boost_array.Initialize(heap, thread_count);
+		RESULT_TRY(m_task_thread_array.Initialize(heap, thread_count));
+		RESULT_TRY(m_thread_boost_array.Initialize(heap, thread_count));
         m_is_multi_set = (1 < queue_info->thread_set_count) || (0 < m_thread_set_array[0].thread_array_boost.GetMaxCount());
 
 		/* Initialize events */
@@ -439,7 +445,8 @@ namespace awn::async {
 		}
 		m_all_task_complete_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Manual);
 
-		return;
+        fail_guard0.Cancel();
+		RESULT_RETURN_SUCCESS;
 	}
 
 	void AsyncQueue::Finalize() {
@@ -487,14 +494,13 @@ namespace awn::async {
 
         /* Link primary thread to boost thread if available, inherit primary core mask to boost thread */
         const u32 other_index = m_task_thread_array.IndexOf(other_thread);
-        if (other_index != AsyncQueueThreadArray::cInvalidEntryIndex) {
-            m_thread_boost_array[global_index]->linked_thread = other_index;
-            m_thread_boost_array[other_index]->linked_thread = global_index;
-            if (is_boost) {
-                thread->SetCoreMask(m_task_thread_array[other_index]->GetCoreMask());
-            } else {
-                m_task_thread_array[other_index]->SetCoreMask(thread->GetCoreMask());
-            }
+        VP_ASSERT(other_index != AsyncQueueThreadArray::cInvalidEntryIndex);
+        m_thread_boost_array[global_index]->linked_thread = other_index;
+        m_thread_boost_array[other_index]->linked_thread = global_index;
+        if (is_boost) {
+            thread->SetCoreMask(m_task_thread_array[other_index]->GetCoreMask());
+        } else {
+            m_task_thread_array[other_index]->SetCoreMask(thread->GetCoreMask());
         }
 
         return;
@@ -571,7 +577,7 @@ namespace awn::async {
 
         /* Tell the application we succeeded in cancelling the task, it's executing, or we waited for it to execute */
         if (is_success) { RESULT_RETURN_SUCCESS; }
-        RESULT_RETURN_UNLESS(is_wait_for_execution, ResultTaskExecuting);
+        RESULT_RETURN_IF(!is_wait_for_execution, ResultTaskExecuting);
         task->m_finish_event.Wait();
         return ResultTaskExecuted;
 	}
@@ -647,7 +653,7 @@ namespace awn::async {
         /* Calc tasks */
         for (AsyncTask &task : m_task_list) {
             if (task.m_priority < up_to_priority) { break; }
-            if (task.m_queue != nullptr) { task.m_queue->CancelTask(std::addressof(task), true); }
+            task.CancelTask();
             task.InvokeSync(thread);
         }
 

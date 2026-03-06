@@ -28,16 +28,16 @@ namespace awn::sys {
     };
 
     struct ThreadInfo {
-        const char *name;
-        size_t exit_code;
-        ThreadRunMode run_mode;
-        u32 message_count;
-        size_t *message_memory;
-        u32 stack_size;
+        const char *name = "";
+        u64 exit_code = 0x7fff'ffff'ffff'ffff;
+        ThreadRunMode run_mode = ThreadRunMode::WaitForMessage;
+        u32 message_count = 8;
+        u64 *message_memory = nullptr;
+        size_t stack_size = vp::util::c64KB;
 #ifndef VP_TARGET_PLATFORM_win32
-        void *stack_memory;
+        void *stack_memory = nullptr;
 #endif
-        u32 priority;
+        u32 priority = 0x10;
     };
     
     using TlsDestructor = void (*)(size_t);
@@ -66,12 +66,12 @@ namespace awn::sys {
             mem::Heap                   *m_lookup_heap;
             sys::MessageQueue            m_message_queue;
             size_t                      *m_message_queue_memory;
-            size_t                       m_exit_message;
-            u32                          m_stack_size;
+            u64                          m_exit_message;
+            size_t                       m_stack_size;
             u32                          m_priority;
             CoreMask                     m_core_mask;
             u32                          m_run_mode;
-#ifdef VP_TARGET_PLATFORM_win32
+#if defined(VP_TARGET_PLATFORM_win32) || defined(VP_TARGET_PLATFORM_linux)
             uintptr_t                    m_tls_slot_array[cMaxThreadTlsSlotCount];
 #endif
             vp::util::IntrusiveListNode  m_thread_manager_list_node;
@@ -81,31 +81,11 @@ namespace awn::sys {
             static void InternalThreadMain(void *arg);
             static long unsigned int InternalServiceThreadMain(void *arg);
         public:
-            virtual void Run() {
-
-                /* Message loop */
-                size_t current_message = static_cast<size_t>(-1);
-                if (m_run_mode == static_cast<u32>(ThreadRunMode::WaitForMessage)) {
-                    m_message_queue.ReceiveMessage(std::addressof(current_message));
-                }
-                while(current_message != m_exit_message) {
-                    this->ThreadMain(current_message);
-                    if (m_run_mode == static_cast<u32>(ThreadRunMode::WaitForMessage)) {
-                        m_message_queue.ReceiveMessage(std::addressof(current_message));
-                    } else {
-                        if (!m_message_queue.TryReceiveMessage(std::addressof(current_message))) {
-                            current_message = 0;
-                        }
-                    }
-                }
-
-                return;
-            }
-
-            virtual void ThreadMain([[maybe_unused]] size_t message) {/*...*/}
+            virtual void Run();
+            virtual void ThreadMain(u64 message) { VP_UNUSED(message); }
         public:
             constexpr ThreadBase(): m_thread_heap(), m_lookup_heap(), m_message_queue(), m_message_queue_memory(), m_exit_message(), m_stack_size(), m_priority(), m_core_mask(), m_run_mode(), 
-            #ifdef VP_TARGET_PLATFORM_win32
+            #if defined(VP_TARGET_PLATFORM_win32) || defined(VP_TARGET_PLATFORM_linux)
                 m_tls_slot_array(), 
             #endif
                 m_thread_manager_list_node()
@@ -132,13 +112,13 @@ namespace awn::sys {
                 return m_core_mask;
             }
 
-            ALWAYS_INLINE void SendMessage(size_t message) { m_message_queue.SendMessage(message); }
-            ALWAYS_INLINE void JamMessage(size_t message)  { m_message_queue.JamMessage(message); }
-            ALWAYS_INLINE void ReceiveMessage(size_t *out_message)  { m_message_queue.ReceiveMessage(out_message); }
-            ALWAYS_INLINE bool TrySendMessage(size_t message) { return m_message_queue.TrySendMessage(message); }
-            ALWAYS_INLINE bool TryJamMessage(size_t message) { return m_message_queue.TryJamMessage(message); }
-            ALWAYS_INLINE bool TryReceiveMessage(size_t *out_message) { return m_message_queue.TryReceiveMessage(out_message); }
-            ALWAYS_INLINE bool TryPeekMessage(size_t *out_message) { return m_message_queue.TryPeekMessage(out_message); }
+            ALWAYS_INLINE void SendMessage(u64 message) { m_message_queue.SendMessage(message); }
+            ALWAYS_INLINE void JamMessage(u64 message)  { m_message_queue.JamMessage(message); }
+            ALWAYS_INLINE void ReceiveMessage(u64 *out_message)  { m_message_queue.ReceiveMessage(out_message); }
+            ALWAYS_INLINE bool TrySendMessage(u64 message) { return m_message_queue.TrySendMessage(message); }
+            ALWAYS_INLINE bool TryJamMessage(u64 message) { return m_message_queue.TryJamMessage(message); }
+            ALWAYS_INLINE bool TryReceiveMessage(u64 *out_message) { return m_message_queue.TryReceiveMessage(out_message); }
+            ALWAYS_INLINE bool TryPeekMessage(u64 *out_message) { return m_message_queue.TryPeekMessage(out_message); }
 
             constexpr ALWAYS_INLINE void SetThreadCurrentHeap(mem::Heap *heap) { m_thread_heap = heap; }
             constexpr ALWAYS_INLINE void SetLookupHeap(mem::Heap *heap)        { m_lookup_heap = heap; }
@@ -150,9 +130,9 @@ namespace awn::sys {
             constexpr ALWAYS_INLINE const mem::Heap *GetLookupHeap() const { return m_lookup_heap; }
 
             ALWAYS_INLINE void SendExitMessage() { m_message_queue.SendMessage(m_exit_message); }
-            constexpr ALWAYS_INLINE size_t GetExitMessage() const { return m_exit_message; }
+            constexpr ALWAYS_INLINE u64 GetExitMessage() const { return m_exit_message; }
 
-#ifdef VP_TARGET_PLATFORM_win32
+#if defined(VP_TARGET_PLATFORM_win32) || defined(VP_TARGET_PLATFORM_linux)
             constexpr ALWAYS_INLINE void SetTlsValue(TlsSlot slot, uintptr_t object) {
                 VP_ASSERT(slot < cMaxThreadTlsSlotCount);
                 m_tls_slot_array[slot] = object;

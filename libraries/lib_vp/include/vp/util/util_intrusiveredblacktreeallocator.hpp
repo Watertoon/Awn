@@ -30,14 +30,14 @@ namespace vp::util {
             constexpr IntrusiveRedBlackTreeAllocator()  : m_tree(), m_allocator() {/*...*/}
             constexpr ~IntrusiveRedBlackTreeAllocator() {/*...*/}
 
-            void Initialize(vp::imem::IHeap *heap, u32 count) {
-                m_allocator.Initialize(heap, count);
+            Result Initialize(vp::imem::IHeap *heap, u32 count) {
+                RESULT_RETURN(m_allocator.Initialize(heap, count));
             }
             void Finalize() {
                 m_tree.ForceReset();
                 m_allocator.Finalize();
             }
-
+        public:
             ALWAYS_INLINE TreeType::iterator begin() { return m_tree.begin(); }
             constexpr TreeType::iterator end()   { return m_tree.end(); }
             ALWAYS_INLINE TreeType::const_iterator begin() const { return m_tree.begin(); }

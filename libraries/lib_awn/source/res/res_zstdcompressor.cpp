@@ -42,7 +42,7 @@ namespace awn::res {
         }
     }
 
-    Result ZstdCompressor::SaveCompressFile(const char *path, FileSaveInfo *save_info, FileDeviceBase *file_device) { 
+    Result ZstdCompressor::SaveFileWithCompression(const char *path, FileSaveInfo *save_info, FileDeviceBase *file_device) { 
 
         /* Add compression extension */
         res::MaxPathString path_ext;
@@ -51,7 +51,7 @@ namespace awn::res {
         /* Create file handle */
         FileHandle handle = {};
         ON_SCOPE_EXIT {
-            RESULT_ABORT_UNLESS(handle.Close());
+            RESULT_DISCARD(handle.Close());
         };
         if (file_device == nullptr) {
 
@@ -95,12 +95,12 @@ namespace awn::res {
             const size_t left = ::ZSTD_compressStream2(cctx, std::addressof(out), std::addressof(in), ZSTD_e_flush);
             RESULT_RETURN_IF(::ZSTD_isError(left) || left != 0, ResultZstdError);
             /* Write frame */
-            file_device->WriteFile(nullptr, std::addressof(handle), out.dst, out.pos, offset);
+            RESULT_TRY(file_device->WriteFile(nullptr, std::addressof(handle), out.dst, out.pos, offset));
             /* Advance */
             offset += out.pos;
             out.pos = 0;
         }
-        file_device->Commit();
+        RESULT_TRY(file_device->Commit());
 
         RESULT_RETURN_SUCCESS;
     }

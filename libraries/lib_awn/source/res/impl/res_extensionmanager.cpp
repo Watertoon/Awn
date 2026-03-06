@@ -17,23 +17,22 @@
 
 namespace awn::res::impl {
 
-    void ExtensionManager::Initialize(mem::Heap *heap, const ExtensionManagerInfo *ext_mgr_info) {
+    Result ExtensionManager::Initialize(mem::Heap *heap, const ExtensionManagerInfo *ext_mgr_info) {
 
         /* Integrity checks */
-        VP_ASSERT(ext_mgr_info != nullptr);
+        RESULT_RETURN_IF(ext_mgr_info->extension_count < 1, ResultRangeNG);
 
         /* Initialize resource unit manager array */
-        m_resource_unit_manager_array.Initialize(heap, ext_mgr_info->extension_count + 1);
+        RESULT_TRY(m_resource_unit_manager_array.Initialize(heap, ext_mgr_info->extension_count + 1));
 
         /* Set main extension array */
-        if (ext_mgr_info->extension_count < 1) { return; }
-        m_extension_array.Initialize(heap, ext_mgr_info->extension_count);
+        RESULT_TRY(m_extension_array.Initialize(heap, ext_mgr_info->extension_count));
         for (u32 i = 0; i < ext_mgr_info->extension_count; ++i) {
             m_extension_array[i] = ext_mgr_info->extension_info_array[i];
         }
-        m_extension_array.Sort();
+        m_extension_array.Sort(ExtensionArray::DefaultCompareLess());
 
-        return;
+        RESULT_RETURN_SUCCESS;
     }
     void ExtensionManager::Finalize() {
         m_resource_unit_manager_array.Finalize();

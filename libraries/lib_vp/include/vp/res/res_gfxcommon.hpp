@@ -46,19 +46,6 @@ namespace vp::res {
         Virtual      = (1 << 9),
     };
     VP_ENUM_FLAG_TRAITS(GfxMemoryPoolFlags);
-    VP_ENUM_TRAITSV(
-        vp::res::GfxMemoryPoolFlags, GfxMemoryPoolFlags,
-        CpuNoAccess,
-        CpuUncached,
-        CpuCached,
-        GpuNoAccess,
-        GpuUncached,
-        GpuCached,
-        ShaderCode,
-        Compressible,
-        Physical,
-        Virtual
-    );
 
     enum class GfxGpuAccessFlags : u32 {
         VertexBuffer        = (1 << 2),
@@ -73,19 +60,6 @@ namespace vp::res {
         Counter             = (1 << 11),
     };
     VP_ENUM_FLAG_TRAITS(GfxGpuAccessFlags);
-    VP_ENUM_TRAITSV(
-        vp::res::GfxGpuAccessFlags, GfxGpuAccessFlags,
-        VertexBuffer,
-        IndexBuffer,
-        UniformBuffer,
-        Texture,
-        StorageBuffer,
-        RenderTargetColor,
-        RenderTargetDepth,
-        IndirectDraw,
-        DisplayTexture,
-        Counter
-    );
 
     struct ResGfxMemoryPoolInfo {
         u32   memory_pool_flags;
@@ -141,15 +115,6 @@ namespace vp::res {
         Blue  = 0x4,
         Alpha = 0x5,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxChannelSource, GfxChannelSource,
-        Zero,
-        One,
-        Red,
-        Green,
-        Blue,
-        Alpha
-    );
 
     enum class GfxChannelFormat : u8 {
         None         = 0x1,
@@ -197,53 +162,6 @@ namespace vp::res {
         ASTC_12x12   = 0x3a,
         B5G5R5A1     = 0x3b,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxChannelFormat, GfxChannelFormat,
-        None,
-        R8,
-        R4G4B4A4,
-        R5G5B5A1,
-        A1B5G5R5,
-        R5G6B5,
-        B5G6R5,
-        R8G8,
-        R16,
-        R8G8B8A8,
-        B8G8R8A8,
-        R9G9B9E5F,
-        R10G10B10A2,
-        R11G11B10F,
-        R16G16,
-        D24S8,
-        R32,
-        R16G16B16A16,
-        D32FS8,
-        R32G32,
-        R32G32B32,
-        R32G32B32A32,
-        BC1,
-        BC2,
-        BC3,
-        BC4,
-        BC5,
-        BC6H,
-        BC7U,
-        ASTC_4x4,
-        ASTC_5x4,
-        ASTC_5x5,
-        ASTC_6x5,
-        ASTC_6x6,
-        ASTC_8x5,
-        ASTC_8x6,
-        ASTC_8x8,
-        ASTC_10x5,
-        ASTC_10x6,
-        ASTC_10x8,
-        ASTC_10x10,
-        ASTC_12x10,
-        ASTC_12x12,
-        B5G5R5A1
-    );
 
     static constexpr inline u32 cVariableBlockWidthTable[] = {
         0x10, 0x08, 0x10, 0x08,
@@ -272,7 +190,7 @@ namespace vp::res {
         0x10, 0x02,
     };
 
-    constexpr ALWAYS_INLINE u32 CalculateGfxImageTexelSize(GfxChannelFormat channel_format) {
+    constexpr u32 CalculateGfxImageTexelSize(GfxChannelFormat channel_format) {
         u32 format = static_cast<u32>(channel_format);
         u32 package_format = format - 0x1a;
         u32 texel_size = 0;
@@ -295,7 +213,7 @@ namespace vp::res {
         return texel_size;
     }
 
-    constexpr ALWAYS_INLINE u32 CalculateGfxAttributeSize(GfxChannelFormat channel_format, u32 component_count) {
+    constexpr u32 CalculateGfxAttributeSize(GfxChannelFormat channel_format, u32 component_count) {
 
         u32 format = static_cast<u32>(channel_format);
         u32 attribute_size = 0;
@@ -317,7 +235,7 @@ namespace vp::res {
         return attribute_size * component_count;
     }
 
-    constexpr ALWAYS_INLINE u32 CalculateGfxImageSize(GfxChannelFormat channel_format, u32 width, u32 height, u32 depth) {
+    constexpr u32 CalculateGfxImageSize(GfxChannelFormat channel_format, u32 width, u32 height, u32 depth) {
         const u32 format = static_cast<u32>(channel_format);
 
         /* Adjust width and height for compressed formats */
@@ -340,7 +258,7 @@ namespace vp::res {
         return texel_size * width * height * depth;
     }
 
-    constexpr ALWAYS_INLINE u32 CalculateLinearTextureStride(u32 width, vp::res::GfxChannelFormat channel_format) {
+    constexpr u32 CalculateLinearTextureStride(u32 width, vp::res::GfxChannelFormat channel_format) {
         const u32 format = static_cast<u32>(channel_format);
 
         /* Adjust width for linear format */
@@ -357,7 +275,7 @@ namespace vp::res {
         return width * texel_size;
     }
 
-    constexpr ALWAYS_INLINE vp::util::Int2 CalculateGfxImageBlockSize(GfxChannelFormat channel_format) {
+    constexpr vp::util::Int2 CalculateGfxImageBlockSize(GfxChannelFormat channel_format) {
         u32 format = static_cast<u32>(channel_format);
         u32 block_width     = 1;
         u32 block_height    = 1;
@@ -386,19 +304,6 @@ namespace vp::res {
         SScaled = 0x9,
         UFloat  = 0xa,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxTypeFormat, GfxTypeFormat,
-        Unorm,
-        Snorm,
-        UInt,
-        SInt,
-        Float,
-        SRGB,
-        Depth,
-        UScaled,
-        SScaled,
-        UFloat
-    );
 
     #define GFX_MAKE_IMAGE_FORMAT(channel_format, type_format) \
         (((static_cast<u32>(channel_format) & 0xff) << 8) | (static_cast<u32>(type_format) & 0xff))
@@ -504,108 +409,6 @@ namespace vp::res {
         ASTC_12x12_SRGB       = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::ASTC_12x12,   GfxTypeFormat::SRGB),
         B5G5R5A1_Unorm        = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::B5G5R5A1,     GfxTypeFormat::Unorm),
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxImageFormat, GfxImageFormat,
-        None_Unorm,
-        R8_Unorm,
-        R8_Snorm,
-        R8_UInt,
-        R8_SInt,
-        R4G4B4A4_Unorm,
-        R5G5B5A1_Unorm,
-        A1B5G5R5_Unorm,
-        R5G6B5_Unorm,
-        B5G6R5_Unorm,
-        R8G8_Unorm,
-        R8G8_Snorm,
-        R8G8_UInt,
-        R8G8_SInt,
-        R16_Unorm,
-        R16_Snorm,
-        R16_UInt,
-        R16_SInt,
-        R16_Float,
-        Z16_Depth,
-        R8G8B8A8_Unorm,
-        R8G8B8A8_Snorm,
-        R8G8B8A8_UInt,
-        R8G8B8A8_SInt,
-        R8G8B8A8_SRGB,
-        B8G8R8A8_Unorm,
-        B8G8R8A8_SRGB,
-        R9G9B9E5F_SharedFloat,
-        R10G10B10A2_Unorm,
-        R10G10B10A2_UInt,
-        R11G11B10F_Float,
-        R16G16_Unorm,
-        R16G16_Snorm,
-        R16G16_UInt,
-        R16G16_SInt,
-        R16G16_Float,
-        D24S8_Depth,
-        R32_UInt,
-        R32_SInt,
-        R32_Float,
-        D32F_Depth,
-        R16G16B16A16_Unorm,
-        R16G16B16A16_Snorm,
-        R16G16B16A16_UInt,
-        R16G16B16A16_SInt,
-        R16G16B16A16_Float,
-        D32FS8_Depth,
-        R32G32_UInt,
-        R32G32_SInt,
-        R32G32_Float,
-        R32G32B32_UInt,
-        R32G32B32_SInt,
-        R32G32B32_Float,
-        R32G32B32A32_UInt,
-        R32G32B32A32_SInt,
-        R32G32B32A32_Float,
-        BC1_Unorm,
-        BC1_SRGB,
-        BC2_Unorm,
-        BC2_SRGB,
-        BC3_Unorm,
-        BC3_SRGB,
-        BC4_Unorm,
-        BC4_Snorm,
-        BC5_Unorm,
-        BC5_Snorm,
-        BC6H_SF16,
-        BC6H_UF16,
-        BC7U_Unorm,
-        BC7U_SRGB,
-        ASTC_4x4_Unorm,
-        ASTC_4x4_SRGB,
-        ASTC_5x4_Unorm,
-        ASTC_5x4_SRGB,
-        ASTC_5x5_Unorm,
-        ASTC_5x5_SRGB,
-        ASTC_6x5_Unorm,
-        ASTC_6x5_SRGB,
-        ASTC_6x6_Unorm,
-        ASTC_6x6_SRGB,
-        ASTC_8x5_Unorm,
-        ASTC_8x5_SRGB,
-        ASTC_8x6_Unorm,
-        ASTC_8x6_SRGB,
-        ASTC_8x8_Unorm,
-        ASTC_8x8_SRGB,
-        ASTC_10x5_Unorm,
-        ASTC_10x5_SRGB,
-        ASTC_10x6_Unorm,
-        ASTC_10x6_SRGB,
-        ASTC_10x8_Unorm,
-        ASTC_10x8_SRGB,
-        ASTC_10x10_Unorm,
-        ASTC_10x10_SRGB,
-        ASTC_12x10_Unorm,
-        ASTC_12x10_SRGB,
-        ASTC_12x12_Unorm,
-        ASTC_12x12_SRGB,
-        B5G5R5A1_Unorm
-    );
 
     constexpr bool IsDepthFormat(vp::res::GfxImageFormat format) {
         switch (format) {
@@ -692,65 +495,6 @@ namespace vp::res {
         R32G32B32A32_SInt    = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::R32G32B32A32,  GfxTypeFormat::SInt),
         R32G32B32A32_Float   = GFX_MAKE_IMAGE_FORMAT(GfxChannelFormat::R32G32B32A32,  GfxTypeFormat::Float),
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxAttributeFormat, GfxAttributeFormat,
-        None_Unorm,
-        R8_Unorm,
-        R8_Snorm,
-        R8_UInt,
-        R8_SInt,
-        R8_UScaled,
-        R8_SScaled,
-        R8G8_Unorm,
-        R8G8_Snorm,
-        R8G8_UInt,
-        R8G8_SInt,
-        R8G8_UScaled,
-        R8G8_SScaled,
-        R16_Unorm,
-        R16_Snorm,
-        R16_UInt,
-        R16_SInt,
-        R16_Float,
-        R16_UScaled,
-        R16_SScaled,
-        R8G8B8A8_Unorm,
-        R8G8B8A8_Snorm,
-        R8G8B8A8_UInt,
-        R8G8B8A8_SInt,
-        R8G8B8A8_UScaled,
-        R8G8B8A8_SScaled,
-        R10G10B10A2_Unorm,
-        R10G10B10A2_Snorm,
-        R10G10B10A2_UInt,
-        R10G10B10A2_SInt,
-        R16G16_Unorm,
-        R16G16_Snorm,
-        R16G16_UInt,
-        R16G16_SInt,
-        R16G16_Float,
-        R16G16_UScaled,
-        R16G16_SScaled,
-        R32_UInt,
-        R32_SInt,
-        R32_Float,
-        R16G16B16A16_Unorm,
-        R16G16B16A16_Snorm,
-        R16G16B16A16_UInt,
-        R16G16B16A16_SInt,
-        R16G16B16A16_Float,
-        R16G16B16A16_UScaled,
-        R16G16B16A16_SScaled,
-        R32G32_UInt,
-        R32G32_SInt,
-        R32G32_Float,
-        R32G32B32_UInt,
-        R32G32B32_SInt,
-        R32G32B32_Float,
-        R32G32B32A32_UInt,
-        R32G32B32A32_SInt,
-        R32G32B32A32_Float
-    );
 
     constexpr GfxChannelFormat GetGfxChannelFormat(GfxImageFormat image_format) {
         return static_cast<GfxChannelFormat>(static_cast<u32>(image_format) >> 0x8);
@@ -770,28 +514,17 @@ namespace vp::res {
         Type2d = 2,
         Type3d = 3,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxImageStorageDimension, GfxImageStorageDimension,
-        Type1d,
-        Type2d,
-        Type3d
-    );
 
     enum class GfxTileMode : u16 {
         Optimal = 0,
         Linear = 1,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxTileMode, GfxTileMode,
-        Optimal,
-        Linear
-    );
 
     struct ResGfxTextureInfo {
         union {
             u8 texture_flags;
             struct {
-                u8  is_packaged         : 1;
+                u8  is_packaged_texture_layout : 1;
                 u8  is_sparse_binding   : 1;
                 u8  is_sparse           : 1;
                 u8  is_res_texture      : 1;
@@ -810,7 +543,15 @@ namespace vp::res {
         u32 height;
         u32 depth;
         u32 array_layer_count;
-        u32 packaged_texture_layout;
+        union {
+            u32 packaged_texture_layout;
+            struct {
+                u32 tile_h : 4;
+                u32 tile_d : 4;
+                u32 tile_num : 4;
+                u32 reserve2 : 20;
+            };
+        };
 
         constexpr void SetDefaults() {
             this->texture_flags = 0;
@@ -856,14 +597,14 @@ namespace vp::res {
             this->depth = depth;
         }
         template <typename T>
-            requires (T::cIsVectorType && 2 <= T::cVectorCount)
+            requires (T::cIsVectorType && 2 <= T::cCount)
         constexpr void SetSize2d(const T &vec) {
             this->width = static_cast<u32>(vec[0]);
             this->height = static_cast<u32>(vec[1]);
             this->depth = 1;
         }
         template <typename T>
-            requires (T::cIsVectorType && 3 <= T::cVectorCount)
+            requires (T::cIsVectorType && 3 <= T::cCount)
         constexpr void SetSize3d(const T &vec) {
             this->width = static_cast<u32>(vec[0]);
             this->height = static_cast<u32>(vec[1]);
@@ -887,19 +628,59 @@ namespace vp::res {
         TypeCubeArray           = 8,
         TypeRectangle           = 9,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxImageDimension, GfxImageDimension,
-        Type1d,
-        Type2d,
-        Type3d,
-        TypeCube,
-        Type1dArray,
-        Type2dArray,
-        Type2dMultisample,
-        Type2dMultisampleArray,
-        TypeCubeArray,
-        TypeRectangle
-    );
+
+    constexpr u32 AdjustHeight(u32 height, GfxImageDimension image_dimension) {
+        switch (image_dimension) {
+            case GfxImageDimension::Type1dArray:
+                height = 1;
+                break;
+            default:
+                break;
+        };
+        return height;
+    }
+    constexpr u32 AdjustDepth(u32 height, u32 depth, GfxImageDimension image_dimension) {
+        switch (image_dimension) {
+            case GfxImageDimension::TypeCube:
+                depth = 6;
+                break;
+            case GfxImageDimension::Type1dArray:
+                if (1 < height) {
+                    depth = height;
+                }
+                break;
+            default:
+                break;
+        };
+        return depth;
+    }
+    constexpr bool IsArray(GfxImageDimension image_dimension) {
+        switch (image_dimension) {
+            case GfxImageDimension::TypeCube:
+            case GfxImageDimension::TypeCubeArray:
+            case GfxImageDimension::Type1dArray:
+            case GfxImageDimension::Type2dArray:
+                return true;
+            default:
+                break;
+        };
+        return false;
+    }
+    constexpr GfxImageStorageDimension GetStorageDimension(GfxImageDimension image_dimension) {
+        u32 dimension = 2;
+        switch (image_dimension) {
+            case GfxImageDimension::Type1d:
+            case GfxImageDimension::Type1dArray:
+                dimension = 1;
+                break;
+            case GfxImageDimension::Type3d:
+                dimension = 3;
+                break;
+            default:
+                break;
+        };
+        return static_cast<GfxImageStorageDimension>(dimension);
+    }
 
     enum class GfxTextureSwizzle : u8 {
         Zero = 0,
@@ -909,15 +690,6 @@ namespace vp::res {
         B    = 4,
         A    = 5,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxTextureSwizzle, GfxTextureSwizzle,
-        Zero,
-        One,
-        R,
-        G,
-        B,
-        A
-    );
 
     enum class GfxTextureDepthStencilMode : u8 {
         Depth   = 0,
@@ -925,12 +697,6 @@ namespace vp::res {
         /* Vp ext */
         DepthAndStencil = 2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxTextureDepthStencilMode, GfxTextureDepthStencilMode,
-        Depth,
-        Stencil,
-        DepthAndStencil
-    );
 
     template <typename T>
         requires (sizeof(T*) == sizeof(u64))
@@ -1010,14 +776,6 @@ namespace vp::res {
         ClampToBorder     = 3,
         MirrorClampToEdge = 4,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxWrapMode, GfxWrapMode,
-        Repeat,
-        MirrorRepeat,
-        ClampToEdge,
-        ClampToBorder,
-        MirrorClampToEdge
-    );
 
     enum class GfxCompareOperation : u8 {
         Never            = 0,
@@ -1029,77 +787,36 @@ namespace vp::res {
         GreaterThanEqual = 6,
         Always           = 7,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxCompareOperation, GfxCompareOperation,
-        Never,
-        LessThan,
-        Equal,
-        LessThanEqual,
-        GreaterThan,
-        NotEqual,
-        GreaterThanEqual,
-        Always
-    );
 
     enum class GfxBorderColor : u8 {
         White            = 0,
         TransparentBlack = 1,
         Black            = 2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxBorderColor, GfxBorderColor,
-        White,
-        TransparentBlack,
-        Black
-    );
 
     enum class GfxMipMapFilter : u8 {
         None    = 0,
         Nearest = 1,
         Linear  = 2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxMipMapFilter, GfxMipMapFilter,
-        None,
-        Nearest,
-        Linear
-    );
 
     enum class GfxMinFilter : u8 {
         Invalid = 0,
         Nearest = 1,
         Linear  = 2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxMinFilter, GfxMinFilter,
-        Invalid,
-        Nearest,
-        Linear
-    );
 
     enum class GfxMagFilter : u8 {
         Invalid = 0,
         Nearest = 1,
         Linear  = 2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxMagFilter, GfxMagFilter,
-        Invalid,
-        Nearest,
-        Linear
-    );
 
     enum class GfxReductionFilter : u8 {
         Average = 0,
         Min     = 1,
         Max     = 2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxReductionFilter, GfxReductionFilter,
-        Average,
-        Min,
-        Max
-    );
 
     struct ResGfxSamplerInfo {
         u8    wrap_mode_u;
@@ -1219,31 +936,12 @@ namespace vp::res {
         TriangleStripAdjacency = 8,
         Patches                = 9,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxPrimitiveTopology, GfxPrimitiveTopology,
-        Points,
-        Lines,
-        LineStrip,
-        Triangles,
-        TrianglesStrip,
-        LinesAdjacency,
-        LineStripAdjacency,
-        TrianglesAdjacency,
-        TriangleStripAdjacency,
-        Patches
-    );
 
     enum class GfxIndexFormat {
         U8  = 0,
         U16 = 1,
         U32 = 2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxIndexFormat, GfxIndexFormat,
-        U8,
-        U16,
-        U32
-    );
 
     constexpr u32 GfxIndexFormatToSize(GfxIndexFormat index_format) {
         return (1 << static_cast<u32>(index_format));
@@ -1259,17 +957,6 @@ namespace vp::res {
         GreaterThanEqual = 6,
         Always           = 7,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxComparisonFunction, GfxComparisonFunction,
-        Never,
-        Less,
-        Equal,
-        LessThanEqual,
-        Greater,
-        NotEqual,
-        GreaterThanEqual,
-        Always
-    );
 
     enum class GfxStencilOperation {
         Keep          = 0,
@@ -1281,17 +968,6 @@ namespace vp::res {
         IncrementWrap = 6,
         DecrementWrap = 7,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxStencilOperation, GfxStencilOperation,
-        Keep,
-        Zero,
-        Replace,
-        Increment,
-        Decrement,
-        Invert,
-        IncrementWrap,
-        DecrementWrap
-    );
 
     enum class GfxBlendFactor : u8 {
         Zero                     = 0,
@@ -1314,28 +990,6 @@ namespace vp::res {
         SourceOneAlpha           = 17,
         OneMinusSourceOneAlpha   = 18,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxBlendFactor, GfxBlendFactor,
-        Zero,
-        One,
-        SourceColor,
-        OneMinusSourceColor,
-        DestinationColor,
-        OneMinusDestinationColor,
-        SourceAlpha,
-        OneMinusSourceAlpha,
-        DestinationAlpha,
-        OneMinusDestinationAlpha,
-        ConstantColor,
-        OneMinusConstantColor,
-        ConstantAlpha,
-        OneMinusConstantAlpha,
-        SourceAlphaSaturate,
-        SourceOneColor,
-        OneMinusSourceOneColor,
-        SourceOneAlpha,
-        OneMinusSourceOneAlpha
-    );
 
     enum class GfxBlendEquation : u8 {
         Add        = 0,
@@ -1344,14 +998,6 @@ namespace vp::res {
         Min        = 3,
         Max        = 4,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxBlendEquation, GfxBlendEquation,
-        Add,
-        Sub,
-        ReverseSub,
-        Min,
-        Max
-    );
 
     enum class GfxLogicOperation : u8 {
         Clear        = 0,
@@ -1371,25 +1017,6 @@ namespace vp::res {
         Nand         = 14,
         Set          = 15,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxLogicOperation, GfxLogicOperation,
-        Clear,
-        And,
-        AndReverse,
-        Copy,
-        AndInverted,
-        NoOp,
-        Xor,
-        Or,
-        Nor,
-        Equivalent,
-        Invert,
-        OrReverse,
-        CopyInverted,
-        OrInverted,
-        Nand,
-        Set
-    );
 
     enum class GfxCullMode : u8 {
         None  = 0,
@@ -1397,34 +1024,17 @@ namespace vp::res {
         Back  = 2,
     };
     VP_ENUM_FLAG_TRAITS(GfxCullMode);
-    VP_ENUM_TRAITSV(
-        vp::res::GfxCullMode, GfxCullMode,
-        None,
-        Front,
-        Back
-    );
 
     enum class GfxFillMode : u8 {
         Point = 0,
         Line  = 1,
         Fill  = 2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxFillMode, GfxFillMode,
-        Point,
-        Line,
-        Fill
-    );
 
     enum class GfxFrontFace : u8 {
         CounterClockwise = 0,
         Clockwise        = 1,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxFrontFace, GfxFrontFace,
-        CounterClockwise,
-        Clockwise
-    );
 
     enum class GfxUserDataType : u8 {
         S32    = 0,
@@ -1432,13 +1042,6 @@ namespace vp::res {
         String = 2,
         Byte   = 3,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxUserDataType, GfxUserDataType,
-        S32,
-        Float,
-        String,
-        Byte
-    );
 
     struct ResGfxUserData {
         const char *name;
@@ -1456,21 +1059,12 @@ namespace vp::res {
         Geometry               = 3,
         Fragment               = 4,
         Compute                = 5,
-        /* Vp ext */
-        Task                   = 6,
-        Mesh                   = 7,
+        /* Vp ext (Mesh shaders confirmed 8) */
+        Kernel                 = 6,
+        Task                   = 7,
+        Mesh                   = 8,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxShaderStage, GfxShaderStage,
-        Vertex,
-        TessellationControl,
-        TessellationEvaluation,
-        Geometry,
-        Fragment,
-        Compute,
-        Task,
-        Mesh
-    );
+    static constexpr u32 cMaxShaderStageCount = vp::util::TEnumTraits<GfxShaderStage>::cEnumCount;
 
     enum class GfxShaderStageBits : u32 {
         Vertex                 = (1 << 0),
@@ -1480,33 +1074,17 @@ namespace vp::res {
         Fragment               = (1 << 4),
         Compute                = (1 << 5),
         /* Vp ext */
-        Task                   = (1 << 6),
-        Mesh                   = (1 << 7),
+        Kernel                 = (1 << 6),
+        Task                   = (1 << 7),
+        Mesh                   = (1 << 8),
     };
     VP_ENUM_FLAG_TRAITS(GfxShaderStageBits);
-    VP_ENUM_TRAITSV(
-        vp::res::GfxShaderStageBits, GfxShaderStageBits,
-        Vertex,
-        TessellationControl,
-        TessellationEvaluation,
-        Geometry,
-        Fragment,
-        Compute,
-        Task,
-        Mesh
-    );
 
     enum class GfxShaderCodeType : u8 {
-        Binary         = 0x0,
-        Intermediate   = 0x1,
-        Source         = 0x2,
+        Binary       = 0x0,
+        Intermediate = 0x1,
+        Source       = 0x2,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxShaderCodeType, GfxShaderCodeType,
-        Binary,
-        Intermediate,
-        Source
-    );
 
     enum class GfxShaderInterfaceType : u32 {
         InputAttribute  = 0x0,
@@ -1518,49 +1096,4 @@ namespace vp::res {
         SeparateTexture = 0x6,
         SeparateSampler = 0x7,
     };
-    VP_ENUM_TRAITSV(
-        vp::res::GfxShaderInterfaceType, GfxShaderInterfaceType,
-        InputAttribute,
-        OutputAttribute,
-        TextureSampler,
-        UniformBuffer,
-        StorageBuffer,
-        Image,
-        SeparateTexture,
-        SeparateSampler
-    );
 }
-VP_ENUM_TRAITS_AUTO(vp::res::GfxMemoryPoolFlags);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxGpuAccessFlags);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxChannelSource);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxChannelFormat);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxTypeFormat);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxImageFormat);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxAttributeFormat);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxImageStorageDimension);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxTileMode);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxImageDimension);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxTextureSwizzle);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxTextureDepthStencilMode);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxWrapMode);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxCompareOperation);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxBorderColor);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxMipMapFilter);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxMinFilter);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxMagFilter);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxReductionFilter);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxPrimitiveTopology);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxIndexFormat);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxComparisonFunction);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxStencilOperation);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxBlendFactor);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxBlendEquation);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxLogicOperation);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxCullMode);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxFillMode);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxFrontFace);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxUserDataType);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxShaderStage);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxShaderStageBits);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxShaderCodeType);
-VP_ENUM_TRAITS_AUTO(vp::res::GfxShaderInterfaceType);

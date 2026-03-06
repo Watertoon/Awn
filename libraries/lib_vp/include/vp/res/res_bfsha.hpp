@@ -86,15 +86,6 @@ namespace vp::res {
         Skeleton = 3,
         Option = 4,
     };
-    
-    VP_ENUM_TRAITSV(
-        vp::res::BfshaBufferType, BfshaBufferType,
-        User,
-        Material,
-        Shape,
-        Skeleton,
-        Option
-    );
 
     struct ResBfshaBuffer{
         ResBfshaBufferParam       *param_array;
@@ -110,10 +101,15 @@ namespace vp::res {
     struct ResBfshaShadingModel;
 
     struct ResBfshaShaderProgram {
-        u32                    *location_array_texture_sampler;
-        u32                    *location_array_image;
-        u32                    *location_array_uniform_buffer;
-        u32                    *location_array_storage_buffer;
+        union {
+            u32 *location_array[4];
+            struct {                
+                u32 *location_array_texture_sampler;
+                u32 *location_array_image;
+                u32 *location_array_uniform_buffer;
+                u32 *location_array_storage_buffer;
+            };
+        };
         ResBnshShaderVariation *bnsh_shader_variation;
         ResBfshaShadingModel   *parent_shading_model;
         u32                     reserve0; /* Unknown */
@@ -128,11 +124,18 @@ namespace vp::res {
                 u16 reserve1                      : 11;
             };
         };
-        u16                     texture_sampler_count;
-        u16                     image_count;
-        u16                     uniform_buffer_count;
-        u16                     storage_buffer_count;
+        union {
+            u16 location_count_array[4];
+            struct {
+                u16 texture_sampler_count;
+                u16 image_count;
+                u16 uniform_buffer_count;
+                u16 storage_buffer_count;
+            };
+        };
         u16                     reserve2;
+
+        static constexpr u32 cInvalidLocation = 0xffff'ffff;
     };
     static_assert(sizeof(ResBfshaShaderProgram) == 0x40);
 
@@ -228,6 +231,39 @@ namespace vp::res {
             return count;
         }
 
+        constexpr u32 GetBaseLocationArray(u8 *out_array, u32 count) const {
+            /* Remap from bfsha order to gfx order */
+            constexpr u32 shader_stage_map[vp::res::cMaxShaderStageCount] = {
+                0,
+                3,
+                4,
+                1,
+                2,
+                5,
+                6,
+                7,
+                8,
+            };
+            u32 i = 0;
+            if (this->base_location_array == nullptr) {
+                const u32 min_count = vp::util::Min(count, 6u);
+                for (; i < min_count; ++i) {
+                    const u32 loc_id = (i < vp::res::cMaxShaderStageCount) ? shader_stage_map[i] : i;
+                    out_array[i] = this->base_location_array_old[loc_id];
+                }
+            } else {
+                const u32 min_count = vp::util::Min(count, static_cast<u32>(this->base_location_count));
+                for (; i < min_count; ++i) {
+                    const u32 loc_id = (i < vp::res::cMaxShaderStageCount) ? shader_stage_map[i] : i;
+                    out_array[i] = this->base_location_array[loc_id];
+                }
+            }
+            for (; i < count; ++i) {
+                out_array[i] = cInvalidBaseLocation;
+            }
+            return count;
+        }
+
         u32 FindStaticShaderOptionIndex(const char *option_name) const;
         u32 FindDynamicShaderOptionIndex(const char *option_name) const;
         u32 FindInputAttributeIndex(const char *attribute_name) const;
@@ -302,4 +338,3 @@ namespace vp::res {
     };
     static_assert(sizeof(ResBfsha) == 0x38);
 }
-VP_ENUM_TRAITS_AUTO(vp::res::BfshaBufferType);

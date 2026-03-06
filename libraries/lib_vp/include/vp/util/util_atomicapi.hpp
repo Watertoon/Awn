@@ -47,6 +47,10 @@ namespace vp::util {
     constexpr ALWAYS_INLINE T InterlockedExchangeRelease(T *write, T value) {
         return __atomic_exchange_n(write, value, __ATOMIC_RELEASE);
     }
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedExchangeRelaxed(T *write, T value) {
+        return __atomic_exchange_n(write, value, __ATOMIC_RELAXED);
+    }
 
     template <typename T>
     constexpr ALWAYS_INLINE bool InterlockedCompareExchange(T *out_last, T *write, T value, T comperand) {
@@ -106,6 +110,10 @@ namespace vp::util {
         return __atomic_add_fetch(write, value, __ATOMIC_RELEASE);
     }
     template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedAddRelaxed(T *write, T value) {
+        return __atomic_add_fetch(write, value, __ATOMIC_RELAXED);
+    }
+    template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchAdd(T *write, T value) {
         return __atomic_fetch_add(write, value, __ATOMIC_SEQ_CST);
     }
@@ -116,6 +124,10 @@ namespace vp::util {
     template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchAddRelease(T *write, T value) {
         return __atomic_fetch_add(write, value, __ATOMIC_RELEASE);
+    }
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedFetchAddRelaxed(T *write, T value) {
+        return __atomic_fetch_add(write, value, __ATOMIC_RELAXED);
     }
 
     template <typename T>
@@ -131,6 +143,10 @@ namespace vp::util {
         return __atomic_add_fetch(write, 1, __ATOMIC_RELEASE);
     }
     template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedIncrementRelaxed(T *write) {
+        return __atomic_add_fetch(write, 1, __ATOMIC_RELAXED);
+    }
+    template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchIncrement(T *write) {
         return __atomic_fetch_add(write, 1, __ATOMIC_SEQ_CST);
     }
@@ -141,6 +157,10 @@ namespace vp::util {
     template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchIncrementRelease(T *write) {
         return __atomic_fetch_add(write, 1, __ATOMIC_RELEASE);
+    }
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedFetchIncrementRelaxed(T *write) {
+        return __atomic_fetch_add(write, 1, __ATOMIC_RELAXED);
     }
 
     template <typename T>
@@ -156,6 +176,10 @@ namespace vp::util {
         return __atomic_sub_fetch(write, value, __ATOMIC_RELEASE);
     }
     template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedSubtractRelaxed(T *write, T value) {
+        return __atomic_sub_fetch(write, value, __ATOMIC_RELAXED);
+    }
+    template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchSubtract(T *write, T value) {
         return __atomic_fetch_sub(write, value, __ATOMIC_SEQ_CST);
     }
@@ -166,6 +190,10 @@ namespace vp::util {
     template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchSubtractRelease(T *write, T value) {
         return __atomic_fetch_sub(write, value, __ATOMIC_RELEASE);
+    }
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedFetchSubtractRelaxed(T *write, T value) {
+        return __atomic_fetch_sub(write, value, __ATOMIC_RELAXED);
     }
 
     template <typename T>
@@ -181,6 +209,10 @@ namespace vp::util {
         return __atomic_sub_fetch(write, 1, __ATOMIC_RELEASE);
     }
     template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedDecrementRelaxed(T *write) {
+        return __atomic_sub_fetch(write, 1, __ATOMIC_RELAXED);
+    }
+    template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchDecrement(T *write) {
         return __atomic_fetch_sub(write, 1, __ATOMIC_SEQ_CST);
     }
@@ -191,6 +223,10 @@ namespace vp::util {
     template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchDecrementRelease(T *write) {
         return __atomic_fetch_sub(write, 1, __ATOMIC_RELEASE);
+    }
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedFetchDecrementRelaxed(T *write) {
+        return __atomic_fetch_sub(write, 1, __ATOMIC_RELAXED);
     }
 
     template <typename T>
@@ -206,6 +242,10 @@ namespace vp::util {
         return __atomic_and_fetch(write, value, __ATOMIC_RELEASE);
     }
     template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedAndRelaxed(T *write, T value) {
+        return __atomic_and_fetch(write, value, __ATOMIC_RELAXED);
+    }
+    template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchAnd(T *write, T value) {
         return __atomic_fetch_and(write, value, __ATOMIC_SEQ_CST);
     }
@@ -216,6 +256,10 @@ namespace vp::util {
     template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchAndRelease(T *write, T value) {
         return __atomic_fetch_and(write, value, __ATOMIC_RELEASE);
+    }
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedFetchAndRelaxed(T *write, T value) {
+        return __atomic_fetch_and(write, value, __ATOMIC_RELAXED);
     }
 
     template <typename T>
@@ -231,6 +275,10 @@ namespace vp::util {
         return __atomic_xor_fetch(write, value, __ATOMIC_RELEASE);
     }
     template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedXorRelaxed(T *write, T value) {
+        return __atomic_xor_fetch(write, value, __ATOMIC_RELAXED);
+    }
+    template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchXor(T *write, T value) {
         return __atomic_fetch_xor(write, value, __ATOMIC_SEQ_CST);
     }
@@ -241,6 +289,10 @@ namespace vp::util {
     template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchXorRelease(T *write, T value) {
         return __atomic_fetch_xor(write, value, __ATOMIC_RELEASE);
+    }
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedFetchXorRelaxed(T *write, T value) {
+        return __atomic_fetch_xor(write, value, __ATOMIC_RELAXED);
     }
 
     template <typename T>
@@ -256,6 +308,10 @@ namespace vp::util {
         return __atomic_or_fetch(write, value, __ATOMIC_RELEASE);
     }
     template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedOrRelaxed(T *write, T value) {
+        return __atomic_or_fetch(write, value, __ATOMIC_RELAXED);
+    }
+    template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchOr(T *write, T value) {
         return __atomic_fetch_or(write, value, __ATOMIC_SEQ_CST);
     }
@@ -266,6 +322,10 @@ namespace vp::util {
     template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchOrRelease(T *write, T value) {
         return __atomic_fetch_or(write, value, __ATOMIC_RELEASE);
+    }
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedFetchOrRelaxed(T *write, T value) {
+        return __atomic_fetch_or(write, value, __ATOMIC_RELAXED);
     }
 
     template <typename T>
@@ -281,6 +341,10 @@ namespace vp::util {
         return __atomic_nand_fetch(write, value, __ATOMIC_RELEASE);
     }
     template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedNandRelaxed(T *write, T value) {
+        return __atomic_nand_fetch(write, value, __ATOMIC_RELAXED);
+    }
+    template <typename T>
     constexpr ALWAYS_INLINE T InterlockedFetchNand(T *write, T value) {
         return __atomic_fetch_nand(write, value, __ATOMIC_SEQ_CST);
     }
@@ -292,12 +356,8 @@ namespace vp::util {
     constexpr ALWAYS_INLINE T InterlockedFetchNandRelease(T *write, T value) {
         return __atomic_fetch_nand(write, value, __ATOMIC_RELEASE);
     }
-    
-    
-    constexpr ALWAYS_INLINE void MemoryBarrierAcquire() {
-        __atomic_thread_fence(__ATOMIC_ACQUIRE);
-    }
-    constexpr ALWAYS_INLINE void MemoryBarrierRelease() {
-        __atomic_thread_fence(__ATOMIC_RELEASE);
+    template <typename T>
+    constexpr ALWAYS_INLINE T InterlockedFetchNandRelaxed(T *write, T value) {
+        return __atomic_fetch_nand(write, value, __ATOMIC_RELAXED);
     }
 }

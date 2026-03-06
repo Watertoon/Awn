@@ -2,113 +2,73 @@
 # Pull in architecture
 ifeq ($(ARCHITECTURE), x86)
 include $(dir $(lastword $(MAKEFILE_LIST)))/arch/arch_x86.mk
-else
-ifeq ($(ARCHITECTURE), aarch64)
+else ifeq ($(ARCHITECTURE), aarch64)
 include $(dir $(lastword $(MAKEFILE_LIST)))/arch/arch_aarch64.mk
-else
-ifeq ($(ARCHITECTURE), armv7)
+else ifeq ($(ARCHITECTURE), armv7)
 include $(dir $(lastword $(MAKEFILE_LIST)))/arch/arch_armv7.mk
-else
-ifeq ($(ARCHITECTURE), geckoppc)
+else ifeq ($(ARCHITECTURE), geckoppc)
 include $(dir $(lastword $(MAKEFILE_LIST)))/arch/arch_geckoppc.mk
-else
-ifeq ($(ARCHITECTURE), armv6k)
+else ifeq ($(ARCHITECTURE), armv6k)
 include $(dir $(lastword $(MAKEFILE_LIST)))/arch/arch_armv6k.mk
-else
-ifeq ($(ARCHITECTURE), armv5te)
+else ifeq ($(ARCHITECTURE), armv5te)
 include $(dir $(lastword $(MAKEFILE_LIST)))/arch/arch_armv5te.mk
-else
-ifeq ($(ARCHITECTURE), armv4t)
+else ifeq ($(ARCHITECTURE), armv4t)
 include $(dir $(lastword $(MAKEFILE_LIST)))/arch/arch_armv4t.mk
-else
-ifeq ($(ARCHITECTURE), mips64)
+else ifeq ($(ARCHITECTURE), mips64)
 include $(dir $(lastword $(MAKEFILE_LIST)))/arch/arch_mips64.mk
 else
 $(error Invalid ARCHITECTURE (check "config/arch" for valid list))
-endif
-endif
-endif
-endif
-endif
-endif
-endif
 endif
 
 # Pull in platform
 ifeq ($(PLATFORM), win32)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_win32.mk
-else
-ifeq ($(PLATFORM), winnt)
+else ifeq ($(PLATFORM), linux)
+include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_linux.mk
+else ifeq ($(PLATFORM), winnt)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_winnt.mk
-else
-ifeq ($(PLATFORM), nx)
+else ifeq ($(PLATFORM), nx)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_nx.mk
-else
-ifeq ($(PLATFORM), cafe)
+else ifeq ($(PLATFORM), cafe)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_cafe.mk
-else
-ifeq ($(PLATFORM), ktr)
+else ifeq ($(PLATFORM), ktr)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_ktr.mk
-else
-ifeq ($(PLATFORM), ctr)
+else ifeq ($(PLATFORM), ctr)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_ctr.mk
-else
-ifeq ($(PLATFORM), twl)
+else ifeq ($(PLATFORM), twl)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_twl.mk
-else
-ifeq ($(PLATFORM), rvl)
+else ifeq ($(PLATFORM), rvl)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_rvl.mk
-else
-ifeq ($(PLATFORM), dol)
+else ifeq ($(PLATFORM), dol)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_dol.mk
-else
-ifeq ($(PLATFORM), agb)
+else ifeq ($(PLATFORM), agb)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_agb.mk
-else
-ifeq ($(PLATFORM), nus)
+else ifeq ($(PLATFORM), nus)
 include $(dir $(lastword $(MAKEFILE_LIST)))../platform/platform_nus.mk
 else
 $(error Invalid PLATFORM (check "config/platform" for valid list))
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
 endif
 
 # Pull in graphics api
 ifeq ($(GRAPHICS_API), vk)
 include $(dir $(lastword $(MAKEFILE_LIST)))../graphics_api/gfxapi_vk.mk
-else
-ifeq ($(GRAPHICS_API), nvn)
+else ifeq ($(GRAPHICS_API), nvn)
 include $(dir $(lastword $(MAKEFILE_LIST)))../graphics_api/gfxapi_nvn.mk
-else
-ifeq ($(GRAPHICS_API), awngfx)
+else ifeq ($(GRAPHICS_API), awngfx)
 # ...
 else
 $(error Invalid GRAPHICS_API (check "config/gfxapi" for valid list))
-endif
-endif
 endif
 
 # Pull in binary type
 ifeq ($(BINARY_TYPE), release)
 include $(dir $(lastword $(MAKEFILE_LIST)))../binary_type/bintype_release.mk
-else
-ifeq ($(BINARY_TYPE), debug)
+else ifeq ($(BINARY_TYPE), debug)
 include $(dir $(lastword $(MAKEFILE_LIST)))../binary_type/bintype_debug.mk
-else
-ifeq ($(BINARY_TYPE), develop)
+else ifeq ($(BINARY_TYPE), develop)
 include $(dir $(lastword $(MAKEFILE_LIST)))../binary_type/bintype_develop.mk
 else
 $(error Invalid BINARY_TYPE (must be "release", "develop", or "debug"))
-endif
-endif
 endif
 
 export ALL_COMPILER_FLAGS :=  $(PROJECT_C_FLAGS) $(PROJECT_CXX_FLAGS) $(PROJECT_INCLUDES) $(ARCH_CXX_FLAGS) $(PLATFORM_C_FLAGS) $(PLATFORM_CXX_FLAGS) $(PLATFORM_INCLUDES) $(GFXAPI_INCLUDES) $(BINTYPE_CXX_FLAGS)
@@ -127,9 +87,12 @@ ifeq ($(PLATFORM), win32)
 %.exe:
 	@echo Compiling $@
 	$(COMPILER_PREFIX)$(CXX) $(ALL_LINKER_FLAGS) $(EXE_FLAGS) -o $@ $^ $(ALL_LIBS)
-endif
-ifeq ($(PLATFORM), winnt)
+else ifeq ($(PLATFORM), winnt)
 %.exe:
+	@echo Compiling $@
+	$(COMPILER_PREFIX)$(CXX) $(ALL_LINKER_FLAGS) $(EXE_FLAGS) -o $@ $^ $(ALL_LIBS)
+else ifeq ($(PLATFORM), linux)
+%.bin:
 	@echo Compiling $@
 	$(COMPILER_PREFIX)$(CXX) $(ALL_LINKER_FLAGS) $(EXE_FLAGS) -o $@ $^ $(ALL_LIBS)
 endif

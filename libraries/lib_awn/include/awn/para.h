@@ -21,7 +21,8 @@
 #include <awn/para/impl/para_dummyfiledevice.hpp>
 #include <awn/para/impl/para_typedparamfactory.h>
 #include <awn/para/para_documentbinder.hpp>
-#include <awn/para/para_typedparam.hpp>
+//#include <awn/para/para_typedparam.hpp>
+#include <awn/para/para_typedparam2.hpp>
 #include <awn/para/para_iappimpl.h>
 #include <awn/para/para_document.hpp>
 #include <awn/para/para_resourcedocument.hpp>
@@ -32,10 +33,11 @@
 #include <awn/para/para_typedparamarray.hpp>
 #include <awn/para/para_typedparammap.hpp>
 #include <awn/para/para_typedparamenummap.hpp>
-#include <awn/para/impl/para_documentqueue.hpp>
 #include <awn/para/impl/para_tfield.hpp>
+#include <awn/para/para_documentbinderasync.hpp>
+#include <awn/para/impl/para_documentqueue.hpp>
 
-#include <awn/para/impl/para_typedparamv.h>
+//#include <awn/para/impl/para_typedparamv.h>
 #include <awn/para/para_componentlistbase.hpp>
 #include <awn/para/para_combinationdatatabledata.h>
 
@@ -45,8 +47,8 @@
 #include <awn/para/para_variableframeratemanager.h>
 #include <awn/para/para_pausemanager.hpp>
 
-#include <awn/para/para_ilocalblackboard.h>
-#include <awn/para/para_blackboardtypes.h>
-#include <awn/para/para_blackboardinfo.hpp>
-#include <awn/para/impl/para_blackboardstate.hpp>
-#include <awn/para/para_blackboard.hpp>
+//#include <awn/para/para_ilocalblackboard.h>
+//#include <awn/para/para_blackboardtypes.h>
+//#include <awn/para/para_blackboardinfo.hpp>
+//#include <awn/para/impl/para_blackboardstate.hpp>
+//#include <awn/para/para_blackboard.hpp>

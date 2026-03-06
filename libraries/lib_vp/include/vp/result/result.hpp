@@ -17,42 +17,40 @@
 
 namespace vp {
 
-    typedef u32 Result;
-
-    namespace result {
-
-        constexpr inline u32 cModuleBits         = 9;
-        constexpr inline u32 cModuleBitMask      = (~((~0) << cModuleBits));
-        constexpr inline u32 cDescriptionBits    = 13;
-        constexpr inline u32 cDescriptionBitMask = (~((~0) << cDescriptionBits));
-        constexpr inline u32 cReserveBits        = 9;
-        constexpr inline u32 cReserveBitMask     = 9;
-
-        constexpr ALWAYS_INLINE u32 GetModule(Result result) {
-            return result & cModuleBitMask;
-        }
-
-        constexpr ALWAYS_INLINE u32 GetDescription(Result result) {
-            return (result >> cModuleBits) & cDescriptionBitMask;
-        }
-
-        /*NO_RETURN void OnUnhandledResult(Result result) {
-            if (result.IsSuccess() == true) {
-                ::ExitProcess(1);
-            }
-            vp::trace::Abort("", "", "", result, "");
-        }
-
-        NO_RETURN u32 ConvertInvalidImpl(Result result) {
-            OnUnhandledResult(result);
-            return result;
-        }*/
+    namespace result {        
+        static constexpr inline u32 cModuleBits         = 9;
+        static constexpr inline u32 cModuleBitMask      = (~((~0) << cModuleBits));
+        static constexpr inline u32 cDescriptionBits    = 13;
+        static constexpr inline u32 cDescriptionBitMask = (~((~0) << cDescriptionBits));
+        static constexpr inline u32 cReserveBits        = 10;
+        static constexpr inline u32 cReserveBitMask     = (~((~0) << cReserveBits));
     }
 
-    constexpr inline Result ResultSuccess = 0;
+    struct [[nodiscard]] Result {
+        u32 value;
+
+        constexpr bool operator==(const Result &rhs) const {
+            return this->value == rhs.value;
+        }
+        constexpr u32 GetModule() const {
+            return this->value & ::vp::result::cModuleBitMask;
+        }
+
+        constexpr u32 GetDescription() const {
+            return (this->value >> ::vp::result::cModuleBits) & ::vp::result::cDescriptionBitMask;
+        }
+    };
+
+    static constexpr inline Result ResultSuccess = { 0, };
 
     #define RESULT_RETURN_SUCCESS \
-        return vp::ResultSuccess
+        return ::vp::ResultSuccess
+
+    #define RESULT_DISCARD(result_expression) \
+    { \
+        const ::vp::Result __result = (result_expression); \
+        VP_UNUSED(__result); \
+    }
 
     #define RESULT_RETURN_IF(expression, return_result) \
     { \
@@ -96,14 +94,14 @@ namespace vp {
     { \
         const ::vp::Result __result = (result_expression); \
         if (VP_UNLIKELY(__result != ::vp::ResultSuccess)) { \
-            vp::trace::impl::AbortImpl("", "", "", 0, __result, 0); \
+            ::vp::trace::AbortResult("", "", 0, __result, ""); \
         } \
     }
     #define RESULT_ABORT_UNLESS_EXPECTED(result_expression, expected_result)  \
     { \
         const ::vp::Result __result = (result_expression); \
         if (VP_UNLIKELY(__result != expected_result)) { \
-            vp::trace::impl::AbortImpl("", "", "", 0, __result, 0); \
+            ::vp::trace::AbortResultExpected("", "", "", 0, __result, ""); \
         } \
     }
 
@@ -111,7 +109,7 @@ namespace vp {
         { \
             const vp::Result __result = (result_expression); \
             if (__result < Result##expected_result_range##Start || Result##expected_result_range##End < __result) { \
-                vp::trace::impl::AbortImpl("", "", "", 0, __result, 0); \
+                ::vp::trace::AbortResultExpected("", "", "", 0, __result, ""); \
             } \
         }
 #else
@@ -119,14 +117,14 @@ namespace vp {
     { \
         const ::vp::Result __result = (result_expression); \
         if (VP_UNLIKELY(__result != ::vp::ResultSuccess)) { \
-            vp::trace::AbortResult(__PRETTY_FUNCTION__, __FILE__, __LINE__, __result, TOSTRING(result_expression)); \
+            ::vp::trace::AbortResult(__PRETTY_FUNCTION__, __FILE__, __LINE__, __result, TOSTRING(result_expression)); \
         } \
     }
     #define RESULT_ABORT_UNLESS_EXPECTED(result_expression, expected_result)  \
     { \
         const ::vp::Result __result = (result_expression); \
         if (VP_UNLIKELY(__result != expected_result)) { \
-            vp::trace::AbortResultExpected(TOSTRING(expected_result), __PRETTY_FUNCTION__, __FILE__, __LINE__, __result, TOSTRING(result_expression)); \
+            ::vp::trace::AbortResultExpected(TOSTRING(expected_result), __PRETTY_FUNCTION__, __FILE__, __LINE__, __result, TOSTRING(result_expression)); \
         } \
     }
 
@@ -134,18 +132,20 @@ namespace vp {
         { \
             const vp::Result __result = (result_expression); \
             if (__result < Result##expected_result_range##Start || Result##expected_result_range##End < __result) { \
-                vp::trace::AbortResultExpected(TOSTRING(expected_result_range), __PRETTY_FUNCTION__, __FILE__, __LINE__, __result, TOSTRING(result_expression)); \
+                ::vp::trace::AbortResultExpected(TOSTRING(expected_result_range), __PRETTY_FUNCTION__, __FILE__, __LINE__, __result, TOSTRING(result_expression)); \
             } \
         }
 #endif
 
     #define DECLARE_RESULT_MODULE(module_num) \
-        constexpr inline u32 ResultModule = module_num;
+        static constexpr inline u32 ResultModule = module_num; \
+        static_assert(0 < ResultModule && ResultModule < (1ull << ::vp::result::cModuleBits));
 
     #define DECLARE_RESULT(result_name, description) \
-        constexpr inline u32 Result##result_name =  ((description & vp::result::cDescriptionBitMask) << vp::result::cModuleBits) | (ResultModule & vp::result::cModuleBitMask);
+        static constexpr inline Result Result##result_name = { ((description & ::vp::result::cDescriptionBitMask) << ::vp::result::cModuleBits) | (ResultModule & ::vp::result::cModuleBitMask), }; \
+        static_assert( description < (1ull << ::vp::result::cDescriptionBits));
 
     #define DECLARE_RESULT_RANGE(result_name, description_start, description_end) \
-        constexpr inline u32 Result##result_name##Start =  ((description_start & vp::result::cDescriptionBitMask) << vp::result::cModuleBits) | (ResultModule & vp::result::cModuleBitMask); \
-        constexpr inline u32 Result##result_name##End   =  ((description_end & vp::result::cDescriptionBitMask) << vp::result::cModuleBits) | (ResultModule & vp::result::cModuleBitMask);
+        static constexpr inline Result Result##result_name##Start =  ((description_start & ::vp::result::cDescriptionBitMask) << ::vp::result::cModuleBits) | (ResultModule & ::vp::result::cModuleBitMask); \
+        static constexpr inline Result Result##result_name##End   =  ((description_end & ::vp::result::cDescriptionBitMask) << ::vp::result::cModuleBits) | (ResultModule & ::vp::result::cModuleBitMask);
 }

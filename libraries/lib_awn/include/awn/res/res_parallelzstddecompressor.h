@@ -63,7 +63,7 @@ namespace awn::res {
             virtual u32           GetPriority() override { return m_decompressor_thread->GetPriority(); }
             virtual sys::CoreMask GetCoreMask() override { return m_decompressor_thread->GetCoreMask(); }
 
-            virtual Result LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) override;
+            virtual Result LoadFileWithDecompression(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) override;
         public:
             void RegisterZsDic(ZSTD_DDict *zstd_ddict);
             void UnregisterZsDic(ZSTD_DDict *zstd_ddict);

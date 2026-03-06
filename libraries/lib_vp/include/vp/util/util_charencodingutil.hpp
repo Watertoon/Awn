@@ -35,11 +35,63 @@ namespace vp::util {
         3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
         4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 8,
     };
-    
+
+    static constexpr u32 cInvalidCodePointCount = 0xffff'ffff;
+
+    template <typename T>
+        requires (IsRawString8<T>)
+    constexpr u32 GetCodePointCountOfUtf8String(const T *string, u32 size) {
+        u32 cp_count = 0;
+        if (size == 0) { return cp_count; }
+        do {
+            const u8 cp0 = static_cast<u8>(string[0]);
+            const u8 cp_len = cCodeLengthTableUtf8[cp0];
+            if (size < cp_len) { return cInvalidCodePointCount; }
+            switch (cp_len) {
+                case 0:
+                default:
+                    return cInvalidCodePointCount;
+                case 1:
+                    break;
+                case 2:
+                {
+                    const u8 cp1 = static_cast<u8>(string[1]);
+                    if ((cp1 & 0xc0) != 0x80) { return cInvalidCodePointCount; }
+                }
+                case 3:
+                {
+                    const u8 cp1 = static_cast<u8>(string[1]);
+                    if (cp0 == 0xe0 && ((cp1 >> 5) & 1) == 0) { return cInvalidCodePointCount; }
+                    if (cp0 == 0xed && ((cp1 >> 5) & 1) != 0) { return cInvalidCodePointCount; }
+                    if ((cp1 & 0xc0) != 0x80) { return cInvalidCodePointCount; }
+                    const u8 cp2 = static_cast<u8>(string[2]);
+                    if ((cp2 & 0xc0) != 0x80) { return cInvalidCodePointCount; }
+                    break;
+                }
+                case 4:
+                {
+                    const u8 cp1 = static_cast<u8>(string[1]);
+                    if (cp0 == 0xf0 && (cp1 & 0x30) == 0) { return cInvalidCodePointCount; }
+                    if (cp0 == 0xf4 && (cp1 & 0x30) != 0) { return cInvalidCodePointCount; }
+                    if ((cp1 & 0xc0) != 0x80) { return cInvalidCodePointCount; }
+                    const u8 cp2 = static_cast<u8>(string[2]);
+                    if ((cp2 & 0xc0) != 0x80) { return cInvalidCodePointCount; }
+                    const u8 cp3 = static_cast<u8>(string[3]);
+                    if ((cp3 & 0xc0) != 0x80) { return cInvalidCodePointCount; }
+                    break;
+                }
+            };
+            string += cp_len;
+            size -= cp_len;
+            ++cp_count;
+        } while (size != 0);
+        return cp_count;
+    }
+
     namespace impl {
 
         template <typename T16, typename T8>
-            requires (IsString16Raw<T16>) && (IsString8Raw<T8>)
+            requires (IsRawString16<T16>) && (IsRawString8<T8>)
         constexpr u32 ConvertStringUtf16ToUtf8Impl(u32 *out_write_size, u32 *out_read_size, T8 *out_utf8, u32 max_out_length, const T16 *in_utf16, u32 in_length) {
             
             /* Nothing to convert if no input */
@@ -132,7 +184,7 @@ namespace vp::util {
         }
 
         template <typename T32, typename T8>
-            requires (IsString32Raw<T32>) && (IsString8Raw<T8>)
+            requires (IsRawString32<T32>) && (IsRawString8<T8>)
         constexpr u32 ConvertStringUtf32ToUtf8Impl(u32 *out_write_size, u32 *out_read_size, T8 *out_utf8, u32 max_out_length, const T32 *in_utf32, u32 in_length) {
 
             /* Nothing to convert if no input */
@@ -201,7 +253,7 @@ namespace vp::util {
         }
 
         template <typename T16, typename T8>
-            requires (IsString16Raw<T16>) && (IsString8Raw<T8>)
+            requires (IsRawString16<T16>) && (IsRawString8<T8>)
         constexpr u32 ConvertStringUtf8ToUtf16Impl(u32 *out_write_size, u32 *out_read_size, T16 *out_utf16, u32 max_out_length, const T8 *in_utf8, u32 in_length) {
 
             /* Nothing to convert if no input */
@@ -357,7 +409,7 @@ namespace vp::util {
         }
 
         template <typename T32, typename T8>
-            requires (IsString32Raw<T32>) && (IsString8Raw<T8>)
+            requires (IsRawString32<T32>) && (IsRawString8<T8>)
         constexpr u32 ConvertStringUtf8ToUtf32Impl(u32 *out_write_size, u32 *out_read_size, T32 *out_utf32, u32 max_out_length, const T8 *in_utf8, u32 in_length) {
 
             /* Nothing to convert if no input */
@@ -510,7 +562,7 @@ namespace vp::util {
     }
 
     template <typename T8>
-        requires (IsString8Raw<T8>)
+        requires (IsRawString8<T8>)
     constexpr bool GetNextCharacterUtf8(T8 *out_utf8, const T8 **in_out_utf8_iter) {
 
         /* Load first character */
@@ -603,7 +655,7 @@ namespace vp::util {
     }
 
     template <typename T8>
-        requires (IsString8Raw<T8>)
+        requires (IsRawString8<T8>)
     constexpr bool GetNextCharacterUtf8(u32 *out_utf8, const T8 **in_out_utf8_iter) {
         char char_arr[4] = {};
         const bool result = GetNextCharacterUtf8(char_arr, in_out_utf8_iter);
@@ -614,7 +666,7 @@ namespace vp::util {
     //constexpr u32 ConvertCharacterUtf8ToUtf16(char16_t *out_utf16, const char *in_utf8);
 
     template <typename T32, typename T8>
-        requires (IsString32Raw<T32>) && (IsString8Raw<T8>)
+        requires (IsRawString32<T32>) && (IsRawString8<T8>)
     constexpr u32 ConvertCharacterUtf8ToUtf32(T32 *out_utf32, const T8 *in_utf8) {
 
         /* Read first character */
@@ -705,7 +757,7 @@ namespace vp::util {
     //constexpr u32 ConvertCharacterUtf16ToUtf8(char *out_utf8, char16_t *in_utf16);
 
     template <typename T32, typename T8>
-        requires (IsChar32Raw<T32>) && (IsString8Raw<T8>)
+        requires (IsChar32<T32>) && (IsRawString8<T8>)
     constexpr u32 ConvertCharacterUtf32ToUtf8(T8 *out_utf8, T32 in_utf32) {
         
         /* Clear utf8 */
@@ -752,28 +804,28 @@ namespace vp::util {
     }
 
     template <typename T16, typename T8>
-        requires (IsChar16Raw<T16>) && (IsString8Raw<T8>)
+        requires (IsRawString16<T16>) && (IsRawString8<T8>)
     constexpr u32 ConvertStringUtf8ToUtf16(u32 *out_size, T16 *out_utf16, u32 max_out_length, const T8 *in_utf8, u32 in_length) {
         u32 size_read  = 0;
         return impl::ConvertStringUtf8ToUtf16Impl(out_size, std::addressof(size_read), out_utf16, max_out_length, in_utf8, in_length);
     }
 
     template <typename T32, typename T8>
-        requires (IsString32Raw<T32>) && (IsString8Raw<T8>)
+        requires (IsRawString32<T32>) && (IsRawString8<T8>)
     constexpr u32 ConvertStringUtf8ToUtf32(u32 *out_size, T32 *out_utf32, u32 max_out_length, const T8 *in_utf8, u32 in_length) {
         u32 size_read  = 0;
         return impl::ConvertStringUtf8ToUtf32Impl(out_size, std::addressof(size_read), out_utf32, max_out_length, in_utf8, in_length);
     }
 
     template <typename T16, typename T8>
-        requires (IsChar16Raw<T16>) && (IsString8Raw<T8>)
+        requires (IsRawString16<T16>) && (IsRawString8<T8>)
     constexpr u32 ConvertStringUtf16ToUtf8(u32 *out_size, T8 *out_utf8, u32 max_out_length, const T16 *in_utf16, u32 in_length) {
         u32 size_read  = 0;
         return impl::ConvertStringUtf16ToUtf8Impl(out_size, std::addressof(size_read), out_utf8, max_out_length, in_utf16, in_length);
     }
 
     template <typename T32, typename T8>
-        requires (IsString32Raw<T32>) && (IsString8Raw<T8>)
+        requires (IsRawString32<T32>) && (IsRawString8<T8>)
     constexpr u32 ConvertStringUtf32ToUtf8(u32 *out_size, T8 *out_utf8, u32 max_out_length, const T32 *in_utf32, u32 in_length) {
         u32 size_read  = 0;
         return impl::ConvertStringUtf32ToUtf8Impl(out_size, std::addressof(size_read), out_utf8, max_out_length, in_utf32, in_length);
@@ -781,10 +833,10 @@ namespace vp::util {
 
     template<typename O, typename I>
     concept IsCharEncodingConvertible = 
-       (IsCharRaw<O> && IsCharRaw<I> && sizeof(O) == sizeof(char8_t) && sizeof(I) == sizeof(char16_t)) 
-    || (IsCharRaw<O> && IsCharRaw<I> && sizeof(O) == sizeof(char8_t) && sizeof(I) == sizeof(char32_t))
-    || (IsCharRaw<O> && IsCharRaw<I> && sizeof(O) == sizeof(char16_t) && sizeof(I) == sizeof(char8_t))
-    || (IsCharRaw<O> && IsCharRaw<I> && sizeof(O) == sizeof(char32_t) && sizeof(I) == sizeof(char8_t));
+       (IsChar<O> && IsChar<I> && sizeof(O) == sizeof(char8_t) && sizeof(I) == sizeof(char16_t)) 
+    || (IsChar<O> && IsChar<I> && sizeof(O) == sizeof(char8_t) && sizeof(I) == sizeof(char32_t))
+    || (IsChar<O> && IsChar<I> && sizeof(O) == sizeof(char16_t) && sizeof(I) == sizeof(char8_t))
+    || (IsChar<O> && IsChar<I> && sizeof(O) == sizeof(char32_t) && sizeof(I) == sizeof(char8_t));
 
     template <typename O, typename I>
         requires (IsCharEncodingConvertible<O,I>)

@@ -11,7 +11,7 @@ namespace awn::res {
             constexpr ICompressor() {/*...*/}
             constexpr virtual ~ICompressor() {/*...*/}
 
-            virtual Result SaveCompressFile(const char *path, FileSaveInfo *save_info, FileDeviceBase *file_device) { VP_UNUSED(path, save_info, file_device); RESULT_RETURN_SUCCESS; }
+            virtual Result SaveFileWithCompression(const char *path, FileSaveInfo *save_info, FileDeviceBase *file_device) { VP_UNUSED(path, save_info, file_device); RESULT_RETURN_SUCCESS; }
     };
 
     class ZstdCompressor : public ICompressor {
@@ -31,7 +31,7 @@ namespace awn::res {
             void Initialize(mem::Heap *heap, u32 max_compression_level);
             void Finalize();
 
-            virtual Result SaveCompressFile(const char *path, FileSaveInfo *save_info, FileDeviceBase *file_device) override;
+            virtual Result SaveFileWithCompression(const char *path, FileSaveInfo *save_info, FileDeviceBase *file_device) override;
 
             constexpr u32 GetMaxCompressionLevel() const {
                 return m_max_compression_level;

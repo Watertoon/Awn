@@ -20,18 +20,16 @@ namespace vp::util {
 
 #ifdef VP_TARGET_ARCHITECTURE_x86
     template <typename T>
-        requires (T::cVectorCount == 4 && std::is_same_v<typename T::UnderlyingType, float>)
-    v8ss ConvertFloat4ToHalf4(const T &vec) {
-        const v4f base = (T::cIsVectorized) ? vec.v : vp::util::Load4(std::addressof(vec[0]));
-        const v8ss ret = v8ss{ .v = _mm_cvtps_ph(base.v, 0), };
+        requires (T::cCount == 4 && std::is_same_v<typename T::UnderlyingType, float>)
+    Vector8h ConvertFloat4ToHalf4(const T &vec) {
+        const Vector8h ret = Vector8h{ .v = _mm_cvtps_ph(vec.v, 0), };
         return ret;
     }
 
     template <typename T>
-        requires (T::cVectorCount == 8 && std::is_same_v<typename T::UnderlyingType, float>)
-    v8ss ConvertFloat8ToHalf8(const T &vec) {
-        const v8f base = (T::cIsVectorized) ? vec.v : vp::util::Load8(std::addressof(vec[0]));
-        const v8ss ret = v16ss{ .v = _mm256_cvtps_ph(base.v, 0), };
+        requires (T::cCount == 8 && std::is_same_v<typename T::UnderlyingType, float>)
+    Vector8h ConvertFloat8ToHalf8(const T &vec) {
+        const Vector8h ret = Vector8h{ .v = _mm256_cvtps_ph(vec.v, 0), };
         return ret;
     }
 #endif

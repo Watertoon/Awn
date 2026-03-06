@@ -19,6 +19,7 @@ namespace awn::gfx {
 
     using ShaderStage = vp::res::GfxShaderStage;
     using ShaderStageBits = vp::res::GfxShaderStageBits;
+    static constexpr inline u32 cShaderStageCount = vp::util::TEnumTraits<ShaderStage>::cEnumCount;
 
     /* Resource sizes */
     constexpr inline const size_t cMaxGfxMemoryPoolSize  = vp::res::cMaxGfxMemoryPoolSize;
@@ -75,6 +76,7 @@ namespace awn::gfx {
     /* Shader interface enums */
     using ShaderCodeType      = vp::res::GfxShaderCodeType;
     using ShaderInterfaceType = vp::res::GfxShaderInterfaceType;
+    static constexpr inline u32 cShaderInterfaceCount = vp::util::TEnumTraits<ShaderInterfaceType>::cEnumCount;
 
     /* Infos */
     using MemoryPoolInfo  = vp::res::ResGfxMemoryPoolInfo;

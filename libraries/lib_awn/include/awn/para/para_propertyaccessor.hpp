@@ -48,24 +48,24 @@ namespace awn::para {
             ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (vp::res::TGetByamlDataTypeValue<T>() != vp::res::ByamlDataType::Null) {
                 return iter.TryGetValueByData<T>(m_value_address, data);
             }
-            ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (T::cIsVectorType && T::cVectorCount <= 4) {
+            ALWAYS_INLINE bool LoadByamlDataImpl(vp::res::ByamlIterator iter, vp::res::ByamlData data) requires (T::cIsVectorType && T::cCount <= 4) {
 
                 vp::res::ByamlIterator sub_iter;
                 const bool result0 = iter.TryGetIteratorByData(std::addressof(sub_iter), data);
                 if (!result0) { return false; }
-                if constexpr (0 < T::cVectorCount) {
+                if constexpr (0 < T::cCount) {
                     const bool result = sub_iter.TryGetValueByKey<typename T::UnderlyingType>(std::addressof((*m_value_address)[0]), "X");
                     if (!result) { return false; }
                 }
-                if constexpr (1 < T::cVectorCount) {
+                if constexpr (1 < T::cCount) {
                     const bool result = sub_iter.TryGetValueByKey<typename T::UnderlyingType>(std::addressof((*m_value_address)[1]), "Y");
                     if (!result) { return false; }
                 }
-                if constexpr (2 < T::cVectorCount) {
+                if constexpr (2 < T::cCount) {
                     const bool result = sub_iter.TryGetValueByKey<typename T::UnderlyingType>(std::addressof((*m_value_address)[2]), "Z");
                     if (!result) { return false; }
                 }
-                if constexpr (3 < T::cVectorCount) {
+                if constexpr (3 < T::cCount) {
                     const bool result = sub_iter.TryGetValueByKey<typename T::UnderlyingType>(std::addressof((*m_value_address)[3]), "W");
                     if (!result) { return false; }
                 }

@@ -32,12 +32,12 @@ namespace awn::res {
 
     using MaxExtensionString = vp::util::MaxExtensionString;
 
-    constexpr CompressionType GetCompressionType(MaxExtensionString *extension) {
-        constexpr const MaxExtensionString zs_ext(cZstdExt);
+    constexpr CompressionType GetCompressionType(const MaxExtensionString *extension) {
+        static constexpr const MaxExtensionString zs_ext(cZstdExt);
         if (*extension == zs_ext) {
             return CompressionType::Zstandard;
         }
-        constexpr const MaxExtensionString szs_ext(cSzsExt);
+        static constexpr const MaxExtensionString szs_ext(cSzsExt);
         if (*extension == szs_ext) {
             return CompressionType::Szs;
         }
@@ -51,7 +51,7 @@ namespace awn::res {
             constexpr IDecompressor() {/*...*/}
             constexpr virtual ~IDecompressor() {/*...*/}
 
-            virtual Result LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) { VP_UNUSED(out_size, out_alignment, path, file_load_context, file_device); RESULT_RETURN_SUCCESS; }
+            virtual Result LoadFileWithDecompression(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) { VP_UNUSED(out_size, out_alignment, path, file_load_context, file_device); RESULT_RETURN_SUCCESS; }
     };
     
     class IParallelDecompressor : public IDecompressor {

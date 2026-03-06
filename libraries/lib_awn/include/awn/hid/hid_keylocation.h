@@ -33,20 +33,6 @@ namespace awn::hid {
         Hiragana   = 12,
         Invalid   = 0x20,
     };
-    VP_ENUM_TRAITSV(
-        awn::hid::KeyboardModifier, KeyboardModifier,
-        Control,
-        Shift,
-        LeftAlt,
-        RightAlt,
-        Gui,
-        CapsLock,
-        ScrollLock,
-        NumLock,
-        Katakana,
-        Hiragana,
-        Invalid
-    );
 
     /* From: https://switchbrew.org/wiki/HID_services#KeyboardKey */
     enum class KeyboardKey : u32 {
@@ -184,142 +170,6 @@ namespace awn::hid {
         RightAlt          = 230,
         RightGui          = 231,
     };
-    VP_ENUM_TRAITSV(
-        awn::hid::KeyboardKey, KeyboardKey,
-        Invalid,
-        A,
-        B,
-        C,
-        D,
-        E,
-        F,
-        G,
-        H,
-        I,
-        J,
-        K,
-        L,
-        M,
-        N,
-        O,
-        P,
-        Q,
-        R,
-        S,
-        T,
-        U,
-        V,
-        W,
-        X,
-        Y,
-        Z,
-        D1,
-        D2,
-        D3,
-        D4,
-        D5,
-        D6,
-        D7,
-        D8,
-        D9,
-        D0,
-        Return,
-        Escape,
-        Backspace,
-        Tab,
-        Space,
-        Dash,
-        Equals,
-        OpenBracket,
-        CloseBracket,
-        Pipe,
-        Tilde,
-        Semicolon,
-        Quote,
-        Backquote,
-        Comma,
-        Period,
-        Slash,
-        CapsLock,
-        F1,
-        F2,
-        F3,
-        F4,
-        F5,
-        F6,
-        F7,
-        F8,
-        F9,
-        F10,
-        F11,
-        F12,
-        PrintScreen,
-        ScrollLock,
-        Pause,
-        Insert,
-        Home,
-        PageUp,
-        Delete,
-        End,
-        PageDown,
-        RightArrow,
-        LeftArrow,
-        DownArrow,
-        UpArrow,
-        NumLock,
-        NumPad_Divide,
-        NumPad_Multiply,
-        NumPad_Subtract,
-        NumPad_Add,
-        NumPad_Enter,
-        NumPad_1,
-        NumPad_2,
-        NumPad_3,
-        NumPad_4,
-        NumPad_5,
-        NumPad_6,
-        NumPad_7,
-        NumPad_8,
-        NumPad_9,
-        NumPad_0,
-        NumPad_Dot,
-        Backslash,
-        Application,
-        Power,
-        NumPad_Equals,
-        F13,
-        F14,
-        F15,
-        F16,
-        F17,
-        F18,
-        F19,
-        F20,
-        F21,
-        F22,
-        F23,
-        F24,
-        NumPad_Comma,
-        Ro,
-        KatakanaHiragana,
-        Yen,
-        Henkan,
-        Muhenkan,
-        NumPad_CommaPc98,
-        HangulEnglish,
-        Hanja,
-        Katakana,
-        Hiragana,
-        ZenkakuHankaku,
-        LeftControl,
-        LeftShift,
-        LeftAlt,
-        LeftGui,
-        RightControl,
-        RightShift,
-        RightAlt,
-        RightGui
-    );
 
     constexpr KeyboardKey ConvertScanCodeToKeyboardKey(u32 scan_code1) {
         switch (scan_code1) {
@@ -588,6 +438,275 @@ namespace awn::hid {
         };
         return false;
     }
+
+#ifdef VP_TARGET_PLATFORM_linux
+    constexpr KeyboardKey ConvertInputEventCodeToKeyboardKey(u16 code) {
+        switch (code) {
+            case KEY_ESC:
+                return KeyboardKey::Escape;
+            case KEY_0:
+                return KeyboardKey::D0;
+            case KEY_1:
+                return KeyboardKey::D1;
+            case KEY_2:
+                return KeyboardKey::D2;
+            case KEY_3:
+                return KeyboardKey::D3;
+            case KEY_4:
+                return KeyboardKey::D4;
+            case KEY_5:
+                return KeyboardKey::D5;
+            case KEY_6:
+                return KeyboardKey::D6;
+            case KEY_7:
+                return KeyboardKey::D7;
+            case KEY_8:
+                return KeyboardKey::D8;
+            case KEY_9:
+                return KeyboardKey::D9;
+            case KEY_MINUS:
+                return KeyboardKey::Dash;
+            case KEY_EQUAL:
+                return KeyboardKey::Equals;
+            case KEY_BACKSPACE:
+                return KeyboardKey::Backspace;
+            case KEY_TAB:
+                return KeyboardKey::Tab;
+            case KEY_Q:
+                return KeyboardKey::Q;
+            case KEY_W:
+                return KeyboardKey::W;
+            case KEY_E:
+                return KeyboardKey::E;
+            case KEY_R:
+                return KeyboardKey::R;
+            case KEY_T:
+                return KeyboardKey::T;
+            case KEY_Y:
+                return KeyboardKey::Y;
+            case KEY_U:
+                return KeyboardKey::U;
+            case KEY_I:
+                return KeyboardKey::I;
+            case KEY_O:
+                return KeyboardKey::O;
+            case KEY_P:
+                return KeyboardKey::P;
+            case KEY_LEFTBRACE:
+                return KeyboardKey::OpenBracket;
+            case KEY_RIGHTBRACE:
+                return KeyboardKey::CloseBracket;
+            case KEY_ENTER:
+                return KeyboardKey::Return;
+            case KEY_LEFTCTRL:
+                return KeyboardKey::LeftControl;
+            case KEY_A:
+                return KeyboardKey::A;
+            case KEY_S:
+                return KeyboardKey::S;
+            case KEY_D:
+                return KeyboardKey::D;
+            case KEY_F:
+                return KeyboardKey::F;
+            case KEY_G:
+                return KeyboardKey::G;
+            case KEY_H:
+                return KeyboardKey::H;
+            case KEY_J:
+                return KeyboardKey::J;
+            case KEY_K:
+                return KeyboardKey::K;
+            case KEY_L:
+                return KeyboardKey::L;
+            case KEY_SEMICOLON:
+                return KeyboardKey::Semicolon;
+            case KEY_APOSTROPHE:
+                return KeyboardKey::Quote;
+            case KEY_GRAVE:
+                return KeyboardKey::Tilde;
+            case KEY_LEFTSHIFT:
+                return KeyboardKey::LeftShift;
+            case KEY_BACKSLASH:
+                return KeyboardKey::Backslash;
+            case KEY_Z:
+                return KeyboardKey::Z;
+            case KEY_X:
+                return KeyboardKey::X;
+            case KEY_C:
+                return KeyboardKey::C;
+            case KEY_V:
+                return KeyboardKey::V;
+            case KEY_B:
+                return KeyboardKey::B;
+            case KEY_N:
+                return KeyboardKey::N;
+            case KEY_M:
+                return KeyboardKey::M;
+            case KEY_COMMA:
+                return KeyboardKey::Comma;
+            case KEY_DOT:
+                return KeyboardKey::Period;
+            case KEY_SLASH:
+                return KeyboardKey::Slash;
+            case KEY_RIGHTSHIFT:
+                return KeyboardKey::RightShift;
+            case KEY_KPASTERISK:
+                return KeyboardKey::NumPad_Multiply;
+            case KEY_LEFTALT:
+                return KeyboardKey::LeftAlt;
+            case KEY_SPACE:
+                return KeyboardKey::Space;
+            case KEY_CAPSLOCK:
+                return KeyboardKey::CapsLock;
+            case KEY_F1:
+                return KeyboardKey::F1;
+            case KEY_F2:
+                return KeyboardKey::F2;
+            case KEY_F3:
+                return KeyboardKey::F3;
+            case KEY_F4:
+                return KeyboardKey::F4;
+            case KEY_F5:
+                return KeyboardKey::F5;
+            case KEY_F6:
+                return KeyboardKey::F6;
+            case KEY_F7:
+                return KeyboardKey::F7;
+            case KEY_F8:
+                return KeyboardKey::F8;
+            case KEY_F9:
+                return KeyboardKey::F9;
+            case KEY_F10:
+                return KeyboardKey::F10;
+            case KEY_NUMLOCK:
+                return KeyboardKey::NumLock;
+            case KEY_SCROLLLOCK:
+                return KeyboardKey::ScrollLock;
+            case KEY_KP7:
+                return KeyboardKey::NumPad_7;
+            case KEY_KP8:
+                return KeyboardKey::NumPad_8;
+            case KEY_KP9:
+                return KeyboardKey::NumPad_9;
+            case KEY_KPMINUS:
+                return KeyboardKey::NumPad_Subtract;
+            case KEY_KP4:
+                return KeyboardKey::NumPad_4;
+            case KEY_KP5:
+                return KeyboardKey::NumPad_5;
+            case KEY_KP6:
+                return KeyboardKey::NumPad_6;
+            case KEY_KPPLUS:
+                return KeyboardKey::NumPad_Add;
+            case KEY_KP1:
+                return KeyboardKey::NumPad_1;
+            case KEY_KP2:
+                return KeyboardKey::NumPad_2;
+            case KEY_KP3:
+                return KeyboardKey::NumPad_3;
+            case KEY_KP0:
+                return KeyboardKey::NumPad_0;
+            case KEY_KPDOT:
+                return KeyboardKey::NumPad_Dot;
+            case KEY_ZENKAKUHANKAKU:
+                return KeyboardKey::ZenkakuHankaku;
+            case KEY_F11:
+                return KeyboardKey::F11;
+            case KEY_F12:
+                return KeyboardKey::F12;
+            case KEY_RO:
+                return KeyboardKey::Ro;
+            case KEY_KATAKANA:
+                return KeyboardKey::Katakana;
+            case KEY_HIRAGANA:
+                return KeyboardKey::Hiragana;
+            case KEY_HENKAN:
+                return KeyboardKey::Henkan;
+            case KEY_KATAKANAHIRAGANA:
+                return KeyboardKey::KatakanaHiragana;
+            case KEY_MUHENKAN:
+                return KeyboardKey::Muhenkan;
+            case KEY_KPJPCOMMA:
+                return KeyboardKey::NumPad_CommaPc98;
+            case KEY_KPENTER:
+                return KeyboardKey::NumPad_Enter;
+            case KEY_RIGHTCTRL:
+                return KeyboardKey::RightControl;
+            case KEY_KPSLASH:
+                return KeyboardKey::NumPad_Divide;
+            case KEY_SYSRQ:
+                return KeyboardKey::PrintScreen;
+            case KEY_RIGHTALT:
+                return KeyboardKey::RightAlt;
+            case KEY_HOME:
+                return KeyboardKey::Home;
+            case KEY_UP:
+                return KeyboardKey::UpArrow;
+            case KEY_PAGEUP:
+                return KeyboardKey::PageUp;
+            case KEY_LEFT:
+                return KeyboardKey::LeftArrow;
+            case KEY_RIGHT:
+                return KeyboardKey::RightArrow;
+            case KEY_END:
+                return KeyboardKey::End;
+            case KEY_DOWN:
+                return KeyboardKey::DownArrow;
+            case KEY_PAGEDOWN:
+                return KeyboardKey::PageDown;
+            case KEY_INSERT:
+                return KeyboardKey::Insert;
+            case KEY_DELETE:
+                return KeyboardKey::Delete;
+            case KEY_POWER:
+                return KeyboardKey::Power;
+            case KEY_KPEQUAL:
+                return KeyboardKey::NumPad_Equals;
+            case KEY_PAUSE:
+                return KeyboardKey::Pause;
+            case KEY_KPCOMMA:
+                return KeyboardKey::NumPad_Comma;
+            case KEY_HANGUEL:
+                return KeyboardKey::HangulEnglish;
+            case KEY_HANJA:
+                return KeyboardKey::Hanja;
+            case KEY_YEN:
+                return KeyboardKey::Yen;
+            case KEY_F13:
+                return KeyboardKey::F13;
+            case KEY_F14:
+                return KeyboardKey::F14;
+            case KEY_F15:
+                return KeyboardKey::F15;
+            case KEY_F16:
+                return KeyboardKey::F16;
+            case KEY_F17:
+                return KeyboardKey::F17;
+            case KEY_F18:
+                return KeyboardKey::F18;
+            case KEY_F19:
+                return KeyboardKey::F19;
+            case KEY_F20:
+                return KeyboardKey::F20;
+            case KEY_F21:
+                return KeyboardKey::F21;
+            case KEY_F22:
+                return KeyboardKey::F22;
+            case KEY_F23:
+                return KeyboardKey::F23;
+            case KEY_F24:
+                return KeyboardKey::F24;
+            case KEY_LINEFEED:
+            case KEY_MACRO:
+            case KEY_MUTE:
+            case KEY_VOLUMEUP:
+            case KEY_VOLUMEDOWN:
+            case KEY_KPPLUSMINUS:
+            case KEY_SCALE:
+            default:
+                break;
+        }
+        return KeyboardKey::Invalid;
+    }
+#endif
 }
-VP_ENUM_TRAITS_AUTO(awn::hid::KeyboardKey);
-VP_ENUM_TRAITS_AUTO(awn::hid::KeyboardModifier);

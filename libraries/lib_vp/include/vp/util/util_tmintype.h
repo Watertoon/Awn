@@ -142,6 +142,9 @@ namespace vp::util {
         requires (std::is_signed<decltype(T)>::value && std::is_integral<decltype(T)>::value)
     using MinIntType = MinIntTypeHelper<GetMinIntTypeByMaxValue(T)>::Type;
 
+    template<typename T>
+    using TMinUIntType = MinUIntType<1ull << (BITSIZEOF(T)-1)>;
+
     static_assert(std::is_same<MinIntType<0>,                             s8>::value);
     static_assert(std::is_same<MinIntType<cMinS8>,                        s8>::value);
     static_assert(std::is_same<MinIntType<cMaxS8>,                        s8>::value);

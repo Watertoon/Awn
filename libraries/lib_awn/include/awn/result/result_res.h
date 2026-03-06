@@ -65,4 +65,10 @@ namespace awn::res {
     DECLARE_RESULT(LoadGuardSet,                45);
     DECLARE_RESULT(FailedToCancelResource,      46);
     DECLARE_RESULT(AlreadyFreed,                47);
+    DECLARE_RESULT(NoMemory,                    48);
+    DECLARE_RESULT(RangeNG,                     49);
+    DECLARE_RESULT(NoTlsSlot,                   50);
+    
+    /* errno */
+    DECLARE_RESULT(Again, 50);
 }

@@ -56,8 +56,8 @@ namespace awn::gfx {
             const vp::util::Float2 sin_cos = vp::util::SampleSinCos(circle_location);
 
             if ((primitive_shape_info->shape_format & ShapeFormat::Position) == ShapeFormat::Position) {
-                vertex_buffer_iter[0] = sin_cos.y;
-                vertex_buffer_iter[1] = sin_cos.x;
+                vertex_buffer_iter[0] = sin_cos[1];
+                vertex_buffer_iter[1] = sin_cos[0];
                 vertex_buffer_iter[2] = 0.0f;
                 vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Float3));
             }
@@ -68,8 +68,8 @@ namespace awn::gfx {
                 vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Float3));
             }
             if ((primitive_shape_info->shape_format & ShapeFormat::TextureCoordinate) == ShapeFormat::TextureCoordinate) {
-                vertex_buffer_iter[0] = sin_cos.y * 0.5f + 0.5f;
-                vertex_buffer_iter[1] = 1.0f - (sin_cos.x * 0.5f + 0.5f);
+                vertex_buffer_iter[0] = sin_cos[1] * 0.5f + 0.5f;
+                vertex_buffer_iter[1] = 1.0f - (sin_cos[0] * 0.5f + 0.5f);
                 vertex_buffer_iter = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(vertex_buffer_iter) + sizeof(vp::util::Float2));
             }
         }

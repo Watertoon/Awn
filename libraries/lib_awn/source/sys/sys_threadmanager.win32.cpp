@@ -27,8 +27,9 @@ namespace awn::sys {
             if (std::addressof(thread) == std::addressof(m_main_thread)) { continue; }
             thread.WaitForThreadExit();
         }
-
         m_thread_list.Clear();
+
+        return;
     }
 
     void ThreadManager::Initialize(mem::Heap *heap) {
@@ -89,17 +90,10 @@ namespace awn::sys {
 
         /* Allocate new slot */
         TlsSlot new_slot = SearchUnusedTlsSlotUnsafe(is_internal);
-
-        /* Set tls destructor */
-        m_tls_destructor_array[new_slot] = DefaultTlsDestructor;
-        if(destructor != nullptr) {
-            m_tls_destructor_array[new_slot] = destructor;
-        }
-
-        /* Set state */
+        m_tls_destructor_array[new_slot] = (destructor != nullptr) ? DefaultTlsDestructor : destructor;
         *out_slot = new_slot;
-        m_tls_slot_count = m_tls_slot_count + 1;
-        
+        m_tls_slot_count += 1;
+
         return true;
     }
 
@@ -113,7 +107,7 @@ namespace awn::sys {
 
         /* Free from Manager */
         m_tls_destructor_array[slot] = nullptr;
-        m_tls_slot_count = m_tls_slot_count - 1;
+        m_tls_slot_count -= 1;
 
         return;
     }

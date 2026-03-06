@@ -1,5 +1,5 @@
 # Awn
-Awn is a personal C++ library designed to power low-latency multi-threaded real-time applications. It's based on common game literature and reverse engineerings of retail game's.
+Awn is a framework for creating real-time applications written in C++26. It provides layers of abstractions over the underlying operating system to manage common application-specific resources across Win32, Linux, and a homebrewed Nintendo Switch environment to build up to a cross-platform game engine.
 ## Sub-libraries
 
 | sub-library | description                                                                                                                                                                                |
@@ -24,9 +24,10 @@ Awn is a personal C++ library designed to power low-latency multi-threaded real-
 | audio       | Audio device output, input, and basic rendering.                         |
 | frm         | A modular real-time application main-loop and an event-based main-loop.  |
 | ai          | A behavior tree system based on the reverse-engineering of ainb.         |
+| net         | A thin rpc and p2p library built on quic.                                |
 
 # Vp
-Vp is a personal C++ library designed to portably carry common utilities and file format definitions.
+Vp is a more portable C++ data structure library.
 ## Sub-libraries
 
 | sub-libraries | description                                                                                                                  |
@@ -36,20 +37,22 @@ Vp is a personal C++ library designed to portably carry common utilities and fil
 | imem          | A heap allocator interface.                                                                                                  |
 | resbui        | File format serialization library. Contains builders for some reverse engineered NintendoWare and Nintendo EPD file formats. |
 | res           | File format library. Contains many reverse engineered NintendoWare and Nintendo EPD file format headers.                     |
-| trace         |                                                                                                                              |
+| result        | Result code library for structured error handling,                                                                           |
+| trace         | Debug utils.                                                                                                                 |
 | util          | A large common data structure, algorithm, and utility sink.                                                                  |
 
 ## In Development
 
-| sub-libraries | description                                                                               |
-| ------------- | ----------------------------------------------------------------------------------------- |
-| dsp           | A set of digital signal processing functions for pcm conversion, resampling, and effects. |
+| sub-libraries | description                                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| crypto        | Cryptography library, supports secure random number generation, cryptographic hashing with sha256 and sha512, encryption with aes cbc and ctr. |
+| dsp           | A set of digital signal processing functions for pcm conversion, resampling, and effects.                                                      |
 
 # System Requirements
 >The user's Vulkan implementation must conform to all the limits and features described by the awn::gfx::RequiredFeature enum which include but are not limited to:
 	>Vulkan 1.4
-	>Descriptor Buffers
-	>Mutable Descriptors
+	>Descriptor Buffers (To be replaced with Descriptor Heap)
+	>Mutable Descriptors (To be replaced with Descriptor Heap)
 	>Host Image Copy
 	>Shader Objects
 	>Resizable-Bar
@@ -67,4 +70,4 @@ I'm informed by reverse engineering, text books, free online resources, and publ
 
 This repository is currently an irregular snapshot of the project.
 
-Licensed under GPLv2 only. Following Atmosphère's lead, due to my use of reverse-engineering, Nintendo is exempt from GPLv2 licensing, and at it's discretion may instead license any of the source code authored for the Awn or Vp projects under the Zero-Clause BSD license.
+Licensed under GPLv2 only. Following Atmosphère's lead (no affiliation), due to my use of reverse-engineering, Nintendo is exempt from GPLv2 licensing, and at their discretion may instead license any of the source code authored for the Awn or Vp projects under the Zero-Clause BSD license.

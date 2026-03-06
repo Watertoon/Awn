@@ -19,11 +19,11 @@ namespace vp::util {
 
     constinit EnumDictionaryManager sEnumDictionaryManagerInstance;
 
-    EnumDictionaryManager *GetEnumDictionaryManager() {
+    const EnumDictionaryManager *GetEnumDictionaryManager() {
         return std::addressof(sEnumDictionaryManagerInstance);
     }
 
     EnumDictionaryNode::EnumDictionaryNode(const EnumDictionaryBase *enum_dictionary) : m_tree_node(this, vp::util::HashMurmur64(enum_dictionary->GetClassName())), m_dictionary(enum_dictionary) {
-        vp::util::GetEnumDictionaryManager()->Insert(this);
+        sEnumDictionaryManagerInstance.Insert(this);
     }
 }

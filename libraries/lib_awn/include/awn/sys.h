@@ -24,10 +24,17 @@
     #include <awn/sys/sys_readerwriterlock.win32.h>
     #include <awn/sys/sys_messagequeue.win32.h>
     #include <awn/sys/sys_systemevent.win32.hpp>
-#elif VP_TARGET_PLATFORM_nx
+    #include <awn/sys/sys_semaphore.win32.hpp>
+#elifdef VP_TARGET_PLATFORM_nx
     #include <awn/sys/sys_event.nx.hpp>
     #include <awn/sys/sys_messagequeue.nx.hpp>
     #include <awn/sys/sys_readerwriterlock.nx.hpp>
+#elifdef VP_TARGET_PLATFORM_linux
+    #include <awn/sys/sys_internalsynchronization.linux.h>
+    #include <awn/sys/sys_mutex.linux.h>
+    #include <awn/sys/sys_event.linux.h>
+    #include <awn/sys/sys_readerwriterlock.linux.h>
+    #include <awn/sys/sys_messagequeue.linux.h>
 #endif
 
 #include <awn/sys/sys_threadbase.h>
@@ -37,10 +44,14 @@
     #include <awn/sys/sys_thread.win32.hpp>
     #include <awn/sys/sys_mainthread.win32.hpp>
     #include <awn/sys/sys_threadmanager.win32.h>
-#elif VP_TARGET_PLATFORM_nx
+#elifdef VP_TARGET_PLATFORM_nx
     #include <awn/sys/sys_thread.nx.hpp>
     #include <awn/sys/sys_mainthread.nx.hpp>
     #include <awn/sys/sys_threadmanager.nx.hpp>
+#elifdef VP_TARGET_PLATFORM_linux
+    #include <awn/sys/sys_thread2.linux.hpp>
+    #include <awn/sys/sys_mainthread.linux.hpp>
+    #include <awn/sys/sys_threadmanager.linux.h>
 #endif
 
 #include <awn/sys/sys_functionthread.hpp>

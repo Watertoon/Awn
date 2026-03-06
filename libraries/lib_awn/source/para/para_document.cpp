@@ -43,7 +43,7 @@ namespace awn::para {
             return UnresolveParentRescursiveImpl(loop_info, std::addressof(destruct_release_handle_func));
         };
         auto release_func = vp::util::MakeLambdaFunction<Result(CompositeLoopInfo*)>(release_lambda);
-        m_typed_param->LoopComposites(std::addressof(release_func));
+        RESULT_DISCARD(m_typed_param->LoopComposites(std::addressof(release_func)));
 
         return;
     }
@@ -78,7 +78,7 @@ namespace awn::para {
             return UnresolveParentRescursiveImpl(loop_info, std::addressof(destruct_release_parent_func));
         };
         auto destruct_func = vp::util::MakeLambdaFunction<Result(CompositeLoopInfo*)>(destruct_lambda);
-        m_typed_param->LoopComposites(std::addressof(destruct_func));
+        RESULT_DISCARD(m_typed_param->LoopComposites(std::addressof(destruct_func)));
 
         /* Set guard */
         m_is_parent_resolved = false;
@@ -103,7 +103,7 @@ namespace awn::para {
         if (TypedParam::CheckRuntimeTypeInfoStatic(composite_rtti)) {
             TypedParam *typed_param = reinterpret_cast<TypedParam*>(composite);
             unresolve_function->Invoke(typed_param);
-            typed_param->LoopComposites(std::addressof(destruct_func));
+            RESULT_DISCARD(typed_param->LoopComposites(std::addressof(destruct_func)));
             RESULT_RETURN_SUCCESS;
         }
         
@@ -112,7 +112,7 @@ namespace awn::para {
             TypedParamArrayBase *array = reinterpret_cast<TypedParamArrayBase*>(composite);
             for (TypedParam *&typed_param : *array) {
                 unresolve_function->Invoke(typed_param);
-                typed_param->LoopComposites(std::addressof(destruct_func));
+                RESULT_DISCARD(typed_param->LoopComposites(std::addressof(destruct_func)));
             }
         }
 
@@ -121,7 +121,7 @@ namespace awn::para {
             TypedParamMapBase *map = reinterpret_cast<TypedParamMapBase*>(composite);
             for (TypedParamMapNode &map_node : *map) {
                 unresolve_function->Invoke(map_node.typed_param);
-                map_node.typed_param->LoopComposites(std::addressof(destruct_func));
+                RESULT_DISCARD(map_node.typed_param->LoopComposites(std::addressof(destruct_func)));
             }
         }
         
@@ -130,7 +130,7 @@ namespace awn::para {
             TypedParamEnumMapBase *enum_map = reinterpret_cast<TypedParamEnumMapBase*>(composite);
             for (TypedParamEnumEntry &enum_entry : *enum_map) {
                 unresolve_function->Invoke(enum_entry.typed_param);
-                enum_entry.typed_param->LoopComposites(std::addressof(destruct_func));
+                RESULT_DISCARD(enum_entry.typed_param->LoopComposites(std::addressof(destruct_func)));
             }
         }
 

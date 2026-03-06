@@ -51,9 +51,10 @@ namespace awn::mem {
         public:
             VP_RTTI_DERIVED(ExpHeap, Heap);
         protected:
-            bool IsAddressAllocationUnsafe(void *address);
+            bool IsAddressAllocationUnsafe(const void *address) const;
 
             static ExpHeapMemoryBlock *GetBlock(void *address);
+            static const ExpHeapMemoryBlock *GetBlock(const void *address);
         protected:
             void AddUsedBlockNoAlign(ExpHeapMemoryBlock *block, size_t size);
             ExpHeapMemoryBlock *AddUsedBlockAlign(ExpHeapMemoryBlock *block, size_t size, s32 align);
@@ -97,7 +98,7 @@ namespace awn::mem {
 
             virtual bool IsEmpty() const override { return m_used_list.IsEmpty(); }
 
-            virtual bool IsAddressAllocation(void *address) override;
+            virtual bool IsAddressAllocation(const void *address) override;
 
             static size_t GetAllocationSize(void *address);
 

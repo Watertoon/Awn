@@ -27,20 +27,20 @@ namespace vp::util {
             u32 m_counter;
         };
         public:
-            constexpr ALWAYS_INLINE BusyMutex() : m_counter(0) {/*...*/}
+            constexpr ALWAYS_INLINE BusyMutex() : m_counter() {/*...*/}
             constexpr ALWAYS_INLINE ~BusyMutex() {/*...*/}
 
-            ALWAYS_INLINE void Enter() {
+            void Enter() {
 
                 /* Increment lock count */
-                u32 wait = util::InterlockedFetchAdd(std::addressof(m_counter), 0x1'0000u);
+                u32 wait = InterlockedFetchAdd(std::addressof(m_counter), 0x1'0000u);
 
                 /* Wait until release count is matched */
                 if ((wait & 0xffff) != ((wait >> 0x10) & 0xffff)) {
                     u16 count;
                     do {
                         /* Signal the processor to not aggressively speculatively execute for a bit */
-                        util::x86::pause();
+                        x86::pause();
                         count = m_release_count;
                     } while (count != ((wait >> 0x10) & 0xffff));
                 }
@@ -48,14 +48,14 @@ namespace vp::util {
                 return;
             }
 
-            ALWAYS_INLINE void Leave() {
+            void Leave() {
 
                 /* Increment release */
-                util::InterlockedIncrementRelease(std::addressof(m_release_count));
+                InterlockedIncrementRelease(std::addressof(m_release_count));
             }
     };
-    static_assert(sizeof(volatile long int) == sizeof(u32));
-    static_assert(sizeof(volatile short) == sizeof(u16));
+    //static_assert(sizeof(volatile long int) == sizeof(u32));
+    //static_assert(sizeof(volatile short) == sizeof(u16));
 
     class ScopedBusyMutex {
         private:

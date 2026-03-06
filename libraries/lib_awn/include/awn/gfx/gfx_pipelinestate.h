@@ -309,40 +309,40 @@ namespace awn::gfx {
     };
 
     struct ViewportState {
-        vp::util::Float2 position;
-        vp::util::Float2 extents;
-        vp::util::Float2 depth_range;
+        Float2 position;
+        Float2 extents;
+        Float2 depth_range;
 
         constexpr void SetDefaults() {
-            this->position = vp::util::Float2::cZero;
+            this->position = VectorConstant<Float2>::cZero;
             this->extents = { 640.0f, 480.0f, };
             this->depth_range = { 0.0f, 1.0f, };
         }
 
-        constexpr void SetPosition(vp::util::Float2 position) {
+        constexpr void SetPosition(const Float2 &position) {
             this->position = position;
         }
-        constexpr void SetSize(vp::util::Float2 extents) {
+        constexpr void SetSize(const Float2 &extents) {
             this->extents = extents;
         }
-        constexpr void SetDepthRange(vp::util::Float2 depth_range) {
+        constexpr void SetDepthRange(const Float2 &depth_range) {
             this->depth_range = depth_range;
         }
     };
 
     struct ScissorState {
-        vp::util::Int2 position;
-        vp::util::Int2 extents;
+        Int2 position;
+        Int2 extents;
 
         constexpr void SetDefaults() {
-            this->position = vp::util::Int2::cZero;
-            this->extents = vp::util::Int2::cZero;
+            this->position = VectorConstant<Int2>::cZero;
+            this->extents = VectorConstant<Int2>::cZero;
         }
 
-        constexpr void SetPosition(vp::util::Int2 position) {
+        constexpr void SetPosition(const Int2 &position) {
             this->position = position;
         }
-        constexpr void SetSize(vp::util::Int2 extents) {
+        constexpr void SetSize(const Int2 &extents) {
             this->extents = extents;
         }
     };

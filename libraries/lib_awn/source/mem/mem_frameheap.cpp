@@ -83,7 +83,7 @@ namespace awn::mem {
         const uintptr_t address = vp::util::AlignUp(m_iter, alignment);
         const uintptr_t next_iter = address + adjusted_size;
         /* Ensure space */
-        if (next_iter <= address || m_end <= next_iter) { return nullptr; }
+        if (next_iter < address || m_end < next_iter) { return nullptr; }
         m_iter = next_iter;
 
         fail_guard.Cancel();
@@ -104,6 +104,12 @@ namespace awn::mem {
         return;
     }
 
+    bool FrameHeap::IsEmpty() const {
+        const bool is_start = (m_iter == reinterpret_cast<uintptr_t>(m_start_address) + sizeof(FrameHeap));
+        const bool is_end = (m_end == reinterpret_cast<uintptr_t>(m_end_address));
+        return is_start && is_end;
+    }
+
     size_t FrameHeap::GetTotalFreeSize() {
         ScopedHeapLock l(this);
         return m_end - m_iter;
@@ -116,37 +122,5 @@ namespace awn::mem {
         const uintptr_t end_address = m_end;
         const uintptr_t size = (address < end_address) ? end_address - address : 0;
         return size;
-    }
-
-    GpuFrameHeap *GpuFrameHeap::TryCreate(const char *name, mem::Heap *cpu_heap, mem::Heap *gpu_heap, size_t size, s32 alignment, bool is_thread_safe) {
-
-        /* Get size */
-        const size_t max_size = (size != 0) ? vp::util::AlignUp(size, alignof(size_t)) : gpu_heap->GetMaximumAllocatableSize(alignment);
-        VP_ASSERT(sizeof(FrameHeap) < max_size);
-
-        /* Allocate new gpu frameheap */
-        void *gpu_memory = ::operator new(size, gpu_heap, alignment);
-        GpuFrameHeap *gpu_frame_heap = new (cpu_heap, alignment) GpuFrameHeap(name, gpu_heap, gpu_memory, max_size, is_thread_safe);
-        gpu_frame_heap->m_iter = reinterpret_cast<uintptr_t>(gpu_memory);
-        gpu_frame_heap->m_end = reinterpret_cast<uintptr_t>(gpu_frame_heap->m_end_address);
-
-        /* Add child */
-        gpu_heap->PushBackChild(gpu_frame_heap);
-
-        return gpu_frame_heap;
-    }
-
-    void GpuFrameHeap::FreeAll() {
-
-        /* Lock heap */
-        ScopedHeapLock l(this);
-
-        /* Dispose */
-        this->DisposeAll();
-
-        /* Reset start offset */
-        m_iter = reinterpret_cast<uintptr_t>(m_start_address);
-
-        return;
     }
 }

@@ -46,14 +46,6 @@ namespace awn::gfx {
         /* Ensure non-null */
         if (gpu_address == nullptr) { return nullptr; }
 
-        /* Find handle from gpu root heap */
-        mem::GpuRootHeapContext *context = mem::FindGpuRootHeapContextFromAddress(gpu_address);
-        if (context != nullptr) {
-            const uintptr_t offset = context->GetMemoryOffset(gpu_address);
-            *out_address_offset = offset;
-            return context->memory_pool;
-        }
-
         /* Find handle from address tree */
         const impl::GpuAddressRange range = { gpu_address, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(gpu_address) + 1), };
         MemoryPool *memory_pool = impl::sMemoryPoolTree.Find(range);
@@ -79,7 +71,7 @@ namespace awn::gfx {
             .flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT,
         };
         const void *pnext = std::addressof(flags_info);
-        return this->InitializeImpl(memory_pool_info, pnext);
+        return this->InitializeImpl(memory_pool_info, 0, pnext);
     }
 
     void MemoryPool::Finalize() {
@@ -109,7 +101,7 @@ namespace awn::gfx {
             .size   = size,
         };
         const VkResult result = ::pfn_vkFlushMappedMemoryRanges(gfx::impl::Context::GetInstance()->GetVkDevice(), 1, std::addressof(range));
-        gfx::impl::ConvertVkResultToResult(result);
+        RESULT_DISCARD(gfx::impl::ConvertVkResultToResult(result));
 
         return;
     }
@@ -126,12 +118,12 @@ namespace awn::gfx {
             .size   = size,
         };
         const VkResult result = ::pfn_vkInvalidateMappedMemoryRanges(gfx::impl::Context::GetInstance()->GetVkDevice(), 1, std::addressof(range));
-        gfx::impl::ConvertVkResultToResult(result);
+        RESULT_DISCARD(gfx::impl::ConvertVkResultToResult(result));
 
         return;
     }
 
-    Result MemoryPool::InitializeImpl(const MemoryPoolInfo *memory_pool_info, const void *pnext) {
+    Result MemoryPool::InitializeImpl(const MemoryPoolInfo *memory_pool_info, u32 restrict_memory_type_bits, const void *pnext) {
 
         /* Allocate device memory */
         const MemoryPropertyFlags memory_property_flags = memory_pool_info->GetMemoryPropertyFlags();
@@ -141,7 +133,7 @@ namespace awn::gfx {
             .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
             .pNext = pnext,
             .allocationSize = memory_pool_info->size,
-            .memoryTypeIndex = context->GetVkMemoryTypeIndex(memory_property_flags),
+            .memoryTypeIndex = context->GetVkMemoryTypeIndex(memory_property_flags, restrict_memory_type_bits),
         };
         const VkResult vk_result = ::pfn_vkAllocateMemory(context->GetVkDevice(), std::addressof(allocate_info), context->GetVkAllocationCallbacks(), std::addressof(vk_device_memory));
         const Result result = impl::ConvertVkResultToResult(vk_result);

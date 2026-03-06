@@ -57,12 +57,12 @@ namespace vp::resbui {
             gpu_region_size += gpu_size;
 
             /* Add name to dic and string pool */
-            dic_builder.AddNode(std::addressof(texture_node.m_name));
-            m_string_pool_builder.AddString(std::addressof(texture_node.m_name));
+            RESULT_ABORT_UNLESS(dic_builder.AddNode(std::addressof(texture_node.m_name)));
+            RESULT_ABORT_UNLESS(m_string_pool_builder.AddString(std::addressof(texture_node.m_name)));
         }
 
         /* Calculate dictionary and string pool info */
-        m_string_pool_builder.AddString(std::addressof(m_file_name));
+        RESULT_ABORT_UNLESS(m_string_pool_builder.AddString(std::addressof(m_file_name)));
         dic_builder.CalculateMemoryInfo(std::addressof(texture_dic_info));
         m_string_pool_builder.CalculateMemoryInfo(std::addressof(out_memory_info->string_pool_memory_info));
 
@@ -138,7 +138,7 @@ namespace vp::resbui {
         /* Write relocation table header */
         NintendoWareRelocationTableStream relocation_stream;
         relocation_stream.SetStream(header, relocation_table, memory_info->total_section_count, memory_info->total_relocation_count);
-        relocation_stream.StartSection(0, memory_info->location_relocation_table.offset);
+        RESULT_ABORT_UNLESS(relocation_stream.StartSection(0, memory_info->location_relocation_table.offset));
 
         /* Set header */
         header->magic                   = vp::res::ResBntx::cMagic;
@@ -165,8 +165,8 @@ namespace vp::resbui {
         container->texture_data = texture_data;
         container->texture_dictionary = reinterpret_cast<vp::res::ResNintendoWareDictionary*>(texture_dictionary);
         container->runtime_memory_pool = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(container) + sizeof(vp::res::ResBntxTextureContainer));
-        relocation_stream.AddEntry(std::addressof(container->texture_info_array), 1, 4, 0);
-        relocation_stream.AddEntry(std::addressof(*container->texture_info_array), m_texture_count, 1, 0);
+        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(container->texture_info_array), 1, 4, 0));
+        RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(*container->texture_info_array), m_texture_count, 1, 0));
 
         /* Stream out textures */
         NintendoWareDictionaryBuilder dic_builder;
@@ -211,11 +211,11 @@ namespace vp::resbui {
             //info->user_data_array = ;
             //info->user_data_dictionary = ;
 
-            dic_builder.AddNode(std::addressof(texture_node.m_name));
-            relocation_stream.AddEntry(std::addressof(info->name), 1, 6, 0);
+            RESULT_ABORT_UNLESS(dic_builder.AddNode(std::addressof(texture_node.m_name)));
+            RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(info->name), 1, 6, 0));
             const bool is_user_data = false;
             if (is_user_data) {                        
-                relocation_stream.AddEntry(std::addressof(info->user_data_dictionary), 1, 1, 0);
+                RESULT_ABORT_UNLESS(relocation_stream.AddEntry(std::addressof(info->user_data_dictionary), 1, 1, 0));
             }
 
             /* Stream out texture mip levels */
@@ -229,7 +229,7 @@ namespace vp::resbui {
                 ::memcpy(memory_offset, texture_node.m_mip_level_array[i], local_size);
                 gpu_size = vp::util::AlignUp(gpu_size + local_size, texture_node.m_texture_data_alignment);
             }
-            info->mipmap_total_size = gpu_size;
+            info->texture_data_size = gpu_size;
             gpu_iter += gpu_size;
         }
 

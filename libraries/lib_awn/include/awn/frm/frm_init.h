@@ -23,7 +23,7 @@ namespace awn::frm {
 
     struct LibraryInfo {
         sys::CoreMask process_core_mask = cDefaultCoreMask;
-        size_t        root_heap_size    = cDefaultHeapSize;
+        size_t root_heap_size = cDefaultHeapSize;
     };
 
     void InitializeLibraries(const LibraryInfo *lib_info);

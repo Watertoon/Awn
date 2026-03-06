@@ -126,7 +126,7 @@ namespace awn::async {
             constexpr  DependencyJobQueue() : m_job_queue_node_array(), m_dependent_link_array(), m_used_dependent_link_count(), m_queue_flags(), m_used_job_queue_node_array(), m_thread_control_array(), m_job_priority_queue(), m_final_node(), m_queue_mutex(), m_primary_core_number() {/*...*/}
             constexpr ~DependencyJobQueue() {/*...*/}
 
-            void Initialize(mem::Heap *heap, const DependencyJobQueueInfo *queue_info);
+            Result Initialize(mem::Heap *heap, const DependencyJobQueueInfo *queue_info);
             void Finalize();
 
             void BuildJobGraph(DependencyJobGraph *job_graph);

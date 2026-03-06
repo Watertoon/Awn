@@ -24,11 +24,11 @@ namespace awn::res::impl {
         }
     }
 
-	void ParallelDecompressorManager::Initialize(mem::Heap *heap, u32 core_count) {
+	Result ParallelDecompressorManager::Initialize(mem::Heap *heap, u32 core_count) {
 
 		/* Initialize arrays */
-		m_index_allocator.Initialize(heap, core_count);
-		m_zstd_decompressor_array.Initialize(heap, core_count);
+		RESULT_TRY(m_index_allocator.Initialize(heap, core_count));
+		RESULT_TRY(m_zstd_decompressor_array.Initialize(heap, core_count));
 
 		/* Initialize decompressors */
 		for (u32 i = 0; i < core_count; ++i) {
@@ -38,7 +38,7 @@ namespace awn::res::impl {
 		/* Initialize auto reset free event */
 		m_free_event.Initialize(sys::SignalState::Cleared, sys::ResetMode::Auto);
 
-		return;
+		RESULT_RETURN_SUCCESS;
 	}
 
 	void ParallelDecompressorManager::Finalize() {
@@ -61,7 +61,7 @@ namespace awn::res::impl {
 		u32 index = 0;
 		for (;;) {
 			index = m_index_allocator.Allocate();
-			if (index == HandleAllocator::cInvalidHandle) { m_free_event.Wait(); continue; }
+			if (index == HandleAllocator::cInvalidEntryIndex) { m_free_event.Wait(); continue; }
 			break;
 		}
 

@@ -44,7 +44,7 @@ namespace awn::para {
         /* Initialize array if necessary */
         const u32 count = m_enum_count;
         if (!m_typed_param_array.IsValid()) {
-            m_typed_param_array.Initialize(heap, count);
+            RESULT_ABORT_UNLESS(m_typed_param_array.Initialize(heap, count));
         }
 
         /* Initialize typed params */
@@ -82,7 +82,7 @@ namespace awn::para {
         /* Initialize array if necessary */
         const u32 count = m_enum_count;
         if (!m_typed_param_array.IsValid()) {
-            m_typed_param_array.Initialize(heap, count);
+            RESULT_DISCARD(m_typed_param_array.Initialize(heap, count));
         }
 
         /* Initialize typed params */

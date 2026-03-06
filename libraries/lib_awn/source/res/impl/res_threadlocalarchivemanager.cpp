@@ -51,30 +51,31 @@ namespace awn::res::impl {
         return;
     }
 
-    void ThreadLocalArchiveManager::Initialize(mem::Heap *heap, u32 max_thread_count) {
+    Result ThreadLocalArchiveManager::Initialize(mem::Heap *heap, u32 max_thread_count) {
 
         /* Allocate tls slot */
         m_tls_slot = sys::AllocateTlsSlot(TlsDestructor);
+        RESULT_RETURN_UNLESS(m_tls_slot != sys::cInvalidTlsSlot, ResultNoTlsSlot);
 
         /* Initialize arrays */
-        m_archive_tree_allocator.Initialize(heap, max_thread_count);
-        m_free_archive_ring_buffer.Initialize(heap, max_thread_count);
-        m_archive_binder_array.Initialize(heap, max_thread_count);
-        m_registered_thread_ring.Initialize(heap, max_thread_count);
+        RESULT_TRY(m_archive_tree_allocator.Initialize(heap, max_thread_count));
+        RESULT_TRY(m_free_archive_ring_buffer.Initialize(heap, max_thread_count));
+        RESULT_TRY(m_archive_binder_array.Initialize(heap, max_thread_count));
+        RESULT_TRY(m_registered_thread_ring.Initialize(heap, max_thread_count));
 
         /* Push archives to free ring */
         for (u32 i = 0; i < max_thread_count; ++i) {
             m_free_archive_ring_buffer.PushBack(std::addressof(m_archive_binder_array[i]));
         }
 
-        return;
+        RESULT_RETURN_SUCCESS;
     }
     void ThreadLocalArchiveManager::Finalize() {
         m_free_archive_ring_buffer.Finalize();
         m_archive_tree_allocator.Finalize();
         m_archive_binder_array.Finalize();
         m_registered_thread_ring.Finalize();
-        if (m_tls_slot != sys::cInvalidTlsSlot) {                    
+        if (m_tls_slot != sys::cInvalidTlsSlot) {
             sys::FreeTlsSlot(m_tls_slot);
             m_tls_slot = sys::cInvalidTlsSlot;
         }
@@ -129,7 +130,7 @@ namespace awn::res::impl {
             if (local_archive == nullptr) { return nullptr; }
         }
 
-        return (local_archive->resource_binder.IsCompleted()) ? local_archive: nullptr;
+        return (local_archive->resource_binder.IsComposed()) ? local_archive: nullptr;
     }
 
     ResourceBinder *ThreadLocalArchiveManager::GetThreadLocalArchiveBinder() {
@@ -144,7 +145,7 @@ namespace awn::res::impl {
             if (local_archive == nullptr) { return nullptr; }
         }
 
-        return (local_archive->resource_binder.IsCompleted()) ? std::addressof(local_archive->resource_binder) : nullptr;
+        return (local_archive->resource_binder.IsComposed()) ? std::addressof(local_archive->resource_binder) : nullptr;
     }
 
     LocalArchiveBinder *ThreadLocalArchiveManager::RegisterThread(sys::ThreadBase *thread) {
@@ -206,10 +207,20 @@ namespace awn::res::impl {
 
         /* Check if archive is already loaded */
         LocalArchiveBinder *local_archive_binder = this->GetThreadLocalArchive();
-        if (local_archive_binder == nullptr || local_archive_binder->resource_binder.IsCompleted()) { return false; }
+        if (local_archive_binder == nullptr || local_archive_binder->resource_binder.IsComposed()) { return false; }
 
         /* Reference binder */
         return RESULT_SUCCEEDED(local_archive_binder->resource_binder.ReferenceBinderSync(binder_to_reference));
+    }
+
+    bool ThreadLocalArchiveManager::ReferenceThreadLocalArchiveToBinder(ResourceBinder *binder) {
+
+        /* Check if archive is already loaded */
+        LocalArchiveBinder *local_archive_binder = this->GetThreadLocalArchive();
+        if (local_archive_binder == nullptr || local_archive_binder->resource_binder.IsComposed()) { return false; }
+
+        /* Reference binder */
+        return RESULT_SUCCEEDED(binder->ReferenceBinderSync(std::addressof(local_archive_binder->resource_binder)));
     }
 
     bool ThreadLocalArchiveManager::IsThreadLocalArchiveInReference() {

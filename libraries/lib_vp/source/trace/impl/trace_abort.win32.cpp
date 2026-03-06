@@ -17,6 +17,16 @@
 
 namespace vp::trace {
 
+    bool IsDebuggerPresent() {
+        return ::IsDebuggerPresent();
+    }
+
+    void DebugBreak() {
+        if (IsDebuggerPresent()) {
+            ::DebugBreak();
+        }
+    }
+
     void AbortUnexpectedDefault(const char *func, const char *file, u32 line) {
         impl::AbortImpl("Unexpected Default", func, file, line, vp::trace::ResultUnexpectedDefault, "");
     }

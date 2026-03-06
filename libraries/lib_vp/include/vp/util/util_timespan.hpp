@@ -26,14 +26,34 @@ namespace vp {
         private:
             s64 m_time_ns;
         public:
-            constexpr ALWAYS_INLINE TimeSpan() : m_time_ns(0) {/*...*/}
-            constexpr ALWAYS_INLINE TimeSpan(s64 time_ns) : m_time_ns(time_ns) {/*...*/}
-            constexpr ALWAYS_INLINE TimeSpan(const TimeSpan &rhs) : m_time_ns(rhs.m_time_ns) {/*...*/}
+            constexpr TimeSpan() : m_time_ns() {/*...*/}
+            constexpr TimeSpan(s64 time_ns) : m_time_ns(time_ns) {/*...*/}
+            constexpr TimeSpan(const TimeSpan &rhs) : m_time_ns(rhs.m_time_ns) {/*...*/}
             constexpr ~TimeSpan() {/*...*/}
 
             constexpr TimeSpan &operator=(const TimeSpan &rhs) {
                 m_time_ns = rhs.m_time_ns;
                 return *this;
+            }
+
+            constexpr TimeSpan &operator+=(const TimeSpan &rhs) {
+                m_time_ns += rhs.m_time_ns;
+                return *this;
+            }
+
+            constexpr TimeSpan &operator-=(const TimeSpan &rhs) {
+                m_time_ns -= rhs.m_time_ns;
+                return *this;
+            }
+
+            constexpr TimeSpan operator+(const TimeSpan &rhs) const {
+                const s64 result = m_time_ns + rhs.m_time_ns;
+                return FromNanoSeconds(result);
+            }
+
+            constexpr TimeSpan operator-(const TimeSpan &rhs) const {
+                const s64 result = m_time_ns - rhs.m_time_ns;
+                return FromNanoSeconds(result);
             }
 
             static TimeSpan FromTick(s64 tick) {
@@ -52,22 +72,22 @@ namespace vp {
 
                 return time;
             }
-            static constexpr ALWAYS_INLINE TimeSpan FromHertz(s64 hertz)  { return TimeSpan(1'000'000'000 / hertz); }
-            static constexpr ALWAYS_INLINE TimeSpan FromNanoSeconds(s64 time_ns)  { return TimeSpan(time_ns); }
-            static constexpr ALWAYS_INLINE TimeSpan FromMicroSeconds(s64 time_us) { return TimeSpan(time_us  * 1'000); }
-            static constexpr ALWAYS_INLINE TimeSpan FromMilliSeconds(s64 time_ms) { return TimeSpan(time_ms  * 1'000'000); }
-            static constexpr ALWAYS_INLINE TimeSpan FromSeconds(s64 time_sec)     { return TimeSpan(time_sec * 1'000'000'000); }
+            static constexpr TimeSpan FromHertz(s64 hertz)  { return TimeSpan(1'000'000'000 / hertz); }
+            static constexpr TimeSpan FromNanoSeconds(s64 time_ns)  { return TimeSpan(time_ns); }
+            static constexpr TimeSpan FromMicroSeconds(s64 time_us) { return TimeSpan(time_us  * 1'000); }
+            static constexpr TimeSpan FromMilliSeconds(s64 time_ms) { return TimeSpan(time_ms  * 1'000'000); }
+            static constexpr TimeSpan FromSeconds(s64 time_sec)     { return TimeSpan(time_sec * 1'000'000'000); }
 
             static constexpr TimeSpan GetTimeLeftOnTarget(s64 tick) {
                 if (tick == 0) { return 0; }
 
-                const s64 tick_left = tick - util::GetSystemTick();
+                const s64 tick_left = tick - vp::util::GetSystemTick();
 
                 if (tick_left <= 0) { return 0; }
 
                 return FromTick(tick_left);
             }
-            
+
             static TickSpan GetAbsoluteTimeToWakeup(TimeSpan timeout_ns) {
 
                 /* Convert to tick */
@@ -87,34 +107,51 @@ namespace vp {
             s64 GetTick() const {
 
                 if (m_time_ns == cMinTime) {
-                    return cMinTime;
+                    return m_time_ns;
                 }
 
                 const s64 frequency = util::GetSystemTickFrequency();
 
-                s64 r_coeff =  (m_time_ns % 1'000'000'000);
-                if (-1 >= m_time_ns) {
-                    r_coeff = -(m_time_ns % 1'000'000'000);
+                s64 r_coeff = -(m_time_ns % 1'000'000'000);
+                if (-1 < m_time_ns) {
+                    r_coeff = (m_time_ns % 1'000'000'000);
                 }
 
-                s64 p_coeff = (m_time_ns / 1'000'000'000);
-                if (-1 >= m_time_ns) {
-                    p_coeff = -(m_time_ns / 1'000'000'000);
+                s64 p_coeff = -(m_time_ns / 1'000'000'000);
+                if (-1 < m_time_ns) {
+                    p_coeff = (m_time_ns / 1'000'000'000);
                 }
 
                 const s64 residual = ((r_coeff * frequency) + 999'999'999) / 1'000'000'000;
                 const s64 product  = p_coeff * frequency;
-                
+
                 s64 result = residual + product;
                 if (-1 >= result) {
                     result = -result;
                 }
-                
+
                 return result;
             }
-            constexpr ALWAYS_INLINE s64 GetNanoSeconds()  const { return m_time_ns; }
-            constexpr ALWAYS_INLINE s64 GetMicroSeconds() const { return (m_time_ns / 1'000); }
-            constexpr ALWAYS_INLINE s64 GetMilliSeconds() const { return (m_time_ns / 1'000'000); }
-            constexpr ALWAYS_INLINE s64 GetSeconds()      const { return (m_time_ns / 1'000'000'000); }
+            constexpr s64 GetNanoSeconds()  const { return m_time_ns; }
+            constexpr s64 GetMicroSeconds() const { return (m_time_ns / 1'000); }
+            constexpr s64 GetMilliSeconds() const { return (m_time_ns / 1'000'000); }
+            constexpr s64 GetSeconds()      const { return (m_time_ns / 1'000'000'000); }
+
+        #ifdef VP_TARGET_PLATFORM_linux
+            static TimeSpan FromTimeSpec(const timespec &ts) {
+                const s64 time = (ts.tv_sec * 1'000'000'000) + ts.tv_nsec;
+                return time;
+            }
+            constexpr timespec GetTimeSpec() const {
+                const s64 t = m_time_ns;
+                const s64 div = (t / 1'000'000'000);
+                const s64 mod = (t % 1'000'000'000);
+                const timespec out = {
+                    .tv_sec = static_cast<time_t>(div),
+                    .tv_nsec = static_cast<s32>(mod),
+                };
+                return out;
+            }
+        #endif
     };
 }

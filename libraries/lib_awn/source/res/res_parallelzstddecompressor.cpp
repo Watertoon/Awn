@@ -87,7 +87,7 @@ namespace awn::res {
         m_decompressor_thread->SetCoreMask(core_mask);
     }
 
-    Result ParallelZstdDecompressor::LoadDecompressFile(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) {
+    Result ParallelZstdDecompressor::LoadFileWithDecompression(size_t *out_size, s32 *out_alignment, const char *path, FileLoadContext *file_load_context, FileDeviceBase *file_device) {
 
         /* Integrity checks */
         RESULT_RETURN_IF(file_load_context->file != nullptr && file_load_context->file_size == 0, ResultInvalidFileBufferSize);
@@ -226,7 +226,7 @@ namespace awn::res {
         bool temp_select = true;
         size_t size_read = cReadSize;
         do {
-            
+
             /* Signal decompressor */
             m_decompressor_thread->m_stream_finish_event.Clear();
             m_decompressor_thread->SendMessage(size_read);
@@ -277,7 +277,7 @@ namespace awn::res {
 
         /* Allocate index */
         const u32 index = static_cast<u32>(m_dic_index_allocator.Allocate());
-        VP_ASSERT(index != DictionaryAllocator::cInvalidHandle);
+        VP_ASSERT(index != DictionaryAllocator::cInvalidEntryIndex);
 
         /* Set ddict and add to map */
         m_dic_array[index] = zstd_ddict;

@@ -31,7 +31,7 @@ namespace awn::res::impl {
             constexpr ParallelDecompressorManager() : m_index_allocator(), m_zstd_decompressor_array(), m_free_event() {/*...*/}
             constexpr ~ParallelDecompressorManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, u32 thread_count);
+            Result Initialize(mem::Heap *heap, u32 thread_count);
             void Finalize();
 
             u32 AllocateDecompressorHandle();

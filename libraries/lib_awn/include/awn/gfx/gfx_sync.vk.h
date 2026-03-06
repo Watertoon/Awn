@@ -20,9 +20,9 @@ namespace awn::gfx {
     class Sync {
         private:
             VkSemaphore m_vk_semaphore;
-            size_t      m_expected_value;
+            u64 m_expected_value;
         public:
-            constexpr Sync() : m_vk_semaphore(VK_NULL_HANDLE), m_expected_value(0) {/*...*/}
+            constexpr Sync() : m_vk_semaphore(VK_NULL_HANDLE), m_expected_value() {/*...*/}
             constexpr ~Sync() {/*...*/}
 
             void Initialize(bool is_for_present = false);
@@ -30,13 +30,16 @@ namespace awn::gfx {
 
             void Wait();
             void TimedWait(TimeSpan timeout);
-
         public:
             void Signal();
 
-            constexpr ALWAYS_INLINE void IncrementExpectedValue() { ++m_expected_value; }
-            constexpr ALWAYS_INLINE u64  GetExpectedValue() const { return m_expected_value; }
+            void InitializeImpl(const void *pnext, bool is_binary);
 
-            constexpr ALWAYS_INLINE VkSemaphore GetVkSemaphore() const { return m_vk_semaphore; }
+            constexpr void IncrementExpectedValue() { ++m_expected_value; }
+            constexpr u64 GetExpectedValue() const { return m_expected_value; }
+            u64 GetValue() const;
+
+            constexpr bool IsValid() const { return m_vk_semaphore != VK_NULL_HANDLE; }
+            constexpr VkSemaphore GetVkSemaphore() const { return m_vk_semaphore; }
     };
 }

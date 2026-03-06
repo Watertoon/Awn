@@ -17,5 +17,5 @@
 
 namespace awn::para {
 
-    VP_ENUM_TRAITS_IMPL(CurveType);
+    //VP_ENUM_TRAITS_IMPL(CurveType);
 }

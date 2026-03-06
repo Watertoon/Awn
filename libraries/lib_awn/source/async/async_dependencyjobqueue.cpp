@@ -59,7 +59,7 @@ namespace awn::async {
         if ((previous_state & 0xffff) == 0) { return; }
 
         /* Remove job */
-        JobQueueNode **iter = m_job_priority_queue.FindIterTo(queue_node);
+        JobQueueNode **iter = m_job_priority_queue.IterTo(queue_node);
 
         if (iter == nullptr) { return; }
 
@@ -273,18 +273,19 @@ namespace awn::async {
         return 0;
     }
 
-    void DependencyJobQueue::Initialize(mem::Heap *heap, const DependencyJobQueueInfo *queue_info) {
+    Result DependencyJobQueue::Initialize(mem::Heap *heap, const DependencyJobQueueInfo *queue_info) {
 
         /* Initialize arrays */
-        m_job_queue_node_array.Initialize(heap, queue_info->max_job_count);
-        m_dependent_link_array.Initialize(heap, queue_info->max_link_count);
-        m_used_job_queue_node_array.Initialize(heap, queue_info->max_job_count);
-        m_thread_control_array.Initialize(heap, sys::GetProcessCoreCount());
-        m_job_priority_queue.Initialize(heap, queue_info->max_job_count);
-
+        RESULT_TRY(m_job_queue_node_array.Initialize(heap, queue_info->max_job_count));
+        auto fail_guard0 = SCOPE_GUARD { this->Finalize(); };
+        RESULT_TRY(m_dependent_link_array.Initialize(heap, queue_info->max_link_count));
+        RESULT_TRY(m_used_job_queue_node_array.Initialize(heap, queue_info->max_job_count));
+        RESULT_TRY(m_thread_control_array.Initialize(heap, sys::GetProcessCoreCount()));
+        RESULT_TRY(m_job_priority_queue.Initialize(heap, queue_info->max_job_count));
         m_final_node.SetDefaults();
 
-        return;
+        fail_guard0.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void DependencyJobQueue::Finalize() {

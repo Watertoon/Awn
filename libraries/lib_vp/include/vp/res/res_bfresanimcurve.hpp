@@ -101,7 +101,7 @@ namespace vp::res {
     struct ResBfresAnimCurveCubicTangentScale {
         float tangent_scale;
         float tangent_addend;
-        ResBfresAnimCurveCubicSlim<T> *curve_array[];
+        ResBfresAnimCurveCubicSlim<T> curve_array[];
     };
 
     constexpr u32 GetCurveDataTypeSize(BfresAnimCurveCurveType curve_type, BfresAnimCurveValueDataType data_type, bool is_ext) {
@@ -211,7 +211,7 @@ namespace vp::res {
         void *value_array;
         union {
             u16 flags;
-            struct {                
+            struct {
                 u16 frame_data_type   : 2;
                 u16 value_data_type   : 2;
                 u16 curve_type        : 4;
@@ -562,7 +562,7 @@ namespace vp::res {
         if constexpr (!std::is_same_v<T,vp::util::Vector4f>) {
             addend = std::bit_cast<T>(this->eval_addend_int);
         } else {
-            addend = vp::util::Vector4f::cUnitW;
+            addend = vp::util::VectorConstant<vp::util::Vector4f>::cUnit[3];
         }
         if (start_extent <= frame && frame <= end_extent) { return { frame, addend }; }
 
@@ -595,7 +595,7 @@ namespace vp::res {
         /* Scale frame addend by loop count if relative repeat */
         else if (wrap_mode == static_cast<u32>(BfresAnimCurveWrapMode::RelativeRepeat)) {
            if constexpr (std::is_same_v<T,vp::util::Vector4f>) {
-                const vp::util::Vector4f rot = vp::util::CastVector4f(*reinterpret_cast<const vp::util::Float4*>(this->quat_repeat));
+                const vp::util::Vector4f rot = vp::util::Convert<vp::util::Vector4f>(*reinterpret_cast<const vp::util::Float4*>(this->quat_repeat));
                 if (!is_post_wrap) {
                     addend[0] = -addend[0];
                     addend[1] = -addend[1];
@@ -789,7 +789,7 @@ namespace vp::res {
                 {
                     wrapped_frame = this->start_frame + local_frame_offset;
                     if constexpr (std::is_same_v<T,vp::util::Vector4f>) {
-                        vp::util::Vector4f repeat = vp::util::CastVector4f(*reinterpret_cast<const vp::util::Float4*>(this->quat_repeat));
+                        vp::util::Vector4f repeat = vp::util::Convert<vp::util::Vector4f>(*reinterpret_cast<const vp::util::Float4*>(this->quat_repeat));
                         vp::util::Vector4f addend = *out_addend;
                         for (u32 i = 0; i < loop_count; ++i) {
                             addend = vp::util::QuatMultiply(addend, repeat);
@@ -829,7 +829,7 @@ namespace vp::res {
                 {
                     wrapped_frame = this->end_frame - local_frame_offset;
                     if constexpr (std::is_same_v<T,vp::util::Vector4f>) {
-                        vp::util::Vector4f repeat = vp::util::CastVector4f(*reinterpret_cast<const vp::util::Float4*>(this->quat_repeat));
+                        vp::util::Vector4f repeat = vp::util::Convert<vp::util::Vector4f>(*reinterpret_cast<const vp::util::Float4*>(this->quat_repeat));
                         vp::util::Vector4f addend = *out_addend;
                         addend[0] = -addend[0];
                         addend[1] = -addend[1];
@@ -1009,7 +1009,7 @@ namespace vp::res {
 
             /* Unpack points and tangents for from and to with separate tangent scale */
             const ResBfresAnimCurveCubicTangentScale<T> *slim_head = reinterpret_cast<const ResBfresAnimCurveCubicTangentScale<T>*>(this->value_array);
-            const ResBfresAnimCurveCubicSlim<T> *curve_array = reinterpret_cast<const ResBfresAnimCurveCubicSlim<T>*>(this->value_array);
+            const ResBfresAnimCurveCubicSlim<T> *curve_array = slim_head->curve_array;
             const s32 base_index = cache->key_frame_index * 2;
             const float p0 = static_cast<float>(curve_array[base_index]);
             point0 = p0 * this->value_scale + this->value_addend;

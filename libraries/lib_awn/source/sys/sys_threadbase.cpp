@@ -17,6 +17,27 @@
 
 namespace awn::sys {
 
+    void ThreadBase::Run() {
+
+        /* Message loop */
+        size_t current_message = static_cast<size_t>(-1);
+        if (m_run_mode == static_cast<u32>(ThreadRunMode::WaitForMessage)) {
+            m_message_queue.ReceiveMessage(std::addressof(current_message));
+        }
+        while(current_message != m_exit_message) {
+            this->ThreadMain(current_message);
+            if (m_run_mode == static_cast<u32>(ThreadRunMode::WaitForMessage)) {
+                m_message_queue.ReceiveMessage(std::addressof(current_message));
+            } else {
+                if (!m_message_queue.TryReceiveMessage(std::addressof(current_message))) {
+                    current_message = 0;
+                }
+            }
+        }
+
+        return;
+    }
+
     void ThreadBase::Initialize(mem::Heap *thread_heap, const ThreadInfo *info) {
 
         /* Set info */
@@ -53,7 +74,7 @@ namespace awn::sys {
         /* Run thread */
         thread->Run();
 
-#ifdef VP_TARGET_PLATFORM_win32
+#if defined(VP_TARGET_PLATFORM_win32) || defined(VP_TARGET_PLATFORM_linux)
         /* Destruct thread tls */
         ThreadManager::GetInstance()->InvokeThreadTlsDestructors(thread);
 #endif
@@ -73,7 +94,7 @@ namespace awn::sys {
         /* Run thread */
         thread->Run();
 
-#ifdef VP_TARGET_PLATFORM_win32
+#if defined(VP_TARGET_PLATFORM_win32) || defined(VP_TARGET_PLATFORM_linux)
         /* Destruct thread tls */
         ThreadManager::GetInstance()->InvokeThreadTlsDestructors(thread);
 #endif

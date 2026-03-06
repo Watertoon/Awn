@@ -71,13 +71,6 @@ namespace awn::res {
         }
         auto close_guard = SCOPE_GUARD { ::CloseHandle(handle); };
 
-        /* Give optional write handle */
-        if (out_file_handle != nullptr) {
-            out_file_handle->handle = handle;
-            out_file_handle->open_mode = static_cast<u32>(OpenMode::Write);
-            close_guard.Cancel();
-        }
-    
         /* Try set valid file size */
         const bool result0 = ::SetFileValidData(handle, static_cast<s64>(file_size));
         if (!result0) {
@@ -86,6 +79,15 @@ namespace awn::res {
         const bool result1 = ::SetEndOfFile(handle);
         if (!result1) {
             RESULT_RETURN_SUCCESS;
+        }
+
+        /* Give optional write handle */
+        if (out_file_handle != nullptr) {
+            out_file_handle->handle = handle;
+            out_file_handle->open_mode = static_cast<u32>(OpenMode::Write);
+            out_file_handle->file_offset = 0;
+            out_file_handle->file_size = file_size;
+            close_guard.Cancel();
         }
 
         RESULT_RETURN_SUCCESS;
@@ -193,7 +195,7 @@ namespace awn::res {
         RESULT_RETURN_UNLESS(write_buffer != nullptr,                                                             ResultNullOutBuffer);
         RESULT_RETURN_UNLESS(write_size != 0,                                                                     ResultInvalidSize);
         RESULT_RETURN_UNLESS((static_cast<u32>(file_handle->open_mode) & static_cast<u32>(OpenMode::Write)) != 0, ResultInvalidOpenMode);
-        RESULT_RETURN_UNLESS(file_handle->file_size < file_offset,                                                ResultInvalidFileOffset);
+        RESULT_RETURN_UNLESS(file_offset < file_handle->file_size,                                                ResultInvalidFileOffset);
 
         /* Set file location */
         LARGE_INTEGER offset = {
@@ -252,7 +254,7 @@ namespace awn::res {
 
         RESULT_RETURN_SUCCESS;
     }
-    
+
     Result SystemFileDevice::GetFileSizeImpl(size_t *out_size, const char *path) {
 
         /* Integrity checks */
@@ -351,7 +353,7 @@ namespace awn::res {
         RESULT_RETURN_SUCCESS;
     }
 
-    Result SystemFileDevice::ReadDirectoryImpl(DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) {
+    Result SystemFileDevice::ReadDirectoryImpl(u32 *out_read_count, DirectoryHandle *directory_handle, DirectoryEntry *entry_array, u32 entry_count) {
 
         /* Integrity checks */
         RESULT_RETURN_UNLESS(directory_handle != nullptr, ResultNullDirectoryHandle);
@@ -362,6 +364,11 @@ namespace awn::res {
         MaxPathString    *directory_path = std::addressof(directory_handle->directory_path_array[directory_handle->directory_depth]);
 
         u32 i = 0;
+        ON_SCOPE_EXIT {
+            if (out_read_count != nullptr) {
+                *out_read_count = i;
+            }
+        };
         while (i < entry_count) {
 
             /* Find a file */
@@ -410,7 +417,6 @@ namespace awn::res {
             /* Assert directory succeeded */
             RESULT_RETURN_UNLESS(result == ResultSuccess || result == ResultDirectoryExhausted, result);
         }
-
         RESULT_RETURN_SUCCESS;
     }
 

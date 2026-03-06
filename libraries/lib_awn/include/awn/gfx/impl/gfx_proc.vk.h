@@ -70,8 +70,10 @@ DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceSurfacePresentModesKHR);
 DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceSurfaceSupportKHR);
 
 /* Instance VK_KHR_win32_surface */
+#ifdef VP_TARGET_PLATFORM_win32
 DEFINE_EXTERN_VK_PROC(vkCreateWin32SurfaceKHR);
 DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceWin32PresentationSupportKHR);
+#endif
 
 /* Instance VK_KHR_cooperative_matrix */
 DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR);
@@ -313,12 +315,27 @@ DEFINE_EXTERN_VK_PROC(vkUnmapMemory2);
 //DEFINE_EXTERN_VK_PROC(vkQueuePresentKHR);
 //DEFINE_EXTERN_VK_PROC(vkReleaseSwapchainImagesEXT);
 
+#ifdef VP_TARGET_PLATFORM_win32
 /* Device VK_KHR_external_memory_win32 */
 DEFINE_EXTERN_VK_PROC(vkGetMemoryWin32HandleKHR);
 DEFINE_EXTERN_VK_PROC(vkGetMemoryWin32HandlePropertiesKHR);
 
 /* Device VK_KHR_external_semaphore_win32 */
 DEFINE_EXTERN_VK_PROC(vkImportSemaphoreWin32HandleKHR);
+#endif
+
+#ifdef VP_TARGET_PLATFORM_linux
+/* Device VK_KHR_external_memory_fd */
+DEFINE_EXTERN_VK_PROC(vkGetMemoryFdKHR);
+DEFINE_EXTERN_VK_PROC(vkGetMemoryFdPropertiesKHR);
+
+/* Device VK_KHR_external_semaphore_fd */
+DEFINE_EXTERN_VK_PROC(vkImportSemaphoreFdKHR);
+DEFINE_EXTERN_VK_PROC(vkGetSemaphoreFdKHR);
+
+/* Device VK_EXT_image_drm_modifier */
+DEFINE_EXTERN_VK_PROC(vkGetImageDrmFormatModifierPropertiesEXT);
+#endif
 
 #ifdef AWN_VK_DEBUG
     /* Device VK_EXT_device_fault */
@@ -364,5 +381,16 @@ DEFINE_EXTERN_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksIndirectCountEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksIndirectEXT);
+
+/* Device VK_EXT_descriptor_heap */
+#ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+DEFINE_EXTERN_VK_PROC(vkCmdBindResourceHeapEXT);
+DEFINE_EXTERN_VK_PROC(vkCmdBindSamplerHeapEXT);
+DEFINE_EXTERN_VK_PROC(vkCmdPushDataEXT);
+DEFINE_EXTERN_VK_PROC(vkGetImageOpaqueCaptureDataEXT);
+DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceDescriptorSizeEXT);
+DEFINE_EXTERN_VK_PROC(vkWriteResourceDescriptorsEXT);
+DEFINE_EXTERN_VK_PROC(vkWriteSamplerDescriptorsEXT);
+#endif
 
 void LoadVkCProcsDevice(VkDevice vk_device);

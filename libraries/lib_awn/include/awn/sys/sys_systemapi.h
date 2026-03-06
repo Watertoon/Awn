@@ -24,26 +24,12 @@ namespace awn::sys {
         Taiwan       = 3,
         Default      = 4,
     };
-    VP_ENUM_TRAITSV(
-        awn::sys::RegionType, RegionType,
-        UnitedStates,
-        Europe,
-        Japan,
-        Taiwan,
-        Default
-    );
 
     enum class LanguageType : u32 {
         English  = 0,
         Japanese = 1,
         Default  = 2,
     };
-    VP_ENUM_TRAITSV(
-        awn::sys::LanguageType, LanguageType,
-        English,
-        Japanese,
-        Default
-    );
 
     enum class ProductType : u32 {
         Debug   = 0,
@@ -51,27 +37,20 @@ namespace awn::sys {
         Product = 2,
         Pilot   = 3,
     };
-    VP_ENUM_TRAITSV(
-        awn::sys::ProductType, ProductType,
-        Debug,
-        Develop,
-        Product,
-        Pilot
-    );
 }
-VP_ENUM_TRAITS_AUTO(awn::sys::RegionType);
-VP_ENUM_TRAITS_AUTO(awn::sys::LanguageType);
-VP_ENUM_TRAITS_AUTO(awn::sys::ProductType);
 
 namespace awn::sys {
 
     static constexpr size_t cMaxCoreCount = 64;
     using CoreMask = u64;
+    using CoreConnection = vp::util::FixedConnection<u64, cMaxCoreCount>;
 
 #ifdef VP_TARGET_PLATFORM_win32
     using NativeHandle = HANDLE;
-#elif VP_TARGET_PLATFORM_nx
+#elifdef VP_TARGET_PLATFORM_nx
     using NativeHandle = nn::os::Handle;
+#elifdef VP_TARGET_PLATFORM_linux
+    using NativeHandle = s32;
 #endif
 
     void InitializeSystem();

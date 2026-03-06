@@ -21,32 +21,6 @@ namespace awn::res {
 
 namespace awn::res::impl {
 
-    struct AsyncResourceThreadInfo {
-        const char *name;
-        u32         core_number;
-        u32         priority;
-        u32         stack_size;
-    };
-
-    using AsyncResourceThreadCreateFunction    = vp::util::IFunction<async::AsyncQueueThread*(mem::Heap*, async::AsyncQueue*, AsyncResourceThreadInfo*)>;
-    using AsyncResourceThreadCreateAnyFunction = vp::util::AnyFunction<4, async::AsyncQueueThread*(mem::Heap*, async::AsyncQueue*, AsyncResourceThreadInfo*)>;
-
-    struct AsyncResourceManagerInfo {
-        IAsyncResourceApplicationImpl        *app_impl;
-        size_t                                zsdic_heap_size;
-        const char                           *resource_size_table_path;
-        u32                                   max_thread_local_archive_count;
-        u32                                   max_resource_unit_count;
-        u32                                   load_task_count;
-        AsyncResourceThreadInfo               control_thread_info;
-        AsyncResourceThreadInfo               memory_thread_info;
-        u32                                   load_thread_count;
-        AsyncResourceThreadInfo              *load_thread_info_array;
-        AsyncResourceThreadCreateAnyFunction  control_thread_create_function;
-        AsyncResourceThreadCreateAnyFunction  memory_thread_create_function;
-        AsyncResourceThreadCreateAnyFunction  load_thread_create_function;
-    };
-
     using PersistantThreadArray = vp::util::PointerArray<sys::ThreadBase>;
 
     struct ResourceSizePrepareResult {
@@ -80,13 +54,16 @@ namespace awn::res::impl {
             static constexpr u32 cComposePriorityLevelCount = 0x5;
             static constexpr u16 cInvalidRequestIndex = 0xffff;
         public:
-            using ResourceUnitIndexFrame   = vp::util::BufferedFrameArray<u16, 2>;
+            using ResourceUnitIdRing   = vp::util::AtomicRingBuffer<u64, false>;
+            using ResourceUnitConnection   = vp::util::Connection<u32>;
             using MemberTaskFunction       = vp::util::MemberFunction<AsyncResourceManager, void(void*)>;
             using MemberResultFunction     = vp::util::MemberFunction<AsyncResourceManager, Result(async::TaskResultInvokeInfo*)>;
             using ResourceUnitFinalizeList = vp::util::IntrusiveListTraits<ResourceUnit, &ResourceUnit::m_finalize_async_res_mgr_list_node>::List;
             using AsyncQueueThreadArray    = vp::util::PointerArray<async::AsyncQueueThread>;
         private:
-            mem::Heap                     *m_system_heap;
+            mem::ExpHeap                  *m_system_heap;
+            mem::FrameHeap                *m_load_thread_heap;
+            mem::FrameHeap                *m_compose_thread_heap;
             IAsyncResourceApplicationImpl *m_app_impl;
             ExtensionManager               m_extension_manager;
             ResourceMemoryManager          m_memory_manager;
@@ -106,12 +83,11 @@ namespace awn::res::impl {
 
             async::AsyncTaskAllocator      m_async_task_allocator_load;
 
-            sys::Mutex                     m_unload_frame_cs;
-            ResourceUnitIndexFrame         m_unload_frame_buffer;
-            sys::Mutex                     m_adjust_ref_frame_cs;
-            ResourceUnitIndexFrame         m_adjust_ref_frame_buffer;
-            sys::Mutex                     m_heap_adjust_frame_cs;
-            ResourceUnitIndexFrame         m_heap_adjust_frame_buffer;
+            ResourceUnitIdRing             m_unload_id_ring;
+            ResourceUnitConnection         m_unload_cancel_conn;
+            ResourceUnitIdRing             m_adjust_ref_id_ring;
+            ResourceUnitIdRing             m_heap_adjust_id_ring;
+            ResourceUnitConnection         m_heap_adjust_cancel_conn;
 
             ArchiveFileDevice              m_default_archive_file_device;
             ArchiveFileDevice              m_default_archive_file_device_for_size_prepare;
@@ -162,7 +138,6 @@ namespace awn::res::impl {
             static constexpr ALWAYS_INLINE u32 ConvertPriorityControlThreadToMemoryThread(u32 priority) { return (priority * 2) + 1; }
             static constexpr ALWAYS_INLINE u32 ConvertPriorityMemoryThreadToLoadThread(u32 priority) { return (0xa < priority) ? 0xff : priority / 2; }
         private:
-            void FreeResourceUnitFromBinder(ResourceBinder *binder);
             void ReserveUnload();
 
             ResourceUnit *AllocateResourceUnit();
@@ -231,9 +206,9 @@ namespace awn::res::impl {
         private:
             void CancelLoadTasks();
         public:
-            constexpr AsyncResourceManager() : m_system_heap(), m_app_impl(), m_extension_manager(), m_memory_manager(), m_is_trigger_clear_all_caches(), m_resource_unit_allocator(), m_resource_unit_finalize_list(), m_finalize_list_cs(),
+            constexpr AsyncResourceManager() : m_system_heap(), m_load_thread_heap(), m_compose_thread_heap(), m_app_impl(), m_extension_manager(), m_memory_manager(), m_is_trigger_clear_all_caches(), m_resource_unit_allocator(), m_resource_unit_finalize_list(), m_finalize_list_cs(),
             m_queue_control(), m_queue_memory(), m_queue_load(), m_queue_compose(),m_thread_control(), m_thread_memory(), m_load_thread_array(), m_compose_thread_array(), m_async_task_allocator_load(),
-            m_unload_frame_cs(), m_unload_frame_buffer(), m_adjust_ref_frame_cs(), m_adjust_ref_frame_buffer(), m_heap_adjust_frame_cs(), m_heap_adjust_frame_buffer(),
+            m_unload_id_ring(), m_unload_cancel_conn(), m_adjust_ref_id_ring(), m_heap_adjust_id_ring(), m_heap_adjust_cancel_conn(),
             m_default_archive_file_device(), m_default_archive_file_device_for_size_prepare(), m_default_archive_binder(), m_default_archive_reference_count(), m_thread_local_archive_manager(), m_resource_size_table_manager(),
             m_zsdic_heap(), m_decompressor_manager(), m_persistant_thread_array_cs(), m_persistant_thread_array(), m_is_enable_persistant(), m_clear_cache_tick_count(1), m_clear_cache_tick_counter(),
             m_task_for_calculate(), m_task_for_load_sync(), m_task_for_clear_cache_for_allocate(), m_task_for_force_reserve_unload(), m_task_for_force_clear_all_caches(), m_task_for_heap_adjust(),
@@ -243,11 +218,13 @@ namespace awn::res::impl {
 
             ~AsyncResourceManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, AsyncResourceManagerInfo *manager_info);
+            Result Initialize(mem::Heap *heap, AsyncResourceManagerInfo *manager_info);
             void Finalize();
 
             void Calculate();
             void ForceClearAllCaches();
+            
+            Result LoadSync(Resource **out_resource, const char *path, const AsyncResourceLoadInfo *info);
         public:
             u32 AllocateDecompressor();
             void FreeDecompressor(u32 handle);

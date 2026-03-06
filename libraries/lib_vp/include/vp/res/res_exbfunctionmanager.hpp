@@ -44,7 +44,7 @@ namespace vp::res {
             constexpr  ExbFunctionManager() : m_function_array() {/*...*/}
             constexpr ~ExbFunctionManager() {/*...*/}
 
-            void Initialize(vp::imem::IHeap *heap, u32 function_count);
+            Result Initialize(vp::imem::IHeap *heap, u32 function_count);
             void Finalize();
 
             void RegisterDirectFunction(ExbDirectFunction direct_function, const char *signature);
@@ -77,7 +77,7 @@ namespace vp::res {
             constexpr  ExbFunctionTable() : m_function_index_array() {/*...*/}
             constexpr ~ExbFunctionTable() {/*...*/}
 
-            void Initialize(vp::imem::IHeap *heap, vp::res::ResExb *res_exb);
+            Result Initialize(vp::imem::IHeap *heap, vp::res::ResExb *res_exb);
             void Finalize();
 
             constexpr u32 GetFunctionIndex(u32 local_index) const { return m_function_index_array[local_index]; }

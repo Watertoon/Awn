@@ -26,6 +26,21 @@ namespace awn::res::impl {
         VP_ASSERT(cur_len != 0);
         m_current_directory.SetLength(cur_len);
         m_current_directory.AssureTermination();
+        vp::util::FixedString16<260> cwd16 = m_current_directory;
+        IO_STATUS_BLOCK block;
+        OBJECT_ATTRIBUTES obj_attr;
+        ::InitializeObjectAttribute(std::addressof(obj_attr), reinterpret_cast<const wchar_t*>(cwd16.GetString()), OBJ_EXCLUSIVE, nullptr, nullptr);
+        const NTSTATUS status0 = ::NtOpenDirectoryObject(std::addressof(m_current_directory_handle), FILE_TRAVERSE, std::addressof(obj_attr), std::addressof(block), nullptr, FILE_ATTRIBUTE_NORMAL, 0, FILE_OPEN_IF, FILE_DIRECTORY_FILE, nullptr, 0);
+        VP_ASSERT(status0 == STATUS_SUCCESS);
+        VP_ASSERT(block.Information == FILE_CREATED || block.Information == FILE_OPENED);
+#elifdef VP_TARGET_PLATFORM_linux
+        errno = 0;
+        char *result = ::getcwd(m_current_directory.GetString(), m_current_directory.GetLength() - cCurrentDirectoryReserved);
+        VP_ASSERT(result != nullptr);
+        m_current_directory.RecomputeLength();
+        int cwd_fd = ::open(m_current_directory.GetString(), O_DIRECTORY);
+        VP_ASSERT(0 <= cwd_fd);
+        m_current_directory_handle = cwd_fd;
 #endif
 
         /* Allocate and initialize file devices for content, cache, and save */
@@ -44,6 +59,17 @@ namespace awn::res::impl {
     }
 
     void FileDeviceManager::Finalize() {
+#ifdef VP_TARGET_PLATFORM_win32
+        if (m_current_directory_handle != nullptr) {
+            ::CloseHandle(m_current_directory_handle);
+            m_current_directory_handle = nullptr;
+        }
+#elifdef VP_TARGET_PLATFORM_linux
+        if (m_current_directory_handle != -1) {
+            ::close(m_current_directory_handle);
+            m_current_directory_handle = -1;
+        }
+#endif
         if (m_content_file_device != nullptr) {
             delete m_content_file_device;
             m_content_file_device = nullptr;
@@ -118,7 +144,7 @@ namespace awn::res::impl {
         vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
 
         /* Load */
-        return decompressor->LoadDecompressFile(nullptr, nullptr, path_no_drive.GetString(), file_load_context, device);
+        return decompressor->LoadFileWithDecompression(nullptr, nullptr, path_no_drive.GetString(), file_load_context, device);
     }
 
     Result FileDeviceManager::SaveFile(const char *path, FileSaveInfo *save_info) {
@@ -144,6 +170,6 @@ namespace awn::res::impl {
         vp::util::GetPathWithoutDrive(std::addressof(path_no_drive), path);
 
         /* Load */
-        return compressor->SaveCompressFile(path_no_drive.GetString(), save_info, device);
+        return compressor->SaveFileWithCompression(path_no_drive.GetString(), save_info, device);
     }
 }

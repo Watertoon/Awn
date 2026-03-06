@@ -26,25 +26,28 @@ namespace awn::async {
         return;
     }
 
-    void DependencyJobGraph::Initialize(mem::Heap *heap, const DependencyJobGraphInfo *job_graph_info) {
+    Result DependencyJobGraph::Initialize(mem::Heap *heap, const DependencyJobGraphInfo *job_graph_info) {
 
         /* Integrity checks */
-        VP_ASSERT(job_graph_info != nullptr);
-        VP_ASSERT(0 < job_graph_info->max_job_count && 0 < job_graph_info->max_link_count);
+        RESULT_RETURN_UNLESS(0 < job_graph_info->max_job_count, ResultRangeNG);
+        RESULT_RETURN_UNLESS(0 < job_graph_info->max_link_count, ResultRangeNG);
 
         /* Initialize allocators */
-        m_job_node_allocator.Initialize(heap, job_graph_info->max_job_count);
-        m_register_link_allocator.Initialize(heap, job_graph_info->max_link_count);
-        m_user_link_allocator.Initialize(heap, job_graph_info->max_link_count);
+        RESULT_TRY(m_job_node_allocator.Initialize(heap, job_graph_info->max_job_count));
+        auto fail_guard0 = SCOPE_GUARD{
+            this->Finalize();
+        };
+        RESULT_TRY(m_register_link_allocator.Initialize(heap, job_graph_info->max_link_count));
+        RESULT_TRY(m_user_link_allocator.Initialize(heap, job_graph_info->max_link_count));
 
         /* Clear register ids */
         this->ClearRegisterIds();
 
-        return;
+        fail_guard0.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void DependencyJobGraph::Finalize() {
-
         m_job_node_allocator.Finalize();
         m_register_link_allocator.Finalize();
         m_user_link_allocator.Finalize();

@@ -37,7 +37,7 @@ namespace vp::imem {
 
     class IHeap {
         public:
-            using SynchronizationDelegate = util::DelegateFunction<void*>;
+            using SynchronizationDelegate = util::IFunction<void*>;
         protected:
             void                    *m_start_address;
             void                    *m_end_address;
@@ -82,12 +82,12 @@ namespace vp::imem {
                 return this;
             }
 
-            virtual bool IsAddressInHeap(void *address) { return (m_start_address <= address && address < m_end_address); }
-            virtual bool IsAddressAllocation(void *address) { VP_UNUSED(address); return false; }
+            virtual bool IsAddressInHeap(const void *address) { return (m_start_address <= address && address < m_end_address); }
+            virtual bool IsAddressAllocation(const void *address) { VP_UNUSED(address); return false; }
 
             virtual bool IsEmpty() const { return false; }
 
-            virtual size_t GetTotalSize() const { 
+            virtual size_t GetTotalSize() const {
                 return reinterpret_cast<uintptr_t>(m_end_address) - reinterpret_cast<uintptr_t>(m_start_address);
             }
             virtual size_t GetTotalFreeSize() { return 0; }
