@@ -17,7 +17,26 @@ namespace vp::resbui {
             node.PushStrings(pool_builder);
         }
     }
-    
+
+    void ByamlBigDataNodeContainerBase::CalculateBigDataOffset(uintptr_t *big_data_offset_iter, uintptr_t head) {
+        /* Calculate sub nodes */
+        for (ByamlNodeBase &node : m_node_list) {
+            ByamlNodeBigData *big_data = vp::util::DynamicCast<ByamlNodeBigData*>(std::addressof(node));
+            if (big_data == nullptr) { continue; }
+            big_data->CalculateBigDataOffsets(big_data_offset_iter, head);
+        }
+        return;
+    }
+    void ByamlBigDataNodeContainerBase::CalculateContainerOffset(uintptr_t *container_offset_iter, uintptr_t head) {
+        /* Calculate sub nodes */
+        for (ByamlNodeBase &node : m_node_list) {
+            ByamlNodeBigData *big_data = vp::util::DynamicCast<ByamlNodeBigData*>(std::addressof(node));
+            if (big_data == nullptr) { continue; }
+            big_data->CalculateContainerOffsets(container_offset_iter, head);
+        }
+        return;
+    }
+
     void ByamlBigDataNodeArray::AddNode(ByamlNodeBase *node) {
         m_node_list.PushBack(*node);
         ++m_node_count;
@@ -30,12 +49,9 @@ namespace vp::resbui {
 
     void ByamlBigDataNodeArray::Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) {
 
-        /* Set offset */
-        m_offset = static_cast<u32>(*container_offset - reinterpret_cast<uintptr_t>(head));
-
         /* Calculate sizes */
         const bool is_mono_typed        = this->CheckMonoTyped();
-        const u32 data_type_size        = (!is_mono_typed) ? vp::util::AlignUp(sizeof(vp::res::ByamlDataType) * m_node_count, alignof(u32))  : vp::util::AlignUp(sizeof(vp::res::ByamlDataType), alignof(u32));
+        const u32 data_type_size        = (!is_mono_typed) ? vp::util::AlignUp(sizeof(vp::res::ByamlDataType) * m_node_count, alignof(u32)) : vp::util::AlignUp(sizeof(vp::res::ByamlDataType), alignof(u32));
         const u32 next_container_offset = sizeof(vp::res::ResByamlContainer) + data_type_size + sizeof(u32) * m_node_count;
 
         /* Get container regions */
@@ -96,18 +112,12 @@ namespace vp::resbui {
         return;
     }
 
-    void ByamlBigDataNodeArray::CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) {
-
+    void ByamlBigDataNodeArray::CalculateContainerOffset(uintptr_t *container_offset_iter, uintptr_t head) {
+        m_cache.container_offset = static_cast<u32>(*container_offset_iter);
         /* Update container size */
         const u32 data_type_size = (!this->CheckMonoTyped()) ? vp::util::AlignUp(sizeof(vp::res::ByamlDataType) * m_node_count, alignof(u32))  : vp::util::AlignUp(sizeof(vp::res::ByamlDataType), alignof(u32));
         *container_offset_iter = vp::util::AlignUp(*container_offset_iter + sizeof(vp::res::ResByamlContainer) + data_type_size + sizeof(u32) * m_node_count, alignof(u32));
-
-        /* Calculate sub nodes */
-        for (ByamlNodeBase &node : m_node_list) {
-            if (!ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node))) { continue; }
-            reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->CalculateBigDataEndOffsets(big_data_offset_iter, container_offset_iter, head);
-        }
-
+        this->ByamlBigDataNodeContainerBase::CalculateContainerOffset(container_offset_iter, head);
         return;
     }
     
@@ -148,9 +158,6 @@ namespace vp::resbui {
     }
 
     void ByamlBigDataNodeDictionary::Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) {
-
-        /* Set offset */
-        m_offset = static_cast<u32>(*container_offset - reinterpret_cast<uintptr_t>(head));
 
         /* Calculate sizes */
         const u32 remap_size            = this->CalculateRemapSize();
@@ -235,18 +242,12 @@ namespace vp::resbui {
         return;
     }
 
-    void ByamlBigDataNodeDictionary::CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) {
-
+    void ByamlBigDataNodeDictionary::CalculateContainerOffset(uintptr_t *container_offset_iter, uintptr_t head) {
+        m_cache.container_offset = static_cast<u32>(*container_offset_iter);
         /* Update container size */
         const u32 remap_size   = this->CalculateRemapSize();
         *container_offset_iter = vp::util::AlignUp(*container_offset_iter + sizeof(vp::res::ResByamlContainer) + remap_size + sizeof(vp::res::ResByamlDictionaryPair) * m_node_count, alignof(u32));
-
-        /* Calculate sub nodes */
-        for (ByamlNodeBase &node : m_node_list) {
-            if (!ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node))) { continue; }
-            reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->CalculateBigDataEndOffsets(big_data_offset_iter, container_offset_iter, head);
-        }
-
+        this->ByamlBigDataNodeContainerBase::CalculateContainerOffset(container_offset_iter, head);
         return;
     }
     
@@ -284,12 +285,9 @@ namespace vp::resbui {
 
     void ByamlBigDataNodeHashArray::Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) {
 
-        /* Set offset */
-        m_offset = static_cast<u32>(*container_offset - reinterpret_cast<uintptr_t>(head));
-
         /* Calculate sizes */
         const u32 remap_size            = this->CalculateRemapSize();
-        const u32 next_container_offset = sizeof(vp::res::ResByamlContainer) + (m_key_size + sizeof(u32)) * m_node_count + sizeof(u8) * m_node_count + remap_size;
+        const u32 next_container_offset = sizeof(vp::res::ResByamlContainer) + (m_key_size + sizeof(u32)) * m_node_count + vp::util::AlignUp(sizeof(u8) * m_node_count, alignof(u32)) + remap_size;
 
         /* Get container regions */
         vp::res::ResByamlContainer *container       = reinterpret_cast<vp::res::ResByamlContainer*>(*container_offset);
@@ -323,7 +321,7 @@ namespace vp::resbui {
 
                 /* Write key TODO; large key support */
                 u64 node_key = node.GetHash();
-                ::memcpy(key, std::addressof(node_key), m_key_size);
+                std::memcpy(key, std::addressof(node_key), m_key_size);
 
                 /* Serialize */
                 node.Serialize(data, head);
@@ -342,10 +340,8 @@ namespace vp::resbui {
                     const u32 remap_index = static_cast<u32>(node.GetIndex());
                     reinterpret_cast<u32*>(remap_array)[i] = (!head->IsReverseEndian()) ? remap_index : vp::util::SwapEndian(remap_index);
                 }
-
                 ++i;
             }
-
         } else {
 
             /* Stream out container */
@@ -363,7 +359,7 @@ namespace vp::resbui {
 
                 /* Write key TODO; large key support */
                 u64 node_key = node.GetHash();
-                ::memcpy(key, std::addressof(node_key), m_key_size);
+                std::memcpy(key, std::addressof(node_key), m_key_size);
 
                 /* Serialize */
                 node.Serialize(data, head);
@@ -373,24 +369,17 @@ namespace vp::resbui {
 
                 ++i;
             }
-
         }
 
         return;
     }
 
-    void ByamlBigDataNodeHashArray::CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) {
-
+    void ByamlBigDataNodeHashArray::CalculateContainerOffset(uintptr_t *container_offset_iter, uintptr_t head) {
+        m_cache.container_offset = static_cast<u32>(*container_offset_iter);
         /* Update container size */
         const u32 remap_size   = this->CalculateRemapSize();
         *container_offset_iter = vp::util::AlignUp(*container_offset_iter + sizeof(vp::res::ResByamlContainer) + remap_size + (m_key_size + sizeof(u32)) * m_node_count + sizeof(u8) * m_node_count, alignof(u32));
-
-        /* Calculate sub nodes */
-        for (ByamlNodeBase &node : m_node_list) {
-            if (!ByamlNodeBigData::CheckRuntimeTypeInfoStatic(std::addressof(node))) { continue; }
-            reinterpret_cast<ByamlNodeBigData*>(std::addressof(node))->CalculateBigDataEndOffsets(big_data_offset_iter, container_offset_iter, head);
-        }
-
+        this->ByamlBigDataNodeContainerBase::CalculateContainerOffset(container_offset_iter, head);
         return;
     }
     
@@ -399,31 +388,22 @@ namespace vp::resbui {
         /* Write big data */
         *reinterpret_cast<u64*>(*big_data_offset) = (!head->IsReverseEndian()) ? m_value : vp::util::SwapEndian(m_value);
 
-        /* Set file offset */
-        m_offset = static_cast<u32>(*big_data_offset - reinterpret_cast<uintptr_t>(head));
-
         /* Advance big data offset */
         *big_data_offset = *big_data_offset + sizeof(u64);
 
         return;
     }
 
-    void ByamlBigDataNodeU64::CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) {
-
-        /* Update big data size */
+    void ByamlBigDataNodeU64::CalculateBigDataOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t head) {
+        m_cache.big_data_offset = static_cast<u32>(*big_data_offset_iter);
         *big_data_offset_iter = *big_data_offset_iter + sizeof(u64);
-
         return;
     }
-
 
     void ByamlBigDataNodeS64::Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, [[maybe_unused]] vp::res::ResByaml *head) {
 
         /* Write big data */
         *reinterpret_cast<s64*>(*big_data_offset) =  (!head->IsReverseEndian()) ? m_value : vp::util::SwapEndian(m_value);
-
-        /* Set file offset */
-        m_offset = static_cast<u32>(*big_data_offset - reinterpret_cast<uintptr_t>(head));
 
         /* Advance big data offset */
         *big_data_offset = *big_data_offset + sizeof(s64);
@@ -431,11 +411,9 @@ namespace vp::resbui {
         return;
     }
     
-    void ByamlBigDataNodeS64::CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) {
-
-        /* Update big data size */
+    void ByamlBigDataNodeS64::CalculateBigDataOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t head) {
+        m_cache.big_data_offset = static_cast<u32>(*big_data_offset_iter);
         *big_data_offset_iter = *big_data_offset_iter + sizeof(s64);
-
         return;
     }
 
@@ -444,20 +422,15 @@ namespace vp::resbui {
         /* Write big data */
         *reinterpret_cast<double*>(*big_data_offset) = (!head->IsReverseEndian()) ? m_value : vp::util::SwapEndian(m_value);
 
-        /* Set file offset */
-        m_offset = static_cast<u32>(*big_data_offset - reinterpret_cast<uintptr_t>(head));
-
         /* Advance big data offset */
         *big_data_offset = *big_data_offset + sizeof(double);
 
         return;
     }
 
-    void ByamlBigDataNodeF64::CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) {
-
-        /* Update big data size */
+    void ByamlBigDataNodeF64::CalculateBigDataOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t head) {
+        m_cache.big_data_offset = static_cast<u32>(*big_data_offset_iter);
         *big_data_offset_iter = *big_data_offset_iter + sizeof(double);
-
         return;
     }
 
@@ -481,14 +454,11 @@ namespace vp::resbui {
             data_array[1] = (!head->IsReverseEndian()) ? m_data_alignment : vp::util::SwapEndian(m_data_alignment);
         }
 
-        /* Set offset */
-        m_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(data_array) - reinterpret_cast<uintptr_t>(head));
-
         /* Write data_size */
         data_array[0] = (!head->IsReverseEndian()) ? m_data_size : vp::util::SwapEndian(m_data_size);
 
         /* Copy data */
-        ::memcpy(data_base, m_data, m_data_size);
+        std::memcpy(data_base, m_data, m_data_size);
 
         /* Advance big data offset */
         *big_data_offset = reinterpret_cast<uintptr_t>(data_base) + m_data_size;
@@ -496,16 +466,19 @@ namespace vp::resbui {
         return;
     }
 
-    void ByamlBigDataNodeBinary::CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) {
-
+    void ByamlBigDataNodeBinary::CalculateBigDataOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t head) {
+        
         /* No size if no data */
         if (m_data == nullptr || m_data_size == 0) { return; }
 
-        /* Update big data size */
+        uintptr_t iter = *big_data_offset_iter;
         if (m_data_alignment != cInvalidAlignment) {
-            *big_data_offset_iter = vp::util::AlignUp(*big_data_offset_iter + sizeof(u32) * 2, m_data_alignment) + m_data_size;
+            uintptr_t base = vp::util::AlignUp(*big_data_offset_iter + sizeof(u32) * 2, m_data_alignment) - (sizeof(u32) * 2);
+            m_cache.big_data_offset = static_cast<u32>(base);
+            *big_data_offset_iter = base + m_data_size;
         } else {
-            *big_data_offset_iter = *big_data_offset_iter + sizeof(u32) + m_data_size;
+            m_cache.big_data_offset = iter;
+            *big_data_offset_iter = iter + sizeof(u32) + m_data_size;
         }
 
         return;

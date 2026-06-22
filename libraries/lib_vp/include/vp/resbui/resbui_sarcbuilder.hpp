@@ -42,6 +42,9 @@ namespace vp::resbui {
         BufferLocation location_sfat;
         BufferLocation location_sfnt;
         BufferLocation location_file_region;
+
+        constexpr size_t GetTotalSize() const { return this->total_file_size; }
+        constexpr size_t GetMaxAlignment() const { return this->max_alignment; }
     };
 
     class SarcBuilder {

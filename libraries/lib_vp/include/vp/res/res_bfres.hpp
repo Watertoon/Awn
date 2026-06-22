@@ -25,7 +25,7 @@ namespace vp::res {
     static_assert(sizeof(ResBfresEmbedFile) == 0x10);
 
     struct ResBfres : public ResNintendoWareFileHeader {
-        const char                 *fres_name;
+        const NWString8            *fres_name;
         ResBfresModel              *model_array;
         ResNintendoWareDictionary  *model_dictionary;
         u64                         reserve0;
@@ -47,7 +47,7 @@ namespace vp::res {
         ResBfresEmbedFile          *embed_file_array;
         ResNintendoWareDictionary  *embed_file_dictionary;
         void                       *runtime_user_pointer;
-        const char                 *empty_string;
+        const NWString8            *empty_string;
         u32                         string_pool_size;
         u16                         model_count;
         u16                         reserve4;
@@ -107,7 +107,7 @@ namespace vp::res {
             return memory;
         }
 
-        const char *TryFindRelocatedString(u64 key) {
+        const NWString8 *TryFindRelocatedString(u64 key) {
 
             /* Binary search for key */
             u32  entry_index = 0;
@@ -133,7 +133,7 @@ namespace vp::res {
         void RelocateStrings(ResBfres *external_string_bfres) {
 
             /* Cache empty string */
-            const char *ext_empty_string = external_string_bfres->empty_string;
+            const NWString8 *ext_empty_string = external_string_bfres->empty_string;
 
             /* Relocate model strings */
             for (u32 i = 0; i < this->model_count; ++i) {
@@ -161,7 +161,7 @@ namespace vp::res {
                         render_info_dic->root_node.key = ext_empty_string;
                         for (u32 k = 0; k < render_info_count; ++k) {
                             ResBfresRenderInfo *render_info = std::addressof(reflection->render_info_array[k]);
-                            const char *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(render_info->name));
+                            const NWString8 *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(render_info->name));
                             render_info->name = string;
                             std::addressof(render_info_dic->root_node)[k + 1].key = string;
                         }
@@ -175,7 +175,7 @@ namespace vp::res {
                         shader_param_dic->root_node.key = ext_empty_string;
                         for (u32 k = 0; k < shader_param_count; ++k) {
                             ResBfresShaderParam *shader_param = std::addressof(reflection->shader_param_array[k]);
-                            const char *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(shader_param->name));
+                            const NWString8 *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(shader_param->name));
                             shader_param->name = string;
                             std::addressof(shader_param_dic->root_node)[k + 1].key = string;
                         }
@@ -196,7 +196,7 @@ namespace vp::res {
                     const u32 shader_param_anim_count = per_material_anim->shader_param_anim_count;
                     for (u32 k = 0; k < shader_param_anim_count; ++k) {
                         ResBfresShaderParamAnim *shader_param_anim = std::addressof(per_material_anim->shader_param_anim_array[k]);
-                        const char *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(shader_param_anim->shader_param_name));
+                        const NWString8 *string = external_string_bfres->TryFindRelocatedString(reinterpret_cast<u64>(shader_param_anim->shader_param_name));
                         shader_param_anim->shader_param_name = string;
                     }
                 }

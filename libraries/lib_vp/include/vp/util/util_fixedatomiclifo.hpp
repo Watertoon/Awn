@@ -33,63 +33,29 @@ namespace vp::util {
             constexpr FixedAtomicLifo() : m_sample_iter(1), m_count(), m_offset(), m_array() {/*...*/}
             constexpr ~FixedAtomicLifo() {/*...*/}
 
-            void PushState(T *push_state) {
+            constexpr void PushState(const T *push_state) {
 
-                /* Get old and latest state */
-                const u32 count = m_count;
-                push_state->*SampleCountMember = m_sample_iter;
-                if (count < 1) {
-                    AtomicState *state = m_array;
-                    state->state = *push_state;
-                    state->sample_count = m_sample_iter;
-                    vp::util::InterlockedIncrement(std::addressof(m_count));
-                    ++m_sample_iter;
-                    return;
-                }
-
-                /* Get old and latest state */
-                const u32 offset = m_offset;
-                u32 base_id = (offset - count) + (MaxCount + 1);
-                const u32 old_id = base_id % MaxCount;
-                AtomicState *next = (MaxCount == count) ? m_array + old_id : m_array + count;
-                next->state = *push_state;
+                /* Get tail state */
+                const u64 iter = m_sample_iter++;
+                const u32 p_offset = vp::util::InterlockedLoadAcquire(std::addressof(m_offset));
+                const u32 n_offset = (p_offset < MaxCount - 1) ? p_offset + 1 : 0;
+                AtomicState *state = m_array + n_offset;
+                /* Set wait bit */
+                state->sample_count = (iter << 1) | 1;
                 vp::util::MemoryBarrierInnerWrite();
-                next->sample_count = m_sample_iter;
-                vp::util::InterlockedIncrement(std::addressof(m_offset));
-                if (count < MaxCount) {
-                    vp::util::InterlockedIncrement(std::addressof(m_count));
+                /* Update state */
+                state->state = *push_state;
+                state->state.*SampleCountMember = iter;
+                /* Publish state */
+                vp::util::InterlockedStoreRelease(std::addressof(state->sample_count), iter << 1);
+                vp::util::InterlockedStoreRelease(std::addressof(m_offset), n_offset);
+                if (m_count < MaxCount) {
+                    vp::util::InterlockedIncrementRelease(std::addressof(m_count));
                 }
-                ++m_sample_iter;
-
                 return;
             }
 
-            void ReadState(T *state) {
-
-                /* Try read most recent state while one exists */
-                u32 count = vp::util::InterlockedLoadAcquire(std::addressof(m_count));
-                count = vp::util::Min(1u, count);
-                while (0 < count) {
-
-                    /* Copy most recent state */
-                    const u32 offset = vp::util::InterlockedLoadAcquire(std::addressof(m_offset));
-                    const u32 id = (offset + MaxCount) % MaxCount;
-                    AtomicState *at_state = m_array + id;
-                    const u64 iter = vp::util::InterlockedLoadAcquire(std::addressof(at_state->sample_count));
-                    *state = at_state->state;
-
-                    /* Check for state invalidation */
-                    vp::util::MemoryBarrierInnerRead();
-                    const u64 sampling = at_state->sample_count;
-                    if (iter == sampling) { break; }
-                    count = vp::util::InterlockedLoadAcquire(std::addressof(m_count));
-                    count = vp::util::Min(1u, count);
-                }
-
-                return;
-            }
-
-            void ReadStates(u32 *out_read_count, T *state_array, u32 state_count) {
+            constexpr void ReadStates(u32 *out_read_count, T *state_array, u32 state_count) {
 
                 /* Try read states from least to most recent */
                 u32 offset = vp::util::InterlockedLoadAcquire(std::addressof(m_offset));
@@ -107,6 +73,7 @@ namespace vp::util {
                         const u32 id = base_id % MaxCount;
                         AtomicState *at_state = m_array + id;
                         const u64 iter = vp::util::InterlockedLoadAcquire(std::addressof(at_state->sample_count));
+                        if ((iter & 1) != 0) { break; }
                         *next = at_state->state;
 
                         /* Check for state invalidation */

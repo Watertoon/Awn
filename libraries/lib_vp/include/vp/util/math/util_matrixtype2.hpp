@@ -219,7 +219,7 @@ namespace vp::util {
     template <typename Ret, typename T0, typename T1>
     constexpr Ret MatrixMultiply(const T0 &lhs_matrix, const T1 &rhs_matrix) {
 
-        using Type = typename T0::UnderlyingType;
+        //using Type = typename T0::UnderlyingType;
         if (!std::is_constant_evaluated()) {
         if constexpr (T0::cIsVectorized && T0::cIsRowMajor && T1::cIsRowMajor) {
             using Type = typename T0::UnderlyingType;
@@ -505,7 +505,7 @@ namespace vp::util {
     template <typename M, typename V>
         requires (M::cIsMatrixType && std::is_same_v<typename M::UnderlyingType, typename V::UnderlyingType>)
     constexpr M MatrixMultiplyScalarRow(const M &matrix, const V &vector) {
-        using Type = typename V::UnderlyingType;
+        //using Type = typename V::UnderlyingType;
 
         M ret = {};
         constexpr u32 cVectorMin = Min(V::cCount, M::cRowCount);
@@ -522,4 +522,57 @@ namespace vp::util {
         }
         return ret;
     }
+
+    template <typename M>
+        requires (M::cIsMatrixType)
+    constexpr M MatrixMultiplyScalar(const M &matrix, const typename M::UnderlyingType &scalar) {
+        using V = TVector<typename M::UnderlyingType, M::cColumnCount, M::cIsVectorized>;
+        M ret = {};
+        const V b = Broadcast<V>(scalar);
+        for (u32 i = 0; i < M::cRowCount; ++i) {
+            const V row = LoadRow(matrix, i);
+            const V mul = b * row;
+            StoreRow(std::addressof(ret), mul, i);
+        }
+        return ret;
+    }
+
+    template <typename V>
+        requires (V::cIsVectorType)
+    constexpr TMatrix<typename V::UnderlyingType, V::cCount, V::cCount, true, V::cIsVectorized> MatrixCovariance(const V *array, u32 count, V average) {
+        using M = TMatrix<typename V::UnderlyingType, V::cCount, V::cCount, true, V::cIsVectorized>;
+        using Type = typename V::UnderlyingType;
+        const V mean = average;
+        M cm = {};
+        for (u32 i = 0; i < count; ++i) {
+            const V temp = array[i] - mean;
+            for (u32 j = 0; j < M::cRowCount; ++j) {
+                const V b = Broadcast<V>(temp[j]);
+                const V r0 = LoadRow(cm, j);
+                const V r1 = r0 + temp * b;
+                StoreRow(std::addressof(cm), r1, j);
+            }
+        }
+        const Type recp = static_cast<Type>(1) / static_cast<Type>(count);
+        const M ret = MatrixMultiplyScalar(cm, recp);
+        return ret;
+    }
+    template <typename V>
+        requires (V::cIsVectorType)
+    constexpr TMatrix<typename V::UnderlyingType, V::cCount, V::cCount, true, V::cIsVectorized> MatrixCovariance(const V *array, u32 count) {
+        const V mean = Average(array,count);
+        return MatrixCovariance(array,count,mean);
+    }
+    //template <typename M>
+    //    requires (M::cIsMatrixType)
+    //constexpr TVector<typename M::UnderlyingType, M::cRowCount> PrincipleAxis(const M &covariance_matrix) {
+    //    using V = TVector<typename M::UnderlyingType, M::cRowCount>;
+    //    V iter = VectorConstant<V>::cUnit[1];
+    //    for () {
+    //        const V temp = MatrixMultiplyScalarRow(covariance_matrix, iter);
+    //        if (MagnitudeSquared(temp) == 0) { break; }
+    //        const V n_temp = Normalize(temp);
+    //    }
+    //    return iter;
+    //}
 }

@@ -17,6 +17,16 @@
 
 namespace vp::util {
 
+    struct NWString8 {
+        using UnderlyingType = char;
+
+        u16 length;
+        char string[];
+
+        constexpr u16 GetLength() const { return this->length; }
+        const char *GetString() const { return this->string; }
+    };
+
     template <typename T>
     concept IsChar8 = (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<char8_t>>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<u8>>);
     template <typename T>
@@ -60,7 +70,7 @@ namespace vp::util {
     namespace {
 
         template <typename T>
-            requires (IsStringOrRaw<T>)
+            requires (IsStringOrRaw<T>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<NWString8>>)
         struct UnderlyingCharTypeImpl {
             using Type = typename T::UnderlyingType;
         };
@@ -195,7 +205,7 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsStringOrRaw<T>)
+        requires (IsStringOrRaw<T>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<NWString8>>)
     using UnderlyingCharType = typename UnderlyingCharTypeImpl<T>::Type;
 
 #ifdef VP_TARGET_ARCHITECTURE_x86
@@ -248,50 +258,57 @@ namespace vp::util {
     constexpr bool StringCompare8(T0 *lhs, T1 *rhs) {
 
         /* Constexpr impl */
-        if (std::is_constant_evaluated()) {
+        if constexpr (!std::is_same_v<std::remove_cv_t<T0>,std::remove_cv_t<T1>>) {
             while (*lhs != '\0' || *rhs != '\0') { 
-                if (*lhs != *rhs) { return false; }
+                if (static_cast<char>(*lhs) != static_cast<char>(*rhs)) { return false; }
                 lhs += 1;
                 rhs += 1;
             }
             return true;
-        }
-
-        /* Handle unaligned string */
-        u32 i = 0;
-        const u32 iter = 0x20;
-        const char *l_iter = lhs;
-        const char *r_iter = rhs;
-        using v32cc = Vector32cc;
-        const v32cc zero = {};
-        for (;;) {
-
-            /* Load 32 characters, compare if equal to zero, and convert result to a mask */
-            v32cc l,r;
-            Load(std::addressof(l), l_iter);
-            Load(std::addressof(r), r_iter);
-            const v32cc result0 = CompareEqual(l, zero);
-            const v32cc result1 = CompareEqual(r, zero);
-            const v32cc result2 = CompareEqual(l, r);
-            const u32 mask0 = impl::MoveMask_8bit(result0);
-            const u32 mask1 = impl::MoveMask_8bit(result1);
-            const u32 mask2 = impl::MoveMask_8bit(result2);
-
-            /* Check if the mask has a bit set, meaning a character is non-zero */
-            if (mask0 != 0 || mask1 != 0 || mask2 != 0) {
-                const u32 offset0 = vp::util::CountRightZeroBits32(mask0) + i;
-                const u32 offset1 = vp::util::CountRightZeroBits32(mask1) + i;
-                const u32 offset2 = vp::util::CountRightOneBits32(mask2) + i;
-                return offset0 == offset1 && offset0 <= offset2;
+        } else {            
+            if (std::is_constant_evaluated()) {
+                while (*lhs != '\0' || *rhs != '\0') { 
+                    if (*lhs != *rhs) { return false; }
+                    lhs += 1;
+                    rhs += 1;
+                }
+                return true;
             }
 
-            /* Advance while mask is not empty */
-            i = i + iter;
-            l_iter = std::addressof(lhs[i]);
-            r_iter = std::addressof(rhs[i]);
-        }
+            /* Handle unaligned string */
+            u32 i = 0;
+            const u32 iter = 0x20;
+            const T0 *l_iter = lhs;
+            const T0 *r_iter = rhs;
+            using v32cc = Vector<std::remove_cv_t<T0>,0x20>;
+            const v32cc zero = {};
+            for (;;) {
 
-        return true;
+                /* Load 32 characters, compare if equal to zero, and convert result to a mask */
+                v32cc l,r;
+                Load(std::addressof(l), l_iter);
+                Load(std::addressof(r), r_iter);
+                const v32cc result0 = CompareEqual(l, zero);
+                const v32cc result1 = CompareEqual(r, zero);
+                const v32cc result2 = CompareEqual(l, r);
+                const u32 mask0 = impl::MoveMask_8bit(result0);
+                const u32 mask1 = impl::MoveMask_8bit(result1);
+                const u32 mask2 = impl::MoveMask_8bit(result2);
+
+                /* Check zero masks for a set bit, meaning a character is non-zero, or compare mask for a zero, meaning a character is not equal */
+                if (mask0 != 0 || mask1 != 0 || mask2 != 0xffff'ffff) {
+                    const u32 offset0 = vp::util::CountRightZeroBits32(mask0) + i;
+                    const u32 offset1 = vp::util::CountRightZeroBits32(mask1) + i;
+                    const u32 offset2 = vp::util::CountRightOneBits32(mask2) + i;
+                    return offset0 == offset1 && offset0 <= offset2;
+                }
+
+                /* Advance while mask is not empty */
+                i = i + iter;
+                l_iter = std::addressof(lhs[i]);
+                r_iter = std::addressof(rhs[i]);
+            }
+        }
     }
 #else
 
@@ -363,7 +380,7 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsStringOrRaw<T>)
+        requires (IsStringOrRaw<T>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<NWString8>>)
     constexpr u32 StringLength(const T *string) {
         if constexpr (IsRawString8<T>) {
             return StringLength8(string);
@@ -371,7 +388,7 @@ namespace vp::util {
             return StringLength16(string);
         } else if constexpr (IsRawString32<T>) {
             return StringLength32(string);
-        } else if constexpr (IsString<T>) {
+        } else if constexpr (IsString<T> || std::is_same_v<std::add_cv_t<T>,std::add_cv_t<NWString8>>) {
             return string->GetLength();
         } else {
             _consteval_fail();
@@ -399,25 +416,30 @@ namespace vp::util {
     }
 
     template <typename T>
-        requires (IsStringOrRaw<T>)
+        requires (IsStringOrRaw<T>) || (std::is_same_v<std::add_cv_t<T>,std::add_cv_t<NWString8>>)
     constexpr inline void GetUnderlyingString(const UnderlyingCharType<T> **out_string, u32 *out_len, T *string) {
         const UnderlyingCharType<T> *path;
-        if constexpr (IsString<T>) {
+        if constexpr (IsString<T> || std::is_same_v<std::add_cv_t<T>,std::add_cv_t<NWString8>>) {
             path = string->GetString();
         } else if constexpr (std::is_array_v<std::remove_pointer_t<T>>) {
             path = *string;
         } else {
             path = string;
         }
-        if (out_string != nullptr) {            
+        if (out_string != nullptr) {
             *out_string = path;
         }
-        if (out_len != nullptr) {            
-            const u32 path_len = vp::util::StringLength(path);
-            *out_len = path_len;
+        if (out_len != nullptr) {
+            u32 len;
+            if constexpr (IsString<T> || std::is_same_v<std::add_cv_t<T>,std::add_cv_t<NWString8>>) {
+                len = string->GetLength();
+            } else if constexpr (std::is_array_v<std::remove_pointer_t<T>>) {
+                len = StringLength(path);
+            } else {
+                len = StringLength(path);
+            }
+            *out_len = len;
         }
         return;
     }
-
-    
 }

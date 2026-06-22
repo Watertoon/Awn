@@ -19,7 +19,7 @@ namespace awn::sys {
 
     class MessageQueue {
         private:
-            u64                *m_message_buffer;
+            size_t              *m_message_buffer;
             s32                  m_max;
             s32                  m_count;
             s32                  m_offset;
@@ -38,22 +38,22 @@ namespace awn::sys {
 
             void Initialize(vp::imem::IHeap *heap, s32 max_message_count);
             void Initialize(mem::Heap *heap, s32 max_message_count);
-            constexpr void InitializeByReference(u64 *memory, s32 max_message_count);
+            constexpr void InitializeByReference(size_t *memory, s32 max_message_count);
             void Finalize();
 
-            void ReceiveMessage(u64 *out_message);
-            bool TryReceiveMessage(u64 *out_message);
-            bool TryPeekMessage(u64 *out_message);
+            void ReceiveMessage(size_t *out_message);
+            bool TryReceiveMessage(size_t *out_message);
+            bool TryPeekMessage(size_t *out_message);
 
-            void SendMessage(u64 message);
-            bool TrySendMessage(u64 message);
+            void SendMessage(size_t message);
+            bool TrySendMessage(size_t message);
 
-            void JamMessage(u64 message);
-            bool TryJamMessage(u64 message);
+            void JamMessage(size_t message);
+            bool TryJamMessage(size_t message);
     };
 
     /* Constexpr impl */
-    constexpr void MessageQueue::InitializeByReference(u64 *memory, s32 max_message_count) {
+    constexpr void MessageQueue::InitializeByReference(size_t *memory, s32 max_message_count) {
 
         /* Allocate message buffer */
         m_message_buffer = memory;

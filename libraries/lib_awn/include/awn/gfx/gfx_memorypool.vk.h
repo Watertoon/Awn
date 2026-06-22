@@ -33,6 +33,7 @@ namespace awn::gfx {
             constexpr void *GetAddress() const {
                 return this->m_rb_node.GetKey().start;
             }
+            void *GetAddress(size_t offset) const { return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this->GetAddress()) + offset); }
             constexpr bool IsValid() const {
                 return this->m_vk_device_memory != VK_NULL_HANDLE;
             }

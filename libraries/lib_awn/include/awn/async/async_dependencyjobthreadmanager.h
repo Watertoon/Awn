@@ -67,7 +67,7 @@ namespace awn::async {
     };
 
     struct DependencyJobThreadManagerInfo {
-        sys::CoreMask per_core_worker_core_mask;
+        sys::CoreMask per_core_worker_core_mask = 0x7;
         const char *name = "DepWorker";
         u64 worker_stack_size = 0x20000;
         u32 worker_priority = sys::cPriorityNormal;

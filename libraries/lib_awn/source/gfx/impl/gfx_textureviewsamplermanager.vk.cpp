@@ -57,21 +57,14 @@ namespace awn::gfx::impl {
         RESULT_ABORT_UNLESS(m_sampler_unit_array.Initialize(heap, manager_info->max_sampler_unit_count));
         RESULT_ABORT_UNLESS(m_sampler_slot_allocator.Initialize(heap, manager_info->max_sampler_unit_count));
 
-        /* Setup descriptor base */
-    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-        Context *context = Context::GetInstance();
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(context->GetVkDevice(), context->GetBindlessVkDescriptorSetLayout(), Context::cBindlessBindingBaseTexture, std::addressof(m_texture_base_offset));
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(context->GetVkDevice(), context->GetBindlessVkDescriptorSetLayout(), Context::cBindlessBindingBaseSampler, std::addressof(m_sampler_base_offset));
-    #endif
-
         return;
     }
 
     void TextureViewSamplerManager::Finalize() {
-        m_texture_view_unit_array.Finalize();
-        m_texture_slot_allocator.Finalize();
-        m_sampler_unit_array.Finalize();
         m_sampler_slot_allocator.Finalize();
+        m_sampler_unit_array.Finalize();
+        m_texture_slot_allocator.Finalize();
+        m_texture_view_unit_array.Finalize();
     }
 
     Result TextureViewSamplerManager::RegisterTextureView(DescriptorSlot *out_texture_slot, const TextureViewInfo *texture_view_info) {
@@ -86,35 +79,6 @@ namespace awn::gfx::impl {
             m_texture_slot_allocator.Free(texture_slot);
         };
 
-    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-        /* Initialize texture view unit */
-        TextureViewUnit *texture_view_unit = std::addressof(m_texture_view_unit_array[texture_slot]);
-        RESULT_TRY(gfx::impl::CreateVkImageView(std::addressof(texture_view_unit->vk_image_view), texture_view_info));
-        fail_slot_guard.Cancel();
-        texture_view_unit->key.SetFromInfo(texture_view_info);
-        texture_view_unit->reference_count = 1;
-
-        /* Cache texture descriptor */
-        Context *context = Context::GetInstance();
-        const VkDescriptorImageInfo descriptor_image_info = {
-            .imageView = texture_view_unit->vk_image_view,
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        const VkDescriptorGetInfoEXT descriptor_get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-            .data = {
-                .pSampledImage = std::addressof(descriptor_image_info)
-            },
-        }; 
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(descriptor_get_info), context->GetSeparateTextureDescriptorSize(), texture_view_unit->descriptor_memory);
-
-        /* Register texture descriptor to descriptor buffer */
-        const u32 descriptor_size = context->GetSeparateTextureDescriptorSize();
-        const size_t descriptor_offset = descriptor_size * texture_slot;
-        void *memory = DescriptorMemoryManager::GetInstance()->GetBindlessDescriptorMemory();
-        std::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + m_texture_base_offset + descriptor_offset), texture_view_unit->descriptor_memory, descriptor_size);
-    #else
         /* Create vk texture view */
         TextureViewUnit *texture_view_unit = std::addressof(m_texture_view_unit_array[texture_slot]);
         Context *context = Context::GetInstance();
@@ -146,47 +110,48 @@ namespace awn::gfx::impl {
         };
 
         /* Register descriptors */
-        DescriptorMemoryManager *desc_mgr = DescriptorMemoryManager::GetInstance();
-        const VkImageDescriptorInfoEXT image_desc = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_DESCRIPTOR_INFO_EXT,
-            .pView = std::addressof(image_view_info),
-            .layout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        VkResourceDescriptorInfoEXT resource_desc_info_array[2] = {
-            {
-                .sType = VK_STRUCTURE_TYPE_RESOURCE_DESCRIPTOR_INFO_EXT,
-                .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-                .data = {
-                    .pImage = std::addressof(image_desc),
+        if ((texture_view_info->texture->GetGpuAccessFlags() & gfx::GpuAccessFlags::Texture) == gfx::GpuAccessFlags::Texture) {
+            DescriptorMemoryManager *desc_mgr = DescriptorMemoryManager::GetInstance();
+            const VkImageDescriptorInfoEXT image_desc = {
+                .sType = VK_STRUCTURE_TYPE_IMAGE_DESCRIPTOR_INFO_EXT,
+                .pView = std::addressof(image_view_info),
+                .layout = VK_IMAGE_LAYOUT_GENERAL,
+            };
+            VkResourceDescriptorInfoEXT resource_desc_info_array[2] = {
+                {
+                    .sType = VK_STRUCTURE_TYPE_RESOURCE_DESCRIPTOR_INFO_EXT,
+                    .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .data = {
+                        .pImage = std::addressof(image_desc),
+                    },
                 },
-            },
-            {
-                .sType = VK_STRUCTURE_TYPE_RESOURCE_DESCRIPTOR_INFO_EXT,
-                .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                .data = {
-                    .pImage = std::addressof(image_desc),
+                {
+                    .sType = VK_STRUCTURE_TYPE_RESOURCE_DESCRIPTOR_INFO_EXT,
+                    .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                    .data = {
+                        .pImage = std::addressof(image_desc),
+                    },
                 },
-            },
-        };
-        VkHostAddressRangeEXT range_array[2] = {
-            {
-                .address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_mgr->GetTextureDescriptorMemory()) + texture_slot * context->GetSeparateTextureDescriptorSize()),
-                .size = context->GetSeparateTextureDescriptorSize(),
-            },
-            {
-                .address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_mgr->GetImageDescriptorMemory()) + texture_slot * context->GetImageDescriptorSize()),
-                .size = context->GetImageDescriptorSize(),
-            },
-        };
-        const VkResult vk_result1 = ::pfn_vkWriteResourceDescriptorsEXT(context->GetVkDevice(), 2, resource_desc_info_array, range_array);
-        const Result result1 = ConvertVkResultToResult(vk_result1);
-        RESULT_TRY(result1);
+            };
+            VkHostAddressRangeEXT range_array[2] = {
+                {
+                    .address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_mgr->GetTextureDescriptorMemory()) + texture_slot * impl::Context::cTargetMaxSeparateTextureDescriptorSize),
+                    .size = context->GetSeparateTextureDescriptorSize(),
+                },
+                {
+                    .address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_mgr->GetImageDescriptorMemory()) + texture_slot * impl::Context::cTargetMaxSeparateTextureDescriptorSize),
+                    .size = context->GetImageDescriptorSize(),
+                },
+            };
+            const VkResult vk_result1 = ::pfn_vkWriteResourceDescriptorsEXT(context->GetVkDevice(), 2, resource_desc_info_array, range_array);
+            const Result result1 = ConvertVkResultToResult(vk_result1);
+            RESULT_TRY(result1);
+        }
 
         fail_view_guard.Cancel();
         fail_slot_guard.Cancel();
         texture_view_unit->key.SetFromInfo(texture_view_info);
         texture_view_unit->reference_count = 1;
-    #endif
 
         *out_texture_slot = DescriptorSlot{ texture_slot, texture_view_unit->free_count, };
 
@@ -229,29 +194,6 @@ namespace awn::gfx::impl {
             m_sampler_slot_allocator.Free(sampler_slot);
         };
 
-    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-        /* Initialize sampler unit */
-        SamplerUnit *sampler_unit = std::addressof(m_sampler_unit_array[sampler_slot]);
-        RESULT_TRY(gfx::impl::CreateVkSampler(std::addressof(sampler_unit->vk_sampler), sampler_info));
-        fail_slot_guard.Cancel();
-        sampler_unit->reference_count = 1;
-
-        /* Cache Sampler descriptor */
-        Context *context = Context::GetInstance();
-        const VkSampler vk_sampler = sampler_unit->vk_sampler;
-        const VkDescriptorGetInfoEXT descriptor_get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_SAMPLER,
-            .data = std::addressof(vk_sampler),
-        }; 
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(descriptor_get_info), context->GetSeparateSamplerDescriptorSize(), sampler_unit->descriptor_memory);
-
-        /* Register sampler descriptor to descriptor buffer */        
-        const u32 descriptor_size = context->GetSeparateSamplerDescriptorSize();
-        const size_t descriptor_offset = descriptor_size * sampler_slot;
-        void *memory = DescriptorMemoryManager::GetInstance()->GetBindlessDescriptorMemory();
-        std::memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + m_sampler_base_offset + descriptor_offset), sampler_unit->descriptor_memory, descriptor_size);
-    #else
         /* Register sampler descriptor */
         Context *context = Context::GetInstance();
         DescriptorMemoryManager *desc_mgr = DescriptorMemoryManager::GetInstance();
@@ -279,7 +221,7 @@ namespace awn::gfx::impl {
         };
         VkHostAddressRangeEXT range_array[1] = {
             {
-                .address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_mgr->GetSamplerDescriptorMemory()) + sampler_slot * context->GetSeparateSamplerDescriptorSize()),
+                .address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(desc_mgr->GetSamplerDescriptorMemory()) + sampler_slot * impl::Context::cTargetMaxSeparateSamplerDescriptorSize),
                 .size = context->GetSeparateSamplerDescriptorSize(),
             },
         };
@@ -290,7 +232,6 @@ namespace awn::gfx::impl {
         fail_slot_guard.Cancel();
         SamplerUnit *sampler_unit = std::addressof(m_sampler_unit_array[sampler_slot]);
         sampler_unit->reference_count = 1;
-    #endif
 
         /* Insert into tree */
         sampler_unit->rb_node.SetKey(hash);
@@ -353,9 +294,6 @@ namespace awn::gfx::impl {
         m_sampler_rwlock.ReleaseWriteLock();
 
         /* Free sampler unit */
-    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-        gfx::impl::DestroyVkSampler(sampler_unit->vk_sampler);
-    #endif
         sampler_unit->IncrementFreeCount();
         m_sampler_slot_allocator.Free(sampler_index);
 

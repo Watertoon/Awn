@@ -23,6 +23,10 @@ namespace vp::resbui {
         u32            total_relocation_count;
         BufferLocation location_header;
         BufferLocation location_node_array;
+
+        constexpr size_t GetTotalSize() const { return this->total_size; }
+        constexpr size_t GetMaxAlignment() const { return this->max_alignment; }
+        constexpr u32 GetRelocationCount() const { return this->total_relocation_count; }
     };
 
     class NintendoWareDictionaryBuilder {

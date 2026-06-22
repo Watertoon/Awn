@@ -36,16 +36,16 @@ namespace vp::trace {
     void AbortAssert(const char *func, const char *file, u32 line, const char *expr) {
         impl::AbortImpl("Assert failed!!!", func, file, line, vp::trace::ResultAssertFailed, "Expression: %s\n", expr);
     }
-    void AbortResult(const char *func, const char *file, u32 line, u32 result, const char *expr) {
-        impl::AbortImpl("ResultSuccess", func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, vp::result::GetModule(result), vp::result::GetDescription(result));
+    void AbortResult(const char *func, const char *file, u32 line, Result result, const char *expr) {
+        impl::AbortImpl("ResultSuccess", func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, result.GetModule(), result.GetDescription());
     }
-    void AbortResultExpected(const char *expected_result, const char *func, const char *file, u32 line, u32 result, const char *expr) {
-        impl::AbortImpl(expected_result, func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, vp::result::GetModule(result), vp::result::GetDescription(result));
+    void AbortResultExpected(const char *expected_result, const char *func, const char *file, u32 line, Result result, const char *expr) {
+        impl::AbortImpl(expected_result, func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, result.GetModule(), result.GetDescription());
     }
 
     namespace impl {
         
-        void AbortImpl(const char *expected_result, const char *function_name, const char *full_file_path, u32 line_number, const u32 result, const char *format, ...) {
+        void AbortImpl(const char *expected_result, const char *function_name, const char *full_file_path, u32 line_number, const Result result, const char *format, ...) {
 
             /* Create format string */
             va_list var_args;
@@ -68,7 +68,7 @@ namespace vp::trace {
 
             /* Try to create an output file for crash data */
             char file_path[vp::util::cMaxPath] = {};
-            ::snprintf(file_path, vp::util::cMaxPath, "crash_report_module_%d_desc_%d.txt", result::GetModule(result), result::GetDescription(result));
+            ::snprintf(file_path, vp::util::cMaxPath, "crash_report_module_%d_desc_%d.txt", result.GetModule(), result.GetDescription());
             HANDLE crash_file = ::CreateFile(file_path, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 
             /* Try write output to file */
@@ -86,12 +86,13 @@ namespace vp::trace {
         }
 
         void Abort(const Result result) {
+            VP_UNUSED(result);
 
             /* Signal debugger if able */
-            Break();
+            DebugBreak();
 
             /* Kill process */
-            ::ExitProcess(result);
+            ::ExitProcess(1);
         }
     }
 }

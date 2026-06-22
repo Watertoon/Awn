@@ -26,6 +26,29 @@ namespace awn::res {
         RESULT_RETURN_SUCCESS;
     }
 
+    void FinalizeAsyncResourceManager() {
+        impl::AsyncResourceManager *mgr = impl::AsyncResourceManager::GetInstance();
+        if (mgr != nullptr) {
+            mgr->Finalize();
+            impl::AsyncResourceManager::DeleteInstance();
+        }
+        return;
+    }
+    void CalculateAsyncResourceManager() {
+        impl::AsyncResourceManager *mgr = impl::AsyncResourceManager::GetInstance();
+        if (mgr != nullptr) {
+            mgr->Calculate();
+        }
+        return;
+    }
+    void ClearAllCachesSync() {
+        impl::AsyncResourceManager *mgr = impl::AsyncResourceManager::GetInstance();
+        if (mgr != nullptr) {
+            mgr->ForceClearAllCaches();
+        }
+        return;
+    }
+
     Result LoadAsyncResourceSync(Resource **out_resource, const char *path, const AsyncResourceLoadInfo *load_info) {
         return impl::AsyncResourceManager::GetInstance()->LoadSync(out_resource, path, load_info);
     }

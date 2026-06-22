@@ -345,6 +345,22 @@ namespace vp::util {
                 return next;
             }
 
+            reference GetByIndex(u32 index) {
+                for (reference node : *this) {
+                    if (index == 0) { return node; }
+                    --index;
+                }
+                VP_UNEXPECTED_DEFAULT();
+            }
+
+            const_reference GetByIndex(u32 index) const {
+                for (const_reference node : *this) {
+                    if (index == 0) { return node; }
+                    --index;
+                }
+                VP_UNEXPECTED_DEFAULT();
+            }
+
             constexpr void ForceReset() { m_root = nullptr; }
 
             void ClearAll(auto lambda = [] ALWAYS_INLINE_LAMBDA ([[maybe_unused]] pointer obj) {/*...*/}) {

@@ -57,15 +57,15 @@ namespace vp::res {
     };
 
     struct ResBfresBone {
-        const char                *name;
+        const NWString8           *name;
         ResGfxUserData            *user_data_array;
         ResNintendoWareDictionary *user_data_dictionary;
         void                      *reserve0;
-        u16                        bone_index;
-        u16                        bone_parent_index;
-        u16                        bone_index_smooth;
-        u16                        bone_index_rigid;
-        u16                        bone_billboard_index;
+        u16                        bone_id;
+        u16                        parent_bone_id;
+        u16                        bone_id_smooth;
+        u16                        bone_id_rigid;
+        u16                        billboard_bone_id;
         u16                        user_data_count;
         union {
             u32 flags;
@@ -86,6 +86,17 @@ namespace vp::res {
         util::Float4               rotation;
         util::Float3               translation;
 
+        static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
+
+        constexpr u32 GetBoneId() const {
+            return this->bone_id;
+        }
+        constexpr u32 GetParentBoneId() const {
+            return (this->parent_bone_id != 0xffff) ? this->parent_bone_id : cInvalidEntryIndex;
+        }
+        constexpr u32 GetBillboardBoneId() const {
+            return (this->billboard_bone_id != 0xffff) ? this->billboard_bone_id : cInvalidEntryIndex;
+        }
         constexpr BfresBoneRotationType GetRotationType() const {
             return static_cast<BfresBoneRotationType>(this->rotation_type);
         }
@@ -139,22 +150,22 @@ namespace vp::res {
                 u32 scale_mode       : 2;
                 u32 reserve1         : 2;
                 u32 rotation_mode    : 3;
-                u32 reserve2         : 17;                
+                u32 reserve2         : 17;
             };
         };
         ResNintendoWareDictionary *bone_dictionary;
         ResBfresBone              *bone_array;
-        u16                       *skin_bone_index_array;
+        u16                       *skin_bone_id_array;
         util::FloatColumnMajor4x3 *inverse_transformation_matrix_array;
         void                      *runtime_user_pointer;
-        u16                       *mirrored_bone_index_array;
+        u16                       *mirrored_bone_id_array;
         u16                        bone_count;
         u16                        bone_count_smooth;
         u16                        bone_count_rigid;
         u16                        reserve3;
 
         static constexpr u32 cMagic = util::TCharCode32("FSKL");
-        static constexpr u32 cInvalidBoneIndex = 0xffff'ffff;
+        static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
 
         constexpr BfresSkeletonMirrorAxes GetMirrorAxes() const {
             return static_cast<BfresSkeletonMirrorAxes>(this->mirror_axes);
@@ -166,32 +177,43 @@ namespace vp::res {
             return static_cast<BfresSkeletonRotationMode>(this->rotation_mode);
         }
 
-        constexpr const u16 *GetSmoothBoneIndexArray() const {
-            return this->skin_bone_index_array;
+        constexpr bool IsMirroredBone(u32 bone_id) const {
+            if (this->mirrored_bone_id_array == nullptr) { return false; }
+            if (this->bone_count <= bone_id) { return false; }
+            return this->mirrored_bone_id_array[bone_id] < 0x8000;
         }
 
-        constexpr const u16 *GetRigidBoneIndexArray() const {
-            return std::addressof(this->skin_bone_index_array[this->bone_count_smooth]);
+        constexpr const u16 *GetSmoothBoneIdArray() const {
+            return this->skin_bone_id_array;
         }
 
-        constexpr u32 FindBoneIndexAtEndOfBranch(u32 bone_index) const {
+        constexpr const u16 *GetRigidBoneIdArray() const {
+            return std::addressof(this->skin_bone_id_array[this->bone_count_smooth]);
+        }
+
+        constexpr u32 FindBoneIdAtEndOfBranch(u32 bone_id) const {
             const u32 count = static_cast<u32>(this->bone_count);
-            u32 parent_bone = (bone_index == 0) ? cInvalidBoneIndex : static_cast<u32>(this->bone_array[bone_index].bone_parent_index);
-            u32 end_bone = (count < bone_index + 1) ? bone_index + 1 : count;
-            for (; bone_index < count; ++bone_index) {
-                const u32 next_parent_iter = static_cast<u32>(this->bone_array[bone_index + 1].bone_parent_index);
+            if (count <= bone_id) { return cInvalidEntryIndex; }
+            u32 parent_bone = (bone_id == 0) ? cInvalidEntryIndex : static_cast<u32>(this->bone_array[bone_id].parent_bone_id);
+            u32 end_bone = (count < bone_id + 1) ? bone_id + 1 : count;
+            for (; bone_id < count; ++bone_id) {
+                const u32 next_parent_iter = static_cast<u32>(this->bone_array[bone_id + 1].parent_bone_id);
                 if (parent_bone < next_parent_iter) { return next_parent_iter; }
             }
             return end_bone;
         }
 
-        constexpr u32 TryGetBoneIndex(const char *bone_name) const {
-            if (bone_dictionary == nullptr) { return cInvalidBoneIndex; }
+        constexpr u32 TryGetBoneId(const char *bone_name) const {
+            if (bone_dictionary == nullptr) { return cInvalidEntryIndex; }
             const u32 entry_id = bone_dictionary->TryGetEntryIndexByKey(bone_name);
             return entry_id;
         }
 
-        constexpr ResBfresBone *TryGetBone(const char *bone_name) {
+        constexpr ResBfresBone *GetBoneById(u32 bone_id) {
+            if (this->bone_count <= bone_id) { return nullptr; }
+            return std::addressof(bone_array[bone_id]);
+        }
+        constexpr ResBfresBone *GetBoneByName(const char *bone_name) {
             if (bone_dictionary == nullptr) { return nullptr; }
             const u32 entry_id = bone_dictionary->TryGetEntryIndexByKey(bone_name);
             if (entry_id == ResNintendoWareDictionary::cInvalidEntryIndex) { return nullptr; }

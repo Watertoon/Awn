@@ -28,13 +28,13 @@ namespace vp::res {
                 u32 reserve1        : 29;
             };
         };
-        const char                 *name;
-        const char                 *reserve2;
+        const NWString8            *name;
+        const NWString8            *reserve2;
         ResBfresModel              *runtime_bound_model;
         u16                        *fast_bind_table;
         ResBfresAnimCurve          *anim_curve_array;
         u32                        *default_result_array;
-        const char                **bone_name_array;
+        const NWString8           **bone_name_array;
         ResGfxUserData             *user_data_array;
         ResNintendoWareDictionary  *user_data_dictionary;
         u32                         frame_count;

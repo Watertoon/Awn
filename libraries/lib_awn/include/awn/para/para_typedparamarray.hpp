@@ -42,6 +42,9 @@ namespace awn::para {
             }
 
             virtual void InitializeBgyml(mem::Heap *heap, Document *document, vp::res::ByamlIterator byaml_iterator) override;
+#ifdef VP_ENABLE_LIBYAML
+            virtual void InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) override;
+#endif
             virtual void InitializeDefaults(mem::Heap *heap, bool is_unlink_parent) override;
 
             virtual void Finalize() override;

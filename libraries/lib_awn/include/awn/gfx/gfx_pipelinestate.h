@@ -71,7 +71,7 @@ namespace awn::gfx {
         u8                 is_enable_multi_blend;
         u8                 is_enable_logic_op;
         vp::util::Color4f  blend_constant_color;
-        BlendTargetState  *blend_target_state_array;
+        const BlendTargetState  *blend_target_state_array;
 
         constexpr void SetDefaults() {
             this->blend_target_state_count = 0;
@@ -82,7 +82,7 @@ namespace awn::gfx {
             this->blend_target_state_array = nullptr;
         }
 
-        constexpr void SetBlendTargetStateArray(BlendTargetState *state_array, u8 count) {
+        constexpr void SetBlendTargetStateArray(const BlendTargetState *state_array, u8 count) {
             this->blend_target_state_count = count;
             this->blend_target_state_array = state_array;
         }
@@ -278,10 +278,10 @@ namespace awn::gfx {
     };
 
     struct VertexState {
-        u32                   vertex_attribute_state_count;
-        u32                   vertex_buffer_state_count;
-        VertexAttributeState *vertex_attribute_state_array;
-        VertexBufferState    *vertex_buffer_state_array;
+        u32 vertex_attribute_state_count;
+        u32 vertex_buffer_state_count;
+        const VertexAttributeState *vertex_attribute_state_array;
+        const VertexBufferState *vertex_buffer_state_array;
 
         constexpr void SetDefaults() {
             this->vertex_attribute_state_count = 0;
@@ -290,22 +290,22 @@ namespace awn::gfx {
             this->vertex_buffer_state_array = nullptr;
         }
 
-        constexpr void SetVertexAttributeStateArray(VertexAttributeState *vertex_attribute_state_array, u32 count) {
+        constexpr void SetVertexAttributeStateArray(const VertexAttributeState *vertex_attribute_state_array, u32 count) {
             this->vertex_attribute_state_count = count;
             this->vertex_attribute_state_array = vertex_attribute_state_array;
         }
-        constexpr void SetVertexBufferStateArray(VertexBufferState *vertex_buffer_state_array, u32 count) {
+        constexpr void SetVertexBufferStateArray(const VertexBufferState *vertex_buffer_state_array, u32 count) {
             this->vertex_buffer_state_count = count;
             this->vertex_buffer_state_array = vertex_buffer_state_array;
         }
 
-        void ResolveInterfaceSlots(Shader *shader) {
-            for (u32 i = 0; i < this->vertex_attribute_state_count; ++i) {
-                const char *input_name = this->vertex_attribute_state_array[i].name;
-                if (input_name == nullptr || *input_name == '\0') { continue; }
-                this->vertex_attribute_state_array[i].interface_slot = shader->GetInterfaceSlot(ShaderStage::Vertex, ShaderInterfaceType::InputAttribute, input_name);
-            }
-        }
+        //void ResolveInterfaceSlots(Shader *shader) {
+        //    for (u32 i = 0; i < this->vertex_attribute_state_count; ++i) {
+        //        const char *input_name = this->vertex_attribute_state_array[i].name;
+        //        if (input_name == nullptr || *input_name == '\0') { continue; }
+        //        this->vertex_attribute_state_array[i].interface_slot = shader->GetInterfaceSlot(ShaderStage::Vertex, ShaderInterfaceType::InputAttribute, input_name);
+        //    }
+        //}
     };
 
     struct ViewportState {

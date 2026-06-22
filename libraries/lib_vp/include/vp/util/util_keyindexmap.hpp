@@ -30,6 +30,8 @@ namespace vp::util {
                 IndexType index;
             };
         public:
+            using MapType = HashMap<Key, &Key::hash>;
+        public:
             class Iterator {
                 private:
                     const KeyIndexMap *m_map;
@@ -63,7 +65,7 @@ namespace vp::util {
                     }
             };
         private:
-            HashMap<Key, &Key::hash> m_hash_map;
+            MapType m_hash_map;
             IndexType *m_index_array;
         public:
             constexpr  KeyIndexMap() : m_hash_map(), m_index_array() {/*...*/}
@@ -112,10 +114,16 @@ namespace vp::util {
                 m_index_array[id] = index;
                 return;
             }
+            constexpr void ReplaceEntry(KeyType hash, IndexType index) {
+                const u32 id = m_hash_map.TryGetIndexByHash(hash);
+                VP_ASSERT(id != MapType::cInvalidEntryIndex);
+                m_index_array[id] = index;
+                return;
+            }
 
             constexpr IndexType TryGetIndexByKey(KeyType hash) const {
                 const u32 id = m_hash_map.TryGetIndexByHash(hash);
-                return (id != HashMap<Key, &Key::hash>::cInvalidEntryIndex) ? this->GetIndexByHashIndex(id) : cInvalidEntryIndex;
+                return (id != MapType::cInvalidEntryIndex) ? this->GetIndexByHashIndex(id) : cInvalidEntryIndex;
             }
 
             constexpr void Clear() { m_hash_map.Clear(); }

@@ -26,7 +26,7 @@ namespace awn::gfx {
 
                 /* Initialize buffers */
                 m_size = reqs.size;
-                m_buffer_array.Initialize(heap, buffer_count);
+                RESULT_TRY(m_buffer_array.Initialize(heap, buffer_count));
                 auto fail_guard = SCOPE_GUARD {
                     this->Finalize();
                 };

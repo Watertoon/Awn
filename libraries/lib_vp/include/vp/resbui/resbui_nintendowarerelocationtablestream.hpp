@@ -34,9 +34,9 @@ namespace vp::resbui {
             void SetStream(void *file_head, void *table_location, u32 max_sections, u32 max_entries);
             void EndStream();
 
-            Result StartSection(u32 region_offset, u32 region_size);
-            Result AddEntry(void *region_offset_ptr, u16 array_count, u8 relocation_count, u8 array_stride);
-            Result AddEntry(u32 region_offset, u16 array_count, u8 relocation_count, u8 array_stride);
+            void StartSection(u32 region_offset, u32 region_size);
+            void AddEntry(void *region_offset_ptr, u16 array_count, u8 relocation_count, u8 array_stride);
+            void AddEntry(u32 region_offset, u16 array_count, u8 relocation_count, u8 array_stride);
 
             static constexpr size_t CalculateRelocationTableSize(u32 max_sections, u32 max_entries) {
                 return sizeof(vp::res::ResNintendoWareRelocationTable) + sizeof(vp::res::ResNintendoWareRelocationTable::ResSection) * max_sections + sizeof(vp::res::ResNintendoWareRelocationTable::ResEntry) * max_entries;

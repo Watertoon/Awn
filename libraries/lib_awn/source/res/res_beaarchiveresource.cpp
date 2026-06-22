@@ -71,7 +71,7 @@ namespace awn::res {
 		if (m_bea->file_count <= index)     { return false; }
 
 		out_directory_entry->archive_entry_index = index;
-		out_directory_entry->file_path           = m_bea->GetFilePathByIndex(index) + 2;
+		out_directory_entry->file_path           = m_bea->GetFilePathByIndex(index)->GetString();
 
 		return true;
 	}

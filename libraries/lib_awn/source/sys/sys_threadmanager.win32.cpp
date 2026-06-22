@@ -35,8 +35,8 @@ namespace awn::sys {
     void ThreadManager::Initialize(mem::Heap *heap) {
 
         /* Allocate tls slot for the current service thread */
-        m_current_thread_tls_slot = ::TlsAlloc();
-        VP_ASSERT(m_current_thread_tls_slot != TLS_OUT_OF_INDEXES);
+        //m_current_thread_tls_slot = ::TlsAlloc();
+        //VP_ASSERT(m_current_thread_tls_slot != TLS_OUT_OF_INDEXES);
 
         /* Initialize the main thread */
         this->InitializeMainThread(heap);
@@ -64,8 +64,10 @@ namespace awn::sys {
         thread->m_thread_manager_list_node.Unlink();
     }
 
+    thread_local ThreadBase *tCurrentThread = nullptr;
+
     ThreadBase *ThreadManager::GetCurrentThread() {
-        return reinterpret_cast<ThreadBase*>(::TlsGetValue(m_current_thread_tls_slot));
+        return tCurrentThread;
     }
 
     bool ThreadManager::IsThreadValid(sys::ThreadBase *thread) {
@@ -77,8 +79,7 @@ namespace awn::sys {
     }
 
     void ThreadManager::SetCurrentThread(ThreadBase *thread) {
-        const bool result = ::TlsSetValue(m_current_thread_tls_slot, reinterpret_cast<void*>(thread));
-        VP_ASSERT(result);
+        tCurrentThread = thread;
     }
 
     bool ThreadManager::IsMainThread() { return this->GetCurrentThread() == reinterpret_cast<ThreadBase*>(std::addressof(m_main_thread)); }

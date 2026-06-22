@@ -725,15 +725,19 @@ namespace awn::res::impl {
     }
 
     void AsyncResourceManager::CancelLoadTasks() {
-        m_thread_control->CancelPriorityLevel(0);
-        m_thread_control->CancelPriorityLevel(1);
-        m_thread_control->CancelPriorityLevel(2);
-        m_thread_memory->CancelPriorityLevel(1);
-        m_thread_memory->CancelPriorityLevel(2);
-        m_thread_memory->CancelPriorityLevel(3);
-        m_thread_memory->CancelPriorityLevel(4);
-        m_thread_memory->CancelPriorityLevel(5);
-        m_thread_memory->CancelPriorityLevel(6);
+        if (m_thread_control != nullptr) {            
+            m_thread_control->CancelPriorityLevel(0);
+            m_thread_control->CancelPriorityLevel(1);
+            m_thread_control->CancelPriorityLevel(2);
+        }
+        if (m_thread_memory != nullptr) {            
+            m_thread_memory->CancelPriorityLevel(1);
+            m_thread_memory->CancelPriorityLevel(2);
+            m_thread_memory->CancelPriorityLevel(3);
+            m_thread_memory->CancelPriorityLevel(4);
+            m_thread_memory->CancelPriorityLevel(5);
+            m_thread_memory->CancelPriorityLevel(6);
+        }
         m_queue_load.CancelPriorityLevel(0);
         m_queue_load.CancelPriorityLevel(1);
         m_queue_load.CancelPriorityLevel(2);
@@ -886,7 +890,7 @@ namespace awn::res::impl {
         }
 
         /* Initialize system tasks */
-        m_task_for_calculate                = new (system_heap, alignof(LoadTask)) LoadTask();
+        m_task_for_calculate                = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
         m_task_for_load_sync                = new (system_heap, alignof(LoadTask)) LoadTask();
         m_task_for_clear_cache_for_allocate = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
         m_task_for_force_reserve_unload     = new (system_heap, alignof(async::AsyncTask)) async::AsyncTask();
@@ -925,10 +929,16 @@ namespace awn::res::impl {
         if (m_system_heap == nullptr) { return; }
 
         /* Cancel all tasks */
-        this->SuspendControlThread();
-        this->SuspendMemoryThread();
+        if (m_thread_control != nullptr) {
+            this->SuspendControlThread();
+        }
+        if (m_thread_memory != nullptr) {
+            this->SuspendMemoryThread();
+        }
         this->SuspendLoadThreads();
-        this->CancelLoadTasks();
+        if (m_thread_control != nullptr && m_thread_memory != nullptr) {
+            this->CancelLoadTasks();
+        }
 
         /* Free request queues*/
         m_unload_id_ring.Finalize();
@@ -942,9 +952,15 @@ namespace awn::res::impl {
 
         /* Resume threads for force clear cache */
         this->ResumeLoadThreads();
-        this->ResumeMemoryThread();
-        this->ResumeControlThread();
-        this->ForceClearAllCaches();
+        if (m_thread_memory != nullptr) {
+            this->ResumeMemoryThread();
+        }
+        if (m_thread_control != nullptr) {
+            this->ResumeControlThread();
+        }
+        if (m_task_for_force_reserve_unload != nullptr && m_task_for_force_clear_all_caches != nullptr) {            
+            this->ForceClearAllCaches();
+        }
 
         /* Finalize decompressor manager */
         m_decompressor_manager.Finalize();

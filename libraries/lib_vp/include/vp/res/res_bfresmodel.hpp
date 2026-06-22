@@ -20,8 +20,8 @@ namespace vp::res {
     struct ResBfresModel {
         u32                        magic;
         u32                        reserve0;
-        const char                *model_name;
-        const char                *reserve1;
+        const NWString8           *name;
+        const NWString8           *reserve1;
         ResBfresSkeleton          *skeleton;
         ResBfresVertex            *vertex_array;
         ResBfresShape             *shape_array;

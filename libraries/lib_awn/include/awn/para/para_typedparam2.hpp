@@ -105,19 +105,19 @@
             virtual constexpr const char *GetClassName() override { return cClassName; } \
         public: \
             virtual Result LoopProperties(PropertyLoopFunction *loop_function) override { \
-                this->BaseType::LoopProperties(loop_function); \
+                RESULT_TRY(this->BaseType::LoopProperties(loop_function)); \
                 const ::vp::Result result = this->TypedParam::LoopPropertiesImpl<LayoutType,0,cLayoutCount>(std::addressof(m_layout), m_is_non_default_array, loop_function); \
                 RESULT_TRY(result); \
                 RESULT_RETURN_SUCCESS; \
             } \
             virtual Result LoopEmbeds(EmbeddedLoopFunction *loop_function) override { \
-                this->BaseType::LoopEmbeds(loop_function); \
+                RESULT_TRY(this->BaseType::LoopEmbeds(loop_function)); \
                 const ::vp::Result result = this->TypedParam::LoopEmbedsImpl<LayoutType,0,cLayoutCount>(std::addressof(m_layout), m_is_non_default_array, loop_function); \
                 RESULT_TRY(result); \
                 RESULT_RETURN_SUCCESS; \
             } \
             virtual Result LoopComposites(CompositeLoopFunction *loop_function) override { \
-                this->BaseType::LoopComposites(loop_function); \
+                RESULT_TRY(this->BaseType::LoopComposites(loop_function)); \
                 const ::vp::Result result = this->TypedParam::LoopCompositesImpl<LayoutType,0,cLayoutCount>(std::addressof(m_layout), m_is_non_default_array, loop_function); \
                 RESULT_TRY(result); \
                 RESULT_RETURN_SUCCESS; \
@@ -232,6 +232,9 @@ namespace awn::para {
             virtual constexpr ~Composite() {/*...*/}
 
             virtual void InitializeBgyml(mem::Heap *heap, Document *document, vp::res::ByamlIterator byaml_iterator) = 0;
+#ifdef VP_ENABLE_LIBYAML
+            virtual void InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) = 0;
+#endif
             virtual void InitializeDefaults(mem::Heap *heap, bool is_force_unlink_parents) = 0;
             virtual void Finalize() {/*...*/}
 
@@ -383,6 +386,9 @@ namespace awn::para {
             virtual ~TypedParam() override {/*...*/}
 
             virtual void InitializeBgyml(mem::Heap *heap, Document *document, vp::res::ByamlIterator byaml_iterator) override;
+#ifdef VP_ENABLE_LIBYAML
+            virtual void InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) override;
+#endif
             virtual void InitializeDefaults(mem::Heap *heap, bool is_force_unlink_parents) override;
 
             virtual void Finalize() override;

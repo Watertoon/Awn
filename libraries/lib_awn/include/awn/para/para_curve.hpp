@@ -34,7 +34,7 @@ namespace awn::para {
 
     struct CurveInfo {
         u8 curve_type;
-        u8 data_count;
+        s32 data_count;
     };
 
     template <typename T>
@@ -45,16 +45,16 @@ namespace awn::para {
         if (curve_info.data_count <= 0) { return 0.0; }
 
         /* Calculate index (1 float per entry) */
-        const s32 real_count  = curve_info.data_count - 1;
-        const T   curve_point = static_cast<T>(real_count) * x;
-        const s32 curve_index = static_cast<u32>(curve_point);
+        const s32 end_id  = curve_info.data_count - 1;
+        const T offset = static_cast<T>(end_id) * x;
+        const s32 c_id = static_cast<s32>(offset);
 
-        /* Check if over real count */
-        if (real_count <= curve_index) { return curve_data[real_count]; }
+        /* Bounds check */
+        if (end_id <= c_id) { return curve_data[end_id]; }
 
         /* Interpolate linear curve */
-        const T data   = curve_data[curve_index];
-        const T result = data + (curve_point - static_cast<T>(curve_index)) * (curve_data[curve_index + 1] - data);
+        const T value = curve_data[c_id];
+        const T result = value + (offset - static_cast<T>(c_id)) * (curve_data[c_id + 1] - value);
 
         return result;
     }
@@ -70,20 +70,20 @@ namespace awn::para {
         if (x < 0.0) { return curve_data[0]; }
 
         /* Calculate index (2 floats per entry) */
-        const s32 real_count  = (curve_info.data_count / 2) - 1;
-        const T   curve_point = static_cast<T>(real_count) * x;
-        const s32 curve_index = static_cast<u32>(curve_point);
-        
-        /* Check if over real count */
-        if (real_count <= curve_index) { return curve_data[real_count * 2]; }
+        const s32 end_id  = (curve_info.data_count / 2) - 1;
+        const T   offset = static_cast<T>(end_id) * x;
+        const s32 c_id = static_cast<s32>(offset);
+
+        /* Bounds check */
+        if (end_id <= c_id) { return curve_data[end_id * 2]; }
 
         /* Interpolate hermite curve */
-        const T *data_offset = std::addressof(curve_data[curve_index * 2]);
-        const T round        = curve_point - static_cast<T>(static_cast<s32>(curve_point));
-        const T _2a_sq       = round * (round + round);
-        const T _3a_sq       = 3.0 * round * round;
-        const T _a_sq3       = round * round * round;
-        const T result       = (((round * _2a_sq) - _3a_sq) + 1.0) * data_offset[0] + (_3a_sq - (round * _2a_sq)) * data_offset[2] + (round + (_a_sq3 - _2a_sq)) * data_offset[1] + (_a_sq3 - (round * round)) * data_offset[0];
+        const T *data_offset = std::addressof(curve_data[c_id * 2]);
+        const T round  = offset - static_cast<T>(static_cast<s32>(offset));
+        const T _2a_sq = round * (round + round);
+        const T _3a_sq = 3.0 * round * round;
+        const T _a_sq3 = round * round * round;
+        const T result = (((round * _2a_sq) - _3a_sq) + 1.0) * data_offset[0] + (_3a_sq - (round * _2a_sq)) * data_offset[2] + (round + (_a_sq3 - _2a_sq)) * data_offset[1] + (_a_sq3 - (round * round)) * data_offset[0];
 
         return result;
     }
@@ -96,8 +96,8 @@ namespace awn::para {
         VP_ASSERT(0 < curve_info.data_count);
 
         /* Calculate index */
-        const float min_x = vp::util::Min(x, 1.0f);
-        const float adj_x = (0.0 <= x) ? min_x : 0.0;
+        const T min_x = vp::util::Min(x, 1.0);
+        const T adj_x = (0.0 <= x) ? min_x : 0.0;
         const s32   index = adj_x * (curve_info.data_count - 1);
 
         /* Get step */
@@ -248,7 +248,7 @@ namespace awn::para {
         for (s32 frame_i = (real_count < 2) ? 1 : real_count; frame_i != 0; --frame_i) {
 
             /* Search frame */
-            if (data_offset[0] <= x) { data_offset = std::addressof(data_offset[3]); continue; }
+            if (data_offset[0] <= x) { data_offset = std::addressof(data_offset[2]); continue; }
 
             /* Get step */
             return data_offset[1];
@@ -345,14 +345,14 @@ namespace awn::para {
             static constexpr bool cIsCustomTypeForPropertyAccessor = true;
         private:
             CurveType  m_curve_type;
-            u8         m_data_count;
+            u32        m_data_count;
             T          m_max_x;
             T         *m_array;
         public:
             constexpr Curve() : m_curve_type(), m_data_count(), m_max_x(), m_array() {/*...*/}
             constexpr ~Curve() {/*...*/}
 
-            bool LoadByamlData(vp::res::ByamlIterator iter, vp::res::ByamlData data) {
+            bool LoadByamlIterator(vp::res::ByamlIterator iter) {
 
                 /* Parse type */
                 {
@@ -375,16 +375,39 @@ namespace awn::para {
                 }
 
                 /* Get array */
-                u32 data_count = 0;
-                m_array = iter.GetMonoArray<T>(std::addressof(data_count));
-
-                /* Ensure data length */
-                if (0xff < data_count) { return false; }
-                m_data_count = data_count;
+                m_array = iter.GetMonoArray<T>(std::addressof(m_data_count));
 
                 return m_array != nullptr;
             }
+#ifdef VP_ENABLE_LIBYAML
+            bool LoadYamlIterator(vp::res::YamlIterator iter) {
 
+                /* Parse type */
+                {
+                    const char *curve_type_name = "";
+                    const bool result0 = iter.TryGetStringByKey(std::addressof(curve_type_name), "Type");
+                    if (!result0 || !iter.TryGetStringByKey(std::addressof(curve_type_name), "type")) { return false; }
+                    const bool result1 = vp::util::TEnumTraits<CurveType>::GetValueByString(std::addressof(m_curve_type), curve_type_name);
+                    if (!result1) { return false; }
+                }
+
+                /* Get max x */
+                m_max_x = 1.0;
+                iter.TryGetValueByKey<T>(std::addressof(m_max_x), "MaxX");
+
+                /* Get data iter */
+                vp::res::YamlIterator data_iter;
+                {
+                    const bool result1 = iter.TryGetIteratorByKey(std::addressof(data_iter), "Data");
+                    if (!result1 || !iter.TryGetIteratorByKey(std::addressof(data_iter), "data")) { return false; }
+                }
+
+                /* Get array */
+                m_array = iter.GetMonoArray<T>(std::addressof(m_data_count));
+
+                return m_array != nullptr;
+            }
+#endif
             constexpr T Evaluate(T x) {
 
                 /* Setup curve info */

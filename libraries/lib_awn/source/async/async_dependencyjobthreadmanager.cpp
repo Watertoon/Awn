@@ -133,15 +133,17 @@ namespace awn::async {
             .stack_size = info->worker_stack_size,
             .priority = info->worker_priority,
         };
-        for (const u32 core_id : core_connection) {
-            for (DependencyJobThread &thread : m_thread_array) {
-                thread_name.Format("%s_Core%d", info->name, core_id);
-                const sys::CoreMask bit = 1ull << core_id;
-                RESULT_TRY(thread.Initialize(heap, std::addressof(thread_info)));
-                thread.SetCoreMask(bit);
-                thread.StartThread();
-                m_all_core_mask |= bit;
-            }
+        auto iter = core_connection.begin();
+        auto end = core_connection.end();
+        for (DependencyJobThread &thread : m_thread_array) {
+            const u32 core_id = *iter;
+            ++iter;
+            thread_name.Format("%s_Core%d", info->name, core_id);
+            const sys::CoreMask bit = 1ull << core_id;
+            RESULT_TRY(thread.Initialize(heap, std::addressof(thread_info)));
+            thread.SetCoreMask(bit);
+            thread.StartThread();
+            m_all_core_mask |= bit;
         }
 
         fail_guard0.Cancel();

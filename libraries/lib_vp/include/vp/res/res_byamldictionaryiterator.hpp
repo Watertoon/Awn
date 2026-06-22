@@ -200,12 +200,19 @@ namespace vp::res {
             constexpr ByamlHashAccessor(const ResByamlContainer *container, u32 stride, u32 index) : m_hash_array(reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(container) + (stride + sizeof(u32)) * index + sizeof(u32))), m_stride(stride) {/*...*/}
             constexpr ~ByamlHashAccessor() {/*...*/}
 
-            ALWAYS_INLINE u64 GetHash(u32 is_reverse_endian) const {
+            bool GetHash(u32 *out_hash, u32 max_size, u32 is_reverse_endian) const {
+                if (max_size * sizeof(u32) < m_stride) { return false; }
+                if (m_stride == sizeof(u64)) { *reinterpret_cast<u64*>(out_hash) = (is_reverse_endian == false) ? *reinterpret_cast<const u64*>(m_hash_array) : vp::util::SwapEndian(*reinterpret_cast<const u64*>(m_hash_array)); }
+                else if (m_stride == sizeof(u32)) { *out_hash = (is_reverse_endian == false) ? *m_hash_array : vp::util::SwapEndian(*m_hash_array); }
+                else { std::memcpy(out_hash, m_hash_array, m_stride); }
+                return true;
+            }
+            u64 GetHash(u32 is_reverse_endian) const {
                 if (m_stride == sizeof(u64)) { return (is_reverse_endian == false) ? *reinterpret_cast<const u64*>(m_hash_array) : vp::util::SwapEndian(*reinterpret_cast<const u64*>(m_hash_array)); }
                 if (m_stride == sizeof(u32)) { return (is_reverse_endian == false) ? *m_hash_array : vp::util::SwapEndian(*m_hash_array); }
                 return 0;
             }
-            ALWAYS_INLINE u32 GetValue(u32 is_reverse_endian) const {
+            u32 GetValue(u32 is_reverse_endian) const {
                 const u32 *value_data = reinterpret_cast<const u32*>(reinterpret_cast<uintptr_t>(m_hash_array) + m_stride);
                 return (is_reverse_endian == false) ? *value_data : vp::util::SwapEndian(*value_data);
             }

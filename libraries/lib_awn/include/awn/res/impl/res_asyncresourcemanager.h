@@ -107,7 +107,7 @@ namespace awn::res::impl {
             u32                            m_clear_cache_tick_count;
             u32                            m_clear_cache_tick_counter;
 
-            LoadTask                      *m_task_for_calculate;
+            async::AsyncTask              *m_task_for_calculate;
             LoadTask                      *m_task_for_load_sync;
             async::AsyncTask              *m_task_for_clear_cache_for_allocate;
             async::AsyncTask              *m_task_for_force_reserve_unload;

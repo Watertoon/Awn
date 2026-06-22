@@ -21,3 +21,4 @@
 #include <vp/result/result_image.h>
 #include <vp/result/result_util.h>
 #include <vp/result/result_resbui.h>
+#include <vp/result/result_res.h>

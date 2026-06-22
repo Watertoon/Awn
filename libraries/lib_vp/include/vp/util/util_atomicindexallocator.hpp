@@ -20,7 +20,7 @@ namespace vp::util {
             u32 m_max_count;
             T *m_id_array;
         public:
-            constexpr AtomicIndexAllocator() : m_next_id(), m_max_count(), m_id_array() {/*...*/}
+            constexpr AtomicIndexAllocator() : m_next_id(cInvalidEntryIndex), m_max_count(), m_id_array() {/*...*/}
             constexpr ~AtomicIndexAllocator() {/*...*/}
 
             Result Initialize(imem::IHeap *heap, u32 max_index_count) {
@@ -33,47 +33,28 @@ namespace vp::util {
                 T *handle_array = new (heap, alignof(T)) T[max_index_count];
                 RESULT_RETURN_UNLESS(handle_array != nullptr, ResultNoMemory);
 
-                /* Initialize allocator */
-                for (u32 i = 0; i < max_index_count - 1; ++i) {
-                    handle_array[i] = i + 1;
-                }
-                handle_array[max_index_count - 1] = cInvalidEntryIndex;
-
                 /* Set max */
-                m_next_id = 0;
                 m_max_count = max_index_count;
                 m_id_array = handle_array;
+                this->Clear();
 
                 RESULT_RETURN_SUCCESS;
             }
 
             void Finalize() {
-
-                m_next_id = cInvalidEntryIndex;
-                m_max_count  = 0;
                 if (m_id_array != 0) {
                     delete [] m_id_array;
                     m_id_array = nullptr;
+                    m_next_id = cInvalidEntryIndex;
+                    m_max_count  = 0;
                 }
-
                 return;
             }
 
             constexpr void SetMemory(T *array, u32 count) {
-
-                /* Initialize allocator */
-                if (0 < count) {                    
-                    for (u32 i = 0; i < count - 1; ++i) {
-                        array[i] = i + 1;
-                    }
-                    array[count - 1] = cInvalidEntryIndex;
-                }
-
-                /* Set max */
-                m_next_id = 0;
+                m_next_id = cInvalidEntryIndex;
                 m_max_count = count;
                 m_id_array = array;
-
                 return;
             }
         public:
@@ -123,6 +104,7 @@ namespace vp::util {
                 return;
             }
 
+            constexpr bool IsValid() const { return m_id_array != nullptr; }
             constexpr u32 GetMaxCount() const { return m_max_count; }
     };
 

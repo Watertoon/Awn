@@ -18,22 +18,35 @@
 namespace vp::resbui {
 
 	struct ByamlBuilderMemoryInfo {
-		size_t 		   total_size;
-		size_t 		   max_alignment;
-		BufferLocation location_header;
-		BufferLocation location_key_table;
-		BufferLocation location_string_pool;
-		BufferLocation location_big_data;
-		BufferLocation location_container;
+		size_t total_size;
+		size_t max_alignment;
+        size_t offset_header;
+        size_t offset_key_table;
+        size_t offset_string_pool;
+        size_t offset_big_data;
+        size_t offset_container;
+        
+        constexpr size_t GetTotalSize() const { return this->total_size; }
+        constexpr size_t GetMaxAlignment() const { return this->max_alignment; }
 	};
 
 	class ByamlBuilder {
+        public:
+            struct Cache {
+                ByamlStringPoolBuilderMemoryInfo key_table_memory_info;
+                ByamlStringPoolBuilderMemoryInfo string_table_memory_info;
+                bool is_cache;
+            };
 		private:
-			u16            m_version;
-			bool           m_is_reverse_endian;
+			u16 m_version;
+			bool m_is_reverse_endian;
 			ByamlNodeBase *m_root_node;
+            ByamlStringPoolBuilder m_key_table_builder;
+            ByamlStringPoolBuilder m_string_table_builder;
+
+            Cache m_cache;
 		public:
-			constexpr  ByamlBuilder() : m_version(vp::res::ResByaml::cTargetVersion), m_is_reverse_endian(false), m_root_node() {/*...*/}
+			constexpr  ByamlBuilder() : m_version(vp::res::ResByaml::cTargetVersion), m_is_reverse_endian(false), m_root_node(), m_key_table_builder(true), m_string_table_builder(true), m_cache() {/*...*/}
 			constexpr ~ByamlBuilder() {/*...*/}
 
             constexpr bool IsValid() const {
@@ -50,8 +63,7 @@ namespace vp::resbui {
                 m_version = version;
             }
 
-			void Serialize(void *output, size_t output_size, ByamlBuilderMemoryInfo *memory_info);
-
             void CalculateMemoryInfo(ByamlBuilderMemoryInfo *out_memory_info);
+			void Serialize(void *output, size_t output_size, ByamlBuilderMemoryInfo *memory_info);
 	};
 }

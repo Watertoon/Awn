@@ -18,7 +18,7 @@
 namespace vp::res {
 
     struct ResBfshaShaderOption {
-        const char                *name;
+        const NWString8           *name;
         ResNintendoWareDictionary *choice_dictionary;
         s32                       *choice_array;
         u16                        choice_count;
@@ -55,32 +55,32 @@ namespace vp::res {
     static_assert(sizeof(ResBfshaInputAttribute) == 0x2);
 
     struct ResBfshaTextureSampler {
-        const char *reserve0;
-        u8          location;
-        u8          reserve1;
-        u16         reserve2;
-        u32         reserve3;
+        const NWString8 *reserve0;
+        u8               location;
+        u8               reserve1;
+        u16              reserve2;
+        u32              reserve3;
     };
     static_assert(sizeof(ResBfshaTextureSampler) == 0x10);
 
     struct ResBfshaImage {
-        u8          location;
-        u8          reserve0;
-        u16         reserve1;
-        u32         reserve2;
+        u8  location;
+        u8  reserve0;
+        u16 reserve1;
+        u32 reserve2;
     };
     static_assert(sizeof(ResBfshaImage) == 0x8);
 
     struct ResBfshaBufferParam {
-        const char *convert_name;
-        u32         index;
-        u16         struct_offset;
-        u16         buffer_index;
+        const NWString8 *convert_name;
+        u32              index;
+        u16              struct_offset;
+        u16              buffer_index;
     };
     static_assert(sizeof(ResBfshaBufferParam) == 0x10);
 
     enum class BfshaBufferType : u8 {
-        User = 0,
+        Application = 0,
         Material = 1,
         Shape = 2,
         Skeleton = 3,
@@ -100,6 +100,13 @@ namespace vp::res {
 
     struct ResBfshaShadingModel;
 
+    enum class BfshaResourceType {
+        TextureSampler,
+        Image,
+        UniformBuffer,
+        StorageBuffer,
+    };
+
     struct ResBfshaShaderProgram {
         union {
             u32 *location_array[4];
@@ -112,7 +119,7 @@ namespace vp::res {
         };
         ResBnshShaderVariation *bnsh_shader_variation;
         ResBfshaShadingModel   *parent_shading_model;
-        u32                     reserve0; /* Unknown */
+        u32                     input_attribute_mask;
         union {
             u16 runtime_flags;
             struct {
@@ -121,7 +128,7 @@ namespace vp::res {
                 u16 runtime_is_binary             : 1;
                 u16 runtime_is_source             : 1;
                 u16 runtime_is_intermediate       : 1;
-                u16 reserve1                      : 11;
+                u16 reserve0                      : 11;
             };
         };
         union {
@@ -133,17 +140,32 @@ namespace vp::res {
                 u16 storage_buffer_count;
             };
         };
-        u16                     reserve2;
+        u16                     reserve1;
 
         static constexpr u32 cInvalidLocation = 0xffff'ffff;
+
+        constexpr ResBnshShaderProgram *GetBnshShaderProgram() {
+            if (this->runtime_is_binary) {
+                return this->bnsh_shader_variation->program_binary;
+            } else if (this->runtime_is_intermediate) {
+                return this->bnsh_shader_variation->program_intermediate;
+            } else if (this->runtime_is_source) {
+                return this->bnsh_shader_variation->program_source;
+            }
+            return nullptr;
+        }
+        constexpr u32 GetLocation(u32 stage_count, u32 base_location, BfshaResourceType type, u32 resource_id) {
+            const u32 *array = this->location_array[static_cast<u32>(type)];
+            return (array != nullptr && resource_id < this->location_count_array[static_cast<u32>(type)]) ? array[resource_id * stage_count + base_location] : cInvalidLocation;
+        }
     };
     static_assert(sizeof(ResBfshaShaderProgram) == 0x40);
 
     struct ResBfshaResourceNameTable {
-        const char **texture_sampler_name_array;
-        const char **image_name_array;
-        const char **uniform_buffer_name_array;
-        const char **storage_buffer_name_array;
+        const NWString8 **texture_sampler_name_array;
+        const NWString8 **image_name_array;
+        const NWString8 **uniform_buffer_name_array;
+        const NWString8 **storage_buffer_name_array;
     };
     static_assert(sizeof(ResBfshaResourceNameTable) == 0x20);
 
@@ -155,7 +177,7 @@ namespace vp::res {
     };
 
     struct ResBfshaShadingModel {
-        const char                *name;
+        const NWString8           *name;
         ResBfshaShaderOption      *static_option_array;
         ResNintendoWareDictionary *static_option_dictionary;
         ResBfshaShaderOption      *dynamic_option_array;
@@ -271,6 +293,35 @@ namespace vp::res {
         u32 FindImageIndex(const char *image_name) const;
         u32 FindUniformBufferIndex(const char *uniform_buffer_name) const;
         u32 FindStorageBufferIndex(const char *storage_buffer_name) const;
+        u32 FindResourceIndex(BfshaResourceType resource_type, const char *key) const {
+            const vp::res::ResNintendoWareDictionary *dic;
+            switch (resource_type) {
+                case BfshaResourceType::TextureSampler:
+                {
+                    dic = this->texture_sampler_dictionary;
+                    break;
+                }
+                case BfshaResourceType::Image:
+                {
+                    dic = this->image_dictionary;
+                    break;
+                }
+                case BfshaResourceType::UniformBuffer:
+                {
+                    dic = this->uniform_buffer_dictionary;
+                    break;
+                }
+                case BfshaResourceType::StorageBuffer:
+                {
+                    dic = this->storage_buffer_dictionary;
+                    break;
+                }
+                default:
+                    return cInvalidEntryIndex;
+            };
+            const u32 entry_id = (dic != nullptr) ? dic->TryGetEntryIndexByKey(key) : cInvalidEntryIndex;
+            return entry_id;
+        }
 
         bool FindProgramRange(BfshaShaderRange *out_range, const void *static_key) const;
         u32 FindProgramIndex(const BfshaShaderRange *range, const void *dynamic_key) const;
@@ -284,8 +335,8 @@ namespace vp::res {
     using BfshaProgramInitializeCallback = Result(*)(ResBfshaShadingModel *shading_model, u32 program_index);
 
     struct ResBfshaShaderArchive {
-        const char                     *name;
-        const char                     *reserve0;
+        const NWString8                *name;
+        const NWString8                *reserve0;
         ResBfshaShadingModel           *shading_model_array;
         ResNintendoWareDictionary      *shading_model_dictionary;
         void                           *runtime_user_pointer;
@@ -320,7 +371,7 @@ namespace vp::res {
         static constexpr inline u32 cTargetVersionMinor = 1;
         static constexpr inline u32 cTargetVersionMicro = 1;
 
-        ResBfsha *ResCast(void *file) {
+        static ResBfsha *ResCast(void *file) {
             ResBfsha *bfsha = reinterpret_cast<ResBfsha*>(file);
             if (bfsha == nullptr || !IsValid(file)) { return nullptr; }
             bfsha->Relocate();

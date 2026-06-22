@@ -26,14 +26,14 @@ namespace awn::para {
 
                 /* Load bgyml */
                 res::ResourceBinder binder;
-                binder.TryLoadSync(path, load_info);
+                RESULT_DISCARD(binder.TryLoadSync(path, load_info));
 
                 /* Get resource */
                 ResourceDocument *document_res = binder.GetResource<ResourceDocument>();
                 if (document_res == nullptr) { return nullptr; }
 
                 /* Reference binder in resource for persistance */
-                document_res->ReferenceBinder(std::addressof(binder));
+                RESULT_ABORT_UNLESS(document_res->ReferenceBinder(std::addressof(binder)));
 
                 return document_res;
             }
@@ -49,18 +49,27 @@ namespace awn::para {
 
                 /* Load document */
                 ResourceDocument::CreateInfo create_info(file_name, class_name);
-                res::AsyncResourceLoadInfo load_info = {
-                    .priority              = 1,
-                    .is_allow_loose_files  = true,
-                    .resource_factory      = impl::DocumentManager::GetInstance()->GetResourceFactory(),
-                    .compose_info          = std::addressof(create_info),
-                };
-                ResourceDocument *document_res = this->LoadSyncImpl(path.GetString(), std::addressof(load_info));
+                res::AsyncResourceLoadInfo load_info;
+                load_info.SetDefaults();
+                load_info.SetPriority(1);
+                load_info.SetIsAllowLooseFiles(true);
+                load_info.SetResourceFactory(impl::DocumentManager::GetInstance()->GetResourceFactory());
+                load_info.SetComposeInfo(std::addressof(create_info));
 
-                /* Use a fake document if we fail to load a real one */
-                if (document_res == nullptr && is_allow_dummy) {
-                    load_info.file_device = std::addressof(m_dummy_file_device);
+                /* Try load chain until working */
+                ResourceDocument *document_res = this->LoadSyncImpl(path.GetString(), std::addressof(load_info));
+                if (document_res == nullptr) {
+#ifdef VP_ENABLE_LIBYAML
+                    create_info.m_is_yaml = true;
+                    res::MaxPathString path;
+                    path.Format("%s.%s.yaml", file_name, class_name);
                     document_res = this->LoadSyncImpl(path.GetString(), std::addressof(load_info));
+#endif
+                    if (document_res == nullptr && is_allow_dummy) {
+                        create_info.m_is_yaml = false;
+                        load_info.file_device = std::addressof(m_dummy_file_device);
+                        document_res = this->LoadSyncImpl(path.GetString(), std::addressof(load_info));
+                    }
                 }
                 VP_ASSERT(document_res != nullptr);
 

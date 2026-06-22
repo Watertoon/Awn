@@ -73,7 +73,8 @@ namespace awn::para {
                 /* Ensure valid pause key count */
                 const u32 key_count = para::GetColumnCount(data_table);
                 if (key_count < 1) { return false; }
-                m_pause_key_array.Initialize(heap, key_count);
+                const Result result0 = m_pause_key_array.Initialize(heap, key_count);
+                if (RESULT_FAILED(result0)) { return false; }
                 auto key_array_fail_guard = SCOPE_GUARD {
                     m_pause_key_array.Finalize();
                 };

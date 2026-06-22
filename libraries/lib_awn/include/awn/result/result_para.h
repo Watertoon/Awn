@@ -24,4 +24,5 @@ namespace awn::para {
     DECLARE_RESULT(InvalidPathType, 4);
     DECLARE_RESULT(RangeNG, 5);
     DECLARE_RESULT(NoEnumClass, 6);
+    DECLARE_RESULT(NoMemory, 7);
 }

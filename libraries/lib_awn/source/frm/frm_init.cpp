@@ -127,9 +127,14 @@ namespace awn::frm {
         const gfx::impl::DescriptorMemoryManagerInfo desc_mgr_info = {
             //.max_command_buffer_count = graphics_info->max_command_buffer_count,
             //.max_command_list_count = graphics_info->max_command_list_count,
+        #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+            .max_separate_texture_count = graphics_info->max_texture_view_count,
+            .max_separate_sampler_count = graphics_info->max_sampler_count,
+        #else
             .per_stage_max_allocation_count = 0x2000,
             .per_stage_memory_size = graphics_info->per_stage_descriptor_memory_size,
             .transient_descriptor_memory_size = vp::util::c1MB,
+        #endif
         };
         gfx::impl::DescriptorMemoryManager *desc_memory_mgr = gfx::impl::DescriptorMemoryManager::CreateInstance(awn_graphics_heap);
         desc_memory_mgr->Initialize(awn_graphics_heap, std::addressof(desc_mgr_info));

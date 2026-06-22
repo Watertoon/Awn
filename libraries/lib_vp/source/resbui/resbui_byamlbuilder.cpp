@@ -5,14 +5,14 @@ namespace vp::resbui {
 	void ByamlBuilder::Serialize(void *output, size_t output_size, ByamlBuilderMemoryInfo *memory_info) {
 
 		/* Clear memory */
-		::memset(output, 0, output_size);
+		std::memset(output, 0, output_size);
 
 		/* Get regions */
-		vp::res::ResByaml *head           = reinterpret_cast<vp::res::ResByaml*>(reinterpret_cast<uintptr_t>(output) + memory_info->location_header.offset);
-		void              *key_table      = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output) + memory_info->location_key_table.offset);
-		void              *string_pool    = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output) + memory_info->location_string_pool.offset);
-		void              *big_data_base  = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output) + memory_info->location_big_data.offset);
-		void              *container_base = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output) + memory_info->location_container.offset);
+		vp::res::ResByaml *head           = reinterpret_cast<vp::res::ResByaml*>(reinterpret_cast<uintptr_t>(output) + memory_info->offset_header);
+		void              *key_table      = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output) + memory_info->offset_key_table);
+		void              *string_pool    = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output) + memory_info->offset_string_pool);
+		void              *big_data_base  = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output) + memory_info->offset_big_data);
+		void              *container_base = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(output) + memory_info->offset_container);
 
 		/* Set header info */
         if (!m_is_reverse_endian) {
@@ -27,22 +27,9 @@ namespace vp::resbui {
 		if (m_root_node == nullptr) { return; }
 
 		/* Handle key table */
-		if (memory_info->location_key_table.size != 0) {
-
-			/* Gather key table */
-			ByamlStringPoolBuilder key_table_builder(true);
-            key_table_builder.SetIsReverseEndian(m_is_reverse_endian);
-			m_root_node->PushKeys(std::addressof(key_table_builder));
-
-			/* Calculate memory info */
-			ByamlStringPoolBuilderMemoryInfo key_table_memory_info = {};
-			key_table_builder.CalculateMemoryInfo(std::addressof(key_table_memory_info));
-
-			/* Serialize */
-			key_table_builder.Serialize(key_table, memory_info->location_key_table.size, std::addressof(key_table_memory_info));
-
-			/* Finalize builder */
-			key_table_builder.Finalize();
+		if (m_cache.key_table_memory_info.total_size != 0) {
+            m_key_table_builder.SetIsReverseEndian(m_is_reverse_endian);
+			m_key_table_builder.Serialize(key_table, m_cache.key_table_memory_info.total_size, std::addressof(m_cache.key_table_memory_info));
 
 			/* Set header offset */
             const u32 key_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(key_table) - reinterpret_cast<uintptr_t>(head));
@@ -50,22 +37,9 @@ namespace vp::resbui {
 		}
 
 		/* Handle string pool */
-		if (memory_info->location_string_pool.size != 0) {
-
-			/* Gather string pool */
-			ByamlStringPoolBuilder string_pool_builder(true);
-            string_pool_builder.SetIsReverseEndian(m_is_reverse_endian);
-			m_root_node->PushStrings(std::addressof(string_pool_builder));
-
-			/* Calculate memory info */
-			ByamlStringPoolBuilderMemoryInfo string_pool_memory_info = {};
-			string_pool_builder.CalculateMemoryInfo(std::addressof(string_pool_memory_info));
-
-			/* Serialize */
-			string_pool_builder.Serialize(string_pool, memory_info->location_string_pool.size, std::addressof(string_pool_memory_info));
-
-			/* Finalize builder */
-			string_pool_builder.Finalize();
+		if (m_cache.string_table_memory_info.total_size != 0) {
+            m_string_table_builder.SetIsReverseEndian(m_is_reverse_endian);
+			m_string_table_builder.Serialize(string_pool, m_cache.string_table_memory_info.total_size, std::addressof(m_cache.string_table_memory_info));
 
 			/* Set header offset */
             const u32 str_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(string_pool) - reinterpret_cast<uintptr_t>(head));
@@ -73,7 +47,7 @@ namespace vp::resbui {
 		}
 
 		/* Complete if the container is empty */
-		if (memory_info->location_container.size == 0) { return; }
+		if (memory_info->offset_container == memory_info->GetTotalSize()) { return; }
 
 		/* Check if big data */
 		if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(m_root_node)) {
@@ -103,75 +77,58 @@ namespace vp::resbui {
 
 	void ByamlBuilder::CalculateMemoryInfo(ByamlBuilderMemoryInfo *out_memory_info) {
 
+        if (m_cache.is_cache) {            
+            m_key_table_builder.Finalize();
+            m_string_table_builder.Finalize();
+            if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(m_root_node)) {
+                reinterpret_cast<ByamlNodeBigData*>(m_root_node)->ClearCache();
+            }
+        }
+
 		/* Set header location */
-		out_memory_info->location_header.offset    = 0;
-		out_memory_info->location_header.size      = sizeof(vp::res::ResByaml);
-		out_memory_info->location_header.alignment = alignof(u32);
+        uintptr_t iter = 0;
+		out_memory_info->offset_header = iter;
+        iter += sizeof(vp::res::ResByaml);
 
 		/* Nothing else if null root */
 		if (m_root_node == nullptr) {
-			out_memory_info->total_size    = sizeof(vp::res::ResByaml);
+			out_memory_info->total_size = iter;
 			out_memory_info->max_alignment = alignof(u32);
 			return;
 		}
 
 		/* Gather key table */
-		ByamlStringPoolBuilder key_table_builder(true);
-		m_root_node->PushKeys(std::addressof(key_table_builder));
-
-		/* Calculate memory info */
-		ByamlStringPoolBuilderMemoryInfo key_table_memory_info = {};
-		key_table_builder.CalculateMemoryInfo(std::addressof(key_table_memory_info));
-
-		/* Finalize builder */
-		key_table_builder.Finalize();
-
-		/* Set key table location */
-		out_memory_info->location_key_table.offset    = out_memory_info->location_header.size;
-		out_memory_info->location_key_table.size      = key_table_memory_info.total_size;
-		out_memory_info->location_key_table.alignment = key_table_memory_info.max_alignment;
+		m_root_node->PushKeys(std::addressof(m_key_table_builder));
+		m_key_table_builder.CalculateMemoryInfo(std::addressof(m_cache.key_table_memory_info));
+        out_memory_info->offset_key_table = iter;
+		iter += m_cache.key_table_memory_info.total_size;
 
 		/* Gather string pool */
-		ByamlStringPoolBuilder string_pool_builder(true);
-		m_root_node->PushStrings(std::addressof(string_pool_builder));
+		m_root_node->PushStrings(std::addressof(m_string_table_builder));
+		m_string_table_builder.CalculateMemoryInfo(std::addressof(m_cache.string_table_memory_info));
+		out_memory_info->offset_string_pool = iter;
+        iter += m_cache.string_table_memory_info.total_size;
 
-		/* Calculate memory info */
-		ByamlStringPoolBuilderMemoryInfo string_pool_memory_info = {};
-		string_pool_builder.CalculateMemoryInfo(std::addressof(string_pool_memory_info));
-
-		/* Finalize builder */
-		string_pool_builder.Finalize();
-
-		/* Set string pool location */
-		out_memory_info->location_string_pool.offset    = out_memory_info->location_key_table.offset + out_memory_info->location_key_table.size;
-		out_memory_info->location_string_pool.size      = string_pool_memory_info.total_size;
-		out_memory_info->location_string_pool.alignment = string_pool_memory_info.max_alignment;
-
-		const size_t big_data_base  = out_memory_info->location_string_pool.offset + out_memory_info->location_string_pool.size;
-		uintptr_t    container_iter = big_data_base;
+        /* Calculate big data and container */
+		const size_t big_data_base  = iter;
 		uintptr_t    big_data_iter  = big_data_base;
+		uintptr_t    container_iter = big_data_base;
 		if (ByamlNodeBigData::CheckRuntimeTypeInfoStatic(m_root_node)) {
-
-			/* Calculate big data and container end */
-			reinterpret_cast<ByamlNodeBigData*>(m_root_node)->CalculateBigDataEndOffsets(std::addressof(big_data_iter), std::addressof(container_iter), 0);
-
-			container_iter  = big_data_iter;
-			big_data_iter   = big_data_base;
-			reinterpret_cast<ByamlNodeBigData*>(m_root_node)->CalculateBigDataEndOffsets(std::addressof(big_data_iter), std::addressof(container_iter), 0);
-
-			/* Set big data location */
-			out_memory_info->location_big_data.offset    = big_data_base;
-			out_memory_info->location_big_data.size      = big_data_iter - big_data_base;
-			out_memory_info->location_big_data.alignment = alignof(u32);
+			reinterpret_cast<ByamlNodeBigData*>(m_root_node)->CalculateBigDataOffsets(std::addressof(big_data_iter), 0);
+            container_iter = big_data_iter;
+			reinterpret_cast<ByamlNodeBigData*>(m_root_node)->CalculateContainerOffsets(std::addressof(container_iter), 0);
 		}
+        /* Set big data location */
+        out_memory_info->offset_big_data = iter;
+        iter += big_data_iter - big_data_base;
+        iter = vp::util::AlignUp(iter, alignof(u32));
 
 		/* Set container location */
-		out_memory_info->location_container.offset    = big_data_iter;
-		out_memory_info->location_container.size      = (container_iter - big_data_iter == 0) ? (sizeof(u32) * 2) : container_iter - big_data_iter;
-		out_memory_info->location_container.alignment = alignof(u32);
+		out_memory_info->offset_container = iter;
+        iter += (container_iter - big_data_iter == 0) ? (sizeof(u32) * 2) : container_iter - big_data_iter;
 
 		/* Set totals */
-		out_memory_info->total_size    = out_memory_info->location_container.offset + out_memory_info->location_container.size;
+		out_memory_info->total_size = iter;
 		out_memory_info->max_alignment = alignof(u32);
 
 		return;

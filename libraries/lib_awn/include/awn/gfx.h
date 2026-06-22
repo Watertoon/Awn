@@ -15,7 +15,8 @@
  */
 #pragma once
 
-//#define AWN_ENABLE_VK_DESCRIPTOR_HEAP
+#define AWN_ENABLE_VK_DESCRIPTOR_HEAP
+#define AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
 
 #include <awn/gfx/gfx_nngfxinteroperation.h>
 #ifdef VP_TARGET_GRAPHICS_API_vk
@@ -28,8 +29,8 @@
 #ifdef VP_TARGET_GRAPHICS_API_vk
     #include <awn/gfx/impl/gfx_proc.vk.h>
     #include <awn/gfx/gfx_features.vk.h>
-    #include <awn/gfx/gfx_memoryapi.h>
     #include <awn/gfx/impl/gfx_resourceapi.vk.h>
+    #include <awn/gfx/gfx_memoryapi.h>
 
     #include <awn/gfx/gfx_sync.vk.h>
     #include <awn/gfx/impl/gfx_context.vk.hpp>
@@ -40,8 +41,8 @@
 
 #elifdef VP_TARGET_GRAPHICS_API_nvn
     #include <awn/gfx/impl/gfx_proc.nvn.h>
-    #include <awn/gfx/gfx_memoryapi.h>
     #include <awn/gfx/impl/gfx_resourceapi.nvn.h>
+    #include <awn/gfx/gfx_memoryapi.h>
 
     #include <awn/gfx/gfx_sync.nvn.h>
     #include <awn/gfx/impl/gfx_context.nvn.hpp>

@@ -30,6 +30,6 @@
     #include <vp/resbui/resbui_dictionarystring.hpp>
     #include <vp/resbui/resbui_nintendowaredictionarybuilder.hpp>
     #include <vp/resbui/resbui_nintendowarestringpoolbuilder.hpp>
-    #include <vp/resbui/resbui_bnshbuilder.hpp>
-    #include <vp/resbui/resbui_bntxbuilder.hpp>
+    //#include <vp/resbui/resbui_bnshbuilder.hpp>
+    //#include <vp/resbui/resbui_bntxbuilder.hpp>
 #endif

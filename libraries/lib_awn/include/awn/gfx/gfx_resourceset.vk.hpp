@@ -30,23 +30,18 @@ namespace awn::gfx {
     };
 
     struct ResourceSetInfo {
-    #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-        u32 max_location;
-    #else
-        u32 max_location_texture_sampler;
-        u32 max_location_buffer;
-    #endif
+        u32 max_location_array[cShaderStageCount];
 
-        constexpr bool AddEntry(ShaderInterfaceType interface_type, u32 location) {
-    #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            this->max_location = vp::util::Max(this->max_location, location);
-    #else
-            if (interface_type == ShaderInterfaceType::UniformBuffer || interface_type == ShaderInterfaceType::StorageBuffer) {
-                this->max_location_buffer = vp::util::Max(this->max_location_buffer, location);                
-            } else {
-                this->max_location_texture_sampler = vp::util::Max(this->max_location_texture_sampler, location);                
+        constexpr u32 GetTotalDescriptorCount() const {
+            u32 count = 0;
+            for (u32 i = 0; i < cShaderStageCount; ++i) {
+                count += this->max_location_array[i];
             }
-    #endif
+            return count;
+        }
+        constexpr bool AddEntry(ShaderStage stage, ShaderInterfaceType interface_type, u32 location) {
+            VP_UNUSED(interface_type);
+            this->max_location_array[static_cast<u32>(stage)] = vp::util::Max(this->max_location_array[static_cast<u32>(stage)], location + 1);
             return true;
         }
         constexpr u32 AddEntriesByBnshProgram(vp::res::ResBnshShaderProgram *program) {
@@ -63,7 +58,7 @@ namespace awn::gfx {
                     const u32 *slot_array = info->GetInterfaceSlotArray(interface_type);
                     if (slot_count < 1) { continue; }
                     for (u32 k = 0; k < slot_count; ++k) {
-                        if (!this->AddEntry(interface_type, slot_array[k])) { return count; }
+                        if (!this->AddEntry(stage, interface_type, slot_array[k])) { return count; }
                         ++count;
                     }
                 }
@@ -76,7 +71,6 @@ namespace awn::gfx {
             if (model == nullptr) { return 0; }
             u8 base_location_array[cShaderStageCount];
             model->GetBaseLocationArray(base_location_array, cShaderStageCount);
-            const u32 stage_count = model->shader_stage_count;
             u32 count = 0;
             for (u32 i = 0; i < cShaderStageCount; ++i) {
                 const ShaderStage stage = vp::util::TEnumTraits<ShaderStage>::GetValueByIndex(i);
@@ -88,7 +82,7 @@ namespace awn::gfx {
                     for (u32 k = 0; k < slot_count; ++k) {
                         const u32 slot = slot_array[k + base_location_array[static_cast<u32>(stage)]];
                         if (slot == vp::res::ResBfshaShaderProgram::cInvalidLocation) { continue; }
-                        if (!this->AddEntry(interface_type, slot)) { return count; }
+                        if (!this->AddEntry(stage, interface_type, slot)) { return count; }
                         ++count;
                     }
                 }
@@ -102,102 +96,81 @@ namespace awn::gfx {
             friend class CommandBuffer;
         private:
             static constexpr u16 cInvalidBaseLocation = 0xffff;
-        #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
         private:
             using SlotArray = vp::util::HeapArray<u64>;
         private:
             SlotArray m_desc_array;
             GpuAddress m_gpu_address;
-        #else
-            void *m_desc_memory_array[2];
-            u32 m_size_array[2];
-            VkDeviceSize m_offset_array[2];
-        #endif
+            u16 m_base_location_array[cShaderStageCount];
+            u16 m_descriptor_count;
         public:
-            constexpr ResourceSet() : 
-        #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            m_desc_array(), m_gpu_address()
-        #else
-            m_desc_memory_array(), m_size_array(), m_offset_array()
-        #endif
-            {/*...*/}
-            constexpr ~ResourceSet();
+            constexpr ResourceSet() : m_desc_array(), m_gpu_address(), m_base_location_array() {/*...*/}
+            constexpr ~ResourceSet() = default;
 
-            static consteval bool IsCpuMemory() {
-            #if defined(AWN_ENABLE_VK_DESCRIPTOR_HEAP)
-                return false;
-            #else
-                return true;
-            #endif
+            Result Initialize(mem::Heap *heap, const ResourceSetInfo *info) {
+                VP_UNUSED(heap);
+                u32 count = 0;
+                for (u32 i = 0; i < cShaderStageCount; ++i) {
+                    m_base_location_array[i] = count;
+                    count += info->max_location_array[i];
+                }
+                m_descriptor_count = count;
+                RESULT_RETURN_SUCCESS;
             }
-            static consteval bool IsGpuMemory() { return !IsCpuMemory(); }
+            void Finalize() {/*...*/}
+
+            static consteval bool IsRequireGpuMemory() { return true; }
             static GpuMemoryRequirements GetGpuMemoryRequirements(const ResourceSetInfo *set_info) {
-            #if defined(AWN_ENABLE_VK_DESCRIPTOR_HEAP)
                 gfx::BufferInfo info;
                 info.SetDefaults();
-                info.SetSize(set_info->max_location * sizeof(u64));
+                const u32 count = set_info->GetTotalDescriptorCount();
+                info.SetSize(count * sizeof(u64));
                 info.SetGpuAccessFlags(GpuAccessFlags::UniformBuffer);
                 return Buffer::GetGpuMemoryRequirements(std::addressof(info));
-            #else
-                VP_NOT_IMPLEMENTED();
-            #endif
+            }
+            void SetGpuAddress(GpuAddress gpu_address, void *address, size_t memory_size) {
+                VP_ASSERT(m_descriptor_count * sizeof(u64) <= memory_size);
+                m_desc_array.SetMemory(reinterpret_cast<u64*>(address), m_descriptor_count);
+                m_gpu_address = gpu_address;
+                return;
             }
 
-            Result Initialize(mem::Heap *heap, const ResourceSetInfo *info);
-            Result Initialize(MemoryPool *pool, size_t offset, const ResourceSetInfo *info);
-            void Finalize();
+            constexpr bool IsValid() const {
+                return m_desc_array.IsValid();
+            }
         public:
-        #if defined(AWN_ENABLE_VK_DESCRIPTOR_HEAP)
-            constexpr void SetTextureSampler(ShaderStage stage, u32 location, gfx::DescriptorSlot texture_slot, gfx::DescriptorSlot sampler_slot) {
+            constexpr void SetTextureSampler(ShaderStage stage, u32 location, DescriptorSlot texture_slot, DescriptorSlot sampler_slot) {
                 const TextureSamplerHandle handle = gfx::GetTextureSamplerHandle(texture_slot, sampler_slot);
                 VP_ASSERT(handle != cInvalidTextureSamplerHandle);
-                m_desc_array[location] = handle.handle;
+                m_desc_array[location + m_base_location_array[static_cast<u32>(stage)]] = handle.handle;
             }
-            constexpr void SetImage(ShaderStage stage, u32 location, gfx::DescriptorSlot texture_slot) {
-                const ImageHandle handle = gfx::GetImageHandle(texture_slot).handle;
+            constexpr void SetImage(ShaderStage stage, u32 location, DescriptorSlot texture_slot) {
+                const ImageHandle handle = gfx::GetImageHandle(texture_slot);
                 VP_ASSERT(handle != cInvalidImageHandle);
-                m_desc_array[location] = handle.handle;
+                m_desc_array[location + m_base_location_array[static_cast<u32>(stage)]] = handle.handle;
             }
             constexpr void SetUniformBuffer(ShaderStage stage, u32 location, GpuAddress address, size_t size) {
-                const u64 handle = address.vk_device_address;
+                VP_UNUSED(size);
+                const u64 handle = address.GetVkDeviceAddress();
                 VP_ASSERT(address.IsValid());
-                m_desc_array[location] = handle;
+                m_desc_array[location + m_base_location_array[static_cast<u32>(stage)]] = handle;
             }
             constexpr void SetStorageBuffer(ShaderStage stage, u32 location, GpuAddress address, size_t size) {
-                const u64 handle = address.vk_device_address;
+                VP_UNUSED(size);
+                const u64 handle = address.GetVkDeviceAddress();
                 VP_ASSERT(address.IsValid());
-                m_desc_array[location] = handle;
+                m_desc_array[location + m_base_location_array[static_cast<u32>(stage)]] = handle;
             }
-            constexpr void SetSeparateTexture(ShaderStage stage, u32 location, gfx::DescriptorSlot texture_slot) {
-                const SeparateTextureHandle handle = gfx::GetSeparateTextureHandle(texture_slot).handle;
+            constexpr void SetSeparateTexture(ShaderStage stage, u32 location, DescriptorSlot texture_slot) {
+                const SeparateTextureHandle handle = gfx::GetSeparateTextureHandle(texture_slot);
                 VP_ASSERT(handle != cInvalidSeparateTextureHandle);
-                m_desc_array[location] = handle.handle;
+                m_desc_array[location + m_base_location_array[static_cast<u32>(stage)]] = handle.handle;
             }
-            constexpr void SetSeparateSampler(ShaderStage stage, u32 location, gfx::DescriptorSlot sampler_slot) {
-                const SeparateSamplerHandle handle = gfx::GetSeparateSamplerHandle(sampler_slot).handle;
+            constexpr void SetSeparateSampler(ShaderStage stage, u32 location, DescriptorSlot sampler_slot) {
+                const SeparateSamplerHandle handle = gfx::GetSeparateSamplerHandle(sampler_slot);
                 VP_ASSERT(handle != cInvalidSeparateSamplerHandle);
-                m_desc_array[location] = handle.handle;
+                m_desc_array[location + m_base_location_array[static_cast<u32>(stage)]] = handle.handle;
             }
-        #else
-            void SetTextureSampler(ShaderStage stage, u32 location, gfx::DescriptorSlot texture_slot, gfx::DescriptorSlot sampler_slot) {
-                impl::GetTextureSamplerDescriptor(m_desc_memory_array[0], location, texture_slot, sampler_slot);
-            }
-            void SetImage(ShaderStage stage, u32 location, gfx::DescriptorSlot texture_slot) {
-                impl::GetImageDescriptor(m_desc_memory_array[0], location, texture_slot);
-            }
-            void SetUniformBuffer(ShaderStage stage, u32 location, GpuAddress address, size_t size) {
-                impl::GetUniformBufferDescriptor(m_desc_memory_array[1], location, address, size);
-            }
-            void SetStorageBuffer(ShaderStage stage, u32 location, GpuAddress address, size_t size) {
-                impl::GetStorageBufferDescriptor(m_desc_memory_array[1], location, address, size);
-            }
-            void SetSeparateTexture(ShaderStage stage, u32 location, gfx::DescriptorSlot texture_slot) {
-                impl::GetSeparateTextureDescriptor(m_desc_memory_array[0], location, texture_slot);
-            }
-            void SetSeparateSampler(ShaderStage stage, u32 location, gfx::DescriptorSlot sampler_slot) {
-                impl::GetSeparateSamplerDescriptor(m_desc_memory_array[0], location, sampler_slot);
-            }
-        #endif
         private:
             void BindImpl(gfx::CommandBuffer *buffer) const;
     };

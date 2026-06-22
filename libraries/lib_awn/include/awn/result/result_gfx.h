@@ -45,6 +45,7 @@ namespace awn::gfx {
     DECLARE_RESULT(InvalidShaderStage,                      25);
     DECLARE_RESULT(RangeNG,                                 26);
     DECLARE_RESULT(NoMemory,                                27);
+    DECLARE_RESULT(AlignmentNG,                             28);
 
     /* Vulkan converted results */
     DECLARE_RESULT(UnknownApiError,                         50);

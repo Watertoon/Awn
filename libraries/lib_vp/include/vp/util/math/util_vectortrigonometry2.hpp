@@ -26,12 +26,14 @@ namespace vp::util {
             const T coef2 = Broadcast<T>(cSinCoefficients[2]);
             const T coef3 = Broadcast<T>(cSinCoefficients[3]);
             const T coef4 = Broadcast<T>(cSinCoefficients[4]);
-            const T t0 = MultiplySub(vec, coef1, coef0);
-            const T t1 = NegateMultiplySub(vec, coef2, t0);
-            const T t2 = MultiplyAdd(vec, coef3, t1);
-            const T t3 = NegateMultiplySub(vec, coef4, t2);
+            const T v_sq = vec * vec;
+            const T t0 = MultiplySub(coef0, v_sq, coef1);
+            const T t1 = NegateMultiplySub(t0, v_sq, coef2);
+            const T t2 = MultiplyAdd(t1, v_sq, coef3);
+            const T t3 = NegateMultiplySub(t2, v_sq, coef4);
             const T one = Broadcast<T>(1.0f);
-            const T ret = MultiplyAdd(vec, one, t3);
+            const T t4 = MultiplyAdd(t3, v_sq, one);
+            const T ret = vec * t4;
             return ret;
         }
         T ret;
@@ -50,12 +52,13 @@ namespace vp::util {
             const T coef2 = Broadcast<T>(cCosCoefficients[2]);
             const T coef3 = Broadcast<T>(cCosCoefficients[3]);
             const T coef4 = Broadcast<T>(cCosCoefficients[4]);
-            const T t0 = MultiplySub(vec, coef1, coef0);
-            const T t1 = NegateMultiplySub(vec, coef2, t0);
-            const T t2 = MultiplyAdd(vec, coef3, t1);
-            const T t3 = NegateMultiplySub(vec, coef4, t2);
+            const T v_sq = vec * vec;
+            const T t0 = MultiplySub(coef0, v_sq, coef1);
+            const T t1 = NegateMultiplySub(t0, v_sq, coef2);
+            const T t2 = MultiplyAdd(t1, v_sq, coef3);
+            const T t3 = NegateMultiplySub(t2, v_sq, coef4);
             const T one = Broadcast<T>(1.0f);
-            const T ret = MultiplyAdd(vec, one, t3);
+            const T ret = MultiplyAdd(t3, v_sq, one);
             return ret;
         }
         T ret;
@@ -77,16 +80,18 @@ namespace vp::util {
             const T coef5 = Broadcast<T>(cArcTanCoefficients[5]);
             const T coef6 = Broadcast<T>(cArcTanCoefficients[6]);
             const T coef7 = Broadcast<T>(cArcTanCoefficients[7]);
-            const T t0 = NegateMultiplySub(coef0, vec, coef1);
-            const T t1 = MultiplyAdd(t0, vec, coef2);
-            const T t2 = NegateMultiplySub(t1, vec, coef3);
-            const T t3 = MultiplyAdd(t2, vec, coef4);
-            const T t4 = NegateMultiplySub(t3, vec, coef5);
-            const T t5 = MultiplyAdd(t4, vec, coef6);
-            const T t6 = NegateMultiplySub(t5, vec, coef7);
+            const T v_sq = vec * vec;
+            const T t0 = NegateMultiplySub(coef0, v_sq, coef1);
+            const T t1 = MultiplyAdd(t0, v_sq, coef2);
+            const T t2 = NegateMultiplySub(t1, v_sq, coef3);
+            const T t3 = MultiplyAdd(t2, v_sq, coef4);
+            const T t4 = NegateMultiplySub(t3, v_sq, coef5);
+            const T t5 = MultiplyAdd(t4, v_sq, coef6);
+            const T t6 = NegateMultiplySub(t5, v_sq, coef7);
             const T one = Broadcast<T>(1.0f);
-            const T result = MultiplyAdd(t6, vec, one);
-            return result;
+            const T t7 = MultiplyAdd(t6, v_sq, one);
+            const T ret = vec * t7;
+            return ret;
         }
         T ret;
         for (u32 i = 0; i < T::cCount; ++i) {

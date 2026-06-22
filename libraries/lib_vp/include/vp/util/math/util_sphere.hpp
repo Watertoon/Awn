@@ -71,7 +71,7 @@ namespace vp::util {
 
         /* Create new sphere encompassing if no overlap */
         const PositionType diff_position = r_sphere.position - l_sphere.position;
-        const Type pos_sum = SquaredSum(diff_position);
+        const Type pos_sum = MagnitudeSquared(diff_position);
         const Type diff_radius = r_sphere.radius - l_sphere.radius;
         const Type diff_r2 = diff_radius * diff_radius;
         const Type r_sum = Max(cSpherefMergeMin, diff_r2);

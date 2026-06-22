@@ -18,16 +18,18 @@
 namespace vp::res {
 
     struct ResBfresKeyShapeAnim {
-        const char *key_shape_name;
-        u8          anim_curve_index;
-        u8          unknown0;
-        u16         reserve0;
-        u32         reserve1;
+        const NWString8 *key_shape_name;
+        u8               anim_curve_index;
+        u8               fast_bind_id;
+        u16              reserve0;
+        u32              reserve1;
+
+        static constexpr u8 cInvalidId = 0xff;
     };
     static_assert(sizeof(ResBfresKeyShapeAnim) == 0x10);
 
     struct ResBfresVertexShapeAnim {
-        const char           *shape_name;
+        const NWString8      *shape_name;
         ResBfresAnimCurve    *anim_curve_array;
         float                *default_result_array;
         ResBfresKeyShapeAnim *key_shape_anim_array;
@@ -46,10 +48,10 @@ namespace vp::res {
 
         void Evaluate(float *out_result_array, const u8 *key_shape_index_array, float frame) const {
             for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
-                if (key_shape_index_array[i] == 0xff) { continue; }
+                if (key_shape_index_array[i] == ResBfresKeyShapeAnim::cInvalidId) { continue; }
                 const ResBfresKeyShapeAnim *key_shape_anim = std::addressof(this->key_shape_anim_array[i]);
                 const u8 curve_index = key_shape_anim->anim_curve_index;
-                if (curve_index == 0xff) { continue; }
+                if (curve_index == ResBfresKeyShapeAnim::cInvalidId) { continue; }
                 BfresAnimFrameCache cache = {};
                 const float result = this->anim_curve_array[curve_index].EvaluateFloat(std::addressof(cache), frame);
                 out_result_array[i] = result;
@@ -59,10 +61,10 @@ namespace vp::res {
 
         void Evaluate(float *out_result_array, const u8 *key_shape_index_array, float frame, BfresAnimFrameCache *cache_array) const {
             for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
-                if (key_shape_index_array[i] == 0xff) { continue; }
+                if (key_shape_index_array[i] == ResBfresKeyShapeAnim::cInvalidId) { continue; }
                 const ResBfresKeyShapeAnim *key_shape_anim = std::addressof(this->key_shape_anim_array[i]);
                 const u8 curve_index = key_shape_anim->anim_curve_index;
-                if (curve_index == 0xff) { continue; }
+                if (curve_index == ResBfresKeyShapeAnim::cInvalidId) { continue; }
                 BfresAnimFrameCache *cache = std::addressof(cache_array[curve_index]);
                 const float result = this->anim_curve_array[curve_index].EvaluateFloat(cache, frame);
                 out_result_array[i] = result;
@@ -74,7 +76,7 @@ namespace vp::res {
             if (shape->key_shape_count < 1) { return false; }
             bool result = false;
             for (u32 i = 0; i < this->key_shape_anim_count; ++i) {
-                const u32 entry_id = (shape->key_shape_dictionary != nullptr) ? shape->key_shape_dictionary->TryGetEntryIndexByKey(key_shape_anim_array[i].key_shape_name + 2) : ResNintendoWareDictionary::cInvalidEntryIndex;
+                const u32 entry_id = (shape->key_shape_dictionary != nullptr) ? shape->key_shape_dictionary->TryGetEntryIndexByKey(key_shape_anim_array[i].key_shape_name) : ResNintendoWareDictionary::cInvalidEntryIndex;
                 out_key_shape_index_array[i + this->base_result_index] = (entry_id != ResNintendoWareDictionary::cInvalidEntryIndex) ? entry_id : 0xff;
                 result |= (entry_id != ResNintendoWareDictionary::cInvalidEntryIndex);
             }
@@ -94,8 +96,8 @@ namespace vp::res {
                 u32 reserve1   : 29;
             };
         };
-        const char                *name;
-        const char                *reserve2;
+        const NWString8           *name;
+        const NWString8           *reserve2;
         ResBfresModel             *runtime_bound_model;
         u16                       *fast_bind_table;
         ResBfresVertexShapeAnim   *vertex_shape_anim_array;

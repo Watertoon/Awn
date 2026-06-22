@@ -28,25 +28,32 @@ namespace vp::res {
 
         static constexpr u32 cMagic = util::TCharCode32("_STR");
 
-        const char *FindString(const char *string) const {
+        const NWString8 *FindString(const char *string, u32 len) const {
 
             /* Handle empty string */
             if (string == nullptr || *string == '\0') {
-                return reinterpret_cast<const char*>(std::addressof(empty_string));
+                return reinterpret_cast<const NWString8*>(std::addressof(empty_string));
             }
 
             /* Find string by string */
-            const u32   string_size = ::strlen(string);
-            const char *string_iter = string_array;
+            uintptr_t string_iter = reinterpret_cast<uintptr_t>(string_array);
             for (u32 i = 0; i < string_count; ++i) {
-                const char *ret = string_iter;
-                const u16 table_size = *reinterpret_cast<const u16*>(string_iter);
-                string_iter = string_iter + 2;
-                if (table_size == string_size && ::strcmp(string_iter, string) == 0) { return ret; }
-                string_iter = vp::util::AlignUp(string_iter + table_size + 1, alignof(u16));
+                const NWString8 *find_string = reinterpret_cast<const NWString8*>(string_iter);
+                const char *f_str = find_string->GetString();
+                const u16 f_len = find_string->GetLength();
+                if (f_len == len && std::memcmp(f_str, string, len) == 0) { return find_string; }
+                string_iter = vp::util::AlignUp(string_iter + f_len + 3, alignof(u16));
             }
 
-            return reinterpret_cast<const char*>(std::addressof(empty_string));
+            return reinterpret_cast<const NWString8*>(std::addressof(empty_string));
+        }
+        template <typename T>
+            requires (vp::util::IsString8OrRaw<T>)
+        const NWString8 *FindString(const T *str) const {
+            const char *string;
+            u32 len;
+            vp::util::GetUnderlyingString(std::addressof(string), std::addressof(len), str);
+            return this->FindString(string, len);
         }
     };
     static_assert(sizeof(ResNintendoWareStringPool) == 0x18);

@@ -151,7 +151,8 @@ namespace vp::util {
         if (path_len == 0) { return path; }
 
         /* Get file name offset */
-        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
+        const u32 delimit = FindDirectoryDelimiter(path, path_len);
+        const u32 name_start_offset = (path[delimit] == '/' || path[delimit] == '\\') ? delimit + 1 : 0;
 
         /* Advance string to cut off directory */
         return path + name_start_offset;
@@ -248,7 +249,8 @@ namespace vp::util {
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
+        const u32 delimit = FindDirectoryDelimiter(path, path_len);
+        const u32 name_start_offset = (path[delimit] == '/' || path[delimit] == '\\') ? delimit + 1 : 0;
 
         /* Copy string until last delimiter */
         const u32 name_size = name_start_offset;
@@ -273,7 +275,8 @@ namespace vp::util {
 
         /* Get file name offset */
         const u32 dir_start_offset  = FindDriveDelimiter(path, path_len);
-        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
+        const u32 delimit = FindDirectoryDelimiter(path, path_len);
+        const u32 name_start_offset = (path[delimit] == '/' || path[delimit] == '\\') ? delimit + 1 : 0;
 
         /* Copy out directory */
         const u32 name_size = name_start_offset - dir_start_offset - name_start_offset;
@@ -331,7 +334,8 @@ namespace vp::util {
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
+        const u32 delimit = FindDirectoryDelimiter(path, path_len);
+        const u32 name_start_offset = (path[delimit] == '/' || path[delimit] == '\\') ? delimit + 1 : 0;
 
         /* Copy string from last delimiter */
         const u32 name_size = path_len - name_start_offset;
@@ -356,7 +360,8 @@ namespace vp::util {
 
         /* Get file name offset */
         const u32 ext_start_offset  = FindExtensionDelimiter(path, path_len);
-        const u32 name_start_offset = FindDirectoryDelimiter(path, path_len) + 1;
+        const u32 delimit = FindDirectoryDelimiter(path, path_len);
+        const u32 name_start_offset = (path[delimit] == '/' || path[delimit] == '\\') ? delimit + 1 : 0;
 
         /* Copy string from last delimiter */
         const u32 name_size = ext_start_offset - name_start_offset;
@@ -403,7 +408,7 @@ namespace vp::util {
         if (path_len == 0) { return; }
 
         /* Get file name offset */
-        u32 start_offset = FindDirectoryDelimiter(in_out_path->m_string_array, path_len) + 1;
+        u32 start_offset = FindDirectoryDelimiter(in_out_path->m_string_array, path_len);
 
         while (start_offset != 0) {
             if (in_out_path->m_string_array[start_offset] == '/' || in_out_path->m_string_array[start_offset] == '\\') { in_out_path->m_string_array[start_offset] = new_delimiter; }

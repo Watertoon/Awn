@@ -17,15 +17,31 @@
 
 namespace awn::gfx {
 
+    using GpuAddress = impl::GpuAddress;
+    static constexpr GpuAddress cInvalidGpuAddress = impl::cInvalidGpuAddress;
+
+    struct GpuAlloc {
+        gfx::GpuAddress gpu_address;
+        void *address;
+
+        constexpr bool IsValid() const { return gpu_address.IsValid(); }
+        constexpr bool IsAligned(size_t alignment) const { return gpu_address.IsAligned(alignment); }
+        constexpr gfx::GpuAddress GetGpuAddress() const { return gpu_address; }
+        constexpr void *GetAddress() const { return address; }
+    };
+
     struct GpuMemoryRequirements {
         size_t size;
-        s32 alignment;
+        size_t alignment;
+
+        constexpr size_t GetTotalSize() const { return this->size; }
+        constexpr size_t GetMaxAlignment() const { return this->alignment; }
     };
 
     constexpr GpuMemoryRequirements AppendMemoryRequirements(GpuMemoryRequirements base, GpuMemoryRequirements append) {
         const size_t align_size0 = vp::util::AlignUp(base.size, append.alignment);
         const size_t total_size = align_size0 + append.size;
-        const s32 max_align = vp::util::Max(base.alignment, append.alignment);
+        const size_t max_align = vp::util::Max(base.alignment, append.alignment);
         return { total_size, max_align, };
     }
 
@@ -60,6 +76,7 @@ namespace awn::gfx {
 
     struct TextureSamplerHandle {
         u64 handle = 0xffff'ffff'ffff'ffff;
+        constexpr bool operator==(const TextureSamplerHandle &rhs) const { return this->handle == rhs.handle; }
     };
     static constexpr TextureSamplerHandle cInvalidTextureSamplerHandle = TextureSamplerHandle{};
 
@@ -67,6 +84,7 @@ namespace awn::gfx {
 
     struct ImageHandle {
         u64 handle = 0xffff'ffff'ffff'ffff;
+        constexpr bool operator==(const ImageHandle &rhs) const { return this->handle == rhs.handle; }
     };
     static constexpr ImageHandle cInvalidImageHandle = ImageHandle{};
 
@@ -74,6 +92,7 @@ namespace awn::gfx {
 
     struct SeparateTextureHandle {
         u64 handle = 0xffff'ffff'ffff'ffff;
+        constexpr bool operator==(const SeparateTextureHandle &rhs) const { return this->handle == rhs.handle; }
     };
     static constexpr SeparateTextureHandle cInvalidSeparateTextureHandle = SeparateTextureHandle{};
 
@@ -81,6 +100,7 @@ namespace awn::gfx {
 
     struct SeparateSamplerHandle {
         u64 handle = 0xffff'ffff'ffff'ffff;
+        constexpr bool operator==(const SeparateSamplerHandle &rhs) const { return this->handle == rhs.handle; }
     };
     static constexpr SeparateSamplerHandle cInvalidSeparateSamplerHandle = SeparateSamplerHandle{};
 

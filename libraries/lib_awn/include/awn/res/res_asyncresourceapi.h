@@ -72,7 +72,7 @@ namespace awn::res {
             this->load_thread_create_function = nullptr;
             this->compose_thread_create_function = nullptr;
         }
-        
+
         constexpr void SetApplicationImpl(IAsyncResourceApplicationImpl *app_impl) {
             this->app_impl = app_impl;
         }
@@ -122,6 +122,8 @@ namespace awn::res {
     };
     Result InitializeAsyncResourceManager(mem::Heap *heap, AsyncResourceManagerInfo *info);
     void FinalizeAsyncResourceManager();
+    void CalculateAsyncResourceManager();
+    void ClearAllCachesSync();
 
     Result LoadAsyncResourceSync(Resource **out_resource, const char *path, const AsyncResourceLoadInfo *load_info);
 

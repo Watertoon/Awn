@@ -31,7 +31,7 @@ namespace vp::res {
         u64   texture_view_decriptor_slot;
     };
 
-    using GfxBindTextureCallback = GfxBindTextureView (*) (const char *texture_name, void *user_data);
+    using GfxBindTextureCallback = GfxBindTextureView (*) (const NWString8 *texture_name, void *user_data);
 
     enum class GfxMemoryPoolFlags : u32 {
         CpuNoAccess  = (1 << 0),
@@ -84,6 +84,12 @@ namespace vp::res {
         constexpr GfxMemoryPoolFlags GetMemoryPropertyFlags() const {
             return static_cast<GfxMemoryPoolFlags>(this->memory_pool_flags);
         }
+        constexpr u32 GetSize() const {
+            return this->size;
+        }
+        constexpr void *GetGpuRegionBase() const {
+            return this->gpu_region_base;
+        }
     };
     static_assert(sizeof(ResGfxMemoryPoolInfo) == 0x10);
 
@@ -103,6 +109,13 @@ namespace vp::res {
         }
         constexpr void SetGpuAccessFlags(GfxGpuAccessFlags gpu_access_flags) {
             this->gpu_access_flags = static_cast<u32>(gpu_access_flags);
+        }
+
+        constexpr u32 GetSize() const {
+            return this->size;
+        }
+        constexpr GfxGpuAccessFlags GetGpuAccessFlags() const {
+            return static_cast<GfxGpuAccessFlags>(this->gpu_access_flags);
         }
     };
     static_assert(sizeof(ResGfxBufferInfo) == 0x10);
@@ -613,6 +626,47 @@ namespace vp::res {
         constexpr void SetArrayLayerCount(u32 array_layer_count) {
             this->array_layer_count = array_layer_count;
         }
+
+        constexpr GfxImageStorageDimension GetImageStorageDimension() const {
+            return static_cast<GfxImageStorageDimension>(this->image_storage_dimension);
+        }
+        constexpr GfxTileMode GetTileMode() const {
+            return static_cast<GfxTileMode>(this->tile_mode);
+        }
+        constexpr u32 GetMipLevelCount() const {
+            return this->mip_level_count;
+        }
+        constexpr u32 GetSampleCount() const {
+            return this->sample_count;
+        }
+        constexpr GfxImageFormat GetImageFormat() const {
+            return static_cast<GfxImageFormat>(this->image_format);
+        }
+        constexpr GfxGpuAccessFlags GetGpuAccessFlags() const {
+            return static_cast<GfxGpuAccessFlags>(this->gpu_access_flags);
+        }
+        constexpr u32 GetWidth() const {
+            return this->width;
+        }
+        constexpr u32 GetHeight() const {
+            return this->height;
+        }
+        constexpr u32 GetDepth() const {
+            return this->depth;
+        }
+        template <typename T>
+            requires (T::cIsVectorType && 2 == T::cCount)
+        constexpr T GetSize2d() const {
+            return T { this->width, this->height, };
+        }
+        template <typename T>
+            requires (T::cIsVectorType && 3 == T::cCount)
+        constexpr T GetSize3d() const {
+            return T { this->width, this->height, this->depth, };
+        }
+        constexpr u32 GetArrayLayerCount() const {
+            return this->array_layer_count;
+        }
     };
     static_assert(sizeof(ResGfxTextureInfo) == 0x28);
 
@@ -766,6 +820,43 @@ namespace vp::res {
         constexpr void SetTexture(T *texture) {
             this->texture = texture;
         }
+
+        constexpr GfxImageDimension GetImageDimension() const {
+            return static_cast<GfxImageDimension>(this->image_dimension);
+        }
+        constexpr GfxTextureDepthStencilMode GetDepthStencilMode() const {
+            return static_cast<GfxTextureDepthStencilMode>(this->depth_stencil_mode);
+        }
+        constexpr GfxImageFormat GetImageFormat() const {
+            return static_cast<GfxImageFormat>(this->image_format);
+        }
+        constexpr GfxTextureSwizzle GetSwizzleX() const {
+            return static_cast<GfxTextureSwizzle>(this->swizzle_x);
+        }
+        constexpr GfxTextureSwizzle GetSwizzleY() const {
+            return static_cast<GfxTextureSwizzle>(this->swizzle_y);
+        }
+        constexpr GfxTextureSwizzle GetSwizzleZ() const {
+            return static_cast<GfxTextureSwizzle>(this->swizzle_z);
+        }
+        constexpr GfxTextureSwizzle GetSwizzleW() const {
+            return static_cast<GfxTextureSwizzle>(this->swizzle_w);
+        }
+        constexpr u32 GetBaseMipLevel() const {
+            return this->base_mip_level;
+        }
+        constexpr u32 GetMipLevelCount() const {
+            return this->mip_level_count;
+        }
+        constexpr u32 GetBaseArrayLayer() const {
+             return this->base_array_layer;
+        }
+        constexpr u32 GetArrayLayerCount() const {
+             return this->array_layer_count;
+        }
+        constexpr T *GetTexture() const {
+            return this->texture;
+        }
     };
     static_assert(sizeof(ResGfxTextureViewInfo<void*>) == 0x38);
 
@@ -886,7 +977,7 @@ namespace vp::res {
         constexpr void SetBorderColor(GfxBorderColor border_color) {
             this->border_color = static_cast<u8>(border_color);
         }
-        constexpr void SetAnisotropy(bool is_enable_anisotropy, u8 max_anisotropy) {
+        constexpr void SetMaxAnisotropy(bool is_enable_anisotropy, u8 max_anisotropy) {
             this->is_enable_anisotropy = is_enable_anisotropy;
             this->max_anisotropy = max_anisotropy;
         }
@@ -901,7 +992,7 @@ namespace vp::res {
         constexpr void SetMinFilter(GfxMinFilter min_filter) {
             this->min_filter = static_cast<u8>(min_filter);
         }
-        constexpr void SetMaxFilter(GfxMagFilter mag_filter) {
+        constexpr void SetMagFilter(GfxMagFilter mag_filter) {
             this->mag_filter = static_cast<u8>(mag_filter);
         }
         constexpr void SetIsCompareRToTexture(bool is_compare_r_to_texture) {
@@ -917,6 +1008,48 @@ namespace vp::res {
         constexpr void SetLodBias(float lod_bias) {
             this->lod_bias = lod_bias;
         }
+        constexpr GfxWrapMode GetWrapModeU() const {
+            return static_cast<GfxWrapMode>(this->wrap_mode_u);
+        }
+        constexpr GfxWrapMode GetWrapModeV() const {
+            return static_cast<GfxWrapMode>(this->wrap_mode_v);
+        }
+        constexpr GfxWrapMode GetWrapModeW() const {
+            return static_cast<GfxWrapMode>(this->wrap_mode_w);
+        }
+        constexpr GfxCompareOperation GetCompareOperation() const {
+            return static_cast<GfxCompareOperation>(this->compare_op);
+        }
+        constexpr GfxBorderColor GetBorderColor() const {
+            return static_cast<GfxBorderColor>(this->border_color);
+        }
+        constexpr bool IsEnableAnisotropy() const {
+            return this->is_enable_anisotropy;
+        }
+        constexpr u32 GetMaxAnisotropy() const {
+            return this->max_anisotropy;
+        }
+        constexpr GfxMipMapFilter GetMipMapFilter() const {
+            return static_cast<GfxMipMapFilter>(this->mip_map_filter);
+        }
+        constexpr GfxMinFilter GetMinFilter() const {
+            return static_cast<GfxMinFilter>(this->min_filter);
+        }
+        constexpr GfxMagFilter GetMagFilter() const {
+            return static_cast<GfxMagFilter>(this->mag_filter);
+        }
+        constexpr bool IsCompareRToTexture() const {
+            return this->is_compare_r_to_texture;
+        }
+        constexpr GfxReductionFilter GetReductionFilter() const {
+            return static_cast<GfxReductionFilter>(this->reduction_filter);
+        }
+        constexpr vp::util::Float2 GetLodClamp() const {
+            return { this->lod_clamp_min, this->lod_clamp_max, };
+        }
+        constexpr float GetLodBias() const {
+            return this->lod_bias;
+        }
     };
     static_assert(sizeof(ResGfxSamplerInfo) == 0x20);
 
@@ -924,7 +1057,7 @@ namespace vp::res {
         return (static_cast<u16>(mip_map_filter) & 3) | ((static_cast<u16>(mag_filter) & 3) << 2) | ((static_cast<u16>(min_filter) & 3) << 4) | ((static_cast<u16>(enable_anisotropy) & 1) << 6) | ((static_cast<u16>(enable_compare_op) & 1) << 7) | ((static_cast<u16>(reduction_filter) & 3) << 8);
     }
 
-    enum class GfxPrimitiveTopology {
+    enum class GfxPrimitiveTopology : u32 {
         Points                 = 0,
         Lines                  = 1,
         LineStrip              = 2,
@@ -937,7 +1070,7 @@ namespace vp::res {
         Patches                = 9,
     };
 
-    enum class GfxIndexFormat {
+    enum class GfxIndexFormat : u32 {
         U8  = 0,
         U16 = 1,
         U32 = 2,
@@ -947,7 +1080,7 @@ namespace vp::res {
         return (1 << static_cast<u32>(index_format));
     }
 
-    enum class GfxComparisonFunction {
+    enum class GfxComparisonFunction : u8{
         Never            = 0,
         Less             = 1,
         Equal            = 2,
@@ -958,7 +1091,7 @@ namespace vp::res {
         Always           = 7,
     };
 
-    enum class GfxStencilOperation {
+    enum class GfxStencilOperation : u8{
         Keep          = 0,
         Zero          = 1,
         Replace       = 2,
@@ -1044,7 +1177,7 @@ namespace vp::res {
     };
 
     struct ResGfxUserData {
-        const char *name;
+        const NWString8 *name;
         void       *value;
         s32         data_count;
         u8          data_type;

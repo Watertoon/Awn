@@ -40,12 +40,18 @@ namespace awn::para {
             virtual constexpr ~PropertyArrayBase() override {/*...*/}
 
             virtual void InitializeBgyml(mem::Heap *heap, Document *document, vp::res::ByamlIterator byaml_iterator) override;
+#ifdef VP_ENABLE_LIBYAML
+            virtual void InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) override;
+#endif
             virtual void InitializeDefaults(mem::Heap *heap, bool is_force_unlink_parents) override;
 
             virtual void ResolveParent(Document *document, TypedParam *parent_typed_param, const char *field_name) override;
 
             virtual void AllocateArray(mem::Heap *heap, u32 count) = 0;
-            virtual void SetValueFromByamlData(vp::res::ByamlIterator iter, vp::res::ByamlData data, u32 i) = 0;
+            virtual void SetValueFromByamlIterator(vp::res::ByamlIterator iter, u32 i) = 0;
+#ifdef VP_ENABLE_LIBYAML
+            virtual void SetValueFromYamlIterator(vp::res::YamlIterator iter, u32 i) = 0;
+#endif
             virtual void SetValueDefault(u32 i) = 0;
             virtual constexpr u32 GetCountImpl() const = 0;
         public:
@@ -118,7 +124,7 @@ namespace awn::para {
                 return;
             }
 
-            virtual void SetValueFromByamlData(vp::res::ByamlIterator iter, vp::res::ByamlData data, u32 i) override {
+            virtual void SetValueFromByamlIterator(vp::res::ByamlIterator iter, u32 i) override {
 
                 /* Ensure index */
                 VP_ASSERT(i < m_count);
@@ -127,16 +133,36 @@ namespace awn::para {
                 T *array_offset = m_array + i;
 
                 /* Try load data */
-                const bool result = iter.TryGetValueByData(array_offset, data);
+                const bool result = iter.TryGetValueByIterator(array_offset);
 
                 /* Set default */
-                if (result == false) {
+                if (!result) {
                     *array_offset = reinterpret_cast<PropertyArrayDefault<T>*>(m_default)->value;
                 }
 
                 return;
             }
 
+#ifdef VP_ENABLE_LIBYAML
+            virtual void SetValueFromYamlIterator(vp::res::YamlIterator iter, u32 i) override {
+
+                /* Ensure index */
+                VP_ASSERT(i < m_count);
+
+                /* Get array offset */
+                T *array_offset = m_array + i;
+
+                /* Try load data */
+                const bool result = iter.TryGetValueByIterator(array_offset);
+
+                /* Set default */
+                if (!result) {
+                    *array_offset = reinterpret_cast<PropertyArrayDefault<T>*>(m_default)->value;
+                }
+
+                return;
+            }
+#endif
             virtual void SetValueDefault(u32 i) override {
 
                 /* Ensure index */

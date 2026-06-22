@@ -18,24 +18,24 @@
 namespace vp::res {
 
     struct ResBfresShaderParamAnim {
-        const char *shader_param_name;
-        u16         base_curve;
-        u16         curve_count_float;
-        u16         curve_count_int;
-        u16         base_constant;
-        u16         constant_count;
-        u16         fast_bind_shader_param_id;
-        u32         reserve0;
+        const NWString8 *shader_param_name;
+        u16              base_curve;
+        u16              curve_count_float;
+        u16              curve_count_int;
+        u16              base_constant;
+        u16              constant_count;
+        u16              fast_bind_shader_param_id;
+        u32              reserve0;
     };
     static_assert(sizeof(ResBfresShaderParamAnim) == 0x18);
 
     struct ResBfresTexturePatternAnim {
-        const char *sampler_name;
-        u16         base_curve;
-        u16         base_constant;
-        u8          fast_bind_sampler_id;
-        u8          reserve0;
-        u16         reserve1;
+        const NWString8 *sampler_name;
+        u16              base_curve;
+        u16              base_constant;
+        u8               fast_bind_sampler_id;
+        u8               reserve0;
+        u16              reserve1;
     };
     static_assert(sizeof(ResBfresTexturePatternAnim) == 0x10);
 
@@ -45,7 +45,7 @@ namespace vp::res {
     };
 
     struct ResBfresPerMaterialAnim {
-        const char                 *material_name;
+        const NWString8            *material_name;
         ResBfresShaderParamAnim    *shader_param_anim_array;
         ResBfresTexturePatternAnim *texture_pattern_anim_array;
         ResBfresAnimCurve          *anim_curve_array;
@@ -228,13 +228,13 @@ namespace vp::res {
                 u32 reserve1   : 29;                
             };
         };
-        const char                 *name;
-        const char                 *reserve2;
+        const NWString8            *name;
+        const NWString8            *reserve2;
         ResBfresModel              *runtime_bound_model;
         u16                        *fast_bind_table;
         ResBfresPerMaterialAnim    *per_material_anim_array;
         void                      **runtime_texture_view_array;
-        const char                **texture_name_array;
+        const NWString8           **texture_name_array;
         ResGfxUserData             *user_data_array;
         ResNintendoWareDictionary  *user_data_dictionary;
         u64                        *runtime_texture_descriptor_slot_array;
@@ -256,7 +256,7 @@ namespace vp::res {
             for (u32 i = 0; i < texture_count; ++i) {
                 if (runtime_texture_view_array[i] != nullptr && runtime_texture_descriptor_slot_array[i] != cInvalidDescriptorSlot) { continue; }
         
-                GfxBindTextureView bind_texture_view  = (bind_callback)(texture_name_array[i] + 2, user_data);
+                GfxBindTextureView bind_texture_view  = (bind_callback)(texture_name_array[i], user_data);
                 runtime_texture_view_array[i] = bind_texture_view.texture_view;
                 runtime_texture_descriptor_slot_array[i] = bind_texture_view.texture_view_decriptor_slot;
             }
@@ -273,7 +273,7 @@ namespace vp::res {
 
             bool had_success = false;
             for (u32 i = 0; i < texture_count; ++i) {
-                if (!vp::util::StringCompare(texture_name_array[i], name)) { continue; }
+                if (!vp::util::StringCompare(texture_name_array[i]->GetString(), name)) { continue; }
 
                 runtime_texture_descriptor_slot_array[i] = bind_texture_view->texture_view_decriptor_slot;
                 runtime_texture_view_array[i] = bind_texture_view->texture_view;

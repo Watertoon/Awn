@@ -201,6 +201,18 @@ namespace vp::res {
             }
             return interface_info;
         }
+        void SetShaderInterfaceInfo(GfxShaderStage shader_stage, vp::res::ResBnshShaderInterfaceInfo *interface_info) {
+            vp::res::ResBnshShaderInterfaceInfo **info;
+            const u32 stage_index = static_cast<u32>(shader_stage);
+            if (stage_index < 6) {
+                info = this->interface_info_array + stage_index;
+            } else {
+                /* Non-canon extension for other shader stages (currently ifdefed out on nx) */
+                info = (this->ext_table != nullptr) ? this->ext_table->interface_info_array + (stage_index-6) : nullptr;
+            }
+            *info = interface_info;
+            return;
+        }
     };
     static_assert(sizeof(ResBnshShaderInterfaceInfoTable) == 0x40);
 
@@ -262,6 +274,11 @@ namespace vp::res {
             VP_ASSERT(stage_id < vp::util::TEnumTraits<GfxShaderStage>::cEnumCount);
             return this->code_info_array[stage_id];
         }
+        void SetShaderCodeInfo(GfxShaderStage shader_stage, ResBnshShaderCodeInfo *code_info) {
+            const u32 stage_id = static_cast<u32>(shader_stage);
+            VP_ASSERT(stage_id < vp::util::TEnumTraits<GfxShaderStage>::cEnumCount);
+            this->code_info_array[stage_id] = code_info;
+        }
     };
     static_assert(sizeof(ResBnshShaderProgram) == 0xa0);
 
@@ -308,6 +325,7 @@ namespace vp::res {
     static constexpr u32 cDefaultBnshRuntimeMemoryPoolSize = 0x140;
 
     enum class BnshTargetApiType : u16 {
+        OpenGL = 1,
         Nvn = 4,
         /* Vp extensions */
         VpExtVulkan = 0x100,

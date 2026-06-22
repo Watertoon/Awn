@@ -292,8 +292,8 @@ namespace awn::hid::impl {
 
         /* Initialize arrays */
         if (0 < max_keyboard_count) {                    
-            m_keyboard_array.Initialize(heap, max_keyboard_count);
-            m_used_keyboard_array.Initialize(heap, max_keyboard_count);
+            RESULT_TRY(m_keyboard_array.Initialize(heap, max_keyboard_count));
+            RESULT_TRY(m_used_keyboard_array.Initialize(heap, max_keyboard_count));
             for (Keyboard &board : m_keyboard_array) {
                 m_used_keyboard_array.PushPointer(std::addressof(board));
             }

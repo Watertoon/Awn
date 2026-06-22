@@ -43,6 +43,10 @@ namespace awn::para {
         private:
             bool VerifyMap(vp::res::ByamlIterator iter);
             void AllocateMap(mem::Heap *heap, vp::res::ByamlIterator iter);
+#ifdef VP_ENABLE_LIBYAML
+            bool VerifyMap(vp::res::YamlIterator iter);
+            void AllocateMap(mem::Heap *heap, vp::res::YamlIterator iter);
+#endif
         public:
             constexpr TypedParamMapBase() : Composite(), m_tree(), m_resolve_type(2), m_parent() {/*...*/}
             virtual constexpr ~TypedParamMapBase() override {/*...*/}
@@ -61,6 +65,9 @@ namespace awn::para {
             }
 
             virtual void InitializeBgyml(mem::Heap *heap, Document *document, vp::res::ByamlIterator byaml_iterator) override;
+#ifdef VP_ENABLE_LIBYAML
+            virtual void InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) override;
+#endif
             virtual void InitializeDefaults(mem::Heap *heap, bool is_force_unlink_parents) override;
 
             virtual void Finalize() override;

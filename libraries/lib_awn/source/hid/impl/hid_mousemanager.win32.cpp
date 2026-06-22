@@ -45,8 +45,8 @@ namespace awn::hid::impl {
             }
 
             /* Set delta direct */
-            m_current_state.delta.x += input->lLastX;
-            m_current_state.delta.y += input->lLastY;
+            m_current_state.delta[0] += input->lLastX;
+            m_current_state.delta[1] += input->lLastY;
 
         } else if ((input->usFlags & 1) == MOUSE_MOVE_ABSOLUTE) {
 
@@ -74,8 +74,8 @@ namespace awn::hid::impl {
             }
 
             /* Calc delta */
-            m_current_state.delta.x += (pos.x - prev.x);
-            m_current_state.delta.y += (pos.y - prev.y);
+            m_current_state.delta[0] += (pos[0] - prev[0]);
+            m_current_state.delta[1] += (pos[1] - prev[1]);
         }
 
         /* Unpack button mask */
@@ -122,8 +122,8 @@ namespace awn::hid::impl {
         /* Unpack wheel */
         const bool is_wheel_v_down = input->usButtonFlags & RI_MOUSE_WHEEL;
         const bool is_wheel_h_down = input->usButtonFlags & RI_MOUSE_HWHEEL;
-        m_current_state.delta_wheel.y += (is_wheel_v_down) ? static_cast<s32>(static_cast<s16>(input->usButtonData)) : 0;
-        m_current_state.delta_wheel.x += (is_wheel_h_down) ? static_cast<s32>(static_cast<s16>(input->usButtonData)) : 0;
+        m_current_state.delta_wheel[1] += (is_wheel_v_down) ? static_cast<s32>(static_cast<s16>(input->usButtonData)) : 0;
+        m_current_state.delta_wheel[0] += (is_wheel_h_down) ? static_cast<s32>(static_cast<s16>(input->usButtonData)) : 0;
 
         m_is_dirty = true;
         return;
@@ -133,8 +133,8 @@ namespace awn::hid::impl {
         if (!m_is_dirty) { return; }
         m_is_dirty = false;
         m_ring.PushState(std::addressof(m_current_state));
-        m_current_state.delta = vp::util::Int2::cZero;
-        m_current_state.delta_wheel = vp::util::Int2::cZero;
+        m_current_state.delta = VectorConstant<Int2>::cZero;
+        m_current_state.delta_wheel = VectorConstant<Int2>::cZero;
     }
 
     AWN_SINGLETON_TRAITS_IMPL(MouseManager);
@@ -335,8 +335,8 @@ namespace awn::hid::impl {
 
         /* Initialize arrays */
         if (0 < max_mouse_count) {                    
-            m_mouse_array.Initialize(heap, max_mouse_count);
-            m_used_mouse_array.Initialize(heap, max_mouse_count);
+            RESULT_TRY(m_mouse_array.Initialize(heap, max_mouse_count));
+            RESULT_TRY(m_used_mouse_array.Initialize(heap, max_mouse_count));
             for (Mouse &mouse : m_mouse_array) {
                 m_used_mouse_array.PushPointer(std::addressof(mouse));
             }

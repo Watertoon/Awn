@@ -72,7 +72,7 @@ namespace vp::res {
     static_assert(sizeof(BfresBoneAnimResult) == 0x30);
 
     struct ResBfresBoneAnim {
-        const char                    *bone_name;
+        const NWString8               *bone_name;
         ResBfresAnimCurve             *anim_curve_array;
         void                          *default_result;
         ResGfxUserData                *user_data_array;
@@ -277,15 +277,15 @@ namespace vp::res {
                 u32 reserve3       : 19;
             };
         };
-        const char                *name;
-        const char                *reserve4;
+        const NWString8           *name;
+        const NWString8           *reserve4;
         ResBfresSkeleton          *runtime_bound_skeleton;
         u16                       *fast_bind_table;
         ResBfresBoneAnim          *bone_anim_array;
         ResGfxUserData            *user_data_array;
         ResNintendoWareDictionary *user_data_dictionary;
         u32                        frame_count;
-        u32                        total_anim_curves;
+        u32                        total_anim_curve_count;
         u32                        baked_size;
         u16                        bone_anim_count;
         u16                        user_data_count;

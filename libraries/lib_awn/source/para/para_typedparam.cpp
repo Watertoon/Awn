@@ -231,7 +231,7 @@ namespace awn::para {
 
         return;
     }
-    
+
     void TypedParam::InitializeBgyml(mem::Heap *heap, Document *document, vp::res::ByamlIterator byaml_iterator) {
 
         /* Integrity checks */
@@ -241,18 +241,18 @@ namespace awn::para {
         const auto prop_loop_lambda = [=](PropertyLoopInfo *prop_info) {
 
             /* Get iterator to data */
-            vp::res::ByamlData prop_data;
-            const bool has_data = byaml_iterator.TryGetByamlDataByKey(std::addressof(prop_data), prop_info->name);
+            vp::res::ByamlIterator prop_iter;
+            const bool is_valid = byaml_iterator.TryGetIteratorByKey(std::addressof(prop_iter), prop_info->name);
 
             /* Set default if no data */
-            if (!has_data) {
+            if (!is_valid) {
                 *prop_info->is_non_default &= 0xfe;
                 prop_info->property_accessor->SetValue(prop_info->default_value);
                 RESULT_RETURN_SUCCESS;
             }
 
             /* Set from prop accessor */
-            const bool is_set = prop_info->property_accessor->LoadByamlData(byaml_iterator, prop_data);
+            const bool is_set = prop_info->property_accessor->LoadByamlIterator(prop_iter);
             VP_ASSERT(is_set);
 
             /* Set as non default */
@@ -331,6 +331,108 @@ namespace awn::para {
 
         return;
     }
+
+#ifdef VP_ENABLE_LIBYAML
+    void TypedParam::InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) {
+
+        /* Integrity checks */
+        VP_ASSERT(vp::res::IsDictionaryType(static_cast<vp::res::ByamlDataType>(yaml_iterator.GetDataType())));
+
+        /* Load properties */
+        const auto prop_loop_lambda = [=](PropertyLoopInfo *prop_info) {
+
+            /* Get iterator to data */
+            vp::res::YamlIterator prop_iter;
+            const bool is_valid = yaml_iterator.TryGetIteratorByKey(std::addressof(prop_iter), prop_info->name);
+
+            /* Set default if no data */
+            if (!is_valid) {
+                *prop_info->is_non_default &= 0xfe;
+                prop_info->property_accessor->SetValue(prop_info->default_value);
+                RESULT_RETURN_SUCCESS;
+            }
+
+            /* Set from prop accessor */
+            const bool is_set = prop_info->property_accessor->LoadYamlIterator(prop_iter);
+            VP_ASSERT(is_set);
+
+            /* Set as non default */
+            *prop_info->is_non_default |= 1;
+
+            RESULT_RETURN_SUCCESS;
+        };
+        auto prop_loop_func = vp::util::MakeLambdaFunction<Result(PropertyLoopInfo*)>(prop_loop_lambda);
+        RESULT_DISCARD(this->LoopProperties(std::addressof(prop_loop_func)));
+
+        /* Load embeds */
+        const auto embed_loop_lambda = [=](EmbeddedLoopInfo *embed_info) {
+
+            /* Get iterator to data */
+            vp::res::YamlIterator embed_iter;
+            const bool has_data = yaml_iterator.TryGetIteratorByKey(std::addressof(embed_iter), embed_info->name);
+
+            /* Get class name */
+            const char *type_name = embed_info->embedded_class_name;
+            if (has_data) {
+                embed_iter.TryGetStringByKey(std::addressof(type_name), "$type");
+            }
+
+            /* Recreate the embed with a derived type if the derived type changed */
+            TypedParam *typed_param = *embed_info->embedded_typed_param;
+            if (typed_param == nullptr || !vp::util::StringCompare(typed_param->GetClassName(), type_name)) {
+                if (typed_param != nullptr) {
+                    typed_param->Finalize();
+                    delete typed_param;
+                }
+                typed_param = CreateTypedParam(heap, vp::util::HashMurmur64(type_name));
+            }
+
+            /* Replace with default if incompatible rtti */
+            if (!vp::util::CheckRuntimeTypeInfo(embed_info->embedded_rtti, typed_param->GetRuntimeTypeInfo())) {
+                typed_param->Finalize();
+                delete typed_param;
+                typed_param = CreateTypedParam(heap, vp::util::HashMurmur64(embed_info->embedded_class_name));
+            }
+
+            *embed_info->embedded_typed_param = typed_param;
+
+            RESULT_RETURN_SUCCESS;
+        };
+        auto embed_loop_func = vp::util::MakeLambdaFunction<Result(EmbeddedLoopInfo*)>(embed_loop_lambda);
+        RESULT_DISCARD(this->LoopEmbeds(std::addressof(embed_loop_func)));
+
+        /* Load composites */
+        const auto comp_loop_lambda = [&](CompositeLoopInfo *comp_info) {
+
+            /* Get iterator to data */
+            vp::res::YamlIterator comp_iter;
+            const bool has_data = yaml_iterator.TryGetIteratorByKey(std::addressof(comp_iter), comp_info->name);
+
+            /* Initialize defaults if no data */
+            if (!has_data) {
+
+                comp_info->composite->InitializeDefaults(heap, true);
+
+                /* Unset non-default set as initialized default */
+                *comp_info->is_non_default = (*comp_info->is_non_default & 0xfe) | 2;
+                RESULT_RETURN_SUCCESS;
+            }
+
+            /* Initialize with byaml iter */
+            comp_info->composite->InitializeYaml(heap, document, comp_iter);
+            *comp_info->is_non_default = (*comp_info->is_non_default & 0xfd) | 1;
+
+            RESULT_RETURN_SUCCESS;
+        };
+        auto comp_loop_func = vp::util::MakeLambdaFunction<Result(CompositeLoopInfo*)>(comp_loop_lambda);
+        RESULT_DISCARD(this->LoopComposites(std::addressof(comp_loop_func)));
+
+        /* Get parent path */
+        yaml_iterator.TryGetStringByKey(std::addressof(m_parent_name), "$parent");
+
+        return;
+    }
+#endif
 
     void TypedParam::InitializeDefaults(mem::Heap *heap, bool is_force_unlink_parents) {
 

@@ -38,7 +38,7 @@ namespace vp::util {
             return clamp_len;
         }
 
-                template <typename C>
+        template <typename C>
             requires (IsChar<C>)
         class HeapStringImpl {
             public:
@@ -49,20 +49,20 @@ namespace vp::util {
             public:
                 C *m_string_array;
                 u32 m_length;
-                u32 m_max_length;
+                u32 m_memory_size;
             public:
-                constexpr HeapStringImpl() : m_string_array(), m_length(), m_max_length() {/*...*/}
+                constexpr HeapStringImpl() : m_string_array(), m_length(), m_memory_size() {/*...*/}
                 constexpr ~HeapStringImpl() = default;
 
-                Result Initialize(vp::imem::IHeap *heap, u32 max_length) {
+                Result Initialize(vp::imem::IHeap *heap, u32 memory_size) {
                     /* Integrity checks */
-                    RESULT_RETURN_UNLESS(0 < max_length, ResultRangeNG);
+                    RESULT_RETURN_UNLESS(0 < memory_size, ResultRangeNG);
                     /* Allocate */
-                    C *string = new (heap, alignof(C)) C[max_length];
+                    C *string = new (heap, alignof(C)) C[memory_size];
                     RESULT_RETURN_UNLESS(string != nullptr, ResultNoMemory);
                     /* Setup */
                     m_string_array = string;
-                    m_max_length = max_length;
+                    m_memory_size = memory_size;
                     this->Clear();
                     RESULT_RETURN_SUCCESS;
                 }
@@ -71,17 +71,22 @@ namespace vp::util {
                         delete [] m_string_array;
                         m_string_array = nullptr;
                         m_length = 0;
-                        m_max_length = 0;
+                        m_memory_size = 0;
                     }
                 }
 
                 static constexpr size_t GetRequiredMemorySize(u32 max_length) {
                     return sizeof(C) * max_length;
                 }
-                constexpr void SetMemory(C *memory, u32 max_length) {
+                constexpr void SetMemoryAndClear(C *memory, u32 max_length) {
                     m_string_array = memory;
-                    m_max_length = max_length;
+                    m_memory_size = max_length;
                     this->Clear();
+                }
+                constexpr void SetMemoryDirect(C *memory, u32 max_length, u32 length) {
+                    m_string_array = memory;
+                    m_memory_size = max_length;
+                    m_length = length;
                 }
             public:
                 template <typename T>
@@ -98,8 +103,13 @@ namespace vp::util {
                     const UnderlyingCharType<T> *str;
                     u32 len;
                     GetUnderlyingString(std::addressof(str), std::addressof(len), std::addressof(rhs));
-                    if (m_length != len) { return false; }
-                    return ::memcmp(m_string_array, str, len * sizeof(C));
+                    const u32 m_len = vp::util::Min(m_length, len);
+                    const s32 cmp = std::memcmp(m_string_array, str, m_len);
+                    if (cmp == 0 && m_length != len) {
+                        if (m_length < len) { return -1; }
+                        if (m_length > len) { return 1; }
+                    }
+                    return cmp;
                 }
 
                 template <typename T>
@@ -115,7 +125,7 @@ namespace vp::util {
                     const UnderlyingCharType<T> *str;
                     u32 len;
                     GetUnderlyingString(std::addressof(str), std::addressof(len), string);
-                    const u32 new_len = impl::SetStringImpl(m_string_array, m_max_length, str, len);
+                    const u32 new_len = impl::SetStringImpl(m_string_array, m_memory_size, str, len);
                     m_length = new_len;
                     return;
                 }
@@ -125,7 +135,7 @@ namespace vp::util {
                 constexpr void SetString(const T *string, u32 length) {
                     const UnderlyingCharType<T> *str;
                     GetUnderlyingString(std::addressof(str), nullptr, string);
-                    const u32 new_len = impl::SetStringImpl(m_string_array, m_max_length, str, length);
+                    const u32 new_len = impl::SetStringImpl(m_string_array, m_memory_size, str, length);
                     m_length = new_len;
                     return;
                 }
@@ -135,7 +145,7 @@ namespace vp::util {
                 size_t Format(const T *format, ...) {
                     va_list args = {};
                     va_start(args, format);
-                    s32 length = ::vsnprintf(reinterpret_cast<char*>(m_string_array), m_max_length-1, reinterpret_cast<const char*>(format), args);
+                    s32 length = ::vsnprintf(reinterpret_cast<char*>(m_string_array), m_memory_size-1, reinterpret_cast<const char*>(format), args);
                     VP_ASSERT(0 <= length);
                     va_end(args);
                     this->SetLength(length);
@@ -146,7 +156,7 @@ namespace vp::util {
                     requires (IsChar<T>) && (sizeof(C) == sizeof(UnderlyingCharType<T>))
                 constexpr void CopyTo(T *out_string, u32 max_length) const {
                     const u32 clamp_len = vp::util::Min(max_length-1, m_length);
-                    ::memcpy(out_string, m_string_array, clamp_len);
+                    std::memcpy(out_string, m_string_array, clamp_len);
                     out_string[clamp_len] = '\0';
                     return;
                 }
@@ -157,13 +167,21 @@ namespace vp::util {
                 }
             public:
                 template <typename T>
+                    requires (IsChar<T>) && ((sizeof(T) == sizeof(C)) || (IsCharEncodingConvertible<C,T>))
+                constexpr void AppendChar(const T append) {
+                    const u32 prev_length = m_length;
+                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, m_memory_size - prev_length, std::addressof(append), 1);
+                    m_length = prev_length + append_length;
+                    return;
+                }
+                template <typename T>
                     requires (IsStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,T>))
                 constexpr void Append(const T *append) {
                     const u32 prev_length = m_length;
                     u32 len;
                     const UnderlyingCharType<T> *str;
                     GetUnderlyingString(std::addressof(str), std::addressof(len), append);
-                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, (m_max_length-1) - prev_length, str, len);
+                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, m_memory_size - prev_length, str, len);
                     m_length = prev_length + append_length;
                     return;
                 }
@@ -174,7 +192,7 @@ namespace vp::util {
                     const u32 prev_length = m_length;
                     const UnderlyingCharType<T> *str;
                     GetUnderlyingString(std::addressof(str), nullptr, append);
-                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, (m_max_length-1) - prev_length, str, len);
+                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, m_memory_size - prev_length, str, len);
                     m_length = prev_length + append_length;
                     return;
                 }
@@ -185,7 +203,7 @@ namespace vp::util {
                     /* Format into start of free space */
                     va_list args = {};
                     va_start(args, format);
-                    const s32 appended_length = ::vsnprintf(reinterpret_cast<char*>(m_string_array) + m_length, (m_max_length-1) - m_length, reinterpret_cast<const char*>(format), args);
+                    const s32 appended_length = ::vsnprintf(reinterpret_cast<char*>(m_string_array) + m_length, m_memory_size - m_length, reinterpret_cast<const char*>(format), args);
                     VP_ASSERT(0 <= appended_length);
                     va_end(args);
                     this->SetLength(m_length + appended_length);
@@ -201,7 +219,7 @@ namespace vp::util {
                     }
                     /* Move ahead new start of string */
                     const u32 new_length = m_length - length;
-                    ::memmove(m_string_array, m_string_array + length, new_length * sizeof(C));
+                    std::memmove(m_string_array, m_string_array + length, new_length * sizeof(C));
                     this->SetLength(new_length);
                     return;
                 }
@@ -231,7 +249,7 @@ namespace vp::util {
                     }
                     /* Copy up end of string to base offset */
                     const u32 end_len = m_length - end_offset;
-                    ::memmove(m_string_array + base_index, m_string_array + end_offset, end_len * sizeof(C));
+                    std::memmove(m_string_array + base_index, m_string_array + end_offset, end_len * sizeof(C));
                     this->SetLength(base_index + end_len);
                     return;
                 }
@@ -249,8 +267,8 @@ namespace vp::util {
                     /* Append string with overwrite */
                     const u32 insert_length = len;
                     const u32 final_length  = base_index + insert_length;
-                    const u32 append_length = (m_max_length < final_length) ? m_max_length - base_index : insert_length;
-                    ::memcpy(m_string_array + base_index, str, append_length);
+                    const u32 append_length = (m_memory_size < final_length) ? m_memory_size - base_index : insert_length;
+                    std::memcpy(m_string_array + base_index, str, append_length);
                     this->SetLength(final_length);
                     return;
                 }
@@ -290,10 +308,14 @@ namespace vp::util {
                 constexpr bool IsEmpty() const {
                     return m_string_array[0] == cNullChar;
                 }
+                constexpr bool IsFull() const {
+                    return (m_memory_size-1) == m_length;
+                }
                 constexpr void AssureTermination() {
                     m_string_array[m_length] = cNullChar;
                 }
 
+                constexpr size_t GetMemorySize() const { return m_memory_size; }
                 constexpr size_t GetLength() const { return m_length; }
                 constexpr C *GetString() { return m_string_array; }
                 constexpr const C *GetString() const { return m_string_array; }
@@ -304,13 +326,13 @@ namespace vp::util {
                     return;
                 }
                 constexpr void SetLength(u32 length) {
-                    VP_ASSERT(length < m_max_length);
+                    VP_ASSERT(length < m_memory_size);
                     m_length = length;
                     this->AssureTermination();
                     return;
                 }
                 constexpr void RecomputeLength() {
-                    const u32 recompute_length = vp::util::Min(StringLength(m_string_array), m_max_length - 1);
+                    const u32 recompute_length = vp::util::Min(StringLength(m_string_array), m_memory_size - 1);
                     this->SetLength(recompute_length);
                 }
 
@@ -385,8 +407,13 @@ namespace vp::util {
                     const UnderlyingCharType<T> *str;
                     u32 len;
                     GetUnderlyingString(std::addressof(str), std::addressof(len), std::addressof(rhs));
-                    if (m_length != len) { return false; }
-                    return ::memcmp(m_string_array, str, len * sizeof(C));
+                    const u32 m_len = vp::util::Min(m_length, len);
+                    const s32 cmp = std::memcmp(m_string_array, str, m_len);
+                    if (cmp == 0 && m_length != len) {
+                        if (m_length < len) { return -1; }
+                        if (m_length > len) { return 1; }
+                    }
+                    return cmp;
                 }
 
                 template <typename T>
@@ -433,7 +460,7 @@ namespace vp::util {
                     requires (IsChar<T>) && (sizeof(C) == sizeof(UnderlyingCharType<T>))
                 constexpr void CopyTo(T *out_string, u32 max_length) const {
                     const u32 clamp_len = vp::util::Min(max_length-1, m_length);
-                    ::memcpy(out_string, m_string_array, clamp_len);
+                    std::memcpy(out_string, m_string_array, clamp_len);
                     out_string[clamp_len] = '\0';
                     return;
                 }
@@ -444,13 +471,21 @@ namespace vp::util {
                 }
             public:
                 template <typename T>
+                    requires (IsChar<T>) && ((sizeof(T) == sizeof(C)) || (IsCharEncodingConvertible<C,T>))
+                constexpr void AppendChar(const T append) {
+                    const u32 prev_length = m_length;
+                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, Size - prev_length, std::addressof(append), 1);
+                    m_length = prev_length + append_length;
+                    return;
+                }
+                template <typename T>
                     requires (IsStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(C)) || (IsCharEncodingConvertible<C,T>))
                 constexpr void Append(const T *append) {
                     const u32 prev_length = m_length;
                     u32 len;
                     const UnderlyingCharType<T> *str;
                     GetUnderlyingString(std::addressof(str), std::addressof(len), append);
-                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, (Size-1) - prev_length, str, len);
+                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, Size - prev_length, str, len);
                     m_length = prev_length + append_length;
                     return;
                 }
@@ -461,7 +496,7 @@ namespace vp::util {
                     const u32 prev_length = m_length;
                     const UnderlyingCharType<T> *str;
                     GetUnderlyingString(std::addressof(str), nullptr, append);
-                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, (Size-1) - prev_length, str, len);
+                    const u32 append_length = impl::SetStringImpl(m_string_array + prev_length, Size - prev_length, str, len);
                     m_length = prev_length + append_length;
                     return;
                 }
@@ -488,7 +523,7 @@ namespace vp::util {
                     }
                     /* Move ahead new start of string */
                     const u32 new_length = m_length - length;
-                    ::memmove(m_string_array, m_string_array + length, new_length * sizeof(C));
+                    std::memmove(m_string_array, m_string_array + length, new_length * sizeof(C));
                     this->SetLength(new_length);
                     return;
                 }
@@ -518,7 +553,7 @@ namespace vp::util {
                     }
                     /* Copy up end of string to base offset */
                     const u32 end_len = m_length - end_offset;
-                    ::memmove(m_string_array + base_index, m_string_array + end_offset, end_len * sizeof(C));
+                    std::memmove(m_string_array + base_index, m_string_array + end_offset, end_len * sizeof(C));
                     this->SetLength(base_index + end_len);
                     return;
                 }
@@ -537,7 +572,7 @@ namespace vp::util {
                     const u32 insert_length = len;
                     const u32 final_length  = base_index + insert_length;
                     const u32 append_length = (Size < final_length) ? Size - base_index : insert_length;
-                    ::memcpy(m_string_array + base_index, str, append_length);
+                    std::memcpy(m_string_array + base_index, str, append_length);
                     this->SetLength(final_length);
                     return;
                 }
@@ -577,10 +612,14 @@ namespace vp::util {
                 constexpr bool IsEmpty() const {
                     return m_string_array[0] == cNullChar;
                 }
+                constexpr bool IsFull() const {
+                    return (Size-1) == m_length;
+                }
                 constexpr void AssureTermination() {
                     m_string_array[m_length] = cNullChar;
                 }
 
+                constexpr size_t GetMemorySize() const { return Size; }
                 constexpr size_t GetLength() const { return m_length; }
                 constexpr C *GetString() { return m_string_array; }
                 constexpr const C *GetString() const { return m_string_array; }

@@ -71,7 +71,7 @@ namespace awn::para {
     void TypedParamArrayBase::InitializeBgyml(mem::Heap *heap, Document *document, vp::res::ByamlIterator byaml_iterator) {
 
         /* Ensure container iterator */
-        VP_ASSERT(vp::res::IsContainerType(static_cast<vp::res::ByamlDataType>(byaml_iterator.GetDataType())) == true);
+        VP_ASSERT(vp::res::IsContainerType(static_cast<vp::res::ByamlDataType>(byaml_iterator.GetDataType())));
 
         /* Get array count */
         const u32 real_count = (0 < m_typed_param_max) ? m_typed_param_max : byaml_iterator.GetDataCount();
@@ -117,6 +117,58 @@ namespace awn::para {
 
         return;
     }
+
+#ifdef VP_ENABLE_LIBYAML
+    void TypedParamArrayBase::InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) {
+
+        /* Ensure container iterator */
+        VP_ASSERT(vp::res::IsContainerType(static_cast<vp::res::ByamlDataType>(yaml_iterator.GetDataType())));
+
+        /* Get array count */
+        const u32 real_count = (0 < m_typed_param_max) ? m_typed_param_max : yaml_iterator.GetDataCount();
+
+        /* Finalize array if necessary */
+        if (m_array.IsValid()) {
+
+            /* Finalize typed params over max */
+            const u32 array_count = m_array.GetUsedCount();
+            if (real_count < array_count) {
+                this->FinalizeTypedParamImpl(real_count, array_count);
+            }
+
+            /* Adjust count */
+            m_array.SetUsedCount(real_count);
+
+        } else {
+
+            /* Initialize array */
+            RESULT_DISCARD(m_array.Initialize(heap, real_count));
+        }
+
+        /* Create typed params */
+        const u64 base_class_hash = this->GetBaseClassHash();
+        for (u32 i = 0; i < real_count; ++i) {
+            vp::res::YamlIterator sub_iterator;
+            const bool result = yaml_iterator.TryGetIteratorByIndex(std::addressof(sub_iterator), i);
+            const char *real_class_name = "";
+            const u64   real_class_hash = (result == true && sub_iterator.TryGetStringByKey(std::addressof(real_class_name), "$type") == true) ? vp::util::HashMurmur64(real_class_name) : base_class_hash;
+            this->InitializeTypedParam(heap, document, i, real_class_hash, true);
+        }
+
+        /* Initialize typed params */
+        for (u32 i = 0; i < real_count; ++i) {
+            vp::res::YamlIterator sub_iterator;
+            const bool result = yaml_iterator.TryGetIteratorByIndex(std::addressof(sub_iterator), i);
+            if (result == true) {
+                m_array[i]->InitializeYaml(heap, document, sub_iterator);
+            } else {
+                m_array[i]->InitializeDefaults(heap, true);
+            }
+        }
+
+        return;
+    }
+#endif
 
     void TypedParamArrayBase::InitializeDefaults(mem::Heap *heap, bool is_unlink_parent) {
 

@@ -17,6 +17,8 @@
 
 namespace vp::res {
 
+    using NWString8 = vp::util::NWString8;
+
     enum ByteOrder : u16 {
         ByteOrder_Reverse = 0xfffe,
         ByteOrder_Native  = 0xfeff,
@@ -66,6 +68,10 @@ namespace vp::res {
 
         ResNintendoWareSubHeader *GetFirstBlock() {
             return (this->first_block_offset == 0) ? nullptr : reinterpret_cast<ResNintendoWareSubHeader*>(reinterpret_cast<uintptr_t>(this) + this->first_block_offset);
+        }
+
+        const NWString8 *GetName() const {
+            return reinterpret_cast<const NWString8*>(reinterpret_cast<uintptr_t>(this) + this->file_name_offset - 2);
         }
 
         ResNintendoWareRelocationTable *GetRelocationTable() {

@@ -21,9 +21,9 @@ namespace vp::resbui {
         if (res_dic->node_count != static_cast<s32>(m_node_count)) { return false; }
         u32 i = 0;
         for (DictionaryStringBase &string : m_node_list) {
-            const char *other_string = std::addressof(res_dic->root_node)[1 + i].key + 2;
+            const vp::res::NWString8 *other_string = std::addressof(res_dic->root_node)[1 + i].key;
             ++i;
-            if (!vp::util::StringCompare(string.GetString(), other_string)) { return false; }
+            if (!vp::util::StringCompare(string.GetString(), other_string->GetString())) { return false; }
         }
         return true;
     }
@@ -94,7 +94,7 @@ namespace vp::resbui {
         VP_ASSERT(build_result == true);
 
         /* Add relocation entry */
-        RESULT_ABORT_UNLESS(relocation_table_stream->AddEntry(std::addressof(header->root_node.key), i + 1, 1, 1));
+        relocation_table_stream->AddEntry(std::addressof(header->root_node.key), i + 1, 1, 1);
 
         return;
     }

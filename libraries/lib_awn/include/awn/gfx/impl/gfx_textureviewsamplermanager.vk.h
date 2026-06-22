@@ -114,16 +114,8 @@ namespace awn::gfx::impl {
                 vp::util::IntrusiveRedBlackTreeNode<SamplerKey> rb_node;
                 u32 reference_count;
                 u32 free_count;
-            #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-                VkSampler vk_sampler;
-                char descriptor_memory[Context::cTargetMaxSeparateSamplerDescriptorSize];
-            #endif
 
-                constexpr  SamplerUnit() : rb_node(), reference_count(), free_count()
-            #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-                , vk_sampler()
-            #endif
-                {/*...*/}
+                constexpr  SamplerUnit() : rb_node(), reference_count(), free_count() {/*...*/}
                 constexpr ~SamplerUnit()= default;
 
                 constexpr void IncrementFreeCount() {
@@ -157,9 +149,6 @@ namespace awn::gfx::impl {
                 u32 reference_count;
                 u32 free_count;
                 VkImageView vk_image_view;
-            #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-                char descriptor_memory[Context::cTargetMaxSeparateTextureDescriptorSize];
-            #endif
 
                 static constexpr inline size_t cInvalidMemoryOffset = 0xffff'ffff'ffff'ffff;
 
@@ -188,10 +177,6 @@ namespace awn::gfx::impl {
             using SamplerSlotAllocator = vp::util::AtomicIndexAllocator<SamplerSlotType>;
             using SamplerMap           = vp::util::IntrusiveRedBlackTreeTraits<SamplerUnit, &SamplerUnit::rb_node, SamplerKeyCompare>::Tree;
         private:
-        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            size_t                m_texture_base_offset;
-            size_t                m_sampler_base_offset;
-        #endif
             TextureSlotAllocator  m_texture_slot_allocator;
             TextureViewUnitArray  m_texture_view_unit_array;
             SamplerMap            m_sampler_map;
@@ -201,11 +186,7 @@ namespace awn::gfx::impl {
         public:
             AWN_SINGLETON_TRAITS(TextureViewSamplerManager);
         public:
-            constexpr TextureViewSamplerManager() :
-    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            m_texture_base_offset(), m_sampler_base_offset(),
-    #endif
-            m_texture_slot_allocator(), m_texture_view_unit_array(), m_sampler_map(), m_sampler_slot_allocator(), m_sampler_unit_array(), m_sampler_rwlock() {/*...*/}
+            constexpr TextureViewSamplerManager() : m_texture_slot_allocator(), m_texture_view_unit_array(), m_sampler_map(), m_sampler_slot_allocator(), m_sampler_unit_array(), m_sampler_rwlock() {/*...*/}
             constexpr ~TextureViewSamplerManager() {/*...*/}
 
             void Initialize(mem::Heap *heap, const TextureViewSamplerManagerInfo *manager_info);
@@ -255,11 +236,7 @@ namespace awn::gfx::impl {
             }
         public:
             constexpr VkImageView GetVkImageView(DescriptorSlot texture_view_slot) const { return m_texture_view_unit_array[texture_view_slot.index].vk_image_view; }
-        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            constexpr VkSampler GetVkSampler(DescriptorSlot sampler_slot) const { return m_sampler_unit_array[sampler_slot.index].vk_sampler; }
-            constexpr const void *GetSeparateTextureDescriptor(DescriptorSlot texture_view_slot) const { return m_texture_view_unit_array[texture_view_slot.index].descriptor_memory; }
-            constexpr const void *GetSeparateSamplerDescriptor(DescriptorSlot sampler_slot) const { return m_sampler_unit_array[sampler_slot.index].descriptor_memory; }
-        #else
+
             constexpr u32 GetTextureSamplerDescriptorHandle(DescriptorSlot texture_view_slot, DescriptorSlot sampler_slot) {
                 VP_ASSERT(this->IsTextureViewSlotValid(texture_view_slot));
                 VP_ASSERT(this->IsSamplerSlotValid(sampler_slot));
@@ -277,7 +254,6 @@ namespace awn::gfx::impl {
                 VP_ASSERT(this->IsSamplerSlotValid(sampler_slot));
                 return sampler_slot.index;
             }
-        #endif
         public:
             constexpr const TextureViewUnit *GetTextureViewUnit(u32 index) const { return std::addressof(m_texture_view_unit_array[index]); }
             constexpr const SamplerUnit *GetSamplerUnit(u32 index) const { return std::addressof(m_sampler_unit_array[index]); }

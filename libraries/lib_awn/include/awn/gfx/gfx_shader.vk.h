@@ -80,11 +80,12 @@ namespace awn::gfx {
             constexpr Shader() : m_init_event(sys::SignalState::Cleared, sys::ResetMode::Manual), m_vk_shader_array{}, m_res_program() {/*...*/}
             constexpr ~Shader() {/*...*/}
 
-            Result Initialize(MeshShaderInfo *shader_info, ShaderCodeType code_type);
-            Result Initialize(PrimitiveShaderInfo *shader_info, ShaderCodeType code_type);
-            Result Initialize(ComputeShaderInfo *shader_info, ShaderCodeType code_type);
+            //Result Initialize(MeshShaderInfo *shader_info, ShaderCodeType code_type);
+            //Result Initialize(PrimitiveShaderInfo *shader_info, ShaderCodeType code_type);
+            //Result Initialize(ComputeShaderInfo *shader_info, ShaderCodeType code_type);
 
             Result Initialize(vp::res::ResBnshShaderProgram *res_program);
+            Result Initialize(vp::res::ResBfshaShaderProgram *program);
             void Finalize();
 
             u32 GetInterfaceSlot(ShaderStage shader_stage, ShaderInterfaceType interface_type, const char *key);

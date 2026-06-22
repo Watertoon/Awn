@@ -37,7 +37,7 @@ namespace vp::util {
 
                 /* Set counts */
                 IndexType *id_type = new (heap, alignof(IndexType)) IndexType[count];
-                RESULT_RETURN_UNLESS(m_bit_array != nullptr, ResultNoMemory);
+                RESULT_RETURN_UNLESS(id_type != nullptr, ResultNoMemory);
                 m_bit_array = id_type;
                 m_element_count = element_count;
 

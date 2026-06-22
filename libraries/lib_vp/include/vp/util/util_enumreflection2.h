@@ -71,17 +71,17 @@ namespace vp::util {
 
         template <typename T>
             requires (std::is_enum_v<T>)
-        consteval std::array<EnumUnderlyingType<T>, CountEnumFields<T>()> BuildEnumFieldValueArray() {
-            std::array<EnumUnderlyingType<T>,CountEnumFields<T>()> arr;
+        consteval std::array<T, CountEnumFields<T>()> BuildEnumFieldValueArray() {
+            std::array<T,CountEnumFields<T>()> arr;
             u32 i = 0;
             for (std::meta::info inf : std::meta::enumerators_of(^^T)) {
-                arr[i] = static_cast<EnumUnderlyingType<T>>(std::meta::extract<T>(inf));
+                arr[i] = static_cast<T>(std::meta::extract<T>(inf));
                 ++i;
             }
             return arr;
         }
         template <typename T>
-        consteval std::array<EnumUnderlyingType<T>, CountEnumFields<T>()> BuildEnumFieldValueArray() {
+        consteval std::array<T, CountEnumFields<T>()> BuildEnumFieldValueArray() {
             return {};
         }
 
@@ -112,20 +112,22 @@ namespace vp::util {
     struct TEnumTraits {
         using EnumType = T;
         using UnderlyingType = impl::EnumUnderlyingType<T>;
+        static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
+        static constexpr const char *cClassName = std::meta::display_string_of(^^T).data();
         static constexpr const u32 cEnumCount = impl::CountEnumFields<EnumType>();
         static constexpr bool cIsDummy = (cEnumCount == 0);
         static constexpr const std::array<const char*,cEnumCount> cIndexToStringArray = impl::BuildEnumFieldNameArray<T>();
-        static constexpr const std::array<UnderlyingType,cEnumCount> cIndexToEnumArray = impl::BuildEnumFieldValueArray<T>();
+        static constexpr const std::array<EnumType,cEnumCount> cIndexToEnumArray = impl::BuildEnumFieldValueArray<T>();
         static constexpr const std::array<u32,cEnumCount> cIndexToHashArray = impl::GenerateEnumValueHashArray<cEnumCount>(cIndexToStringArray);
         static_assert(impl::ValidateEnumHashArray<cEnumCount>(cIndexToHashArray));
         static constexpr u32 GetIndexByValue(EnumType enum_value) {
             u32 i = 0;
             for (; i < cEnumCount; ++i) {
-                if (static_cast<EnumType>(cIndexToEnumArray[i]) == enum_value) { return i; }
+                if (cIndexToEnumArray[i] == enum_value) { return i; }
             }
-            VP_UNEXPECTED_DEFAULT();
+            return cInvalidEntryIndex;
         }
-        static constexpr const char *GetStringByIndex(u32 index) { VP_ASSERT(index < cEnumCount); return cIndexToStringArray[index]; }
+        static constexpr const char *GetStringByIndex(u32 index) { return (index < cEnumCount) ? cIndexToStringArray[index] : nullptr; }
         static constexpr const char *GetStringByValue(EnumType enum_value) { return cIndexToStringArray[GetIndexByValue(enum_value)]; }
         static constexpr bool GetValueByString(EnumType *out_value, const char *enum_string) {
             const u32 hash = vp::util::HashMurmur3(enum_string);
@@ -138,7 +140,7 @@ namespace vp::util {
         static constexpr bool GetValueByHash(EnumType *out_value, u32 enum_hash) {
             for (u32 i = 0; i < cEnumCount; ++i) {
                 if (cIndexToHashArray[i] == enum_hash) {
-                    *out_value = static_cast<EnumType>(cIndexToEnumArray[i]);
+                    *out_value = cIndexToEnumArray[i];
                     return true;
                 }
             }
@@ -147,16 +149,16 @@ namespace vp::util {
         static constexpr bool GetValueByHash(UnderlyingType *out_value, u32 enum_hash) {
             for (u32 i = 0; i < cEnumCount; ++i) {
                 if (cIndexToHashArray[i] == enum_hash) {
-                    *out_value = cIndexToEnumArray[i];
+                    *out_value = static_cast<UnderlyingType>(cIndexToEnumArray[i]);
                     return true;
                 }
             }
             return false;
         }
-        static constexpr EnumType GetValueByIndex(u32 index) { VP_ASSERT(index < cEnumCount); return static_cast<EnumType>(cIndexToEnumArray[index]); }
+        static constexpr EnumType GetValueByIndex(u32 index) { VP_ASSERT(index < cEnumCount); return cIndexToEnumArray[index]; }
     };
 
-    enum EnumType : u32 {
+    enum class EnumType : u32 {
         S8,
         S16,
         S32,
@@ -165,12 +167,20 @@ namespace vp::util {
         U16,
         U32,
         U64,
+        Bool,
     };
+
+    constexpr bool IsSigned(EnumType enum_type) {
+        return static_cast<u32>(enum_type) < 4;
+    }
+    constexpr bool IsUnsigned(EnumType enum_type) {
+        return static_cast<u32>(enum_type) - 4 < 4;
+    }
 
     class EnumDictionaryBase {
         public:
             static constexpr u32 cInvalidEntryIndex = 0xffff'ffff;
-        protected:
+        public:
             EnumType m_enum_type;
             u32 m_enum_count;
             const char *m_class_name;
@@ -209,8 +219,9 @@ namespace vp::util {
         requires (!std::is_enum<T>::value && std::is_integral_v<T> && sizeof(T) <= 8 && vp::util::IsAlignedPow2(sizeof(T)))
     class EnumDictionary : public EnumDictionaryBase {
         public:
-            static constexpr EnumType cEnumType = static_cast<EnumType>((sizeof(T) / 2) + std::is_unsigned_v<T> * 4);
-        protected:
+            /* Pun to closest integral type */
+            static constexpr EnumType cEnumType = (std::is_same_v<std::remove_cv_t<T>, bool>) ? EnumType::Bool : static_cast<EnumType>(vp::util::CountRightZeroBits(sizeof(T)) + std::is_unsigned_v<T> * 4);
+        public:
             const T *m_value_array;
         public:
             constexpr EnumDictionary(const char *class_name, const u32 *hash_array, const char * const *string_array, const T *value_array, u32 enum_count) : EnumDictionaryBase(class_name, hash_array, string_array, enum_count, cEnumType), m_value_array(value_array) {/*...*/}
@@ -240,6 +251,61 @@ namespace vp::util {
                 return true;
             }
     };
+
+    template <typename T>
+    bool GetAndCastEnumValueByIndex(T *out_value, const EnumDictionaryBase *base, u32 value_id) {
+        if (base->GetEnumCount() <= value_id) { return false; }
+        switch (base->GetEnumType()) {
+            case EnumType::S8:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<s8>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            case EnumType::U8:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<u8>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            case EnumType::S16:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<s16>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            case EnumType::U16:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<u16>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            case EnumType::S32:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<s32>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            case EnumType::U32:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<u32>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            case EnumType::S64:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<s64>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            case EnumType::U64:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<u64>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            case EnumType::Bool:
+            {
+                *out_value = static_cast<T>(reinterpret_cast<const EnumDictionary<bool>*>(base)->m_value_array[value_id]);
+                return true;
+            }
+            default:
+                break;
+        };
+        return false;
+    }
 
     class EnumDictionaryManager;
 

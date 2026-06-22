@@ -17,11 +17,9 @@
 
 namespace awn::gfx {
 
-    using GpuAddress = impl::GpuAddress;
-    static constexpr GpuAddress cInvalidGpuAddress = impl::cInvalidGpuAddress;
-
     class Buffer;
 
+#ifndef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
     struct BufferAddress {
         const Buffer *buffer;
         size_t offset;
@@ -29,6 +27,7 @@ namespace awn::gfx {
         constexpr GpuAddress GetGpuAddress();
         constexpr VkBuffer GetVkBuffer();
     };
+#endif
 
     static constexpr size_t cMaxVertexBufferAlignment = impl::Context::cTargetVertexBufferAlignment;
     static constexpr size_t cMaxIndexBufferAlignment = impl::Context::cTargetIndexBufferAlignment;
@@ -54,8 +53,12 @@ namespace awn::gfx {
             void Finalize();
 
             constexpr void *GetAddress() const { return m_address; }
+            void *GetAddress(size_t offset) const { return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_address) + offset); }
             constexpr GpuAddress GetGpuAddress() const { return m_gpu_address; }
+            constexpr GpuAddress GetGpuAddress(size_t offset) const { return m_gpu_address + offset; }
+#ifndef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
             constexpr BufferAddress GetBufferAddress(size_t offset = 0) const { return { this, offset, }; }
+#endif
 
             void FlushMappedRange(size_t offset, size_t size);
             void InvalidateMappedRange(size_t offset, size_t size);
@@ -75,6 +78,8 @@ namespace awn::gfx {
 	};
     static_assert(sizeof(Buffer) <= cMaxGfxBufferSize);
 
+#ifndef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
     constexpr GpuAddress BufferAddress::GetGpuAddress() { return { buffer->GetGpuAddress().vk_device_address + this->offset, }; }
     constexpr VkBuffer BufferAddress::GetVkBuffer() { return buffer->GetVkBuffer(); }
+#endif
 }

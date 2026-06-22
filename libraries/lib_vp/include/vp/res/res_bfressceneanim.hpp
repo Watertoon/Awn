@@ -55,7 +55,7 @@ namespace vp::res {
                 u32 reserve3        : 25;
             };
         };
-        const char                      *name;
+        const NWString8                 *name;
         ResBfresAnimCurve               *anim_curve_array;
         ResBfresCameraAnimResult        *default_result;
         ResGfxUserData                  *user_data_array;
@@ -137,14 +137,14 @@ namespace vp::res {
                 u32 reserve2                    : 16;
             };
         };
-        const char                     *name;
+        const NWString8                *name;
         ResBfresAnimCurve              *anim_curve_array;
         void                           *default_result;
         ResGfxUserData                 *user_data_array;
         ResNintendoWareDictionary      *user_data_dictionary;
-        const char                     *light_type_name;
-        const char                     *distance_attenuation_type_name;
-        const char                     *angle_attenuation_type_name;
+        const NWString8                *light_type_name;
+        const NWString8                *distance_attenuation_type_name;
+        const NWString8                *angle_attenuation_type_name;
         u32                             frame_count;
         u32                             baked_size;
         u16                             user_data_count;
@@ -274,12 +274,12 @@ namespace vp::res {
                 u32 reserve1   : 29;
             };
         };
-        const char                   *name;
+        const NWString8              *name;
         ResBfresAnimCurve            *anim_curve_array;
         ResBfresFogAnimResult        *default_result;
         ResGfxUserData               *user_data_array;
         ResNintendoWareDictionary    *user_data_dictionary;
-        const char                   *distance_attenuation_type_name;
+        const NWString8              *distance_attenuation_type_name;
         u32                           frame_count;
         u32                           baked_size;
         u16                           user_data_count;
@@ -327,8 +327,8 @@ namespace vp::res {
     struct ResBfresSceneAnim {
         u32                        magic;
         u32                        flags;
-        const char                *name;
-        const char                *reserve0;
+        const NWString8           *name;
+        const NWString8           *reserve0;
         ResBfresCameraAnim        *camera_anim_array;
         ResNintendoWareDictionary *camera_anim_dictionary;
         ResBfresLightAnim         *light_anim_array;

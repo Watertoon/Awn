@@ -74,7 +74,7 @@ namespace awn::res::impl {
     void ResourceUnitAllocator::Free(ResourceUnit *resource_unit) {
 
         /* Push unload id */
-        VP_ASSERT(m_resource_unit_array.IsContainAddress(resource_unit));
+        VP_ASSERT(m_resource_unit_array.IsContain(resource_unit));
         const u32 index = m_resource_unit_array.IndexOf(resource_unit);
         m_resource_unit_free_ring.PushBack(index + 1);
         

@@ -76,7 +76,7 @@ namespace vp::util {
 
                 /* Integrity checks */
                 RESULT_RETURN_IF(array_size < 1, ResultRangeNG);
-                RESULT_RETURN_IF(array_size < 0xffff'ffff, ResultRangeNG);
+                RESULT_RETURN_UNLESS(array_size < 0xffff'ffff, ResultRangeNG);
 
                 /* Allocate memory for both arrays */
                 uintptr_t memory = reinterpret_cast<uintptr_t>(::operator new((sizeof(FreeList) + sizeof(T**)) * array_size, heap, alignof(T)));

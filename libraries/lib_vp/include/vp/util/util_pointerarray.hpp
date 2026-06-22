@@ -73,7 +73,7 @@ namespace vp::util {
 
                 /* Allocate pointer array */
                 T **array = new (heap, alignof(T*)) T*[count];
-                RESULT_RETURN_IF(m_array == nullptr, ResultNoMemory);
+                RESULT_RETURN_IF(array == nullptr, ResultNoMemory);
 
                 /* Set state */
                 m_used_count = 0;
@@ -187,12 +187,6 @@ namespace vp::util {
                 return true;
             }
 
-            bool RemoveOrdered(T *iter) {
-                const u32 i = this->IndexOf(iter);
-                if (i == cInvalidEntryIndex) { return false; }
-                return this->RemoveRange(i, 1);
-            }
-
             constexpr void Swap(u32 index0, u32 index1) {
                 VP_ASSERT(index0 < m_used_count);
                 VP_ASSERT(index1 < m_used_count);
@@ -203,12 +197,33 @@ namespace vp::util {
                 return;
             }
 
+            bool RemoveOrdered(u32 id) {
+                return this->RemoveRange(id, 1);
+            }
+            bool RemoveOrdered(T **iter) {
+                const u32 i = this->IndexOf(iter);
+                return this->RemoveOrdered(i);
+            }
+            bool RemoveOrdered(T *iter) {
+                const u32 i = this->IndexOf(iter);
+                if (i == cInvalidEntryIndex) { return false; }
+                return this->RemoveOrdered(i);
+            }
+
+            constexpr void RemoveUnordered(u32 id) {
+                const u32 next_count = m_used_count - 1;
+                m_array[id] = m_array[next_count];
+                m_used_count = next_count;
+                return;
+            }
+            constexpr void RemoveUnordered(T **iter) {
+                const u32 i = this->IndexOf(iter);
+                this->RemoveUnordered(i);
+            }
             constexpr bool RemoveUnordered(T *iter) {
                 const u32 i = this->IndexOf(iter);
                 if (i == cInvalidEntryIndex) { return false; }
-                const u32 next_count = m_used_count - 1;
-                m_array[i] = m_array[next_count];
-                m_used_count = next_count;
+                this->RemoveUnordered(i);
                 return true;
             }
         public:
@@ -450,18 +465,33 @@ namespace vp::util {
                 return true;
             }
 
+            bool RemoveOrdered(u32 id) {
+                return this->RemoveRange(id, 1);
+            }
+            bool RemoveOrdered(T **iter) {
+                const u32 i = this->IndexOf(iter);
+                return this->RemoveOrdered(i);
+            }
             bool RemoveOrdered(T *iter) {
                 const u32 i = this->IndexOf(iter);
                 if (i == cInvalidEntryIndex) { return false; }
-                return this->RemoveRange(i, 1);
+                return this->RemoveOrdered(i);
             }
 
-            bool RemoveUnordered(T *iter) {
+            constexpr void RemoveUnordered(u32 id) {
+                const u32 next_count = m_used_count - 1;
+                m_array[id] = m_array[next_count];
+                m_used_count = next_count;
+                return;
+            }
+            constexpr void RemoveUnordered(T **iter) {
+                const u32 i = this->IndexOf(iter);
+                this->RemoveUnordered(i);
+            }
+            constexpr bool RemoveUnordered(T *iter) {
                 const u32 i = this->IndexOf(iter);
                 if (i == cInvalidEntryIndex) { return false; }
-                const u32 next_count = m_used_count - 1;
-                m_array[i] = m_array[next_count];
-                m_used_count = next_count;
+                this->RemoveUnordered(i);
                 return true;
             }
 

@@ -23,16 +23,36 @@ namespace awn::sys {
         public:
             friend class ConditionVariable;
         private:
-            SRWLOCK m_srwlock;
-            u32 m_tag;
+            impl::InternalCriticalSection m_cs;
             u32 m_lock_count;
         public:
-            constexpr ALWAYS_INLINE Mutex() : m_srwlock(SRWLOCK_INIT), m_tag(), m_lock_count() {/*...*/}
+            constexpr Mutex() : m_cs(), m_lock_count() {/*...*/}
             constexpr ~Mutex() {/*...*/}
 
-            void Enter();
-            bool TryEnter();
-            void Leave();
+            void Enter() {
+                if (!m_cs.IsLockedByCurrentThread()) {
+                    m_cs.Enter();
+                }
+                const u32 count = m_lock_count;
+                m_lock_count = count + 1;
+                VP_ASSERT(count != 0xffff'ffff);
+                return;
+            }
+            bool TryEnter() {
+                if (!m_cs.IsLockedByCurrentThread() && !m_cs.TryEnter()) { return false; }
+                const u32 count = m_lock_count;
+                m_lock_count = count + 1;
+                VP_ASSERT(count != 0xffff'ffff);
+                return true;
+            }
+            void Leave() {
+                const u32 n_count = m_lock_count - 1;
+                m_lock_count = n_count;
+                if (n_count == 0) {
+                    m_cs.Leave();
+                }
+                return;
+            }
 
             ALWAYS_INLINE void lock() {
                 this->Enter();
@@ -44,6 +64,6 @@ namespace awn::sys {
                 return this->TryEnter();
             }
 
-            bool IsLockedByCurrentThread();
+            bool IsLockedByCurrentThread() { return m_cs.IsLockedByCurrentThread(); }
     };
 }

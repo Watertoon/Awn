@@ -96,12 +96,42 @@ namespace vp::util {
         a = FloatToUnorm8(rhs.a);
         return *this;
     }
+    constexpr ALWAYS_INLINE Color4f Color4u8ToColor4f(const Color4u8 &color) {
+        Color4f ret;
+        ret.r = Unorm8ToFloat(color.r);
+        ret.g = Unorm8ToFloat(color.g);
+        ret.b = Unorm8ToFloat(color.b);
+        ret.a = Unorm8ToFloat(color.a);
+        return ret;
+    }
+    constexpr ALWAYS_INLINE Color4u8 Color4fToColor4u8(const Color4f &color) {
+        Color4u8 ret;
+        ret.r = FloatToUnorm8(color.r);
+        ret.g = FloatToUnorm8(color.g);
+        ret.b = FloatToUnorm8(color.b);
+        ret.a = FloatToUnorm8(color.a);
+        return ret;
+    }
 
-    constexpr inline Color4u8 cBlack4u8 = {0x00, 0x00, 0x00, 0xff,};
-    constexpr inline Color4u8 cWhite4u8 = {0xff, 0xff, 0xff, 0xff,};
+    static constexpr inline Color4u8 cBlack4u8   = {0x00, 0x00, 0x00, 0xff,};
+    static constexpr inline Color4u8 cWhite4u8   = {0xff, 0xff, 0xff, 0xff,};
+    static constexpr inline Color4u8 cRed4u8     = {0xff, 0x00, 0x00, 0xff,};
+    static constexpr inline Color4u8 cGreen4u8   = {0x00, 0xff, 0x00, 0xff,};
+    static constexpr inline Color4u8 cBlue4u8    = {0x00, 0x00, 0xff, 0xff,};
+    static constexpr inline Color4u8 cCyan4u8    = {0x00, 0xff, 0xff, 0xff,};
+    static constexpr inline Color4u8 cMagenta4u8 = {0xff, 0x00, 0xff, 0xff,};
+    static constexpr inline Color4u8 cYellow4u8  = {0xff, 0xff, 0x00, 0xff,};
+    static constexpr inline Color4u8 cGray4u8    = {0x80, 0x80, 0x80, 0xff,};
 
-    constexpr inline Color4f cBlack4f   = {0.0f, 0.0f, 0.0f, 1.0f,};
-    constexpr inline Color4f cWhite4f   = {1.0f, 1.0f, 1.0f, 1.0f,};
+    static constexpr inline Color4f cBlack4f   = {0.0f, 0.0f, 0.0f, 1.0f,};
+    static constexpr inline Color4f cWhite4f   = {1.0f, 1.0f, 1.0f, 1.0f,};
+    static constexpr inline Color4f cRed4f     = {1.0f, 0.0f, 0.0f, 1.0f,};
+    static constexpr inline Color4f cGreen4f   = {0.0f, 1.0f, 0.0f, 1.0f,};
+    static constexpr inline Color4f cBlue4f    = {0.0f, 0.0f, 1.0f, 1.0f,};
+    static constexpr inline Color4f cCyan4f    = {0.0f, 1.0f, 1.0f, 1.0f,};
+    static constexpr inline Color4f cMagenta4f = {1.0f, 0.0f, 1.0f, 1.0f,};
+    static constexpr inline Color4f cYellow4f  = {1.0f, 1.0f, 0.0f, 1.0f,};
+    static constexpr inline Color4f cGray4f    = {0.5f, 0.5f, 0.5f, 1.0f,};
 
     constexpr ALWAYS_INLINE Color4f operator-(const Color4f &lhs, const Color4f &rhs) {
         const Color4f new_color = {

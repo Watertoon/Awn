@@ -24,6 +24,7 @@
 //#include <awn/para/para_typedparam.hpp>
 #include <awn/para/para_typedparam2.hpp>
 #include <awn/para/para_iappimpl.h>
+#include <awn/para/para_documentapi.h>
 #include <awn/para/para_document.hpp>
 #include <awn/para/para_resourcedocument.hpp>
 #include <awn/para/impl/para_documentmanager.hpp>

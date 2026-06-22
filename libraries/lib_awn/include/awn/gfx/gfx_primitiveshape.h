@@ -24,8 +24,7 @@ namespace awn::gfx {
     };
     VP_ENUM_FLAG_TRAITS(ShapeFormat);
 
-    constexpr ALWAYS_INLINE u32 GetPrimitiveShapeVertexStride(ShapeFormat shape_format) {
-
+    constexpr u32 GetPrimitiveShapeVertexStride(ShapeFormat shape_format) {
         u32 stride = 0;
         if ((shape_format & ShapeFormat::Position) == ShapeFormat::Position) {
             stride += sizeof(Float3);
@@ -36,23 +35,19 @@ namespace awn::gfx {
         if ((shape_format & ShapeFormat::TextureCoordinate) == ShapeFormat::TextureCoordinate) {
             stride += sizeof(Float2);
         }
-
         return stride;
     }
 
-    constexpr ALWAYS_INLINE u32 GetPrimitiveShapeIndexStride(IndexFormat index_format) {
-
+    constexpr u32 GetPrimitiveShapeIndexStride(IndexFormat index_format) {
         if (index_format == IndexFormat::U8) {
             return sizeof(u8);
-        }
-        if (index_format == IndexFormat::U16) {
+        } else if (index_format == IndexFormat::U16) {
             return sizeof(u16);
-        }
-        if (index_format == IndexFormat::U32) {
+        } if (index_format == IndexFormat::U32) {
             return sizeof(u32);
+        } else {            
+            VP_UNEXPECTED_DEFAULT();
         }
-        VP_UNEXPECTED_DEFAULT();
-        return sizeof(u32);
     }
 
     struct PrimitiveShapeInfo {

@@ -96,7 +96,7 @@ namespace awn::async {
         /* Create and add tasks to acquire list */
         for (u32 i = 0; i < count; ++i) {
             AsyncTaskForAllocator *allocator_task = create_function->Invoke(this, heap);
-            RESULT_RETURN_IF(allocator_task != nullptr, ResultNoMemory);
+            RESULT_RETURN_IF(allocator_task == nullptr, ResultNoMemory);
 
             allocator_task->m_is_free_for_allocator = true;
             m_task_array.PushPointer(allocator_task);

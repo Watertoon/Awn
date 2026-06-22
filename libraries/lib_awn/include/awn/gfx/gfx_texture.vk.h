@@ -75,6 +75,9 @@ namespace awn::gfx {
             constexpr gfx::ImageFormat GetImageFormat() const {
                 return static_cast<gfx::ImageFormat>(m_texture_info.image_format);
             }
+            constexpr gfx::GpuAccessFlags GetGpuAccessFlags() const {
+                return static_cast<gfx::GpuAccessFlags>(m_texture_info.gpu_access_flags);
+            }
 
             constexpr uintptr_t GetMemoryPoolOffset() const {
                 return m_memory_offset;

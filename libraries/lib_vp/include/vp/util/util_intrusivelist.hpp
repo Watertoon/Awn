@@ -70,6 +70,10 @@ namespace vp::util {
                 m_next = this;
                 m_prev = this;
             }
+            constexpr void ForceClear() {
+                m_next = this;
+                m_prev = this;
+            }
     };
 
     template<typename T, class Traits>

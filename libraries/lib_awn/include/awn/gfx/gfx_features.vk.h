@@ -76,20 +76,25 @@ namespace awn::gfx {
         SupportsMaintenance6,
         SupportsHostImageCopy,
 
-        /* VK_EXT_external_memory_host, (VK_KHR_external_memory_win32, VK_KHR_external_semaphore_win32) */
+        /* VK_EXT_external_memory_host */
+        /* On Win32: (VK_KHR_external_memory_win32, VK_KHR_external_semaphore_win32) */
+        /* On Linux: (VK_EXT_physical_device_drm, VK_KHR_external_memory_fd, VK_KHR_external_semaphore_fd, VK_KHR_external_memory_dma_buf, VK_EXT_image_drm_format_modifier, VK_EXT_image_format_list; wayland compatible) */
         SupportsExternalMemoryHost,
 
         /* VK_EXT_shader_object */
         SupportsShaderObject,
 
-        /* VK_EXT_descriptor_buffer */
+        /* VK_EXT_descriptor_buffer (deprecated) or VK_EXT_descriptor_heap */
         SupportsDescriptorBuffer,
 
-        /* VK_EXT_mutable_descriptor_type */
+        /* VK_EXT_mutable_descriptor_type (deprecated) */
         SupportsMutableDescriptors,
 
         /* VK_EXT_nested_command_buffer */
         SupportsNestedCommandBuffers,
+
+        /* VK_KHR_device_address_commands */
+        SupportsDeviceAddressCommands,
     };
 
     static constexpr u32 cRequiredFeatureCount = vp::util::TEnumTraits<RequiredFeature>::cEnumCount;

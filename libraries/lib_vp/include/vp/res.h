@@ -62,11 +62,20 @@
 /* Reverse engineered NintendoWare ui2d formats */
 #include <vp/res/res_sarc.hpp>
 
-/* Reverse Engineered Nintendo EPD byaml formats */
+/* Reverse engineered Nintendo EPD byaml formats */
 #include <vp/res/res_byaml.hpp>
 #include <vp/res/res_byamlstringtableiterator.hpp>
 #include <vp/res/res_byamldictionaryiterator.hpp>
 #include <vp/res/res_byamliterator.hpp>
+
+/* Yaml api based on ByamlIterator api */
+#define VP_ENABLE_LIBYAML
+#ifdef VP_ENABLE_LIBYAML
+    #include <yaml.h>
+    #include <vp/res/res_yamldocument.hpp>
+    #include <vp/res/res_yamliterator.hpp>
+    #include <vp/res/res_yamlemitter.hpp>
+#endif
 
 /* Reverse engineered Nintendo EPD resource size table format */
 #include <vp/res/res_rsizetable.hpp>

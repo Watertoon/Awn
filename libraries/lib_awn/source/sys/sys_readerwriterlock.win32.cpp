@@ -33,6 +33,7 @@ namespace awn::sys {
         if (m_writer_read_count != 0 || m_writer_count != 0) { return; }
 
         /* Release owner */
+        const u32 id = m_writer_thread_id;
         m_writer_thread_id = 0;
 
         /* Wake the next write waiter, else wake all the reader waiters */
@@ -49,8 +50,8 @@ namespace awn::sys {
                 const u64 next_state = state & (~cWriterLockBitU64);
                 const bool result = vp::util::InterlockedCompareExchangeRelease(std::addressof(state), std::addressof(m_state), next_state, state);
                 if (result) {
-                    impl::ArbitrateUnlockImpl(std::addressof(m_cs.tag));
-                    return; 
+                    impl::ArbitrateUnlockImpl(std::addressof(m_cs.m_tag), id);
+                    return;
                 }
             }
             const u64 next_state = state & ((~cWriterLockBitU64) & (~cTagBitU64));
@@ -100,7 +101,7 @@ namespace awn::sys {
             if (!result) { continue; }
             /* If owned wait on Critical Section for previous writer or reader */
             if (p_tag != 0) {
-                impl::ArbitrateLockImpl(/*next_low & impl::cTagLockClearMask,*/ std::addressof(m_cs.tag), thread_id);
+                impl::ArbitrateLockImpl(/*next_low & impl::cTagLockClearMask,*/ std::addressof(m_cs.m_tag), thread_id);
                 prev = m_state;
                 is_retry = true;
                 if (((thread_id ^ static_cast<u32>(prev)) & impl::cTagLockClearMask) != 0) { continue; }
@@ -192,7 +193,7 @@ namespace awn::sys {
             loop_result = (is_write_waiter) ? 2 : 1;
 
             if (is_locked) {
-                impl::ArbitrateLockImpl(/*low & impl::cTagLockClearMask,*/ std::addressof(m_cs.tag), thread_id);
+                impl::ArbitrateLockImpl(/*low & impl::cTagLockClearMask,*/ std::addressof(m_cs.m_tag), thread_id);
                 prev = m_state;
                 low = static_cast<u32>(m_state);
                 high = static_cast<u32>(m_state >> 0x20);
@@ -219,7 +220,7 @@ namespace awn::sys {
             if ((prev >> impl::cTagLockBitOffset) & 1) {
                 const bool result0 = vp::util::InterlockedCompareExchangeRelease(std::addressof(prev), std::addressof(m_state), fin | static_cast<u32>(prev), prev);
                 if (result0) {
-                    impl::ArbitrateUnlockImpl(std::addressof(m_cs.tag));
+                    impl::ArbitrateUnlockImpl(std::addressof(m_cs.m_tag), thread_id);
                     return;
                 }
             } else {
@@ -285,7 +286,7 @@ namespace awn::sys {
             /* We already own it, congrats */
             if (tag == thread_id) { break; }
             /* Wait until we have acquired the Critical Section */
-            impl::ArbitrateLockImpl(/*tag & impl::cTagLockClearMask,*/ std::addressof(m_cs.tag), thread_id);
+            impl::ArbitrateLockImpl(/*tag & impl::cTagLockClearMask,*/ std::addressof(m_cs.m_tag), thread_id);
             prev = m_state;
         } while (((thread_id ^ static_cast<u32>(prev)) & impl::cTagLockClearMask) != 0);
 
@@ -309,7 +310,7 @@ namespace awn::sys {
             if (!result) { continue; }
             /* Unlock tag lock if set */
             if ((tag >> impl::cTagLockBitOffset) & 1) {
-                impl::ArbitrateUnlockImpl(std::addressof(m_cs.tag));
+                impl::ArbitrateUnlockImpl(std::addressof(m_cs.m_tag), thread_id);
             }
             return;
         }

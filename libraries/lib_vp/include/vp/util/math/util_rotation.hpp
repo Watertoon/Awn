@@ -28,7 +28,7 @@ namespace vp::util {
         const R sin_eu = CoefficientsSin(mod_eu);
         const R cos_eu = CoefficientsCos(mod_eu);
         Ret ret = {};
-        const R row0 = R{  cos_eu[0] * cos_eu[1],                                         sin_eu[2] * cos_eu[1],                                        -sin_eu[1], } * scale[0];
+        const R row0 = R{  cos_eu[0] * cos_eu[1],                                         sin_eu[2] * cos_eu[1],                                        -sin_eu[1],             } * scale[0];
         const R row1 = R{ (cos_eu[0] * sin_eu[0] * sin_eu[1]) - (sin_eu[2] * cos_eu[2]), (sin_eu[0] * sin_eu[1] * sin_eu[2]) + (cos_eu[0] * cos_eu[2]),  sin_eu[0] * cos_eu[1], } * scale[1];
         const R row2 = R{ (sin_eu[1] * cos_eu[0] * cos_eu[2]) + (sin_eu[2] * sin_eu[1]), (sin_eu[1] * sin_eu[2] * cos_eu[2]) - (cos_eu[0] * sin_eu[1]),  cos_eu[1] * cos_eu[2], } * scale[2];
         StoreRow(std::addressof(ret), row0, 0);
@@ -43,6 +43,44 @@ namespace vp::util {
     constexpr Ret SRTEulerXYZToMatrix(const S &scale, const R &rotation_euler, const T &translation) {
         Ret ret = ScaleEulerXYZToMatrix<Ret>(scale, rotation_euler);
         StoreRow(std::addressof(ret), translation, 3);
+        if constexpr (3 < Ret::cColumnCount || (Ret::cIsRowMajor && Ret::cIsVectorized && 3 <= Ret::cColumnCount)) {
+            ret[3,3] = static_cast<typename Ret::UnderlyingType>(1);
+        }
+        return ret;
+    }
+
+    template <typename Ret, typename T>
+        requires (Ret::cIsMatrixType && 3 <= Ret::cRowCount && 3 <= Ret::cColumnCount && std::is_same_v<typename Ret::UnderlyingType, typename T::UnderlyingType> 
+        && T::cIsVectorType && 3 == T::cCount && std::is_floating_point_v<typename Ret::UnderlyingType>)
+    constexpr Ret ScaleAxesToMatrix(const T &scale, const T &axis0, const T &axis1) {
+        using Type = typename T::UnderlyingType;
+        /* Construct 3rd unit axis */
+        const T axis2 = Cross(axis0, axis1);
+        const Type sum1 = MagnitudeSquared(axis1);
+        const Type sum2 = MagnitudeSquared(axis2);
+        /* Ensure non-zero */
+        VP_ASSERT(sum1 != static_cast<Type>(0.0) && sum2 != static_cast<Type>(0.0));
+        /* Fast normalize */
+        const Type m1 = static_cast<Type>(1.0) / SquareRoot(sum1);
+        const Type m2 = static_cast<Type>(1.0) / SquareRoot(sum2);
+        const T n_axis1 = axis1 * m1 * scale;
+        const T n_axis2 = axis2 * m2 * scale;
+        const T n_axis0 = Cross(n_axis1, n_axis2) * scale;
+        Ret ret = {};
+        StoreColumn(std::addressof(ret),n_axis0,0);
+        StoreColumn(std::addressof(ret),n_axis1,1);
+        StoreColumn(std::addressof(ret),n_axis2,2);
+        return ret;
+    }
+    template <typename Ret, typename T>
+        requires (Ret::cIsMatrixType && 3 <= Ret::cRowCount && 3 <= Ret::cColumnCount && std::is_same_v<typename Ret::UnderlyingType, typename T::UnderlyingType> 
+        && T::cIsVectorType && 3 == T::cCount && std::is_floating_point_v<typename Ret::UnderlyingType>)
+    constexpr Ret SRTAxesToMatrix(const T &scale, const T &axis0, const T &axis1, const T &pos) {
+        Ret ret = ScaleAxesToMatrix<Ret>(scale, axis0, axis1);
+        StoreRow(std::addressof(ret),pos,3);
+        if constexpr (Ret::cIsRowMajor && Ret::cIsVectorized && 3 <= Ret::cColumnCount) {
+            ret[3,3] = static_cast<typename Ret::UnderlyingType>(1);
+        }
         return ret;
     }
 

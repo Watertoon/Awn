@@ -197,22 +197,9 @@ namespace awn::gfx::impl {
                     .required_feature = RequiredFeature::SupportsShaderObject,
                     .is_optional = false,
                 },
-            #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-                {
-                    .extension = VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsDescriptorBuffer,
-                    .is_optional = false,
-                },
-            #else
                 {
                     .extension = VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
                     .required_feature = RequiredFeature::SupportsDescriptorBuffer,
-                    .is_optional = false,
-                },
-            #endif
-                {
-                    .extension = VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsMutableDescriptors,
                     .is_optional = false,
                 },
                 {
@@ -245,16 +232,23 @@ namespace awn::gfx::impl {
                 //    .optional_feature = OptionalFeature::SupportsPerStageDescriptorSets,
                 //    .is_optional = true,
                 //},
-                {
-                    .extension = VK_NV_COMMAND_BUFFER_INHERITANCE_EXTENSION_NAME,
-                    .optional_feature = OptionalFeature::SupportsCommandBufferInheritance,
-                    .is_optional = true,
-                },
+                //{
+                //    .extension = VK_NV_COMMAND_BUFFER_INHERITANCE_EXTENSION_NAME,
+                //    .optional_feature = OptionalFeature::SupportsCommandBufferInheritance,
+                //    .is_optional = true,
+                //},
                 //{
                 //    .extension = VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
                 //    .optional_feature = OptionalFeature::SupportsNvBindlessTexture,
                 //    .is_optional = true,
                 //},
+#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+                {
+                    .extension = VK_KHR_DEVICE_ADDRESS_COMMANDS_EXTENSION_NAME,
+                    .required_feature = RequiredFeature::SupportsDeviceAddressCommands,
+                    .is_optional = false,
+                },
+#endif
             };
             static constexpr const u32 cAllDeviceExtensionCount = sizeof(cAllDeviceExtensionArray) / sizeof(DeviceExtensionEntry);
             for (u32 j = 0; j < cAllDeviceExtensionCount; ++j) {
@@ -299,48 +293,51 @@ namespace awn::gfx::impl {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
                 .pNext = prev_property,
             };
-        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            VkPhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
-                .pNext = std::addressof(nested_command_buffer_properties),
-            };
-            VkPhysicalDeviceShaderObjectPropertiesEXT shader_object_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
-                .pNext = std::addressof(descriptor_buffer_properties),
-            };
-        #else
+            prev_property = std::addressof(nested_command_buffer_properties);
             VkPhysicalDeviceDescriptorHeapPropertiesEXT descriptor_heap_properties = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_PROPERTIES_EXT,
-                .pNext = std::addressof(nested_command_buffer_properties),
+                .pNext = prev_property,
             };
+            prev_property = std::addressof(descriptor_heap_properties);
             VkPhysicalDeviceShaderObjectPropertiesEXT shader_object_properties = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
-                .pNext = std::addressof(descriptor_heap_properties),
+                .pNext = prev_property,
             };
-        #endif
+            prev_property = std::addressof(shader_object_properties);
             VkPhysicalDeviceVulkan14Properties properties_14 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
-                .pNext = std::addressof(shader_object_properties),
+                .pNext = prev_property,
             };
+            prev_property = std::addressof(properties_14);
             VkPhysicalDeviceVulkan13Properties properties_13 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
-                .pNext = std::addressof(properties_14),
+                .pNext = prev_property,
             };
+            prev_property = std::addressof(properties_13);
             VkPhysicalDeviceVulkan12Properties properties_12 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
-                .pNext = std::addressof(properties_13),
+                .pNext = prev_property,
             };
+            prev_property = std::addressof(properties_12);
             VkPhysicalDeviceVulkan11Properties properties_11 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
-                .pNext = std::addressof(properties_12),
+                .pNext = prev_property,
             };
+            prev_property = std::addressof(properties_11);
             VkPhysicalDeviceProperties2 properties = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
-                .pNext = std::addressof(properties_11),
+                .pNext = prev_property,
             };
 
             /* Feature structs */
             void *prev_feature = nullptr;
+#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+            VkPhysicalDeviceDeviceAddressCommandsFeaturesKHR device_address_commands_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_ADDRESS_COMMANDS_FEATURES_KHR,
+                .pNext = prev_feature,
+            };
+            prev_feature = std::addressof(device_address_commands_features);
+#endif
             //VkPhysicalDevicePerStageDescriptorSetFeaturesNV per_stage_descriptor_features = {
             //    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
             //    .pNext = prev_feature,
@@ -371,52 +368,45 @@ namespace awn::gfx::impl {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
                 .pNext = prev_feature,
             };
-            VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutable_descriptor_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
-                .pNext = std::addressof(nested_command_buffer_features),
-            };
-        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptor_buffer_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-                .pNext = std::addressof(mutable_descriptor_features),
-            };
-            VkPhysicalDeviceShaderObjectFeaturesEXT shader_object_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-                .pNext = std::addressof(descriptor_buffer_features),
-            };
-        #else
+            prev_feature = std::addressof(nested_command_buffer_features);
             VkPhysicalDeviceDescriptorHeapFeaturesEXT descriptor_heap_features = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
-                .pNext = std::addressof(mutable_descriptor_features),
+                .pNext = prev_feature,
             };
+            prev_feature = std::addressof(descriptor_heap_features);
             VkPhysicalDeviceShaderObjectFeaturesEXT shader_object_features = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-                .pNext = std::addressof(descriptor_heap_features),
+                .pNext = prev_feature,
             };
-        #endif
+            prev_feature = std::addressof(shader_object_features);
             VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
-                .pNext = std::addressof(shader_object_features),
+                .pNext = prev_feature,
             };
+            prev_feature = std::addressof(shader_maximal_reconvergence_features);
             VkPhysicalDeviceVulkan14Features features_14 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
-                .pNext = std::addressof(shader_maximal_reconvergence_features),
+                .pNext = prev_feature,
             };
+            prev_feature = std::addressof(features_14);
             VkPhysicalDeviceVulkan13Features features_13 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-                .pNext = std::addressof(features_14),
+                .pNext = prev_feature,
             };
+            prev_feature = std::addressof(features_13);
             VkPhysicalDeviceVulkan12Features features_12 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-                .pNext = std::addressof(features_13),
+                .pNext = prev_feature,
             };
+            prev_feature = std::addressof(features_12);
             VkPhysicalDeviceVulkan11Features features_11 = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-                .pNext = std::addressof(features_12),
+                .pNext = prev_feature,
             };
+            prev_feature = std::addressof(features_11);
             VkPhysicalDeviceFeatures2 features = {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-                .pNext = std::addressof(features_11),
+                .pNext = prev_feature,
             };
 
             /* Query Physical Device */
@@ -531,27 +521,11 @@ namespace awn::gfx::impl {
             /* SupportsShaderObject checks */
             if (!shader_object_features.shaderObject) { missing_features->SetMissing(RequiredFeature::SupportsShaderObject); }
 
-        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            /* SupportsDescriptorBuffer checks */
-            if (!descriptor_buffer_features.descriptorBuffer)                   { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            //if (!descriptor_buffer_features.descriptorBufferImageLayoutIgnored) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            //if (!descriptor_buffer_features.descriptorBufferPushDescriptors)    { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_buffer_properties.combinedImageSamplerDescriptorSize > Context::cTargetMaxTextureSamplerDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_buffer_properties.robustUniformBufferDescriptorSize > Context::cTargetMaxUniformBufferDescriptorSize)   { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_buffer_properties.robustStorageBufferDescriptorSize > Context::cTargetMaxStorageBufferDescriptorSize)   { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_buffer_properties.storageImageDescriptorSize > Context::cTargetMaxImageDescriptorSize)                  { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_buffer_properties.sampledImageDescriptorSize > Context::cTargetMaxSeparateTextureDescriptorSize)        { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_buffer_properties.samplerDescriptorSize > Context::cTargetMaxSeparateSamplerDescriptorSize)             { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-        #else
             /* SupportsDescriptorBuffer checks (heap) */
             if (!descriptor_heap_features.descriptorHeap) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
             if (descriptor_heap_properties.imageDescriptorSize > Context::cTargetMaxSeparateTextureDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
             if (descriptor_heap_properties.imageDescriptorSize > Context::cTargetMaxImageDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
             if (descriptor_heap_properties.samplerDescriptorSize > Context::cTargetMaxSeparateSamplerDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-        #endif
-
-            /* SupportsMutableDescriptors checks */
-            if (!mutable_descriptor_features.mutableDescriptorType) { missing_features->SetMissing(RequiredFeature::SupportsMutableDescriptors); }
 
             /* SupportsNestedCommandBuffers checks */
             if (!nested_command_buffer_features.nestedCommandBuffer)                { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
@@ -585,7 +559,13 @@ namespace awn::gfx::impl {
             /* SupportsCommandBufferInheritance checks */
             if (!command_buffer_inheritance_features.commandBufferInheritance) { missing_features->SetMissing(OptionalFeature::SupportsCommandBufferInheritance); }
 
+#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+            /* SupportsDeviceAddressCommands checks */
+            if (!device_address_commands_features.deviceAddressCommands) { missing_features->SetMissing(RequiredFeature::SupportsDeviceAddressCommands); }
+#endif
+
 #ifdef VP_TARGET_PLATFORM_linux
+            /* Ensure device is compatible with the underlying windowing system TODO; move to application defined IFunction filter */
             if (!IsWaylandCompatibleVkPhysicalDevice(std::addressof(drm_props))) { missing_features->SetMissing(RequiredFeature::SupportsExternalMemoryHost); }
 #endif
 
@@ -717,6 +697,7 @@ namespace awn::gfx::impl {
         /* Note; sync validation currently crashes Layer presentation on Linux as of 1.4.341 */
         const VkValidationFeatureEnableEXT validation_feature_enable_array[] = {
             //VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+            VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
         };
         const VkValidationFeaturesEXT validation_features = {
             .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
@@ -866,12 +847,10 @@ namespace awn::gfx::impl {
             //VK_EXT_DEVICE_FAULT_EXTENSION_NAME,
 #endif
             VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
-        #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-            VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
-        #else
             VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
-        #endif
-            VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,
+#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+            VK_KHR_DEVICE_ADDRESS_COMMANDS_EXTENSION_NAME,
+#endif
             VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
         };
         struct DeviceOptionalExtension {
@@ -957,105 +936,88 @@ namespace awn::gfx::impl {
         }
 
         /* VkDevice feature enables */
-        void *pnext = nullptr;
+        void *prev_feature = nullptr;
+#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+        VkPhysicalDeviceDeviceAddressCommandsFeaturesKHR device_address_commands_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_ADDRESS_COMMANDS_FEATURES_KHR,
+            .pNext = prev_feature,
+            .deviceAddressCommands = VK_TRUE,
+        };
+        prev_feature = std::addressof(device_address_commands_features);
+#endif
         const bool is_command_buffer_inheritance = this->IsOptionalFeature(OptionalFeature::SupportsCommandBufferInheritance);
         VkPhysicalDeviceCommandBufferInheritanceFeaturesNV command_buffer_inheritance_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
-            .pNext = pnext,
+            .pNext = prev_feature,
             .commandBufferInheritance = true,
         };
-        pnext = (is_command_buffer_inheritance) ? std::addressof(command_buffer_inheritance_features) : pnext;
-        //const bool is_per_stage_desc = this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets);
-        //VkPhysicalDevicePerStageDescriptorSetFeaturesNV per_stage_descriptor_features = {
-        //    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
-        //    .pNext = pnext,
-        //    .perStageDescriptorSet = true,
-        //    .dynamicPipelineLayout = true,
-        //};
-        //pnext = (is_per_stage_desc) ? std::addressof(per_stage_descriptor_features) : pnext;
+        prev_feature = (is_command_buffer_inheritance) ? std::addressof(command_buffer_inheritance_features) : prev_feature;
         const bool is_mesh_shaders = this->IsOptionalFeature(OptionalFeature::SupportsMeshShaders);
         VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
-            .pNext = pnext,
+            .pNext = prev_feature,
             .taskShader = true,
             .meshShader = true,
             //.multiviewMeshShader = is_mesh_shaders,
             //.primitiveFragmentShadingRateMeshShader = is_mesh_shaders,
             //.meshShaderQueries = is_mesh_shaders,
         };
-        pnext = (is_mesh_shaders) ? std::addressof(mesh_shader_features) : pnext;
+        prev_feature = (is_mesh_shaders) ? std::addressof(mesh_shader_features) : prev_feature;
         const bool is_vertex_attribute_robustness = this->IsOptionalFeature(OptionalFeature::SupportsVertexAttributeRobustness);
         VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT vertex_attribute_robustness_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
-            .pNext = pnext,
+            .pNext = prev_feature,
             .vertexAttributeRobustness = true,
         };
-        pnext = (is_vertex_attribute_robustness) ? std::addressof(vertex_attribute_robustness_features) : pnext;
+        prev_feature = (is_vertex_attribute_robustness) ? std::addressof(vertex_attribute_robustness_features) : prev_feature;
         const bool is_robustness2 = this->IsOptionalFeature(OptionalFeature::SupportsRobustness2);
         VkPhysicalDeviceRobustness2FeaturesEXT robustness_2_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
-            .pNext = pnext,
+            .pNext = prev_feature,
             .robustBufferAccess2 = true,
             .robustImageAccess2 = true,
             .nullDescriptor = true,
         };
-        pnext = (is_robustness2) ? std::addressof(robustness_2_features) : pnext;
+        prev_feature = (is_robustness2) ? std::addressof(robustness_2_features) : prev_feature;
         const bool is_maximal_reconvergance = this->IsOptionalFeature(OptionalFeature::SupportsShaderMaximalReconvergence);
         VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
-            .pNext = pnext,
+            .pNext = prev_feature,
             .shaderMaximalReconvergence = true,
         };
-        pnext = (is_maximal_reconvergance) ? std::addressof(shader_maximal_reconvergence_features) : pnext;
+        prev_feature = (is_maximal_reconvergance) ? std::addressof(shader_maximal_reconvergence_features) : prev_feature;
         
 #ifdef AWN_VK_DEBUG
         //VkPhysicalDeviceFaultFeaturesEXT fault_features = {
         //    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
-        //    .pNext = pnext,
+        //    .pNext = prev_feature,
         //    .deviceFault = VK_TRUE,
         //};
-        //pnext = std::addressof(fault_features);
+        //prev_feature = std::addressof(fault_features);
 #endif
         VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
-            .pNext = pnext,
+            .pNext = prev_feature,
             .nestedCommandBuffer = VK_TRUE,
             .nestedCommandBufferRendering = VK_TRUE,
             //.nestedCommandBufferSimultaneousUse = VK_TRUE,
         };
-        VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutable_descriptor_features = {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
-            .pNext = std::addressof(nested_command_buffer_features),
-            .mutableDescriptorType = VK_TRUE,
-        };
-    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-        VkPhysicalDeviceDescriptorBufferFeaturesEXT target_descriptor_buffer_features = {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-            .pNext = std::addressof(mutable_descriptor_features),
-            .descriptorBuffer = VK_TRUE,
-            //.descriptorBufferImageLayoutIgnored = VK_TRUE,
-            //.descriptorBufferPushDescriptors = VK_TRUE,
-        };
-        VkPhysicalDeviceShaderObjectFeaturesEXT target_shader_object_features = {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-            .pNext = std::addressof(target_descriptor_buffer_features),
-            .shaderObject = VK_TRUE,
-        };
-    #else
+        prev_feature = std::addressof(nested_command_buffer_features);
         VkPhysicalDeviceDescriptorHeapFeaturesEXT target_descriptor_heap_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
-            .pNext = std::addressof(mutable_descriptor_features),
+            .pNext = prev_feature,
             .descriptorHeap = VK_TRUE,
         };
+        prev_feature = std::addressof(target_descriptor_heap_features);
         VkPhysicalDeviceShaderObjectFeaturesEXT target_shader_object_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-            .pNext = std::addressof(target_descriptor_heap_features),
+            .pNext = prev_feature,
             .shaderObject = VK_TRUE,
         };
-    #endif
+        prev_feature = std::addressof(target_shader_object_features);
         VkPhysicalDeviceVulkan14Features target_1_4_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
-            .pNext = std::addressof(target_shader_object_features),
+            .pNext = prev_feature,
             .vertexAttributeInstanceRateDivisor = VK_TRUE,
             .vertexAttributeInstanceRateZeroDivisor = VK_TRUE,
             .indexTypeUint8 = VK_TRUE,
@@ -1064,17 +1026,19 @@ namespace awn::gfx::impl {
             .maintenance6 = VK_TRUE,
             .hostImageCopy = VK_TRUE,
         };
+        prev_feature = std::addressof(target_1_4_features);
         VkPhysicalDeviceVulkan13Features target_1_3_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-            .pNext = std::addressof(target_1_4_features),
+            .pNext = prev_feature,
             .robustImageAccess = is_robustness2,
             .synchronization2 = VK_TRUE,
             .dynamicRendering = VK_TRUE,
             .maintenance4 = VK_TRUE,
         };
+        prev_feature = std::addressof(target_1_3_features);
         VkPhysicalDeviceVulkan12Features target_1_2_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-            .pNext = std::addressof(target_1_3_features),
+            .pNext = prev_feature,
             //.storageBuffer8BitAccess                       = VK_TRUE,
             //.uniformAndStorageBuffer8BitAccess             = VK_TRUE,
             .shaderFloat16                                 = VK_TRUE,
@@ -1097,9 +1061,10 @@ namespace awn::gfx::impl {
             .timelineSemaphore                             = VK_TRUE,
             .bufferDeviceAddress                           = VK_TRUE,
         };
+        prev_feature = std::addressof(target_1_2_features);
         VkPhysicalDeviceVulkan11Features target_1_1_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-            .pNext = std::addressof(target_1_2_features),
+            .pNext = prev_feature,
             .storageBuffer16BitAccess = VK_TRUE,
             .uniformAndStorageBuffer16BitAccess = VK_TRUE,
             //.storageInputOutput16 = VK_TRUE,
@@ -1107,9 +1072,10 @@ namespace awn::gfx::impl {
             .variablePointersStorageBuffer = VK_TRUE,
             .variablePointers = VK_TRUE,
         };
+        prev_feature = std::addressof(target_1_1_features);
         const VkPhysicalDeviceFeatures2 target_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-            .pNext = std::addressof(target_1_1_features),
+            .pNext = prev_feature,
             .features = {
                 .robustBufferAccess                      = is_robustness2,
                 .fullDrawIndexUint32                     = VK_TRUE,
@@ -1178,214 +1144,6 @@ namespace awn::gfx::impl {
         }
     }
 
-#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-    void Context::InitializePipelineLayout(const ContextInfo *context_info) {
-
-		/* Create bindless descriptor layout */
-        const auto init_2_binding_multi_desc_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, VkShaderStageFlags stage, VkDescriptorType type0, u32 desc_count0, VkDescriptorType type1, u32 desc_count1) {
-            const VkDescriptorBindingFlags  bindless_set_binding_flag_array[] = {
-                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
-                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
-            };
-            const VkDescriptorSetLayoutBindingFlagsCreateInfo bindless_set_binding_info = {
-                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-                .bindingCount = sizeof(bindless_set_binding_flag_array) / sizeof(VkDescriptorBindingFlags),
-                .pBindingFlags = bindless_set_binding_flag_array,
-            };
-            const VkDescriptorSetLayoutBinding bindless_set_binding_array[] = {
-                {
-                    .binding         = 0,
-                    .descriptorType  = type0,
-                    .descriptorCount = desc_count0,
-                    .stageFlags      = stage,
-                },
-                {
-                    .binding         = 1,
-                    .descriptorType  = type1,
-                    .descriptorCount = desc_count1,
-                    .stageFlags      = stage,
-                },
-            };
-            //const u32 ext_flags = (!this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? 0 : VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV;
-            const u32 ext_flags = 0;
-            const VkDescriptorSetLayoutCreateInfo bindless_set_layout_info = {
-                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-                .pNext = std::addressof(bindless_set_binding_info),
-                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT | ext_flags,
-                .bindingCount = sizeof(bindless_set_binding_array) / sizeof(VkDescriptorSetLayoutBinding),
-                .pBindings = bindless_set_binding_array,
-            };
-            const VkResult result0 = ::pfn_vkCreateDescriptorSetLayout(m_vk_device, std::addressof(bindless_set_layout_info), this->GetVkAllocationCallbacks(), set_layout);
-            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
-
-            return;
-        };      
-        init_2_binding_multi_desc_desc_layout_lambda(std::addressof(m_vk_bindless_descriptor_set_layout), VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, context_info->texture_view_descriptor_count, VK_DESCRIPTOR_TYPE_SAMPLER, context_info->sampler_descriptor_count);
-
-        /* Build per stage descriptor set layout arrays */
-        struct MultiBindInfo {
-            VkDescriptorType type;
-            u32 count;
-        };
-        const auto init_multi_binding_single_desc_desc_layout_lambda = [this](VkDescriptorSetLayout *set_layout, VkShaderStageFlags stage, const MultiBindInfo *bind_info, u32 bind_count) {
-
-            /* Combine descriptor types for mutable (max 8) */
-            VkDescriptorType desc_type_array[8];
-            u32 desc_count = 0;
-            for (u32 i = 0; i < bind_count; ++i) {
-                desc_count += bind_info[i].count;
-                desc_type_array[i] = bind_info[i].type;
-            }
-            const u32 desc_type_count = bind_count;
-
-            /* Create binding array (max 256) */
-            const u32 total_count = desc_count;
-            constexpr u32 max_desc_count = vp::util::Max(cTargetMaxPerStageTextureSamplerCombinedCount, cTargetMaxPerStageBufferCombinedCount) * cTargetMaxShaderStageCount;
-            VP_ASSERT(total_count <= max_desc_count);
-            VkMutableDescriptorTypeListEXT  per_stage_set_mutable_desc_list_array[max_desc_count];
-            VkDescriptorBindingFlags  bindless_set_binding_flag_array[max_desc_count];
-            VkDescriptorSetLayoutBinding bindless_set_binding_array[max_desc_count];
-            for (u32 i = 0; i < total_count; ++i) {
-                bindless_set_binding_flag_array[i] = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
-                bindless_set_binding_array[i].binding            = i;
-                bindless_set_binding_array[i].descriptorType     = VK_DESCRIPTOR_TYPE_MUTABLE_EXT;
-                bindless_set_binding_array[i].descriptorCount    = 1;
-                bindless_set_binding_array[i].stageFlags         = stage;
-                bindless_set_binding_array[i].pImmutableSamplers = nullptr;
-                per_stage_set_mutable_desc_list_array[i].descriptorTypeCount = desc_type_count;
-                per_stage_set_mutable_desc_list_array[i].pDescriptorTypes = desc_type_array;
-            }
-
-            /* Create set layout */
-            const VkMutableDescriptorTypeCreateInfoEXT mutable_desc_info = {
-                .sType = VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
-                .mutableDescriptorTypeListCount = total_count,
-                .pMutableDescriptorTypeLists = per_stage_set_mutable_desc_list_array,
-            };
-            const VkDescriptorSetLayoutBindingFlagsCreateInfo bindless_set_binding_info = {
-                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-                .pNext = std::addressof(mutable_desc_info),
-                .bindingCount = total_count,
-                .pBindingFlags = bindless_set_binding_flag_array,
-            };
-            //const u32 ext_flags = (!this->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? 0 : VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV;
-            const u32 ext_flags = 0;
-            const VkDescriptorSetLayoutCreateInfo bindless_set_layout_info = {
-                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-                .pNext = std::addressof(bindless_set_binding_info),
-                .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT | ext_flags,
-                .bindingCount = total_count,
-                .pBindings = bindless_set_binding_array,
-            };
-            const VkResult result0 = ::pfn_vkCreateDescriptorSetLayout(this->GetVkDevice(), std::addressof(bindless_set_layout_info), this->GetVkAllocationCallbacks(), set_layout);
-            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
-
-            return;
-        };
-
-        static constexpr MultiBindInfo cTsIStSSBindInfoArray[] = {
-            {
-                .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .count = cTargetMaxPerStageTextureSamplerCount * cTargetMaxShaderStageCount,
-            },
-            {
-                .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                .count = cTargetMaxPerStageImageCount * cTargetMaxShaderStageCount,
-            },
-            {
-                .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-                .count = cTargetMaxPerStageSeparateTextureCount * cTargetMaxShaderStageCount,
-            },
-            {
-                .type = VK_DESCRIPTOR_TYPE_SAMPLER,
-                .count = cTargetMaxPerStageSeparateSamplerCount * cTargetMaxShaderStageCount,
-            },
-        };
-        static constexpr MultiBindInfo cUboSboBindInfoArray[] = {
-            {
-                .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                .count = cTargetMaxPerStageUniformBufferCount * cTargetMaxShaderStageCount,
-            },
-            {
-                .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                .count = cTargetMaxPerStageStorageBufferCount * cTargetMaxShaderStageCount,
-            },
-        };
-        static constexpr u32 cTsIStSSBindInfoCount = sizeof(cTsIStSSBindInfoArray) / sizeof(MultiBindInfo);
-        static constexpr u32 cUboSboBindInfoCount = sizeof(cUboSboBindInfoArray) / sizeof(MultiBindInfo);
-        static_assert(cTsIStSSBindInfoCount <= 8);
-        static_assert(cUboSboBindInfoCount <= 8);
-
-        /* Set pipeline layout info */
-        PerStageDescriptorLayout *layout = std::addressof(m_per_stage_descriptor_layout);
-        layout->vk_pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layout->vk_pipeline_layout_create_info.setLayoutCount = cMaxPerStageSetCount;
-        layout->vk_pipeline_layout_create_info.pSetLayouts = layout->vk_descriptor_set_layout_array;
-        //layout->vk_pipeline_layout_create_info.pushConstantRangeCount = 1;
-        //layout->vk_pipeline_layout_create_info.pPushConstantRanges = std::addressof(layout->vk_push_constant_range);
-
-        /* Create descriptor sets */
-        VkShaderStageFlags vk_stage_flags = VK_SHADER_STAGE_ALL;
-        layout->vk_descriptor_set_layout_array[cTargetBindlessLayoutSet] = m_vk_bindless_descriptor_set_layout;
-        init_multi_binding_single_desc_desc_layout_lambda(std::addressof(layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet]), vk_stage_flags, cTsIStSSBindInfoArray, cTsIStSSBindInfoCount);
-        init_multi_binding_single_desc_desc_layout_lambda(std::addressof(layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet]), vk_stage_flags, cUboSboBindInfoArray, cUboSboBindInfoCount);
-
-        /* Set pipeline layout */
-        //layout->vk_push_constant_range.stageFlags = vk_stage_flags;
-        //layout->vk_push_constant_range.offset = 0;
-        //layout->vk_push_constant_range.size = 0x100;
-
-        /* Create combined pipeline layouts */
-        const VkPipelineLayoutCreateInfo layout_info_graphics = {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-            .setLayoutCount = static_cast<u32>(cMaxCombinedSetCountGraphics),
-            .pSetLayouts = layout->vk_descriptor_set_layout_array,
-        };
-        const VkResult result0 = ::pfn_vkCreatePipelineLayout(this->GetVkDevice(), std::addressof(layout_info_graphics), this->GetVkAllocationCallbacks(), std::addressof(m_vk_combined_pipeline_layout_graphics));
-        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result0));
-
-        const VkPipelineLayoutCreateInfo layout_info_compute = {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-            .setLayoutCount = static_cast<u32>(cMaxCombinedSetCountCompute),
-            .pSetLayouts = layout->vk_descriptor_set_layout_array,
-        };
-        const VkResult result1 = ::pfn_vkCreatePipelineLayout(this->GetVkDevice(), std::addressof(layout_info_compute), this->GetVkAllocationCallbacks(), std::addressof(m_vk_combined_pipeline_layout_compute));
-        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
-
-        return;
-    }
-
-    void Context::FinalizePipelineLayout() {
-
-        /* Destroy combined pipeline layouts */
-        if (m_vk_combined_pipeline_layout_graphics != VK_NULL_HANDLE) {
-            ::pfn_vkDestroyPipelineLayout(this->GetVkDevice(), m_vk_combined_pipeline_layout_graphics, this->GetVkAllocationCallbacks());
-            m_vk_combined_pipeline_layout_graphics = VK_NULL_HANDLE;
-        }
-        if (m_vk_combined_pipeline_layout_compute != VK_NULL_HANDLE) {
-            ::pfn_vkDestroyPipelineLayout(this->GetVkDevice(), m_vk_combined_pipeline_layout_compute, this->GetVkAllocationCallbacks());
-            m_vk_combined_pipeline_layout_compute = VK_NULL_HANDLE;
-        }
-
-        /* Destroy descriptor set layouts */
-        if (m_vk_bindless_descriptor_set_layout != VK_NULL_HANDLE) {
-            ::pfn_vkDestroyDescriptorSetLayout(this->GetVkDevice(), m_vk_bindless_descriptor_set_layout, this->GetVkAllocationCallbacks());
-            m_vk_bindless_descriptor_set_layout = VK_NULL_HANDLE;
-        }
-        const auto finalize_per_stage_desc_lambda = [this](PerStageDescriptorLayout *layout) {
-            if (layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet] != VK_NULL_HANDLE) {
-                ::pfn_vkDestroyDescriptorSetLayout(this->GetVkDevice(), layout->vk_descriptor_set_layout_array[cTargetPerStageTextureSamplerLayoutSet], this->GetVkAllocationCallbacks());
-            }
-            if (layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet] != VK_NULL_HANDLE) {
-                ::pfn_vkDestroyDescriptorSetLayout(this->GetVkDevice(), layout->vk_descriptor_set_layout_array[cTargetPerStageBufferLayoutSet], this->GetVkAllocationCallbacks());
-            }
-            ::memset(layout, 0, sizeof(PerStageDescriptorLayout));
-        };
-        finalize_per_stage_desc_lambda(std::addressof(m_per_stage_descriptor_layout));
-        return;
-    }
-#endif
-
 	void Context::Initialize(const ContextInfo *context_info) {
         VP_UNUSED(context_info);
 
@@ -1408,7 +1166,7 @@ namespace awn::gfx::impl {
         {
             const VkDebugUtilsMessengerCreateInfoEXT debug_messenger_info = {
                 .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-                .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+                .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT,
                 .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
                 .pfnUserCallback = DebugCallback,
                 .pUserData = nullptr
@@ -1427,11 +1185,6 @@ namespace awn::gfx::impl {
 		/* Initialize device */
         this->InitializeLogicalDevice(context_info);
 
-    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-        /* Initialize pipeline layout */
-        this->InitializePipelineLayout(context_info);
-    #endif
-
         return;
 	}
 
@@ -1439,11 +1192,6 @@ namespace awn::gfx::impl {
 
         /* Ensure all device operations complete */
         ::pfn_vkDeviceWaitIdle(m_vk_device);
-
-    #ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-        /* Finalize pipeline layout */
-        this->FinalizePipelineLayout();
-    #endif
 
 		/* Finalize device */
         this->FinalizeLogicalDevice();

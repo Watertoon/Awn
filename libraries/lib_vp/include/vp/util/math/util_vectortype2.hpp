@@ -470,7 +470,7 @@ namespace vp::util {
     constexpr T NegateMultiplyAdd(const T& a, const T& b, const T& c) {
         T temp = {};
         for (u32 i = 0; i < T::cVectorizedCount; ++i) {
-            temp[i] = -(a[i] * b[i]) + c[i];
+            temp[i] = (-a[i] * b[i]) - c[i];
         }
         return temp;
     }
@@ -480,7 +480,7 @@ namespace vp::util {
     constexpr T MultiplySub(const T& a, const T& b, const T& c) {
         T temp = {};
         for (u32 i = 0; i < T::cVectorizedCount; ++i) {
-            temp[i] = (a[i] * b[i]) - c[i];
+            temp[i] = (-a[i] * b[i]) + c[i];
         }
         return temp;
     }
@@ -490,7 +490,7 @@ namespace vp::util {
     constexpr T NegateMultiplySub(const T& a, const T& b, const T& c) {
         T temp = {};
         for (u32 i = 0; i < T::cVectorizedCount; ++i) {
-            temp[i] = -(a[i] * b[i]) - c[i];
+            temp[i] = (a[i] * b[i]) - c[i];
         }
         return temp;
     }
@@ -720,6 +720,17 @@ namespace vp::util {
         return ret;
     }
 
+    template <typename T>
+        requires (T::cIsVectorType)
+    constexpr T Average(const T *array, u32 count) {
+        T m = {};
+        for (u32 i = 0; i < count; ++i) {
+            m = m + array[i];
+        }
+        m = m / static_cast<typename T::UnderlyingType>(count);
+        return m;
+    }
+
     namespace impl {
 
         template <typename T, typename Ret>
@@ -942,7 +953,7 @@ namespace vp::util {
 
     template <typename T>
         requires (T::cIsVectorType)
-    constexpr T::UnderlyingType SquaredSum(const T &vector) {
+    constexpr T::UnderlyingType MagnitudeSquared(const T &vector) {
         using Type = typename T::UnderlyingType;
         const Type ret = Dot(vector,vector);
         return ret;
@@ -952,7 +963,7 @@ namespace vp::util {
         requires (T::cIsVectorType)
     constexpr T::UnderlyingType Magnitude(const T &vector) {
         using Type = typename T::UnderlyingType;
-        const Type squared_summation = SquaredSum(vector);
+        const Type squared_summation = MagnitudeSquared(vector);
         const Type out = SquareRoot(squared_summation);
         return out;
     }
@@ -961,7 +972,7 @@ namespace vp::util {
         requires (T::cIsVectorType && T::cIsVectorized)
     constexpr T MagnitudeVector(const T &vector) {
         using Type = typename T::UnderlyingType;
-        const Type squared_summation = SquaredSum(vector);
+        const Type squared_summation = MagnitudeSquared(vector);
         const T sq_broad = Broadcast<T>(squared_summation);
         const T out = SquareRoot(sq_broad);
         return out;
@@ -1082,8 +1093,8 @@ namespace vp::util {
         /* p5 = (0 <= v) ? 0.5f : -0.5f; */
         const T point_5 = Broadcast<T>(0.5f);
         const T neg_point_5 = Broadcast<T>(-0.5f);
-        const T mask = CompareGreaterThanEqual(value, T{});
-        const T sel0 = Select(point_5, neg_point_5, mask);
+        const T mask = CompareLessThan(value, T{});
+        const T sel0 = InsertTrue(point_5, neg_point_5, mask);
 
         /* r = round(p5 + (v * (1/(2pi)))) */
         const T add0 = sel0 + (value * v_one_div_pi2);
@@ -1092,11 +1103,11 @@ namespace vp::util {
         /* a = v - (r * 2pi) */
         const T adj1 = value - (adj0 * v_pi2);
         /* s0 = (v > (pi/2)) ? (pi - a) : a; */
-        const T mask1 = CompareGreaterThan(adj1, v_pi_div_2);
+        const T mask1 = CompareLessThan(v_pi_div_2, adj1);
         const T adj2 = v_pi - adj1;
         const T ins0 = InsertTrue(adj1, adj2, mask1);
         /* ret = (-(pi/2) > s0) ? (-pi - s0) : s0; */
-        const T mask2 = CompareGreaterThan(v_neg_pi_div_2, ins0);
+        const T mask2 = CompareLessThan(ins0, v_neg_pi_div_2);
         const T adj3 = v_neg_pi - adj1;
         const T ins2 = InsertTrue(ins0, adj3, mask2);
         return ins2;

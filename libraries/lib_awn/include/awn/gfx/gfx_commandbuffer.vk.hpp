@@ -22,6 +22,24 @@ namespace awn::gfx {
         Linear  = 1,
     };
 
+    struct GpuAddressRange {
+        GpuAddress gpu_address;
+        size_t size;
+    };
+
+    struct BufferTextureCopyRegion {
+        u32 row_length = 0;
+        u32 image_height = 0;
+        u32 base_x = 0;
+        u32 base_y = 0;
+        u32 base_z = 0;
+        u32 width;
+        u32 height = 1;
+        u32 depth = 1;
+        u32 base_mip_level = 0;
+        u32 base_array_layer = 0;
+        u32 array_layer_count = 1;
+    };
     struct TextureSubresource {
         u32 base_mip_level = 0;
         u32 base_array_layer = 0;
@@ -113,8 +131,6 @@ namespace awn::gfx {
             Result Begin(const CommandBufferBeginInfo *info);
             Result End(CommandList *out_cmd_list);
 
-            void SetSystemDescriptorBuffers();
-
             void CallCommands(CommandList secondary_command_list);
 
             void FlushMemory(GpuAccessFlags gpu_access_flags);
@@ -122,6 +138,11 @@ namespace awn::gfx {
 
             void BlitImage(Texture *source_texture, const TextureCopyRegion *source_copy_region, Texture *dest_texture, const TextureCopyRegion *dest_copy_region, CopyFilter copy_filter);
             void CopyImage(Texture *source_texture, const TextureCopyRegion *source_copy_region, Texture *dest_texture, const TextureSubresource *dest_subresource, const Int3 &dest_base_offset);
+#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+            void CopyMemory(GpuAddress source_address, GpuAddress dest_address, size_t size);
+            void CopyMemoryToImage(GpuAddress source_address, size_t src_size, Texture *dest_texture, const BufferTextureCopyRegion *copy_region);
+            void CopyImageToMemory(Texture *source_texture, GpuAddress dest_address,  size_t dst_size, const BufferTextureCopyRegion *copy_region);
+#endif
             void ResolveImage(Texture *source_texture, Texture *dest_texture);
             void ClearColor(TextureViewBinder *target_color, const TextureArrayRegion *array_region, vp::util::Color4f color);
             void ClearDepthStencil(TextureViewBinder *target_depth_stencil, const TextureArrayRegion *array_region, float depth, u32 stencil);
@@ -130,14 +151,24 @@ namespace awn::gfx {
 
             void Draw(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count);
             void DrawInstanced(PrimitiveTopology primitive_topology, u32 base_vertex, u32 vertex_count, u32 base_instance, u32 instance_count);
+#ifndef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
             void DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, BufferAddress index_buffer_address, u32 index_count, u32 base_vertex);
             void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, BufferAddress index_buffer_address, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count);
+#else
+            void DrawIndexed(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuAddress index_buffer_address, u32 index_count, u32 base_vertex);
+            void DrawIndexedInstanced(PrimitiveTopology primitive_topology, IndexFormat index_format, GpuAddress index_buffer_address, u32 index_count, u32 base_vertex, u32 base_instance, u32 instance_count);
+#endif
 
             void DrawMeshTasks(u32 x, u32 y, u32 z);
 
             void Dispatch(u32 x, u32 y, u32 z);
 
+#ifndef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
             void SetVertexBuffer(BufferAddress vertex_buffer_address, u32 binding, u32 stride, u32 size);
+#else
+            void SetVertexBuffer(u32 binding, GpuAddress gpu_address, size_t size);
+            void SetVertexBuffers(u32 base_binding, const GpuAddressRange *gpu_address_range_array, u32 count);
+#endif
 
             void SetShader(const Shader *shader);
 
@@ -147,9 +178,12 @@ namespace awn::gfx {
             void SetDepthStencilState(const DepthStencilState *depth_stencil_state);
             void SetRasterizerState(const RasterizerState *rasterizer_state);
             void SetVertexState(const VertexState *vertex_state);
+            void SetViewportState(const ViewportState *viewport_state);
             void SetViewportScissorState(const ViewportScissorState *viewport_scissor_state);
 
             void SetLineWidth(float line_width);
+        public:
+            void SetSystemDescriptorBuffers();
         public:
             constexpr ALWAYS_INLINE VkCommandBuffer GetVkCommandBuffer() const { return m_command_list.GetVkCommandBuffer(); }
     };

@@ -77,6 +77,49 @@ namespace awn::para {
         return;
     }
 
+#ifdef VP_ENABLE_LIBYAML
+    void TypedParamEnumMapBase::InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) {
+
+        /* Ensure container iterator */
+        VP_ASSERT(vp::res::IsDictionaryType(static_cast<vp::res::ByamlDataType>(yaml_iterator.GetDataType())));
+
+        /* Initialize array if necessary */
+        const u32 count = m_enum_count;
+        if (!m_typed_param_array.IsValid()) {
+            RESULT_ABORT_UNLESS(m_typed_param_array.Initialize(heap, count));
+        }
+
+        /* Initialize typed params */
+        for (u32 i = 0; i < count; ++i) {
+            vp::res::YamlIterator sub_iter;
+            const bool result0 = yaml_iterator.TryGetIteratorByKey(std::addressof(sub_iter), m_enum_array[i]);
+            if (result0) {
+
+                /* Get type name */
+                const char *type_name  = "";
+                const bool result1 = sub_iter.TryGetStringByKey(std::addressof(type_name), "$type");
+                const u64 class_hash = (result1) ? vp::util::HashMurmur64(type_name) : this->GetBaseClassHash();
+
+                /* Load bgyml */
+                this->InitializeTypedParam(heap, document, i, class_hash);
+                TypedParamEnumEntry *entry = std::addressof(m_typed_param_array[i]);
+                entry->typed_param->InitializeYaml(heap, document, sub_iter);
+                entry->is_non_default = true;
+                
+            } else {
+
+                /* Initialize default */
+                this->InitializeTypedParam(heap, document, i, this->GetBaseClassHash());
+                TypedParamEnumEntry *entry = std::addressof(m_typed_param_array[i]);
+                entry->typed_param->InitializeDefaults(heap, false);
+                entry->is_non_default = false;
+            }
+        }
+
+        return;
+    }
+#endif
+
     void TypedParamEnumMapBase::InitializeDefaults(mem::Heap *heap, bool is_unlink_parent) {
 
         /* Initialize array if necessary */

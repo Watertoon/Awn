@@ -26,11 +26,20 @@ namespace awn::res::impl {
         VP_ASSERT(cur_len != 0);
         m_current_directory.SetLength(cur_len);
         m_current_directory.AssureTermination();
-        vp::util::FixedString16<260> cwd16 = m_current_directory;
+        vp::util::FixedString16<260> cwd16;
+        cwd16.SetString(std::addressof(m_current_directory));
+        wchar_t cwd16_f[260];
+        const u32 cur_len1 = ::snwprintf(cwd16_f, 260, L"\\??\\%S", cwd16.GetString());
+        
+        UNICODE_STRING ustr = {
+            .Length = static_cast<u16>(cur_len1 * 2),
+            .MaximumLength = static_cast<u16>(260 * 2),
+            .Buffer = cwd16_f,
+        };
         IO_STATUS_BLOCK block;
         OBJECT_ATTRIBUTES obj_attr;
-        ::InitializeObjectAttribute(std::addressof(obj_attr), reinterpret_cast<const wchar_t*>(cwd16.GetString()), OBJ_EXCLUSIVE, nullptr, nullptr);
-        const NTSTATUS status0 = ::NtOpenDirectoryObject(std::addressof(m_current_directory_handle), FILE_TRAVERSE, std::addressof(obj_attr), std::addressof(block), nullptr, FILE_ATTRIBUTE_NORMAL, 0, FILE_OPEN_IF, FILE_DIRECTORY_FILE, nullptr, 0);
+        InitializeObjectAttributes(std::addressof(obj_attr), std::addressof(ustr), OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        const NTSTATUS status0 = ::NtCreateFile(std::addressof(m_current_directory_handle), FILE_LIST_DIRECTORY, std::addressof(obj_attr), std::addressof(block), nullptr, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ, FILE_OPEN_IF, FILE_DIRECTORY_FILE, nullptr, 0);
         VP_ASSERT(status0 == STATUS_SUCCESS);
         VP_ASSERT(block.Information == FILE_CREATED || block.Information == FILE_OPENED);
 #elifdef VP_TARGET_PLATFORM_linux
@@ -125,6 +134,7 @@ namespace awn::res::impl {
 
         /* Find file device */
         FileDeviceBase *device = this->GetFileDeviceByPath(path);
+        device = (device == nullptr) ? this->GetDefaultFileDevice() : device;
 
         /* Get path without drive */
         MaxPathString path_no_drive;

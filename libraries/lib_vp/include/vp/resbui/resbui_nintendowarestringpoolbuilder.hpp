@@ -23,6 +23,10 @@ namespace vp::resbui {
         u32            string_count;
         BufferLocation location_header;
         BufferLocation location_string_pool;
+
+        constexpr size_t GetTotalSize() const { return this->total_size; }
+        constexpr size_t GetMaxAlignment() const { return this->max_alignment; }
+        constexpr u32 GetStringCount() const { return this->string_count; }
     };
 
     class NintendoWareStringPoolBuilder {

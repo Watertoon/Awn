@@ -42,13 +42,14 @@ namespace awn::mem {
         VP_ASSERT(result);
     }
 
-    void FreeAddressRegion(void *address_region) {
+    void FreeAddressRegion(void *address_region, size_t size) {
+        VP_UNUSED(size);
         const bool result = ::VirtualFree(address_region, 0, MEM_RELEASE);
         VP_ASSERT(result);
     }
 
-    void FreeLargeAddressRegionWithMemoryPages(void *large_address_region) {
-        FreeAddressRegion(large_address_region);
+    void FreeLargeAddressRegionWithMemoryPages(void *large_address_region, size_t size) {
+        FreeAddressRegion(large_address_region, size);
     }
 
     Result GetFreeVirtualMemory(size_t *out_memory_size) {

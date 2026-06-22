@@ -20,7 +20,7 @@ namespace awn::para {
     void PropertyArrayBase::InitializeBgyml(mem::Heap *heap, [[maybe_unused]] Document *document, vp::res::ByamlIterator byaml_iterator) {
 
         /* Ensure dictionary iterator */
-        VP_ASSERT(vp::res::IsContainerType(static_cast<vp::res::ByamlDataType>(byaml_iterator.GetDataType())) == true);
+        VP_ASSERT(vp::res::IsContainerType(static_cast<vp::res::ByamlDataType>(byaml_iterator.GetDataType())));
 
         /* Ensure same size if fixed array type */
         const u32 count = byaml_iterator.GetDataCount();
@@ -30,11 +30,11 @@ namespace awn::para {
         this->AllocateArray(heap, count);
 
         /* Read data */
-        vp::res::ByamlData data = {};
+        vp::res::ByamlIterator iter = {};
         for (u32 i = 0; i < count; ++i) {
-            const bool result = byaml_iterator.TryGetByamlDataByIndex(std::addressof(data), i);
-            if (result == true) {
-                this->SetValueFromByamlData(byaml_iterator, data, i);
+            const bool result = byaml_iterator.TryGetIteratorByIndex(std::addressof(iter), i);
+            if (result) {
+                this->SetValueFromByamlIterator(iter, i);
             } else {
                 this->SetValueDefault(i);
             }
@@ -42,6 +42,34 @@ namespace awn::para {
 
         return;
     }
+
+#ifdef VP_ENABLE_LIBYAML
+    void PropertyArrayBase::InitializeYaml(mem::Heap *heap, [[maybe_unused]] Document *document, vp::res::YamlIterator yaml_iterator) {
+
+        /* Ensure dictionary iterator */
+        VP_ASSERT(vp::res::IsContainerType(static_cast<vp::res::ByamlDataType>(yaml_iterator.GetDataType())));
+
+        /* Ensure same size if fixed array type */
+        const u32 count = yaml_iterator.GetDataCount();
+        VP_ASSERT(m_default->count == cInvalidFixedCount || m_default->count == count);
+
+        /* Create array */
+        this->AllocateArray(heap, count);
+
+        /* Read data */
+        vp::res::YamlIterator iter = {};
+        for (u32 i = 0; i < count; ++i) {
+            const bool result = yaml_iterator.TryGetIteratorByIndex(std::addressof(iter), i);
+            if (result) {
+                this->SetValueFromYamlIterator(iter, i);
+            } else {
+                this->SetValueDefault(i);
+            }
+        }
+
+        return;
+    }
+#endif
 
     void PropertyArrayBase::InitializeDefaults(mem::Heap *heap, [[maybe_unused]] bool is_force_unlink_parents) {
 

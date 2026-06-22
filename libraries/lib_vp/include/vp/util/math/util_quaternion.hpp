@@ -127,6 +127,47 @@ namespace vp::util {
         }
     }
 
+    template <typename Ret, typename S, typename T>
+        requires (Ret::cIsMatrixType && 3 <= Ret::cRowCount && 3 <= Ret::cColumnCount && std::is_same_v<typename Ret::UnderlyingType, typename T::UnderlyingType> 
+        && S::cIsVectorType && S::cCount == 3
+        && T::cIsVectorType && 4 <= T::cCount && std::is_floating_point_v<typename Ret::UnderlyingType>)
+    constexpr Ret ScaleQuatToMatrix(const S &scale, const T &quaternion) {
+        using Type = typename Ret::UnderlyingType;
+        const Type x = quaternion[0];
+        const Type y = quaternion[1];
+        const Type z = quaternion[2];
+        const Type w = quaternion[3];
+        const Type mag = 2.0f / (x * x + y * y + z * z + w * w);
+        const Type m_z = mag * z;
+        const Type m_y = mag * y;
+        const Type m_xw = mag * x * w;
+        const Type m_xx = mag * x * x;
+        /* | 1 - 2y^2 - 2z^2, 2xy - 2zw,       2xz + 2yw,       0 |
+         * | 2xy + 2zw,       1 - 2x^2 - 2z^2, 2yz - 2xw,       0 |
+         * | 2xz - 2yw,       2yz - 2xw,       1 - 2x^2 - 2y^2, 0 |
+         * | 0,               0,               0,               0 |
+         */
+        using v4t = TVector<Type,Ret::cColumnCount,Ret::cIsVectorized>;
+        const v4t col_array[3] = {
+            v4t{ 1.0f - (m_y * y + m_z * z), m_y * x - m_z * w,       m_z * x + m_y * w, } * scale[0],
+            v4t{ m_y * x + m_z * w,          1.0f - (m_xx + m_z * z), m_z * y - m_xw, } * scale[1],
+            v4t{ m_z * x - m_y * w,          m_z * y + m_xw,          1.0f - (m_xx + m_y * y), } * scale[1],
+        };
+        Ret ret = {};
+        for (u32 i = 0; i < 3; ++i) {
+            StoreRow(std::addressof(ret), col_array[i], i);
+        }
+        return ret;
+    }
+
+    template <typename Ret, typename S, typename R, typename T>
+        requires (Ret::cIsMatrixType && S::cIsVectorType && S::cCount == 3 && R::cIsVectorType && R::cCount == 4 && T::cIsVectorType && T::cCount == 3)
+    constexpr Ret SRTQuatToMatrix(const S &scale, const R &rotation_quat, const T &translation) {
+        Ret ret = ScaleQuatToMatrix<Ret>(scale, rotation_quat);
+        StoreRow(std::addressof(ret), translation, 3);
+        return ret;
+    }
+
     constexpr Vector4f EulerXYZToQuat(const Vector3f &euler) {
         const Vector3f scale = euler * 0.5f;
         const float roll_mod = ModuloPi(scale[0]);
@@ -179,8 +220,8 @@ namespace vp::util {
         using Type = typename T::UnderlyingType;
         /* Construct 3rd unit axis */
         const T axis2 = Cross(axis0, axis1);
-        const Type sum1 = SquaredSum(axis1);
-        const Type sum2 = SquaredSum(axis2);
+        const Type sum1 = MagnitudeSquared(axis1);
+        const Type sum2 = MagnitudeSquared(axis2);
         /* Ensure non-zero */
         VP_ASSERT(sum1 != static_cast<Type>(0.0) && sum2 != static_cast<Type>(0.0));
         /* Fast normalize */

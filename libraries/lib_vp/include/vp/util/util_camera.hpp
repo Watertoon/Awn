@@ -83,7 +83,7 @@ namespace vp::util {
         public:
             VP_RTTI_DERIVED(OrthographicCamera, LookAtCamera);
         public:
-            constexpr OrthographicCamera() : LookAtCamera() {/*...*/}
+            constexpr OrthographicCamera() : LookAtCamera(Vector3d{0.0,0.0,0.0},Vector3d{0.0,0.0,-1.0},Vector3f{0.0f,1.0f,0.0f}) {/*...*/}
             constexpr OrthographicCamera(const OrthographicProjection &ortho_proj) : LookAtCamera(ortho_proj.GetOrthoCameraPosition(), ortho_proj.GetOrthoCameraAt(), VectorConstant<Vector3f>::cUnit[1]) {/*...*/}
             constexpr virtual ~OrthographicCamera() override {/*...*/}
     };

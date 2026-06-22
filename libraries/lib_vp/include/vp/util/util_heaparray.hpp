@@ -80,11 +80,7 @@ namespace vp::util {
 
             void Finalize() {
                 if (m_array == nullptr) { return; }
-                /* Manually destruct every object */
-                for (u32 i = 0; i < m_count; ++i) {
-                    std::destroy_at(std::addressof(m_array[i]));
-                }
-                ::operator delete(m_array);
+                delete [] (m_array);
                 m_array = nullptr;
                 m_count  = 0;
                 return;
@@ -104,6 +100,9 @@ namespace vp::util {
                 return Iterator(m_array);
             }
             constexpr Iterator end() {
+                return Iterator(m_array + m_count);
+            }
+            constexpr Iterator end() const {
                 return Iterator(m_array + m_count);
             }
 
@@ -163,7 +162,7 @@ namespace vp::util {
             constexpr u32 GetCount() const { return m_count; }
 
             constexpr bool IsValid() const { return m_array != nullptr; }
-            constexpr bool IsContainAddress(const T *element) const {
+            constexpr bool IsContain(const T *element) const {
                 const bool is_start = (m_array <= element);
                 const bool is_end = (element < m_array + m_count);
                 return is_start && is_end;
@@ -174,7 +173,7 @@ namespace vp::util {
                     return lhs < rhs;
                 }
                 constexpr bool operator()(const T &lhs, const T &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<T>> {
-                    const s32 cmp = ::strcmp(lhs, rhs);
+                    const s32 cmp = std::strcmp(lhs, rhs);
                     return cmp < 0;
                 }
             };
@@ -194,7 +193,7 @@ namespace vp::util {
                     return lhs.*Member < rhs.*Member;
                 }
                 constexpr bool operator()(const T &lhs, const T &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
-                    const s32 cmp = ::strcmp(lhs.*Member, rhs.*Member);
+                    const s32 cmp = std::strcmp(lhs.*Member, rhs.*Member);
                     return cmp < 0;
                 }
             };
@@ -207,7 +206,7 @@ namespace vp::util {
                     return lhs < rhs;
                 }
                 constexpr bool operator()(const MemberType<Member> &lhs, const MemberType<Member> &rhs) requires std::is_same_v<std::add_cv_t<char*>, std::add_cv_t<MemberType<Member>>> {
-                    const s32 cmp = ::strcmp(lhs, rhs);
+                    const s32 cmp = std::strcmp(lhs, rhs);
                     return cmp < 0;
                 }
             };
@@ -222,11 +221,10 @@ namespace vp::util {
                 std::sort_heap(m_array, m_array + m_count, cmp);
             }
 
-            /* This function requires the heap array to be sorted */
             template <typename CompareLessSearchMember>
-            constexpr Iterator BinarySearch(const MemberType<CompareLessSearchMember::MemberPtr> &find_element, CompareLessSearchMember cmp) const {
+            constexpr Iterator LowerBound(const MemberType<CompareLessSearchMember::MemberPtr> &find_element, CompareLessSearchMember cmp) const {
 
-                /* Binary search for find element */
+                /* Binary search for closest find element */
                 using Member = MemberType<CompareLessSearchMember::MemberPtr>;
                 constexpr auto MemberPtr = CompareLessSearchMember::MemberPtr;
                 T *iter = m_array;
@@ -234,13 +232,21 @@ namespace vp::util {
                 while (1 < i) {
                     const u32 h = i / 2;
                     const Member &mber = iter[h-1].*MemberPtr;
-                    iter = (cmp(mber, find_element)) ? std::addressof(iter[h]) : iter;
+                    const u32 n = (cmp(mber, find_element)) * h;
+                    iter += n;
                     i -= h;
                 }
-                const Member &mber = iter[0].*MemberPtr;
-                iter += (cmp(mber, find_element));
-    
+
                 return Iterator(iter);
+            }
+            /* This function requires the heap array to be sorted */
+            template <typename CompareLessSearchMember>
+            constexpr Iterator BinarySearch(const MemberType<CompareLessSearchMember::MemberPtr> &find_element, CompareLessSearchMember cmp) const {
+                auto iter = this->LowerBound(find_element, cmp);
+                const auto end = this->end();
+                constexpr auto MemberPtr = CompareLessSearchMember::MemberPtr;
+                bool is_valid = (iter != end) && !(cmp(find_element, (*iter).*MemberPtr));
+                return is_valid ? iter : end;
             }
     };
     

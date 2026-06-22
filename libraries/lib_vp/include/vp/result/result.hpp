@@ -32,6 +32,9 @@ namespace vp {
         constexpr bool operator==(const Result &rhs) const {
             return this->value == rhs.value;
         }
+        constexpr u32 GetValue() const {
+            return this->value;
+        }
         constexpr u32 GetModule() const {
             return this->value & ::vp::result::cModuleBitMask;
         }
@@ -52,17 +55,19 @@ namespace vp {
         VP_UNUSED(__result); \
     }
 
-    #define RESULT_RETURN_IF(expression, return_result) \
+    #define RESULT_RETURN_IF(expression, result_expression) \
     { \
         if ((expression) == true) { \
-            return return_result; \
+            const ::vp::Result __result = (result_expression); \
+            return __result; \
         } \
     }
 
-    #define RESULT_RETURN_UNLESS(expression, return_result)  \
+    #define RESULT_RETURN_UNLESS(expression, result_expression)  \
     { \
         if ((expression) == false) { \
-            return return_result; \
+            const ::vp::Result __result = (result_expression); \
+            return __result; \
         } \
     }
 

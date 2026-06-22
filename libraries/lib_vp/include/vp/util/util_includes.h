@@ -47,10 +47,16 @@
     #define _WIN32_WINNT _WIN32_WINNT_WIN10
     #define WIN32_LEAN_AND_MEAN
     #include <windows.h>
+    //#include <ddk/wdm.h>
+    //#include <ddk/ntddk.h>
+    //#include <ddk/ntifs.h>
     //#include <windowsx.h>
+    #include <ntstatus.h>
+    #include <winternl.h>
     #include <shellapi.h>
     #include <shlwapi.h>
     #include <shellscalingapi.h>
+    //#include <ddk/wudfwdm.h>
 
     /* Undef macros that ruin the api */
     #ifdef near
@@ -85,6 +91,9 @@
     #endif
     #ifdef GetClassName
         #undef GetClassName
+    #endif
+    #ifdef CopyMemory
+        #undef CopyMemory
     #endif
 #endif
 

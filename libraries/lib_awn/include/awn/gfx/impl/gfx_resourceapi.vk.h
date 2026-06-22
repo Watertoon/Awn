@@ -15,6 +15,9 @@
  */
 #pragma once
 
+namespace awn::gfx {
+    struct GpuMemoryRequirements;
+}
 namespace awn::gfx::impl {
 
     struct GpuAddress {
@@ -29,8 +32,14 @@ namespace awn::gfx::impl {
             return address;
         }
 
+        constexpr VkDeviceAddress GetVkDeviceAddress() const {
+            return this->vk_device_address;
+        }
         constexpr bool IsValid() const {
             return this->vk_device_address != 0;
+        }
+        constexpr bool IsAligned(size_t alignment) const {
+            return vp::util::IsAligned(this->vk_device_address, alignment);
         }
     };
 

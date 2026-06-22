@@ -237,8 +237,14 @@ namespace vp::res {
             float value_scale; /* See EvaluateCubicExt EvaluateLinearExt EvaluateStepExt s16 s8 */
         };
         union {
-            float repeat_float; /* See WrapFrame RelativeRepeat */
-            s32   repeat_int;
+            struct { /* See WrapFrame RelativeRepeat */
+                float repeat_float;
+                u32 reserve3;
+            };
+            struct {
+                s32 repeat_int;
+                u32 reserve4;
+            };
             struct {
                 float value_addend;
                 float repeat_ext; /* See WrapFrameExt RelativeRepeat */
@@ -248,11 +254,26 @@ namespace vp::res {
 
         constexpr bool IsQuaternion() const { return (this->flags >> 7) & 1; }
         constexpr bool IsExt() const { return this->is_ext_curve; }
+        constexpr BfresAnimCurveFrameDataType GetFrameDataType() const {
+            return static_cast<BfresAnimCurveFrameDataType>(this->frame_data_type);
+        }
+        constexpr BfresAnimCurveValueDataType GetValueDataType() const {
+            return static_cast<BfresAnimCurveValueDataType>(this->value_data_type);
+        }
+        constexpr BfresAnimCurveCurveType GetCurveType() const {
+            return static_cast<BfresAnimCurveCurveType>(this->curve_type);
+        }
+        constexpr BfresAnimCurveWrapMode GetPreWrapMode() const {
+            return static_cast<BfresAnimCurveWrapMode>(this->pre_wrap_mode);
+        }
+        constexpr BfresAnimCurveWrapMode GetPostWrapMode() const {
+            return static_cast<BfresAnimCurveWrapMode>(this->post_wrap_mode);
+        }
 
         constexpr s32 CalculateBakedSizeFloat() const {
             return vp::util::AlignUp((static_cast<s32>(static_cast<float>(static_cast<s32>(this->end_frame) + 1.0f)) - static_cast<s32>(this->start_frame) + 1) * sizeof(float), alignof(size_t));
         }
-    
+
         /* Find frame */
         template <typename T>
             requires (std::is_same_v<T,float> || std::is_same_v<T,s16> || std::is_same_v<T,u8>)
@@ -285,7 +306,7 @@ namespace vp::res {
         template <typename T>
             requires (std::is_same_v<T,float> || std::is_same_v<T,s16> || std::is_same_v<T,u8>)
         void FindFrameExtImpl(BfresAnimFrameCache *cache, float frame) const;
-        
+
         template <typename T>
             requires (std::is_same_v<T,float> || std::is_same_v<T,s16> || std::is_same_v<T,u8>)
         void FindFrameExtIntervalScaleImpl(BfresAnimFrameCache *cache, float frame) const;

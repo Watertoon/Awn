@@ -42,16 +42,15 @@ namespace vp::resbui {
         m_section_array[i].entry_count = m_entry_count - m_section_array[i].base_entry_index;
     }
 
-    Result NintendoWareRelocationTableStream::StartSection(u32 region_offset, u32 region_size) {
+    void NintendoWareRelocationTableStream::StartSection(u32 region_offset, u32 region_size) {
 
         /* Integrity checks */
-        const u32 max_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(m_header) - reinterpret_cast<uintptr_t>(m_file_head));
-        RESULT_RETURN_UNLESS(region_offset + region_size <= max_offset, ResultOutOfBoundsOffset);
-        RESULT_RETURN_IF(m_section_count == m_section_max, ResultSectionExhaustion);
-
-        const u32 i = m_section_count;
+        //const u32 max_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(m_header) - reinterpret_cast<uintptr_t>(m_file_head));
+        //RESULT_RETURN_UNLESS(region_offset + region_size <= max_offset, ResultOutOfBoundsOffset);
+        //RESULT_RETURN_IF(m_section_count == m_section_max, ResultSectionExhaustion);
 
         /* Update last section state */
+        const u32 i = m_section_count;
         if (0 < i) {
             m_section_array[i - 1].entry_count = m_entry_count - m_section_array[i - 1].base_entry_index;
         }
@@ -65,19 +64,20 @@ namespace vp::resbui {
         /* Increment section index */
         ++m_section_count;
 
-        RESULT_RETURN_SUCCESS;
+        //RESULT_RETURN_SUCCESS;
     }
 
-    Result NintendoWareRelocationTableStream::AddEntry(void *region_offset_ptr, u16 array_count, u8 relocation_count, u8 array_stride) {
+    void NintendoWareRelocationTableStream::AddEntry(void *region_offset_ptr, u16 array_count, u8 relocation_count, u8 array_stride) {
         const u32 region_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(region_offset_ptr) - reinterpret_cast<uintptr_t>(m_file_head));
-        return this->AddEntry(region_offset, array_count, relocation_count, array_stride);
+        this->AddEntry(region_offset, array_count, relocation_count, array_stride);
     }
-    Result NintendoWareRelocationTableStream::AddEntry(u32 region_offset, u16 array_count, u8 relocation_count, u8 array_stride) {
+    void NintendoWareRelocationTableStream::AddEntry(u32 region_offset, u16 array_count, u8 relocation_count, u8 array_stride) {
 
         /* Integrity checks */
-        const u32 max_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(m_header) - reinterpret_cast<uintptr_t>(m_file_head));
-        RESULT_RETURN_UNLESS(region_offset <= max_offset, ResultOutOfBoundsOffset);
-        RESULT_RETURN_IF(m_entry_count == m_entry_max, ResultEntryExhaustion);
+        //const u32 max_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(m_header) - reinterpret_cast<uintptr_t>(m_file_head));
+        //RESULT_RETURN_UNLESS(region_offset <= max_offset, ResultOutOfBoundsOffset);
+        //RESULT_RETURN_IF(m_entry_count == m_entry_max, ResultEntryExhaustion);
+        VP_ASSERT(m_entry_count < m_entry_max);
 
         /* Set new entry state */
         const u32 i = m_entry_count;
@@ -89,6 +89,6 @@ namespace vp::resbui {
         /* Increment entry index */
         m_entry_count = i + 1;
 
-        RESULT_RETURN_SUCCESS;
+        //RESULT_RETURN_SUCCESS;
     }
 }

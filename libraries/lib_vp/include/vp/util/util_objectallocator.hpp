@@ -110,6 +110,7 @@ namespace vp::util {
 
             constexpr bool IsEmpty() const { return m_free_list == nullptr; }
             constexpr bool IsValid() const { return m_start_address != nullptr; }
+            bool IsContain(void *address, u32 count) const { return m_start_address <= address && address < reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(m_start_address) + count * sizeof(FreeList)); }
     };
 
     template <class T, size_t Count>

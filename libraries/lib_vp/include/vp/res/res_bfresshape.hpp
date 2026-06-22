@@ -17,20 +17,20 @@
 
 namespace vp::res {
 
-    struct ResBfresVertexBufferStride {
+    struct ResBfresVertexBufferState {
         u32 stride;
         u32 divisor;
         u32 reserve0;
         u32 reserve1;
     };
-    static_assert(sizeof(ResBfresVertexBufferStride) == 0x10);
+    static_assert(sizeof(ResBfresVertexBufferState) == 0x10);
 
     struct ResBfresVertexAttribute {
-        const char *name;
-        u32         attribute_format;
-        u16         attribute_offset;
-        u8          buffer_index;
-        u8          runtime_is_dynamic_vbo;
+        const NWString8 *name;
+        u32              attribute_format;
+        u16              attribute_offset;
+        u8               buffer_id;
+        u8               runtime_is_dynamic_vbo;
 
         constexpr GfxAttributeFormat GetAttributeFormat() const {
             return static_cast<GfxAttributeFormat>(this->attribute_format);
@@ -47,12 +47,12 @@ namespace vp::res {
         void                        *runtime_vertex_buffer_array;
         void                       **runtime_user_vertex_buffer_array;
         ResGfxBufferInfo            *buffer_info_array;
-        ResBfresVertexBufferStride  *buffer_stride_array;
+        ResBfresVertexBufferState   *buffer_state_array;
         void                        *runtime_user_pointer;
         u32                          base_gpu_region_offset;
         u8                           attribute_count;
         u8                           buffer_count;
-        u16                          section_index;
+        u16                          section_id;
         u32                          vertex_count;
         u8                           vertex_skin_weight_count;
         u8                           reserve0;
@@ -65,7 +65,7 @@ namespace vp::res {
         constexpr void CalculateDynamicVertexBufferConnection(DynamicVboConnection *out_mask) const {
             for (u32 i = 0; i < this->attribute_count; ++i) {
                 if (!(this->attribute_array[i].runtime_is_dynamic_vbo & 1)) { continue; }
-                out_mask->SetBit(this->attribute_array[i].buffer_index);
+                out_mask->SetBit(this->attribute_array[i].buffer_id);
             }
         }
     };
@@ -101,7 +101,7 @@ namespace vp::res {
         u32                   base_vertex;
         u16                   sub_mesh_count;
         u16                   reserve0;
-        
+
         constexpr GfxIndexFormat GetIndexFormat() const {
             return static_cast<GfxIndexFormat>(this->index_format);
         }
@@ -138,22 +138,22 @@ namespace vp::res {
                 u32 reserve1                    : 27;
             };
         };
-        const char                *shape_name;
+        const NWString8           *name;
         ResBfresVertex            *vertex;
         union {
             ResBfresMesh          *mesh_array;
             ResBfresMeshlet       *meshlet;
         };
-        u16                       *skin_bone_index_array;
+        u16                       *skin_bone_id_array;
         ResBfresKeyShape          *key_shape_array;
         ResNintendoWareDictionary *key_shape_dictionary;
         ResBfresBounding          *bounding_box_array;
         ResBfresBoundingSphere    *bounding_sphere_array;
         void                      *runtime_user_pointer;
-        u16                        section_index;
-        u16                        material_index;
-        u16                        base_bone_index;
-        u16                        vertex_index;
+        u16                        section_id;
+        u16                        material_id;
+        u16                        base_bone_id;
+        u16                        vertex_id;
         u16                        skin_bone_count;
         u8                         vertex_skin_weight_count;
         u8                         mesh_count;
@@ -165,7 +165,7 @@ namespace vp::res {
 
         constexpr void SetDynamicVertexBuffers() const {
             if (this->key_shape_count < 1) { return; }
-            const ResBfresKeyShape *key_shape = std::addressof(this->key_shape_array[0]);
+            const ResBfresKeyShape *key_shape = this->key_shape_array;
             ResBfresVertexAttribute *attr_array  = vertex->attribute_array;
             for (u32 i = 0; i < cMaxBfresRelativeKeyShapeCount; ++i) {
                 const u32 attr_index = key_shape->attribute_location_array[i];
@@ -183,9 +183,9 @@ namespace vp::res {
             return total_sub_mesh_count;
         }
 
-        constexpr u32 GetSubMeshBaseIndex(u32 mesh_index) const {
+        constexpr u32 GetSubMeshBaseId(u32 mesh_id) const {
             u32 base_index = 0;
-            for (u32 i = 0; i < mesh_index; ++i) {
+            for (u32 i = 0; i < mesh_id; ++i) {
                 base_index += this->mesh_array[i].sub_mesh_count;
             }
             return base_index;

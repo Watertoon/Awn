@@ -302,6 +302,7 @@ namespace vp::util {
                 m_count  = 0;
             }
 
+            constexpr bool IsValid() const { return m_array != 0; }
             constexpr bool IsEmpty() const { return m_count == 0; }
             constexpr bool IsFull() const { return (m_max_count <= m_count); }
 

@@ -32,7 +32,7 @@ namespace awn::sys {
         u64 exit_code = 0x7fff'ffff'ffff'ffff;
         ThreadRunMode run_mode = ThreadRunMode::WaitForMessage;
         u32 message_count = 8;
-        u64 *message_memory = nullptr;
+        size_t *message_memory = nullptr;
         size_t stack_size = vp::util::c64KB;
 #ifndef VP_TARGET_PLATFORM_win32
         void *stack_memory = nullptr;

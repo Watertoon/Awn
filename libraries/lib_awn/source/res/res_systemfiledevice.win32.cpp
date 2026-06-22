@@ -52,7 +52,7 @@ namespace awn::res {
 
         /* Create directory */
         MaxPathString dir_path;
-        vp::util::GetDirectory(std::addressof(dir_path), std::addressof(formatted_path));
+        vp::util::GetDirectoryWithDrive(std::addressof(dir_path), std::addressof(formatted_path));
         u32 base = 0;
         const u32 dir_end = dir_path.GetLength() - 1;
         MaxPathString advance_path;
@@ -409,7 +409,7 @@ namespace awn::res {
             DirectoryEntry *sub_base_entry  = std::addressof(entry_array[i]);
 
             /* Process sub directory */
-            const Result result = this->ReadDirectoryImpl(directory_handle, sub_base_entry, sub_entry_count);
+            const Result result = this->ReadDirectoryImpl(nullptr, directory_handle, sub_base_entry, sub_entry_count);
 
             /* Add all parsed files */
             i = i + (directory_handle->entry_index - entry_index);

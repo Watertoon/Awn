@@ -50,7 +50,7 @@ namespace vp::resbui {
 
             virtual void PushKeys(ByamlStringPoolBuilder *pool_builder) {
                 if (*m_key.GetString() == '\0') { return; }
-                pool_builder->AddString(std::addressof(m_key));
+                RESULT_DISCARD(pool_builder->AddString(std::addressof(m_key)));
             }
             virtual void PushStrings([[maybe_unused]] ByamlStringPoolBuilder *pool_builder) {/*...*/}
 
@@ -79,7 +79,9 @@ namespace vp::resbui {
 
             void SerializeForBigData(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head);
 
-            void CalculateBigDataEndOffsets(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, size_t head);
+            void CalculateBigDataOffsets(uintptr_t *big_data_offset_iter, size_t head);
+            void CalculateContainerOffsets(uintptr_t *container_offset_iter, size_t head);
+            void ClearCache();
 
             constexpr void SetBigDataNode(ByamlBigDataNodeBase *big_data_node) {
                 m_big_data_node = big_data_node;
@@ -89,6 +91,8 @@ namespace vp::resbui {
     class ByamlNodeU32 : public ByamlNodeBase {
         private:
             u32 m_value;
+        public:
+            VP_RTTI_DERIVED(ByamlNodeU32, ByamlNodeBase);
         public:
 			constexpr ByamlNodeU32() : ByamlNodeBase(), m_value() {/*...*/}
 			constexpr ByamlNodeU32(u32 value) : ByamlNodeBase(), m_value(value) {/*...*/}
@@ -107,6 +111,8 @@ namespace vp::resbui {
         private:
             s32 m_value;
         public:
+            VP_RTTI_DERIVED(ByamlNodeS32, ByamlNodeBase);
+        public:
 			constexpr ByamlNodeS32() : ByamlNodeBase(), m_value() {/*...*/}
 			constexpr ByamlNodeS32(s32 value) : ByamlNodeBase(), m_value(value) {/*...*/}
             virtual constexpr ~ByamlNodeS32() {/*...*/}
@@ -123,6 +129,8 @@ namespace vp::resbui {
     class ByamlNodeF32 : public ByamlNodeBase {
         private:
             float m_value;
+        public:
+            VP_RTTI_DERIVED(ByamlNodeF32, ByamlNodeBase);
         public:
 			constexpr ByamlNodeF32() : ByamlNodeBase(), m_value() {/*...*/}
 			constexpr ByamlNodeF32(float value) : ByamlNodeBase(), m_value(value) {/*...*/}
@@ -141,6 +149,8 @@ namespace vp::resbui {
         private:
             bool m_value;
         public:
+            VP_RTTI_DERIVED(ByamlNodeBool, ByamlNodeBase);
+        public:
 			constexpr ByamlNodeBool() : ByamlNodeBase(), m_value() {/*...*/}
 			constexpr ByamlNodeBool(bool value) : ByamlNodeBase(), m_value(value) {/*...*/}
             virtual constexpr ~ByamlNodeBool() {/*...*/}
@@ -158,12 +168,14 @@ namespace vp::resbui {
         private:
             ByamlStringPoolString m_string;
         public:
+            VP_RTTI_DERIVED(ByamlNodeString, ByamlNodeBase);
+        public:
 			constexpr ByamlNodeString() : ByamlNodeBase(), m_string("") {/*...*/}
 			constexpr ByamlNodeString(const char *value) : ByamlNodeBase(), m_string(value) {/*...*/}
             virtual constexpr ~ByamlNodeString() {/*...*/}
 
             virtual void PushStrings(ByamlStringPoolBuilder *pool_builder) override {
-                pool_builder->AddString(std::addressof(m_string));
+                RESULT_DISCARD(pool_builder->AddString(std::addressof(m_string)));
             }
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { return res::ByamlDataType::StringIndex; }

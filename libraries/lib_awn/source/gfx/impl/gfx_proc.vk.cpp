@@ -490,6 +490,25 @@ DEFINE_VK_PROC(vkWriteResourceDescriptorsEXT);
 DEFINE_VK_PROC(vkWriteSamplerDescriptorsEXT);
 #endif
 
+/* Device VK_KHR_device_address_commands */
+#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+DEFINE_VK_PROC(vkCmdBindIndexBuffer3KHR);
+DEFINE_VK_PROC(vkCmdBindVertexBuffers3KHR);
+DEFINE_VK_PROC(vkCmdCopyImageToMemoryKHR);
+DEFINE_VK_PROC(vkCmdCopyMemoryKHR);
+DEFINE_VK_PROC(vkCmdCopyMemoryToImageKHR);
+DEFINE_VK_PROC(vkCmdCopyQueryPoolResultsToMemoryKHR);
+DEFINE_VK_PROC(vkCmdDispatchIndirect2KHR);
+DEFINE_VK_PROC(vkCmdDrawIndexedIndirect2KHR);
+DEFINE_VK_PROC(vkCmdDrawIndirect2KHR);
+DEFINE_VK_PROC(vkCmdFillMemoryKHR);
+DEFINE_VK_PROC(vkCmdUpdateMemoryKHR);
+DEFINE_VK_PROC(vkCmdDrawMeshTasksIndirectCount2EXT);
+//DEFINE_VK_PROC(vkCmdBeginConditionalRendering2EXT);
+//DEFINE_VK_PROC(vkCmdDrawIndexedIndirectCount2KHR);
+//DEFINE_VK_PROC(vkCmdDrawIndirectCount2KHR);
+#endif
+
 void LoadVkCProcsDevice(VkDevice device) {
 
     /* Device procs */
@@ -735,6 +754,7 @@ void LoadVkCProcsDevice(VkDevice device) {
     /* Device VK_EXT_external_memory_host*/
     LOAD_DEVICE_VK_PROC(vkGetMemoryHostPointerPropertiesEXT);
 
+#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
     /* Device VK_EXT_descriptor_buffer */
     LOAD_DEVICE_VK_PROC(vkCmdBindDescriptorBuffersEXT);
     LOAD_DEVICE_VK_PROC(vkCmdSetDescriptorBufferOffsetsEXT);
@@ -743,6 +763,7 @@ void LoadVkCProcsDevice(VkDevice device) {
     LOAD_DEVICE_VK_PROC(vkGetDescriptorSetLayoutSizeEXT);
     /* + Vulkan 1.4 */
     LOAD_DEVICE_VK_PROC(vkCmdSetDescriptorBufferOffsets2EXT);
+#endif
 
     /* Device VK_EXT_shader_object*/
     LOAD_DEVICE_VK_PROC(vkCmdBindShadersEXT);
@@ -775,15 +796,35 @@ void LoadVkCProcsDevice(VkDevice device) {
     }
 
     /* Device VK_EXT_descriptor_heap */
-    #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
+#ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
     LOAD_DEVICE_VK_PROC(vkCmdBindResourceHeapEXT);
     LOAD_DEVICE_VK_PROC(vkCmdBindSamplerHeapEXT);
     LOAD_DEVICE_VK_PROC(vkCmdPushDataEXT);
-    LOAD_DEVICE_VK_PROC(vkGetImageOpaqueCaptureDataEXT);
-    LOAD_DEVICE_VK_PROC(vkGetPhysicalDeviceDescriptorSizeEXT);
+    //LOAD_DEVICE_VK_PROC(vkGetImageOpaqueCaptureDataEXT);
+    //LOAD_DEVICE_VK_PROC(vkGetPhysicalDeviceDescriptorSizeEXT);
     LOAD_DEVICE_VK_PROC(vkWriteResourceDescriptorsEXT);
     LOAD_DEVICE_VK_PROC(vkWriteSamplerDescriptorsEXT);
-    #endif
+#endif
 
+    /* Device VK_KHR_device_address_commands */
+#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+    LOAD_DEVICE_VK_PROC(vkCmdBindIndexBuffer3KHR);
+    LOAD_DEVICE_VK_PROC(vkCmdBindVertexBuffers3KHR);
+    LOAD_DEVICE_VK_PROC(vkCmdCopyImageToMemoryKHR);
+    LOAD_DEVICE_VK_PROC(vkCmdCopyMemoryKHR);
+    LOAD_DEVICE_VK_PROC(vkCmdCopyMemoryToImageKHR);
+    LOAD_DEVICE_VK_PROC(vkCmdCopyQueryPoolResultsToMemoryKHR);
+    LOAD_DEVICE_VK_PROC(vkCmdDispatchIndirect2KHR);
+    LOAD_DEVICE_VK_PROC(vkCmdDrawIndexedIndirect2KHR);
+    LOAD_DEVICE_VK_PROC(vkCmdDrawIndirect2KHR);
+    LOAD_DEVICE_VK_PROC(vkCmdFillMemoryKHR);
+    LOAD_DEVICE_VK_PROC(vkCmdUpdateMemoryKHR);
+    if (awn::gfx::IsOptionalFeature(awn::gfx::OptionalFeature::SupportsMeshShaders)) {
+        LOAD_DEVICE_VK_PROC(vkCmdDrawMeshTasksIndirectCount2EXT);
+    }
+    //LOAD_DEVICE_VK_PROC(vkCmdBeginConditionalRendering2EXT);
+    //LOAD_DEVICE_VK_PROC(vkCmdDrawIndexedIndirectCount2KHR);
+    //LOAD_DEVICE_VK_PROC(vkCmdDrawIndirectCount2KHR);
+#endif
     return;
 }

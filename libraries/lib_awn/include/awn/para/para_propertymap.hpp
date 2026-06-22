@@ -55,11 +55,11 @@ namespace awn::para {
                 if (count < 1) { return; }
 
                 /* Get real count */
-                vp::res::ByamlData  data = {};
+                vp::res::ByamlIterator iter = {};
                 const char *key  = "";
                 u32 real_count = 0;
                 for (u32 i = 0; i < count; ++i) {
-                    real_count = real_count + byaml_iterator.TryGetByamlDataAndKeyByIndex(std::addressof(data), std::addressof(key), i);
+                    real_count = real_count + byaml_iterator.TryGetIteratorAndKeyByIndex(std::addressof(iter), std::addressof(key), i);
                 }
 
                 /* Create array */
@@ -69,7 +69,7 @@ namespace awn::para {
                 for (u32 i = 0; i < count; ++i) {
 
                     /* Get data and key */
-                    const bool result = byaml_iterator.TryGetByamlDataAndKeyByIndex(std::addressof(data), std::addressof(key), i);
+                    const bool result = byaml_iterator.TryGetIteratorAndKeyByIndex(std::addressof(iter), std::addressof(key), i);
                     if (result == false) { continue; }
 
                     /* Hash key */
@@ -80,12 +80,55 @@ namespace awn::para {
                     node->key     = key;
 
                     /* Get value by data */
-                    const bool value_result = byaml_iterator.TryGetValueByData(std::addressof(node->value), data);
+                    const bool value_result = iter.TryGetValueByIterator(std::addressof(node->value));
                     VP_ASSERT(value_result == true);
                 }
 
                 return;
             }
+#ifdef VP_ENABLE_LIBYAML
+            virtual void InitializeYaml(mem::Heap *heap, [[maybe_unused]] Document *document, vp::res::YamlIterator yaml_iterator) override {
+
+                /* Ensure dictionary iterator */
+                VP_ASSERT(vp::res::IsDictionaryType(static_cast<vp::res::ByamlDataType>(yaml_iterator.GetDataType())));
+
+                /* Ensure same size if fixed array type */
+                const u32 count = yaml_iterator.GetDataCount();
+                if (count < 1) { return; }
+
+                /* Get real count */
+                vp::res::YamlIterator iter = {};
+                const char *key  = "";
+                u32 real_count = 0;
+                for (u32 i = 0; i < count; ++i) {
+                    real_count = real_count + yaml_iterator.TryGetIteratorAndKeyByIndex(std::addressof(iter), std::addressof(key), i);
+                }
+
+                /* Create array */
+                RESULT_ABORT_UNLESS(m_map.Initialize(heap, real_count));
+
+                /* Parse data */
+                for (u32 i = 0; i < count; ++i) {
+
+                    /* Get data and key */
+                    const bool result = yaml_iterator.TryGetIteratorAndKeyByIndex(std::addressof(iter), std::addressof(key), i);
+                    if (result == false) { continue; }
+
+                    /* Hash key */
+                    const u64 hash = vp::util::HashMurmur64(key);
+
+                    /* Allocate map node */
+                    MapNode *node = m_map.Allocate(hash);
+                    node->key = key;
+
+                    /* Get value by data */
+                    const bool value_result = iter.TryGetValueByIterator(std::addressof(node->value));
+                    VP_ASSERT(value_result == true);
+                }
+
+                return;
+            }
+#endif
 
             virtual void InitializeDefaults(mem::Heap *heap, bool is_force_unlink_parents) override { VP_UNUSED(heap, is_force_unlink_parents); m_map.Finalize(); }
             virtual void Finalize() override { m_map.Finalize(); }
@@ -105,7 +148,7 @@ namespace awn::para {
                 if (result != ResultFoundComposite) { return; }
 
                 /* Set composite if compatible type */
-                m_parent = (PropertyMap<T>::CheckRuntimeTypeInfoStatic(context.composite->GetRuntimeTypeInfo()) == true) ? reinterpret_cast<PropertyMap<T>*>(context.composite) : nullptr;
+                m_parent = (PropertyMap<T>::CheckRuntimeTypeInfoStatic(context.composite->GetRuntimeTypeInfo())) ? reinterpret_cast<PropertyMap<T>*>(context.composite) : nullptr;
 
                 return;
             }

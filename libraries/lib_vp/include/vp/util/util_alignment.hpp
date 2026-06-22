@@ -74,4 +74,11 @@ namespace vp::util {
         const bool is_one_bit = (CountOneBits(value) == 1);
         return is_one_bit;
     }
+
+    static_assert(vp::util::AlignUp(0x1f, 0x40) == 0x40);
+    static_assert(vp::util::AlignDown(0x7f, 0x40) == 0x40);
+    static_assert(vp::util::IsAligned(0x40, 0x8));
+    static_assert(!vp::util::IsAligned(0x7f, 0x40));
+    static_assert(vp::util::IsAlignedPow2(0x80u));
+    static_assert(!vp::util::IsAlignedPow2(0x81u));
 }

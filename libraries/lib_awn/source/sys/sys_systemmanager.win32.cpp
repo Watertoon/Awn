@@ -17,10 +17,6 @@
 
 namespace awn::sys {
 
-    VP_ENUM_TRAITS_IMPL(RegionType);
-    VP_ENUM_TRAITS_IMPL(LanguageType);
-    VP_ENUM_TRAITS_IMPL(ProductType);
-
     struct SystemManager {
         bool        init_guard;
         bool        is_enable_large_page;
@@ -206,11 +202,11 @@ namespace awn::sys {
         DISPLAY_DEVICEA display_device = {
             .cb = sizeof(DISPLAY_DEVICEA),
         };
-        u32  count  = 0;
+        //u32  count  = 0;
         u32  i      = 0;
         bool result = ::EnumDisplayDevicesA(nullptr, i, std::addressof(display_device), 0);
         while(result) {
-            if ((display_device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) == 0) { ++count; }
+            //if ((display_device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) == 0) { ++count; }
             ++i;
             result = ::EnumDisplayDevicesA(nullptr, i, std::addressof(display_device), 0);
         }

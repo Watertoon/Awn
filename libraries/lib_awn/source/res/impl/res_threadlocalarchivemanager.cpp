@@ -57,15 +57,17 @@ namespace awn::res::impl {
         m_tls_slot = sys::AllocateTlsSlot(TlsDestructor);
         RESULT_RETURN_UNLESS(m_tls_slot != sys::cInvalidTlsSlot, ResultNoTlsSlot);
 
-        /* Initialize arrays */
-        RESULT_TRY(m_archive_tree_allocator.Initialize(heap, max_thread_count));
-        RESULT_TRY(m_free_archive_ring_buffer.Initialize(heap, max_thread_count));
-        RESULT_TRY(m_archive_binder_array.Initialize(heap, max_thread_count));
-        RESULT_TRY(m_registered_thread_ring.Initialize(heap, max_thread_count));
-
-        /* Push archives to free ring */
-        for (u32 i = 0; i < max_thread_count; ++i) {
-            m_free_archive_ring_buffer.PushBack(std::addressof(m_archive_binder_array[i]));
+        if (0 < max_thread_count) {
+            /* Initialize arrays */
+            RESULT_TRY(m_archive_tree_allocator.Initialize(heap, max_thread_count));
+            RESULT_TRY(m_free_archive_ring_buffer.Initialize(heap, max_thread_count));
+            RESULT_TRY(m_archive_binder_array.Initialize(heap, max_thread_count));
+            RESULT_TRY(m_registered_thread_ring.Initialize(heap, max_thread_count));
+            
+            /* Push archives to free ring */
+            for (u32 i = 0; i < max_thread_count; ++i) {
+                m_free_archive_ring_buffer.PushBack(std::addressof(m_archive_binder_array[i]));
+            }
         }
 
         RESULT_RETURN_SUCCESS;

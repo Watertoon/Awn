@@ -21,11 +21,21 @@ namespace vp::resbui {
 
 	class ByamlBigDataNodeBase {
         public:
+            friend class ByamlNodeBase;
+        public:
 			static constexpr u32 cInvalidOffset = 0xffff'ffff;
-		protected:
-			u32 m_offset;
+        public:
+            struct Cache {                
+                u32 big_data_offset = cInvalidOffset;
+                u32 container_offset = cInvalidOffset;
+                bool is_serialize;
+            };
+        public:
+            Cache m_cache;
+        public:
+            VP_RTTI_BASE(ByamlBigDataNodeBase);
 		public:
-            constexpr  ByamlBigDataNodeBase() : m_offset(cInvalidOffset) {/*...*/}
+            constexpr  ByamlBigDataNodeBase() : m_cache{} {/*...*/}
             virtual ~ByamlBigDataNodeBase() {/*...*/}
 
             virtual void PushKeys([[maybe_unused]] ByamlStringPoolBuilder *pool_builder) {/*...*/}
@@ -34,9 +44,13 @@ namespace vp::resbui {
             virtual constexpr res::ByamlDataType GetByamlDataType() const { return res::ByamlDataType::Null; }
             virtual void Serialize([[maybe_unused]] uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, [[maybe_unused]] vp::res::ResByaml *head) {/*...*/}
 
-            virtual void CalculateEndOffset([[maybe_unused]] uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) { return; }
+            virtual void CalculateBigDataOffset([[maybe_unused]] uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t head) { return; }
+            virtual void CalculateContainerOffset([[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) { return; }
+            virtual void ClearCache() {
+                m_cache = Cache{};
+            }
 
-            constexpr u32 GetOffset() const { return m_offset; }
+            constexpr u32 GetOffset() const { return (m_cache.big_data_offset == cInvalidOffset) ? m_cache.container_offset : m_cache.big_data_offset; }
 	};
 
     /* ByamlNodeBigData definitions */
@@ -49,6 +63,8 @@ namespace vp::resbui {
             u32      m_node_count;
             NodeList m_node_list;
         public:
+            VP_RTTI_DERIVED(ByamlBigDataNodeContainerBase, ByamlBigDataNodeBase);
+        public:
             constexpr  ByamlBigDataNodeContainerBase() : ByamlBigDataNodeBase(), m_node_count(), m_node_list() {/*...*/}
             virtual ~ByamlBigDataNodeContainerBase() override { this->Finalize(); }
     
@@ -56,6 +72,17 @@ namespace vp::resbui {
 
             virtual void PushKeys(ByamlStringPoolBuilder *pool_builder) override;
             virtual void PushStrings([[maybe_unused]] ByamlStringPoolBuilder *pool_builder) override;
+
+            virtual void CalculateBigDataOffset(uintptr_t *big_data_offset_iter, uintptr_t head) override;
+            virtual void CalculateContainerOffset(uintptr_t *container_offset_iter, uintptr_t head) override;
+            virtual void ClearCache() override {
+                m_cache = Cache{};
+                for (ByamlNodeBase &node : m_node_list) {
+                    ByamlNodeBigData *big_data = vp::util::DynamicCast<ByamlNodeBigData*>(std::addressof(node));
+                    if (big_data != nullptr) { continue; }
+                    big_data->ClearCache();
+                }
+            }
     };
 
     enum class ByamlArrayDataTypeMode : u8 {
@@ -66,6 +93,8 @@ namespace vp::resbui {
     class ByamlBigDataNodeArray : public ByamlBigDataNodeContainerBase {
         protected:
             ByamlArrayDataTypeMode m_data_type_mode;
+        public:
+            VP_RTTI_DERIVED(ByamlBigDataNodeArray, ByamlBigDataNodeContainerBase);
         private:
             constexpr bool CheckMonoTyped() const {
                 if (m_data_type_mode != ByamlArrayDataTypeMode::Auto) { return (m_data_type_mode == ByamlArrayDataTypeMode::MonoTyped); }
@@ -88,18 +117,19 @@ namespace vp::resbui {
 
             virtual void Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) override;
 
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override;
+            virtual void CalculateContainerOffset(uintptr_t *container_offset_iter, uintptr_t head) override;
     };
 
     class ByamlBigDataNodeDictionary : public ByamlBigDataNodeContainerBase {
         private:
             bool m_is_index_remap;
+        public:
+            VP_RTTI_DERIVED(ByamlBigDataNodeDictionary, ByamlBigDataNodeContainerBase);
         private:
             constexpr u32 CalculateRemapSize() const {
-
                 if (m_is_index_remap == false) { return 0; }
-                if (m_node_count < 0x100)      { return sizeof(u8) * m_node_count; }
-                if (m_node_count < 0x10000)    { return sizeof(u16) * m_node_count; }
+                if (m_node_count < 0x100)      { return vp::util::AlignUp(sizeof(u8) * m_node_count, alignof(u32)); }
+                if (m_node_count < 0x10000)    { return vp::util::AlignUp(sizeof(u16) * m_node_count, alignof(u32)); }
                 return sizeof(u32) * m_node_count;
             }
         public:
@@ -115,19 +145,21 @@ namespace vp::resbui {
 
             virtual void Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) override;
 
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override;
+            virtual void CalculateContainerOffset(uintptr_t *container_offset_iter, uintptr_t head) override;
     };
 
     class ByamlBigDataNodeHashArray : public ByamlBigDataNodeContainerBase {
         private:
             bool m_is_index_remap;
             u32  m_key_size;
+        public:
+            VP_RTTI_DERIVED(ByamlBigDataNodeHashArray, ByamlBigDataNodeContainerBase);
         private:
             constexpr u32 CalculateRemapSize() const {
 
                 if (m_is_index_remap == false) { return 0; }
-                if (m_node_count < 0x100)      { return sizeof(u8) * m_node_count; }
-                if (m_node_count < 0x10000)    { return sizeof(u16) * m_node_count; }
+                if (m_node_count < 0x100)      { return vp::util::AlignUp(sizeof(u8) * m_node_count, alignof(u32)); }
+                if (m_node_count < 0x10000)    { return vp::util::AlignUp(sizeof(u16) * m_node_count, alignof(u32)); }
                 return sizeof(u32) * m_node_count;
             }
         public:
@@ -140,6 +172,7 @@ namespace vp::resbui {
 
             constexpr void SetIsIndexRemap(bool is_index_remap) { m_is_index_remap = is_index_remap; }
             constexpr void SetKeySize(u32 key_size) { m_key_size = key_size; }
+            constexpr u32 GetKeySize() const { return m_key_size; }
 
             virtual constexpr res::ByamlDataType GetByamlDataType() const override { 
                 const u32 sub_type = ((m_key_size / sizeof(u32)) - 1);
@@ -148,12 +181,14 @@ namespace vp::resbui {
 
             virtual void Serialize(uintptr_t *big_data_offset, uintptr_t *container_offset, vp::res::ResByaml *head) override;
 
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, uintptr_t *container_offset_iter, uintptr_t head) override;
+            virtual void CalculateContainerOffset(uintptr_t *container_offset_iter, uintptr_t head) override;
     };
 
     class ByamlBigDataNodeU64 : public ByamlBigDataNodeBase {
         private:
             u64 m_value;
+        public:
+            VP_RTTI_DERIVED(ByamlBigDataNodeU64, ByamlBigDataNodeBase);
         public:
             constexpr ByamlBigDataNodeU64() : ByamlBigDataNodeBase(), m_value() {/*...*/}
             constexpr ByamlBigDataNodeU64(u64 value) : ByamlBigDataNodeBase(), m_value(value) {/*...*/}
@@ -165,12 +200,14 @@ namespace vp::resbui {
 
             virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, [[maybe_unused]] vp::res::ResByaml *head) override;
 
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override;
+            virtual void CalculateBigDataOffset(uintptr_t *big_data_offset_iter, uintptr_t head) override;
     };
 
     class ByamlBigDataNodeS64 : public ByamlBigDataNodeBase {
         private:
             s64 m_value;
+        public:
+            VP_RTTI_DERIVED(ByamlBigDataNodeS64, ByamlBigDataNodeBase);
         public:
             constexpr ByamlBigDataNodeS64() : ByamlBigDataNodeBase(), m_value() {/*...*/}
             constexpr ByamlBigDataNodeS64(s64 value) : ByamlBigDataNodeBase(), m_value(value) {/*...*/}
@@ -182,12 +219,14 @@ namespace vp::resbui {
 
             virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, [[maybe_unused]] vp::res::ResByaml *head) override;
 
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override;
+            virtual void CalculateBigDataOffset(uintptr_t *big_data_offset_iter, uintptr_t head) override;
     };
 
     class ByamlBigDataNodeF64 : public ByamlBigDataNodeBase {
         private:
             double m_value;
+        public:
+            VP_RTTI_DERIVED(ByamlBigDataNodeF64, ByamlBigDataNodeBase);
         public:
             constexpr ByamlBigDataNodeF64() : ByamlBigDataNodeBase(), m_value() {/*...*/}
             constexpr ByamlBigDataNodeF64(double value) : ByamlBigDataNodeBase(), m_value(value) {/*...*/}
@@ -199,7 +238,7 @@ namespace vp::resbui {
 
             virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, vp::res::ResByaml *head) override;
 
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override;
+            virtual void CalculateBigDataOffset(uintptr_t *big_data_offset_iter, uintptr_t head) override;
     };
 
     class ByamlBigDataNodeBinary : public ByamlBigDataNodeBase {
@@ -209,6 +248,8 @@ namespace vp::resbui {
             void *m_data;
             u32   m_data_size;
             u32   m_data_alignment;
+        public:
+            VP_RTTI_DERIVED(ByamlBigDataNodeBinary, ByamlBigDataNodeBase);
         public:
             constexpr ByamlBigDataNodeBinary() : ByamlBigDataNodeBase(), m_data(), m_data_size(0), m_data_alignment(cInvalidAlignment) {/*...*/}
             virtual ~ByamlBigDataNodeBinary() override {/*...*/}
@@ -223,6 +264,6 @@ namespace vp::resbui {
 
             virtual void Serialize(uintptr_t *big_data_offset, [[maybe_unused]] uintptr_t *container_offset, vp::res::ResByaml *head) override;
 
-            virtual void CalculateEndOffset(uintptr_t *big_data_offset_iter, [[maybe_unused]] uintptr_t *container_offset_iter, [[maybe_unused]] uintptr_t head) override;
+            virtual void CalculateBigDataOffset(uintptr_t *big_data_offset_iter, uintptr_t head) override;
     };
 }

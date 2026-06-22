@@ -247,7 +247,7 @@ namespace awn::gfx::impl {
         };
         ::pfn_vkGetImageMemoryRequirements2(Context::GetInstance()->GetVkDevice(), std::addressof(memory_requirement_info), std::addressof(memory_requirements_2));
 
-        return { memory_requirements_2.memoryRequirements.size, static_cast<s32>(memory_requirements_2.memoryRequirements.alignment), };
+        return { memory_requirements_2.memoryRequirements.size, memory_requirements_2.memoryRequirements.alignment, };
     }
 
     Result CreateVkImageView(VkImageView *out_image_view, const TextureViewInfo *texture_view_info) {
@@ -316,6 +316,7 @@ namespace awn::gfx::impl {
         return { ::pfn_vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(address_info)), };
     }
 
+#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
     void GetTextureSamplerDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot, gfx::DescriptorSlot sampler_slot) {
 
         /* Get descriptor memory offset */
@@ -483,4 +484,5 @@ namespace awn::gfx::impl {
 
         return;
     }
+#endif
 }

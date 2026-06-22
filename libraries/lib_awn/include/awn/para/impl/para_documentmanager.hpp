@@ -17,12 +17,6 @@
 
 namespace awn::para::impl {
 
-    struct DocumentManagerInfo {
-        u32                       typed_param_parent_count;
-        u32                       remove_queue_count;
-        IDocumentApplicationImpl *app_impl;
-    };
-
     struct TypedParamParentHandle {
         TypedParam *typed_param;
         u32         free_count;

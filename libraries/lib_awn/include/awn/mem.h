@@ -43,7 +43,7 @@
 #include <awn/mem/mem_virtualaddressheap.h>
 
 #include <awn/mem/mem_singleton.h>
-#include <awn/mem/impl/mem_new.hpp>
+#include <awn/mem/impl/mem_newimpl.h>
 
 #include <awn/mem/mem_frameheap.hpp>
 //#include <awn/mem/mem_gpuexpheap.hpp>

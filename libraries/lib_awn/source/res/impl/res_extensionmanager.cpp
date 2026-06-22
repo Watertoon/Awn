@@ -20,17 +20,19 @@ namespace awn::res::impl {
     Result ExtensionManager::Initialize(mem::Heap *heap, const ExtensionManagerInfo *ext_mgr_info) {
 
         /* Integrity checks */
-        RESULT_RETURN_IF(ext_mgr_info->extension_count < 1, ResultRangeNG);
+        RESULT_RETURN_UNLESS(ext_mgr_info->extension_count < 0xffff'ffff, ResultRangeNG);
 
         /* Initialize resource unit manager array */
         RESULT_TRY(m_resource_unit_manager_array.Initialize(heap, ext_mgr_info->extension_count + 1));
 
         /* Set main extension array */
-        RESULT_TRY(m_extension_array.Initialize(heap, ext_mgr_info->extension_count));
-        for (u32 i = 0; i < ext_mgr_info->extension_count; ++i) {
-            m_extension_array[i] = ext_mgr_info->extension_info_array[i];
+        if (0 < ext_mgr_info->extension_count) {
+            RESULT_TRY(m_extension_array.Initialize(heap, ext_mgr_info->extension_count));
+            for (u32 i = 0; i < ext_mgr_info->extension_count; ++i) {
+                m_extension_array[i] = ext_mgr_info->extension_info_array[i];
+            }
+            m_extension_array.Sort(ExtensionArray::DefaultCompareLess());
         }
-        m_extension_array.Sort(ExtensionArray::DefaultCompareLess());
 
         RESULT_RETURN_SUCCESS;
     }
@@ -59,24 +61,26 @@ namespace awn::res::impl {
 
     u32 ExtensionManager::GetExtensionIndex(const char *extension) {
 
-        u32 size  = m_extension_array.GetCount();
-        u32 i     = 0;
-        u32 index = 0;
-        while (i < size) {
-            index            = i + size;
-            index            = index >> 1;
-            const s32 result = ::strcmp(extension, m_extension_array[i].extension.GetString());
-
-            if (result == 0) {
-                return i;
-            }
-            if (0 < result) {
-                i     = index + 1;
-                index = size;
-            }
-            size = index;
-        }
-
-        return cInvalidEntryIndex;
+        //u32 size  = m_extension_array.GetCount();
+        //u32 i     = 0;
+        //u32 index = 0;
+        //while (i < size) {
+        //    index            = i + size;
+        //    index            = index >> 1;
+        //    const s32 result = ::strcmp(extension, m_extension_array[i].extension.GetString());
+        //
+        //    if (result == 0) {
+        //        return i;
+        //    }
+        //    if (0 < result) {
+        //        i     = index + 1;
+        //        index = size;
+        //    }
+        //    size = index;
+        //}
+        res::MaxExtensionString ext;
+        ext.SetString(extension);
+        auto iter = m_extension_array.BinarySearch(ext, ExtensionArray::DefaultCompareLessSearchMember<&ExtensionInfo::extension>());
+        return (iter != m_extension_array.end()) ? m_extension_array.IndexOf(std::addressof(*iter)) : cInvalidEntryIndex;
     }
 }

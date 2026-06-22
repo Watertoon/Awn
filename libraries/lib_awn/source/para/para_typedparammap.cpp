@@ -76,7 +76,7 @@ namespace awn::para {
         }
 
         /* Initialize tree */
-        RESULT_DISCARD(m_tree.Initialize(heap, real_count));
+        RESULT_ABORT_UNLESS(m_tree.Initialize(heap, real_count));
         m_max_count = real_count;
 
         return;
@@ -154,6 +154,144 @@ namespace awn::para {
         return;
     }
 
+#ifdef VP_ENABLE_LIBYAML
+    bool TypedParamMapBase::VerifyMap(vp::res::YamlIterator iter) {
+
+        /* Check same count */
+        const u32 data_count = iter.GetDataCount();
+        const u32 tree_count = m_used_count;
+        if (tree_count != data_count) { return false; }
+
+        /* Check same */
+        for (u32 i = 0; i < data_count; ++i) {
+
+            /* Get key and iter */
+            vp::res::YamlIterator  sub_iter;
+            const char             *key     = "";
+            const bool              result0 = iter.TryGetIteratorAndKeyByIndex(std::addressof(sub_iter), std::addressof(key), i);
+            if (result0 == false) { continue; }
+
+            /* Find node by key */
+            const u64          key_hash = vp::util::HashMurmur64(key);
+            TypedParamMapNode *node     = m_tree.Find(key_hash);
+            if (node == nullptr)              { return false; }
+            if (node->typed_param == nullptr) { return false; }
+
+            /* Ensure same type */
+            const char *type_name      = "";
+            const bool  result1        = iter.TryGetStringByKey(std::addressof(type_name), "$type");
+            const u64   type_hash      = (result1 == true) ? vp::util::HashMurmur64(type_name) : this->GetBaseClassHash();
+            const char *prev_type_name = node->typed_param->GetClassName();
+            const u64   prev_type_hash = vp::util::HashMurmur64(prev_type_name);
+            if (type_hash != prev_type_hash) { return false; }
+        }
+
+        return true;
+    }
+
+    void TypedParamMapBase::AllocateMap(mem::Heap *heap, vp::res::YamlIterator iter) {
+        
+        /* Get real count */
+        const u32 data_count = iter.GetDataCount();
+        u32       real_count = 0;
+        for (u32 i = 0; i < data_count; ++i) {
+            vp::res::YamlIterator sub_iter;
+            const char *key = "";
+            const bool result0 = iter.TryGetIteratorAndKeyByIndex(std::addressof(sub_iter), std::addressof(key), i);
+            real_count += result0;
+        }
+
+        /* Delete tree if valid */
+        if (m_tree.IsValid()) {
+            for (TypedParamMapNode &map_node : m_tree) {
+                if (map_node.typed_param == nullptr) { continue; }
+                map_node.typed_param->Finalize();
+                delete map_node.typed_param;
+            }
+            m_tree.Finalize();
+            m_used_count = 0;
+            m_max_count = 0;
+        }
+
+        /* Initialize tree */
+        RESULT_ABORT_UNLESS(m_tree.Initialize(heap, real_count));
+        m_max_count = real_count;
+
+        return;
+    }
+    
+    void TypedParamMapBase::InitializeYaml(mem::Heap *heap, Document *document, vp::res::YamlIterator yaml_iterator) {
+
+        /* Ensure dictionary iterator */
+        VP_ASSERT(vp::res::IsDictionaryType(static_cast<vp::res::ByamlDataType>(yaml_iterator.GetDataType())));
+
+        /* Check if map changed */
+        const bool result0 = this->VerifyMap(yaml_iterator);
+
+        /* Reintialize typed params if same */
+        const u32 data_count = yaml_iterator.GetDataCount();
+        if (result0 == true) {
+
+            for (u32 i = 0; i < data_count; ++i) {
+
+                /* Get sub iter */
+                vp::res::YamlIterator sub_iter;
+                const char *key = "";
+                const bool result1 = yaml_iterator.TryGetIteratorAndKeyByIndex(std::addressof(sub_iter), std::addressof(key), i);
+                if (result1 == false) { continue; }
+
+                /* Get node by key */
+                const u64 key_hash = vp::util::HashMurmur64(key);
+                TypedParamMapNode *node = m_tree.Find(key_hash);
+                node->typed_param->InitializeYaml(heap, document, sub_iter);
+            }
+
+            return;
+        }
+
+        /* Initialize tree map */
+        this->AllocateMap(heap, yaml_iterator);
+
+        /* Read data */
+        for (u32 i = 0; i < data_count; ++i) {
+
+            /* Get sub iter */
+            vp::res::YamlIterator sub_iter;
+            const char *key = "";
+            const bool result0 = yaml_iterator.TryGetIteratorAndKeyByIndex(std::addressof(sub_iter), std::addressof(key), i);
+            if (result0 == false) { continue; }
+
+            /* Get key hash */
+            const u64 key_hash = vp::util::HashMurmur64(key);
+
+            /* Allocate map node */
+            TypedParamMapNode *new_node = m_tree.Allocate(key_hash);
+            ++m_used_count;
+
+            /* Set original key */
+            new_node->key = key;
+
+            /* Get type hash */
+            const char *type_name = "";
+            const bool result2 = sub_iter.TryGetStringByKey(std::addressof(type_name), "$type");
+            const u64 type_hash = (result2 == true) ? vp::util::HashMurmur64(type_name) : this->GetBaseClassHash();
+
+            /* Try allocate typed param */
+            TypedParam *typed_param = this->CreateTypedParam(heap, document, type_hash);
+
+            /* Fallback to default key */
+            if (typed_param == nullptr) {
+                typed_param = this->CreateTypedParam(heap, document, this->GetBaseClassHash());
+            }
+
+            /* Initialize typed param */
+            new_node->typed_param = typed_param;
+            typed_param->InitializeYaml(heap, document, sub_iter);
+        }
+
+        return;
+    }
+#endif
     void TypedParamMapBase::InitializeDefaults([[maybe_unused]] mem::Heap *heap, bool is_force_unlink_parents) {
 
         /* Delete tree if valid */

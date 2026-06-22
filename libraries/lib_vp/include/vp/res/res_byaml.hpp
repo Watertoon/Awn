@@ -103,7 +103,11 @@ namespace vp::res {
     }
     constexpr ALWAYS_INLINE bool IsContainerType(ByamlDataType data_type) {
         const u8 value = (static_cast<u8>(data_type) & 0xf0);
-        return (value == 0xc0) || (value == 0x20);
+        return (value == 0xc0) || (value == 0x20) || (value == 0x30);
+    }
+    constexpr ALWAYS_INLINE bool IsHashArrayType(ByamlDataType data_type) {
+        const u8 value = static_cast<u8>(data_type) & 0xf0;
+        return (value == 0x30) || (value == 0x20);
     }
     constexpr ALWAYS_INLINE bool IsArrayType(ByamlDataType data_type) {
         const u8 value = static_cast<u8>(data_type);

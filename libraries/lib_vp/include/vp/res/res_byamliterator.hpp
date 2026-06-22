@@ -20,7 +20,7 @@ namespace vp::res {
     class ByamlIterator {
         private:
             const ResByaml *m_byaml;
-            ByamlData       m_container_data;
+            ByamlData       m_data;
         private:
             template <typename T>
             ALWAYS_INLINE bool TryGetValueByKeyImpl(T *out_value, const char *key) const {
@@ -87,34 +87,36 @@ namespace vp::res {
                 return true;
             }
         public:
-            constexpr ByamlIterator() : m_byaml(nullptr), m_container_data{ .key_index = ByamlData::cInvalidKeyIndex } {/*...*/}
-            constexpr ByamlIterator(const ResByaml *res_byaml, ByamlData data) : m_byaml(res_byaml), m_container_data(data) {/*...*/}
+            constexpr ByamlIterator() : m_byaml(nullptr), m_data{ .key_index = ByamlData::cInvalidKeyIndex } {/*...*/}
+            constexpr ByamlIterator(const ResByaml *res_byaml, ByamlData data) : m_byaml(res_byaml), m_data(data) {/*...*/}
             ByamlIterator(const unsigned char *byaml_file);
             ByamlIterator(const void *byaml_file);
 
-            constexpr ALWAYS_INLINE ByamlIterator(const ByamlIterator& rhs) : m_byaml(rhs.m_byaml), m_container_data(rhs.m_container_data) {/*...*/}
+            constexpr ALWAYS_INLINE ByamlIterator(const ByamlIterator& rhs) : m_byaml(rhs.m_byaml), m_data(rhs.m_data) {/*...*/}
 
             constexpr ~ByamlIterator() {/*...*/}
 
             constexpr ALWAYS_INLINE ByamlIterator &operator=(const ByamlIterator &rhs) {
                 m_byaml          = rhs.m_byaml;
-                m_container_data = rhs.m_container_data;
+                m_data = rhs.m_data;
                 return *this;
             }
 
-            constexpr ALWAYS_INLINE bool IsDictionary()     const { return IsDictionaryType(static_cast<ByamlDataType>(m_container_data.data_type)); }
-            constexpr ALWAYS_INLINE bool IsValid()          const { return m_byaml != nullptr; }
-            constexpr ALWAYS_INLINE bool IsContainerValid() const { return (IsContainerType(static_cast<ByamlDataType>(m_container_data.data_type))) && (m_container_data.u32_value != 0); }
+            constexpr ALWAYS_INLINE bool IsContainer()  const { return (IsContainerType(static_cast<ByamlDataType>(m_data.data_type))) && (m_data.u32_value != 0); }
+            constexpr ALWAYS_INLINE bool IsHashArray()  const { return IsHashArrayType(static_cast<ByamlDataType>(m_data.data_type)); }
+            constexpr ALWAYS_INLINE bool IsDictionary() const { return IsDictionaryType(static_cast<ByamlDataType>(m_data.data_type)); }
+            constexpr ALWAYS_INLINE bool IsArray()      const { return IsArrayType(static_cast<ByamlDataType>(m_data.data_type)); }
+            constexpr ALWAYS_INLINE bool IsValid()      const { return m_byaml != nullptr; }
 
-            constexpr ALWAYS_INLINE ByamlData GetDataByIterator() const { return m_container_data; }
+            constexpr ALWAYS_INLINE ByamlData GetDataByIterator() const { return m_data; }
 
             bool TryGetKeyIndexByKey(u32 *out_key_index, const char *key) const;
             bool TryGetKeyByData(const char **out_key, ByamlData data) const;
             bool TryGetKeyByIterator(const char **out_key) const;
-            bool TryGetHashByIndex(u32 *out_hash, u32 index) const;
+            bool TryGetHashByIndex(u32 *out_hash, u32 max_hash_size, u32 index) const;
 
             bool TryRemapIndexByKey(u32 *out_container_index, const char *key) const;
-            bool TryRemapIndexByHash(u32 *out_container_index, const char *key) const;
+            //bool TryRemapIndexByHash(u32 *out_container_index, const char *key) const;
 
             bool TryGetByamlDataByKey(ByamlData *out_byaml_data, const char *key) const;
             bool TryGetByamlDataByIndex(ByamlData *out_byaml_data, u32 index) const;
@@ -124,7 +126,7 @@ namespace vp::res {
             u32 GetDataCount() const;
 
             constexpr ALWAYS_INLINE u32 GetDataType() const {
-                return m_container_data.data_type;
+                return m_data.data_type;
             }
 
             bool TryGetBoolByKey(bool *out_bool, const char *key) const;
@@ -276,7 +278,7 @@ namespace vp::res {
                 } else if constexpr (data_type == ByamlDataType::F64) {
                     return this->TryGetF64ByHash(out_value, hash);
                 } else if constexpr (data_type == ByamlDataType::StringIndex) {
-                    return this->TryGetStringByData(out_value, hash);
+                    return this->TryGetStringByHash(out_value, hash);
                 }
             }
 
@@ -302,7 +304,7 @@ namespace vp::res {
                 } else if constexpr (data_type == ByamlDataType::F64) {
                     return this->TryGetF64ByHash(out_value, hash);
                 } else if constexpr (data_type == ByamlDataType::StringIndex) {
-                    return this->TryGetStringByData(out_value, hash);
+                    return this->TryGetStringByHash(out_value, hash);
                 }
             }
 
@@ -335,7 +337,7 @@ namespace vp::res {
             template <typename T>
                 requires (TGetByamlDataTypeValue<T>() != ByamlDataType::Null)
             ALWAYS_INLINE bool TryGetValueByIterator(T *out_value) const {
-                return this->TryGetValueByData(out_value, m_container_data);
+                return this->TryGetValueByData(out_value, m_data);
             }
 
             template <typename T>
@@ -347,7 +349,7 @@ namespace vp::res {
                 if (IsArrayType(data_type) == false) { return nullptr; }
 
                 /* Get count */
-                const ResByamlContainer *container = reinterpret_cast<const ResByamlContainer*>(m_container_data.GetBigData(m_byaml));
+                const ResByamlContainer *container = reinterpret_cast<const ResByamlContainer*>(m_data.GetBigData(m_byaml));
                 const u32                count     = (m_byaml->IsReverseEndian() == false) ? container->count : vp::util::SwapEndian24(container->count);
                 if (out_count != nullptr) { *out_count = count; }
 
@@ -373,7 +375,12 @@ namespace vp::res {
             }
             bool TryGetIteratorAndKeyByIndex(ByamlIterator *out_iter, const char **out_key, u32 index) {
                 const bool iter_result = this->TryGetIteratorByIndex(out_iter, index);
-                const bool key_result  = this->TryGetKeyByData(out_key, out_iter->m_container_data);
+                const bool key_result  = this->TryGetKeyByData(out_key, out_iter->m_data);
+                return iter_result & key_result;
+            }
+            bool TryGetIteratorAndHashByIndex(ByamlIterator *out_iter, u32 *out_hash, u32 max_hash_size, u32 index) {
+                const bool iter_result = this->TryGetIteratorByIndex(out_iter, index);
+                const bool key_result  = this->TryGetHashByIndex(out_hash, max_hash_size, index);
                 return iter_result & key_result;
             }
     };

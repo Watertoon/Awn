@@ -16,7 +16,7 @@
 #pragma once
 
 namespace vp::res {
-    
+
     enum class BfresRenderInfoDataType : u8 {
         S32    = 0x0,
         Float  = 0x1,
@@ -24,11 +24,15 @@ namespace vp::res {
     };
 
     struct ResBfresRenderInfo {
-        const char *name;
-        u8          data_type;
-        u8          reserve0;
-        u16         reserve1;
-        u32         reserve2;
+        const NWString8 *name;
+        u8               data_type;
+        u8               reserve0;
+        u16              reserve1;
+        u32              reserve2;
+
+        constexpr BfresRenderInfoDataType GetDataType() const {
+            return static_cast<BfresRenderInfoDataType>(this->data_type);
+        }
     };
     static_assert(sizeof(ResBfresRenderInfo) == 0x10);
 
@@ -66,11 +70,11 @@ namespace vp::res {
 
     struct ResBfresSrt2d {
         util::Float2 scale;
-        float rotate;
-        util::Float2 translate;
+        float rotation;
+        util::Float2 translation;
 
         constexpr void ConvertSrt2d(float *out_matrix) const {
-            const vp::util::Float2 sincos = vp::util::SampleSinCos(this->rotate);
+            const vp::util::Float2 sincos = vp::util::SampleSinCos(this->rotation);
             /* 
              * | sr sr t |
              * | sr sr t |
@@ -79,19 +83,19 @@ namespace vp::res {
             out_matrix[1] = sincos[0] * this->scale[0];
             out_matrix[2] = sincos[0] * -this->scale[1];
             out_matrix[3] = sincos[1] * this->scale[1];
-            out_matrix[4] = this->translate[0];
-            out_matrix[5] = this->translate[1];
+            out_matrix[4] = this->translation[0];
+            out_matrix[5] = this->translation[1];
             return;
         }
     };
 
     struct ResBfresSrt3d {
         util::Float3 scale;
-        util::Float3 rotate;
-        util::Float3 translate;
+        util::Float3 rotation;
+        util::Float3 translation;
 
         constexpr void ConvertSrt3d(vp::util::FloatColumnMajor4x3 *out_matrix) const {
-            const vp::util::MatrixRowMajor4x3f matrix = vp::util::SRTEulerXYZToMatrix<vp::util::MatrixRowMajor4x3f>(this->scale, vp::util::Convert<vp::util::Vector3f>(this->rotate), this->translate);
+            const vp::util::MatrixRowMajor4x3f matrix = vp::util::SRTEulerXYZToMatrix<vp::util::MatrixRowMajor4x3f>(this->scale, vp::util::Convert<vp::util::Vector3f>(this->rotation), this->translation);
             *out_matrix = vp::util::ConvertMajor<vp::util::FloatColumnMajor4x3>(matrix);
         }
     };
@@ -105,11 +109,11 @@ namespace vp::res {
     struct ResBfresTextureSrt {
         BfresSrtMode srt_mode;
         util::Float2 scale;
-        float        rotate;
-        util::Float2 translate;
+        float        rotation;
+        util::Float2 translation;
 
         constexpr void ConvertTextureSrt(float *out_matrix) const {
-            const vp::util::Float2 sincos = vp::util::SampleSinCos(this->rotate);
+            const vp::util::Float2 sincos = vp::util::SampleSinCos(this->rotation);
             const float sin = sincos[0];
             const float cos = sincos[1];
             if (this->srt_mode == BfresSrtMode::Maya) {
@@ -121,8 +125,8 @@ namespace vp::res {
                 out_matrix[1] = sin * -this->scale[1];
                 out_matrix[2] = sin * this->scale[0];
                 out_matrix[3] = cos * this->scale[1];
-                out_matrix[4] = ((cos * -0.5f - (sin * 0.5f + -0.5f)) - this->translate[0]) * this->scale[0];
-                out_matrix[5] = ((cos * -0.5f + (sin * 0.5f + -0.5f)) + this->translate[1]) * this->scale[1];
+                out_matrix[4] = ((cos * -0.5f - (sin * 0.5f + -0.5f)) - this->translation[0]) * this->scale[0];
+                out_matrix[5] = ((cos * -0.5f + (sin * 0.5f + -0.5f)) + this->translation[1]) * this->scale[1];
             } else if (this->srt_mode == BfresSrtMode::Max) {
                 /* 
                  * | sr sr t |
@@ -132,8 +136,8 @@ namespace vp::res {
                 out_matrix[1] = sin * -this->scale[1];
                 out_matrix[2] = sin * this->scale[0];
                 out_matrix[3] = cos * this->scale[1];
-                out_matrix[4] = ((sin * this->scale[0]) * (this->translate[1] + -0.5f) - (cos * this->scale[0]) * (this->translate[0] + 0.5f)) + 0.5f;
-                out_matrix[5] = ((sin * this->scale[1]) * (this->translate[0] + 0.5f) + (cos * this->scale[1]) * (this->translate[1] + -0.5f)) + 0.5f;
+                out_matrix[4] = ((sin * this->scale[0]) * (this->translation[1] + -0.5f) - (cos * this->scale[0]) * (this->translation[0] + 0.5f)) + 0.5f;
+                out_matrix[5] = ((sin * this->scale[1]) * (this->translation[0] + 0.5f) + (cos * this->scale[1]) * (this->translation[1] + -0.5f)) + 0.5f;
             } else {
                 VP_UNEXPECTED_DEFAULT();
             }
@@ -186,11 +190,15 @@ namespace vp::res {
 
     struct ResBfresShaderParam {
         BfresShaderParamConvertFunction  runtime_convert_shader_param_callback;
-        const char                      *name;
+        const NWString8                 *name;
         u16                              data_offset;
         u8                               data_type;
         u8                               reserve0;
         u32                              reserve1;
+
+        constexpr BfresShaderParamDataType GetDataType() const {
+            return static_cast<BfresShaderParamDataType>(this->data_type);
+        }
 
         void ConvertShaderParam(void *output, void *input) {
 
@@ -199,7 +207,7 @@ namespace vp::res {
                 u64 conv[8];
                 static_assert(sizeof(conv) == cMaxShaderParamConvertSize);
                 const u32 size = (this->runtime_convert_shader_param_callback)(conv, input, this, nullptr);
-                ::memcpy(output, conv, size);
+                std::memcpy(output, conv, size);
                 return;
             }
 
@@ -207,24 +215,24 @@ namespace vp::res {
             const u32 type = this->data_type;
             if (type < 0x10) {
                 const u32 size = sizeof(float) + (type & 3) * sizeof(float);
-                ::memcpy(output, input, size);
+                std::memcpy(output, input, size);
             } else if (type < 0x1c) {
                 const u32 count = (type - 0x10);
                 const u32 size = sizeof(float) + (type & 3) * sizeof(float);
                 uintptr_t out_iter = reinterpret_cast<uintptr_t>(output);
                 uintptr_t in_iter = reinterpret_cast<uintptr_t>(input);
-                ::memcpy(output, input, size);
+                std::memcpy(output, input, size);
                 out_iter += sizeof(vp::util::Float4);
                 in_iter += size;
-                ::memcpy(reinterpret_cast<void*>(out_iter), reinterpret_cast<void*>(in_iter), size);
+                std::memcpy(reinterpret_cast<void*>(out_iter), reinterpret_cast<void*>(in_iter), size);
                 if (3 < count) {
                     out_iter += sizeof(vp::util::Float4);
                     in_iter += size;
-                    ::memcpy(reinterpret_cast<void*>(out_iter), reinterpret_cast<void*>(in_iter), size);
+                    std::memcpy(reinterpret_cast<void*>(out_iter), reinterpret_cast<void*>(in_iter), size);
                     if ((count & (~3)) != 4) {                        
                         out_iter += sizeof(vp::util::Float4);
                         in_iter += size;
-                        ::memcpy(reinterpret_cast<void*>(out_iter), reinterpret_cast<void*>(in_iter), size);
+                        std::memcpy(reinterpret_cast<void*>(out_iter), reinterpret_cast<void*>(in_iter), size);
                     }
                 }
             }
@@ -235,8 +243,8 @@ namespace vp::res {
     static_assert(sizeof(ResBfresShaderParam) == 0x18);
 
     struct ResBfresShaderReflection {
-        const char                *shader_archive_name;
-        const char                *shader_name;
+        const NWString8           *shader_archive_name;
+        const NWString8           *shader_name;
         ResBfresRenderInfo        *render_info_array;
         ResNintendoWareDictionary *render_info_dictionary;
         ResBfresShaderParam       *shader_param_array;
@@ -254,12 +262,12 @@ namespace vp::res {
 
     struct ResBfresStaticShaderVariation {
         ResBfresShaderReflection  *shader_reflection;
-        const char               **vertex_attribute_name_array;
+        const NWString8          **vertex_attribute_name_array;
         u8                        *vertex_attribute_remap_array;
-        const char               **sampler_name_array;
+        const NWString8          **sampler_name_array;
         u8                        *sampler_remap_array;
         u32                       *static_shader_option_packed_bool_value_array;
-        const char               **static_shader_option_string_value_array;
+        const NWString8          **static_shader_option_string_value_array;
         u16                       *static_option_remap_array;
         u32                        reserve0;
         u8                         vertex_attribute_count;
@@ -268,6 +276,9 @@ namespace vp::res {
         u16                        total_static_option_count;
         u16                        reserve1;
         u32                        reserve2;
+
+        constexpr u32 GetShaderReflectionSamplerId(u32 shading_model_sampler_id);
+        constexpr u32 GetShadingModelSamplerId(u32 shading_model_sampler_id);
     };
     static_assert(sizeof(ResBfresStaticShaderVariation) == 0x50);
 
@@ -280,10 +291,10 @@ namespace vp::res {
                 u32 reserve0 : 31;
             };
         };
-        const char                     *material_name;
+        const NWString8                *name;
         ResBfresStaticShaderVariation  *static_shader_variation;
         void                          **runtime_texture_view_array;
-        const char                    **texture_name_array;
+        const NWString8               **texture_name_array;
         void                           *runtime_sampler_array;
         ResGfxSamplerInfo              *sampler_info_array;
         ResNintendoWareDictionary      *sampler_dictionary;
@@ -299,7 +310,7 @@ namespace vp::res {
         void                           *runtime_user_pointer;
         u64                            *runtime_sampler_descriptor_slot_array;
         u64                            *runtime_texture_descriptor_slot_array;
-        u16                             section_index;
+        u16                             section_id;
         u8                              sampler_count;
         u8                              texture_count;
         u16                             is_force_calculate_material;
@@ -337,7 +348,7 @@ namespace vp::res {
             const vp::res::ResBfshaBufferParam *uniform_array = material_buffer->param_array;
             if (uniform_dictionary != nullptr && uniform_array != nullptr) {
                 for (u32 i = 0; i < param_count; ++i) {
-                    const u32 entry_index = uniform_dictionary->TryGetEntryIndexByKey(shader_param_array[i].name + 2);
+                    const u32 entry_index = uniform_dictionary->TryGetEntryIndexByKey(shader_param_array[i].name);
                     this->runtime_shader_param_material_buffer_offset_array[i] = (entry_index != cInvalidEntryIndex) ? uniform_array[entry_index].struct_offset : cInvalidMaterialBufferOffset;
                 }
             } else {                
@@ -350,10 +361,10 @@ namespace vp::res {
         }
 
         void BindTextures(GfxBindTextureCallback bind_callback, void *user_data) {
-            for (u32 i = 0; i < sampler_count; ++i) {
+            for (u32 i = 0; i < this->sampler_count; ++i) {
                 if (this->runtime_texture_view_array[i] != nullptr && this->runtime_texture_descriptor_slot_array[i] != cInvalidDescriptorSlot) { continue; }
 
-                GfxBindTextureView bind_texture_view = (bind_callback)(texture_name_array[i] + 2, user_data);
+                GfxBindTextureView bind_texture_view = (bind_callback)(this->texture_name_array[i], user_data);
                 this->runtime_texture_descriptor_slot_array[i] = bind_texture_view.texture_view_decriptor_slot;
                 this->runtime_texture_view_array[i] = bind_texture_view.texture_view;
             }
@@ -361,7 +372,7 @@ namespace vp::res {
         }
 
         constexpr void ReleaseTextures() {
-            for (u32 i = 0; i < sampler_count; ++i) {
+            for (u32 i = 0; i < this->sampler_count; ++i) {
                 this->runtime_texture_descriptor_slot_array[i] = cInvalidDescriptorSlot;
                 this->runtime_texture_view_array[i] = nullptr;
             }
@@ -371,8 +382,8 @@ namespace vp::res {
         constexpr bool TrySetTextureByName(const char *name, GfxBindTextureView *bind_texture_view) {
 
             bool had_success = false;
-            for (u32 i = 0; i < sampler_count; ++i) {
-                if (!vp::util::StringCompare(texture_name_array[i], name)) { continue; }
+            for (u32 i = 0; i < this->sampler_count; ++i) {
+                if (!vp::util::StringCompare(this->texture_name_array[i]->GetString(), name)) { continue; }
 
                 this->runtime_texture_descriptor_slot_array[i] = bind_texture_view->texture_view_decriptor_slot;
                 this->runtime_texture_view_array[i] = bind_texture_view->texture_view;
@@ -420,39 +431,39 @@ namespace vp::res {
             return value;
         }
 
-        constexpr const char *TryGetStaticShaderOptionString(u32 option_index) const {
+        constexpr const NWString8 *TryGetStaticShaderOptionString(u32 option_index) const {
             const ResBfresStaticShaderVariation *variation = this->static_shader_variation;
-            const char *value = (option_index < variation->static_option_count_bool || variation->total_static_option_count <= option_index) ? nullptr : variation->static_shader_option_string_value_array[(option_index - variation->static_option_count_bool)];
+            const NWString8 *value = (option_index < variation->static_option_count_bool || variation->total_static_option_count <= option_index) ? nullptr : variation->static_shader_option_string_value_array[(option_index - variation->static_option_count_bool)];
             return value;
         }
 
-        const char *TryGetShaderVertexAttributeName(const char *material_attribute_name) const {
+        const NWString8 *TryGetShaderVertexAttributeName(const char *material_attribute_name) const {
             const ResBfresStaticShaderVariation *variation = this->static_shader_variation;
             if (variation == nullptr) { return nullptr; }
             const ResBfresShaderReflection *reflection = variation->shader_reflection;
             if (reflection == nullptr) { return nullptr; }
             for (u32 i = 0; i < variation->vertex_attribute_count; ++i) {
-                if (!vp::util::StringCompare(variation->vertex_attribute_name_array[i] + 2, material_attribute_name)) { continue; }
+                if (!vp::util::StringCompare(variation->vertex_attribute_name_array[i]->GetString(), material_attribute_name)) { continue; }
                 const u32 entry_index = (variation->vertex_attribute_remap_array != nullptr) ? variation->vertex_attribute_remap_array[i] : i;
                 return reflection->vertex_attribute_dictionary->GetKeyByEntryIndex(entry_index);
             }
             return nullptr;
         }
 
-        const char *TryGetShaderSamplerName(const char *material_sampler_name) const {
+        const NWString8 *TryGetShaderSamplerName(const char *material_sampler_name) const {
             const ResBfresStaticShaderVariation *variation = this->static_shader_variation;
             if (variation == nullptr) { return nullptr; }
             const ResBfresShaderReflection *reflection = variation->shader_reflection;
             if (reflection == nullptr) { return nullptr; }
             for (u32 i = 0; i < variation->sampler_count; ++i) {
-                if (!vp::util::StringCompare(variation->sampler_name_array[i] + 2, material_sampler_name)) { continue; }
+                if (!vp::util::StringCompare(variation->sampler_name_array[i]->GetString(), material_sampler_name)) { continue; }
                 const u32 entry_index = (variation->sampler_remap_array != nullptr) ? variation->sampler_remap_array[i] : i;
                 return reflection->sampler_dictionary->GetKeyByEntryIndex(entry_index);
             }
             return nullptr; 
         }
 
-        const char *TryGetTextureName(const char *sampler_name) const {
+        const NWString8 *TryGetTextureName(const char *sampler_name) const {
             const u32 entry_index = this->sampler_dictionary->TryGetEntryIndexByKey(sampler_name);
             return (entry_index != 0xffff'ffff) ? texture_name_array[entry_index] : nullptr;
         }

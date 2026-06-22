@@ -42,12 +42,12 @@ namespace vp::util {
 
                 /* Allocate pointer array */
                 u64 *array = new (heap, alignment) u64[count];
-                RESULT_RETURN_UNLESS(array == nullptr, ResultNoMemory);
-                ::memset(array, 0, sizeof(u64) * count);
+                RESULT_RETURN_IF(array == nullptr, ResultNoMemory);
+                std::memset(array, 0, sizeof(u64) * count);
 
                 /* Set state */
                 m_array = array;
-                m_max_count = queue_count;
+                m_max_count = count;
                 m_offset = 0;
                 m_count = 0;
 
@@ -192,7 +192,9 @@ namespace vp::util {
                 return;
             }
 
+            constexpr bool IsValid() const { return m_array != nullptr; }
             constexpr bool IsEmpty() const { return (this->GetUsedCount() < 1); }
+            constexpr bool IsFull() const { return this->GetUsedCount() == this->GetMaxCount(); }
             constexpr u32 GetUsedCount() const { return m_count - m_offset; }
             constexpr u32 GetCounter() const { return m_count; }
             constexpr u32 GetOffset() const { return m_offset; }
@@ -334,6 +336,7 @@ namespace vp::util {
             }
 
             constexpr bool IsEmpty() const { return (static_cast<s32>(this->GetUsedCount()) < 1); }
+            constexpr bool IsFull() const { return this->GetUsedCount() == this->GetMaxCount(); }
             constexpr u32 GetUsedCount() const { return m_count - m_offset; }
             constexpr u32 GetCounter() const { return m_count; }
             constexpr u32 GetOffset() const { return m_offset; }

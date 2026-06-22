@@ -438,13 +438,13 @@ namespace awn::sys {
 
         if (message_count < max_messages) {
 
-            Result result;
-            u32    last;
+            bool result;
+            u32 last;
             do {
 
                 /* Set we have sent a message */
                 const bool cmp_result = vp::util::InterlockedCompareExchange(std::addressof(last), std::addressof(m_message_wait_value), 2u, 0u);
-                if (cmp_result == true) { return message_count < max_messages; }
+                if (cmp_result) { return message_count < max_messages; }
 
                 /* Complete if already set to sent */
                 if (last != 1) {
