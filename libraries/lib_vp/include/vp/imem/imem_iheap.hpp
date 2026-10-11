@@ -93,11 +93,11 @@ namespace vp::imem {
             virtual size_t GetTotalFreeSize() { return 0; }
             virtual size_t GetMaximumAllocatableSize(s32 alignment) { VP_UNUSED(alignment); return 0; }
         public:
-            constexpr ALWAYS_INLINE const char *GetName()     const { return m_name; }
-            constexpr ALWAYS_INLINE bool        HasChildren() const { return m_child_list.IsEmpty(); }
+            constexpr const char *GetName() const { return m_name; }
+            constexpr bool HasChildren() const { return !m_child_list.IsEmpty(); }
 
-            constexpr ALWAYS_INLINE void *GetStartAddress() const { return m_start_address; }
-            constexpr ALWAYS_INLINE void *GetEndAddress()   const { return m_end_address; }
+            constexpr void *GetStartAddress() const { return m_start_address; }
+            constexpr void *GetEndAddress() const { return m_end_address; }
 
             constexpr ALWAYS_INLINE IHeap *GetParentHeap() const { return m_parent_heap; }
     };

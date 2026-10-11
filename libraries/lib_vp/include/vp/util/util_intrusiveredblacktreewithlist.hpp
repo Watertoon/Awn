@@ -207,7 +207,7 @@ namespace vp::util {
         public:
             static constexpr uintptr_t cOffset = OffsetOf<M>();
         public:
-            using ComparisonFunction = std::strong_ordering(*)(const K&, const K&);
+            using ComparisonFunction = s32(*)(const K&, const K&);
             using CollisionFunction  = void(*)(vp::util::IntrusiveRedBlackTreeNodeWithList<K>*,vp::util::IntrusiveRedBlackTreeNodeWithList<K>*);
         public:
             static ALWAYS_INLINE RP *GetParent(IntrusiveRedBlackTreeNodeWithList<K> *node) {

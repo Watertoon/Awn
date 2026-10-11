@@ -169,7 +169,7 @@ namespace awn::mem {
             mem::Heap *heap_by_name = FindHeapByNameImpl(heap_mgr->root_heap_array[i], heap_name);
             if (heap_by_name != nullptr) {
                 return heap_by_name;
-            } else if (::strcmp(heap_name, heap_mgr->root_heap_array[i]->GetName()) == 0) {
+            } else if (vp::util::StringCompare(heap_name, heap_mgr->root_heap_array[i]->GetName())) {
                 return heap_mgr->root_heap_array[i];
             }
         }

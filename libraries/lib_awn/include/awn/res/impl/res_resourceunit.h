@@ -21,6 +21,8 @@ namespace awn::res {
 
 namespace awn::res::impl {
 
+    struct LoadUserData;
+
     class AsyncResourceManager;
     class ResourceMemoryManager;
     class ResourceUnitAllocator;
@@ -48,21 +50,21 @@ namespace awn::res::impl {
             friend class ResourceUnitManager;
         public:
             enum class Status : u32 {
-                Uninitialized                  = 0,
-                Freed                          = 1,
-                InLoad                         = 2,
-                Loaded                         = 3,
-                InResourceInitialize           = 4,
-                ResourceInitialized            = 5,
-                ResourcePostInitialized        = 6,
-                InResourcePreFinalize          = 7,
-                ResourcePreFinalized           = 8,
-                InResourceFinalize             = 9,
-                ResourceFinalized              = 10,
-                Error                          = 11,
-                FailedToInitializeResource     = 12,
-                FailedToPostInitializeResource = 13,
-                FailedToPreFinalizeResource    = 14,
+                Uninitialized = 0,
+                Freed         = 1,
+                Loading       = 2,
+                Loaded        = 3,
+                Composing     = 4,
+                Composed      = 5,
+                PostComposed  = 6,
+                Decomposing   = 7,
+                Decomposed    = 8,
+                Finalizing    = 9,
+                Finalized     = 10,
+                Error         = 11,
+                ComposeNG     = 12,
+                PostComposeNG = 13,
+                DecomposeNG   = 14,
             };
             enum State : u32 {
                 State_IsExternalHeap = 0,
@@ -72,15 +74,15 @@ namespace awn::res::impl {
                 State_IsUserResourceSize = 3,
                 State_IsRetryOnBusy = 4,
                 State_IsAllowArchiveReference = 5,
-                
-                State_IsMemoryAllocationFailure = 7,
-                State_IsFileNotFound = 8,
-                State_IsFailGetFileSize = 9,
-                State_IsFailInitializeResource = 10,
-                State_IsInvalidUserResourceSize = 11,
-                State_IsInvalidResourceSize = 13,
-                State_IsFileNotAvailable = 14,
-                
+
+                State_IsNoMemory = 7,
+                State_IsNoFile = 8,
+                State_IsSizeZero = 9,
+                State_IsComposeNG = 10,
+                State_IsAllocSizeNG = 11,
+                State_IsHeapSizeNG = 13,
+                State_IsFileDeviceNG = 14,
+
                 State_IsFinalized = 13,
                 State_IsPersistant = 14, /* Managed */
                 State_IsCacheUnload = 15,
@@ -88,7 +90,7 @@ namespace awn::res::impl {
                 State_IsFreeableForMemoryManager = 19,
                 State_IsTransient = 20,
                 State_IsBoostCompose = 21,
-                State_IsRequireResourceInitialize = 22,
+                State_IsRequireCompose = 22,
             };
             enum CacheUnloadFlag : u32 {
                 CacheUnloadFlag_IsValid = 0,
@@ -102,7 +104,7 @@ namespace awn::res::impl {
                 CompressionFlag_IsCompressSzs = 1,
                 CompressionFlag_IsCompressZstd = 2,
                 CompressionFlag_IsCompressMc = 3,
-                CompressionFlag_IsResourceInitializable = 4,
+                CompressionFlag_IsComposable = 4,
                 CompressionFlag_IsFrameHeap = 6,
                 CompressionFlag_IsCompose = 7,
             };
@@ -157,13 +159,13 @@ namespace awn::res::impl {
 
             void SetToBinder(ResourceBinder *resource_binder);
             constexpr void SetBinderStatusFromError(ResourceBinder *binder) const {
-                if (m_state.GetBit(State_IsFileNotFound)) { binder->m_status = ResourceBinder::Status::NoFile; return; }
-                if (m_state.GetBit(State_IsFailGetFileSize)) { binder->m_status = ResourceBinder::Status::SizeZero; return; }
-                if (m_state.GetBit(State_IsFailInitializeResource)) { binder->m_status = ResourceBinder::Status::ComposeNG; return; }
-                if (m_state.GetBit(State_IsInvalidUserResourceSize)) { binder->m_status = ResourceBinder::Status::AllocSizeNG; return; }
-                if (m_state.GetBit(State_IsInvalidResourceSize)) { binder->m_status = ResourceBinder::Status::HeapSizeNG; return; }
-                if (m_state.GetBit(State_IsFileNotAvailable)) { binder->m_status = ResourceBinder::Status::FileDeviceNG; return; }
-                if (m_state.GetBit(State_IsMemoryAllocationFailure)) { binder->m_status = ResourceBinder::Status::NoMemory; return; }
+                if (m_state.GetBit(State_IsNoFile)) { binder->m_status = ResourceBinder::Status::NoFile; return; }
+                if (m_state.GetBit(State_IsSizeZero)) { binder->m_status = ResourceBinder::Status::SizeZero; return; }
+                if (m_state.GetBit(State_IsComposeNG)) { binder->m_status = ResourceBinder::Status::ComposeNG; return; }
+                if (m_state.GetBit(State_IsAllocSizeNG)) { binder->m_status = ResourceBinder::Status::AllocSizeNG; return; }
+                if (m_state.GetBit(State_IsHeapSizeNG)) { binder->m_status = ResourceBinder::Status::HeapSizeNG; return; }
+                if (m_state.GetBit(State_IsFileDeviceNG)) { binder->m_status = ResourceBinder::Status::FileDeviceNG; return; }
+                if (m_state.GetBit(State_IsNoMemory)) { binder->m_status = ResourceBinder::Status::NoMemory; return; }
                 binder->m_status = ResourceBinder::Status::Unknown;
                 return;
             }
@@ -177,18 +179,18 @@ namespace awn::res::impl {
         public:
             void WaitForLoad();
 
-            bool IsInLoad() const;
-            constexpr bool IsResourceInitialized() const {
+            bool IsLoading() const;
+            constexpr bool IsComposed() const {
                 /* Succeed if the resource is post initialization */
-                if (m_status == Status::ResourcePostInitialized) { return true; }
+                if (m_status == Status::PostComposed) { return true; }
                 /* Fail if not loaded */
                 if (m_status != Status::Loaded) { return false; }
                 /* Fail if no resource */
                 if (m_resource == nullptr) { return false; }
                 /* Succeed if we don't care about initialization */
-                if (!m_state.GetBit(State_IsRequireResourceInitialize)) { return true; }
+                if (!m_state.GetBit(State_IsRequireCompose)) { return true; }
                 /* Fail if we are loaded and have a resource, it requires initialization, and it is still initializable */
-                if (m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) { return false; }
+                if (m_compression_flags.GetBit(CompressionFlag_IsComposable)) { return false; }
                 return true;
             }
             bool IsUnloadable() const;
@@ -250,12 +252,7 @@ namespace awn::res::impl {
             void UnregisterFromResourceUnitManager();
             void FinalizeForClearCache();
 
-            constexpr void UpdateStatusForReference() {
-                const Status status   = m_status;
-                if      (status == Status::InResourceFinalize) { m_status = Status::ResourcePreFinalized; }
-                else if (status == Status::InResourceFinalize) { m_status = Status::ResourcePostInitialized; }
-                else if (status == Status::InResourceFinalize) { m_status = Status::ResourcePostInitialized; }
-            }
+            bool RecoverFromCache(LoadUserData *load_info);
         public:
             bool ComposeResource(IComposeInfo *info);
 

@@ -19,7 +19,7 @@ namespace awn::res {
 
     class BeaArchiveResource : public ArchiveResource {
         public:
-            VP_RTTI_DERIVED(BeaArchiveResource, ArchiveResource);
+            VP_RTTI_DERIVED(BeaArchiveResource);
         private:
             vp::res::ResBea *m_bea;
         public:

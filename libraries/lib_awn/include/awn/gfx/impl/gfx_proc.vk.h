@@ -379,11 +379,10 @@ DEFINE_EXTERN_VK_PROC(vkCmdSetExtraPrimitiveOverestimationSizeEXT);
 
 /* Device VK_EXT_mesh_shader */
 DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksEXT);
-DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksIndirectCountEXT);
-DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksIndirectEXT);
+//DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksIndirectCountEXT);
+//DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksIndirectEXT);
 
 /* Device VK_EXT_descriptor_heap */
-#ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
 DEFINE_EXTERN_VK_PROC(vkCmdBindResourceHeapEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdBindSamplerHeapEXT);
 DEFINE_EXTERN_VK_PROC(vkCmdPushDataEXT);
@@ -391,10 +390,8 @@ DEFINE_EXTERN_VK_PROC(vkGetImageOpaqueCaptureDataEXT);
 DEFINE_EXTERN_VK_PROC(vkGetPhysicalDeviceDescriptorSizeEXT);
 DEFINE_EXTERN_VK_PROC(vkWriteResourceDescriptorsEXT);
 DEFINE_EXTERN_VK_PROC(vkWriteSamplerDescriptorsEXT);
-#endif
 
 /* Device VK_KHR_device_address_commands */
-#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
 DEFINE_EXTERN_VK_PROC(vkCmdBindIndexBuffer3KHR);
 DEFINE_EXTERN_VK_PROC(vkCmdBindVertexBuffers3KHR);
 DEFINE_EXTERN_VK_PROC(vkCmdCopyImageToMemoryKHR);
@@ -406,10 +403,13 @@ DEFINE_EXTERN_VK_PROC(vkCmdDrawIndexedIndirect2KHR);
 DEFINE_EXTERN_VK_PROC(vkCmdDrawIndirect2KHR);
 DEFINE_EXTERN_VK_PROC(vkCmdFillMemoryKHR);
 DEFINE_EXTERN_VK_PROC(vkCmdUpdateMemoryKHR);
+DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksIndirect2EXT);
 DEFINE_EXTERN_VK_PROC(vkCmdDrawMeshTasksIndirectCount2EXT);
-//DEFINE_EXTERN_VK_PROC(vkCmdBeginConditionalRendering2EXT);
-//DEFINE_EXTERN_VK_PROC(vkCmdDrawIndexedIndirectCount2KHR);
-//DEFINE_EXTERN_VK_PROC(vkCmdDrawIndirectCount2KHR);
-#endif
+DEFINE_EXTERN_VK_PROC(vkCmdBeginConditionalRendering2EXT);
+DEFINE_EXTERN_VK_PROC(vkCmdDrawIndexedIndirectCount2KHR);
+DEFINE_EXTERN_VK_PROC(vkCmdDrawIndirectCount2KHR);
+
+/* Device VK_EXT_conditional_rendering */
+DEFINE_EXTERN_VK_PROC(vkCmdEndConditionalRenderingEXT);
 
 void LoadVkCProcsDevice(VkDevice vk_device);

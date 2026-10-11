@@ -43,7 +43,7 @@ namespace awn::sys {
             vp::util::FixedString8<cMaxThreadNameLength> m_name;
             vp::util::FixedString16<cMaxThreadNameLength> m_name_utf16;
         public:
-            VP_RTTI_DERIVED(Thread, ThreadBase);
+            VP_RTTI_DERIVED(Thread);
         public:
 			constexpr Thread() : ThreadBase(), m_handle(), m_waitable_timer_for_sleep(), m_win32_thread_id(), m_name(), m_name_utf16() {/*...*/}
             virtual ~Thread() override {/*...*/}
@@ -65,6 +65,7 @@ namespace awn::sys {
             virtual void SetCoreMask(CoreMask core_mask) override;
         public:
             void SleepThreadPrecise(TimeSpan timeout_ns);
+            constexpr bool IsValid() const { return m_handle != nullptr; }
             constexpr HANDLE GetWin32Handle() const { return m_handle; }
             constexpr HANDLE GetWin32Timer() const { return m_waitable_timer_for_sleep; }
             constexpr long unsigned int GetWin32ThreadId() const { return m_win32_thread_id; }

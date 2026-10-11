@@ -1,62 +1,77 @@
+/*
+ *  Copyright (C) W. Michael Knudson
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as 
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program; 
+ *  if not, see <https://www.gnu.org/licenses/>.
+ */
 #include <awn.hpp>
 
 namespace awn::gfx {
 
-    namespace impl {
-
-        constexpr std::strong_ordering GpuAddressRangeCompare(const impl::GpuAddressRange &lhs, const impl::GpuAddressRange &rhs) {
-            const std::strong_ordering first  = (rhs.end <= lhs.start) ? std::strong_ordering::greater : std::strong_ordering::equal;
-            const std::strong_ordering second = (lhs.end <= rhs.start) ? std::strong_ordering::less : first;
-            return second;
-        }
-
-        class MemoryPoolTree {
-            public:
-                using AddressTree = vp::util::IntrusiveRedBlackTreeTraits<MemoryPool, &MemoryPool::m_rb_node, GpuAddressRangeCompare>::Tree;
-            private:
-                AddressTree m_tree;
-                sys::ReaderWriterLock m_lock;
-            public:
-                constexpr MemoryPoolTree() : m_tree(), m_lock() {/*...*/}
-                constexpr ~MemoryPoolTree() {/*...*/}
-
-                void Insert(MemoryPool *pool) {
-                    m_lock.AcquireWriteLock();
-                    m_tree.Insert(pool);
-                    m_lock.ReleaseWriteLock();
-                }
-                void Remove(GpuAddressRange range) {
-                    m_lock.AcquireWriteLock();
-                    m_tree.Remove(range);
-                    m_lock.ReleaseWriteLock();
-                }
-                MemoryPool *Find(GpuAddressRange range) {
-                    m_lock.AcquireReadLock();
-                    MemoryPool *pool = m_tree.Find(range);
-                    m_lock.ReleaseReadLock();
-                    return pool;
-                }
-        };
-
-        constinit MemoryPoolTree sMemoryPoolTree;
-    }
-
-    MemoryPool *FindMemoryPool(uintptr_t *out_address_offset, void *gpu_address) {
-
-        /* Ensure non-null */
-        if (gpu_address == nullptr) { return nullptr; }
-
-        /* Find handle from address tree */
-        const impl::GpuAddressRange range = { gpu_address, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(gpu_address) + 1), };
-        MemoryPool *memory_pool = impl::sMemoryPoolTree.Find(range);
-        if (memory_pool == nullptr) { return nullptr; }
-
-        void *start = memory_pool->GetAddress();
-        const uintptr_t offset = reinterpret_cast<uintptr_t>(gpu_address) - reinterpret_cast<uintptr_t>(start);
-        *out_address_offset = offset;
-
-        return memory_pool;
-    }
+    //namespace impl {
+    //
+    //    constexpr s32 GpuAddressRangeCompare(const impl::GpuAddressRange &lhs, const impl::GpuAddressRange &rhs) {
+    //        if (lhs.end <= rhs.start) { return -1; }
+    //        if (rhs.end > lhs.start) { return 0; }
+    //        return 1;
+    //    }
+    //
+    //    class MemoryPoolTree {
+    //        public:
+    //            using AddressTree = vp::util::IntrusiveRedBlackTreeTraits<MemoryPool, &MemoryPool::m_rb_node, GpuAddressRangeCompare>::Tree;
+    //        private:
+    //            AddressTree m_tree;
+    //            sys::ReaderWriterLock m_lock;
+    //        public:
+    //            constexpr MemoryPoolTree() : m_tree(), m_lock() {/*...*/}
+    //            constexpr ~MemoryPoolTree() {/*...*/}
+    //
+    //            void Insert(MemoryPool *pool) {
+    //                m_lock.AcquireWriteLock();
+    //                m_tree.Insert(pool);
+    //                m_lock.ReleaseWriteLock();
+    //            }
+    //            void Remove(GpuAddressRange range) {
+    //                m_lock.AcquireWriteLock();
+    //                m_tree.Remove(range);
+    //                m_lock.ReleaseWriteLock();
+    //            }
+    //            MemoryPool *Find(GpuAddressRange range) {
+    //                m_lock.AcquireReadLock();
+    //                MemoryPool *pool = m_tree.Find(range);
+    //                m_lock.ReleaseReadLock();
+    //                return pool;
+    //            }
+    //    };
+    //
+    //    constinit MemoryPoolTree sMemoryPoolTree;
+    //}
+    //
+    //MemoryPool *FindMemoryPool(uintptr_t *out_address_offset, void *gpu_address) {
+    //
+    //    /* Ensure non-null */
+    //    if (gpu_address == nullptr) { return nullptr; }
+    //
+    //    /* Find handle from address tree */
+    //    const impl::GpuAddressRange range = { gpu_address, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(gpu_address) + 1), };
+    //    MemoryPool *memory_pool = impl::sMemoryPoolTree.Find(range);
+    //    if (memory_pool == nullptr) { return nullptr; }
+    //
+    //    void *start = memory_pool->GetAddress();
+    //    const uintptr_t offset = reinterpret_cast<uintptr_t>(gpu_address) - reinterpret_cast<uintptr_t>(start);
+    //    *out_address_offset = offset;
+    //
+    //    return memory_pool;
+    //}
 
     Result MemoryPool::Initialize(const MemoryPoolInfo *memory_pool_info) {
         /* Handle import memory and buffer device address */
@@ -75,10 +90,10 @@ namespace awn::gfx {
     }
 
     void MemoryPool::Finalize() {
-        const impl::GpuAddressRange range = m_rb_node.GetKey();
-        if (range.start != nullptr) {
-            impl::sMemoryPoolTree.Remove(range);
-        }
+        //const impl::GpuAddressRange range = m_rb_node.GetKey();
+        //if (range.start != nullptr) {
+        //    impl::sMemoryPoolTree.Remove(range);
+        //}
         if (m_vk_device_memory != VK_NULL_HANDLE) {
             impl::Context *context = impl::Context::GetInstance();
             ::pfn_vkFreeMemory(context->GetVkDevice(), m_vk_device_memory, context->GetVkAllocationCallbacks());
@@ -92,7 +107,7 @@ namespace awn::gfx {
     void MemoryPool::FlushMappedRange(size_t offset, size_t size) {
 
         /* Skip if not cached memory */
-        if (!this->IsCached()) { return; }
+        if (!this->IsCpuCached()) { return; }
 
         const VkMappedMemoryRange range = {
             .sType  = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
@@ -109,7 +124,7 @@ namespace awn::gfx {
     void MemoryPool::InvalidateMappedRange(size_t offset, size_t size) {
 
         /* Skip if not cached memory */
-        if (!this->IsCached()) { return; }
+        if (!this->IsCpuCached()) { return; }
 
         const VkMappedMemoryRange range = {
             .sType  = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
@@ -162,8 +177,9 @@ namespace awn::gfx {
         RESULT_TRY(result1);
 
         /* Create address tree entry for lookup by address */
-        m_rb_node.SetKey({ memory, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + memory_pool_info->size), });
-        impl::sMemoryPoolTree.Insert(this);
+        //m_rb_node.SetKey({ memory, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + memory_pool_info->size), });
+        //impl::sMemoryPoolTree.Insert(this);
+        m_address = memory;
 
         map_fail_guard0.Cancel();
         RESULT_RETURN_SUCCESS;

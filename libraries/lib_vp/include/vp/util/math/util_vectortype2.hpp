@@ -9,7 +9,7 @@ namespace vp::util {
         static constexpr u32 cCount = count ; \
         static constexpr u32 cVectorizedCount = (is_vectorized) ? vp::util::AlignPow2(count) : count ; \
         template <class Self> \
-        constexpr auto &&operator[](this Self&& self, u32 index) { \
+        constexpr ALWAYS_INLINE auto &&operator[](this Self&& self, u32 index) { \
             return std::forward<Self>(self).v[index]; \
         }
 
@@ -192,10 +192,10 @@ namespace vp::util {
     template <typename T>
         requires (T::cIsVectorType)
     constexpr void Load(T *vec, const typename T::UnderlyingType *value) {
-        using Type = typename T::UnderlyingType;
         if constexpr (T::cIsVectorized) {
         if (!std::is_constant_evaluated()) {
 #ifdef VP_TARGET_ARCHITECTURE_x86
+            using Type = typename T::UnderlyingType;
             if constexpr (sizeof(T) == 0x10) {
                 if constexpr (std::is_same_v<Type,float>) {
                     *vec = T { __builtin_ia32_loadups(value), };

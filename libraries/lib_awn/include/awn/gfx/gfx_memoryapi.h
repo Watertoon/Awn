@@ -108,6 +108,6 @@ namespace awn::gfx {
 
     bool IsUnifiedMemory();
 
-    void FlushCpuCache(void *gpu_address, size_t size);
-    void InvalidateCpuCache(void *gpu_address, size_t size);
+    //void FlushCpuCache(void *gpu_address, size_t size);
+    //void InvalidateCpuCache(void *gpu_address, size_t size);
 }

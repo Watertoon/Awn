@@ -19,52 +19,6 @@ namespace awn::gfx {
 
     static constexpr inline u32 cMaxShaderStageCount = impl::Context::cTargetMaxShaderStageCount;
 
-    struct PrimitiveShaderInfo {
-        union {
-            void *code_array[5];
-            struct {
-                void *code_vertex;
-                void *code_tessellation_control;
-                void *code_tessellation_evaluation;
-                void *code_geometry;
-                void *code_fragment;
-            };
-        };
-        union {
-            u32 code_size_array[5];
-            struct {
-                u32   code_size_vertex;
-                u32   code_size_tessellation_control;
-                u32   code_size_tessellation_evaluation;
-                u32   code_size_geometry;
-                u32   code_size_fragment;
-            };
-        };
-    };
-    struct MeshShaderInfo {
-        union {
-            void *code_array[3];
-            struct {
-                void *code_task;
-                void *code_mesh;
-                void *code_fragment;
-            };
-        };
-        union {
-            u32 code_size_array[3];
-            struct {
-                u32   code_size_task;
-                u32   code_size_mesh;
-                u32   code_size_fragment;
-                
-            };
-        };
-    };
-    struct ComputeShaderInfo {
-        void *code_compute;
-        u32   code_size_compute;
-    };
-
     class Shader {
         public:
             static constexpr u32 cInvalidInterfaceSlot = 0xffff'ffff;
@@ -79,10 +33,6 @@ namespace awn::gfx {
         public:
             constexpr Shader() : m_init_event(sys::SignalState::Cleared, sys::ResetMode::Manual), m_vk_shader_array{}, m_res_program() {/*...*/}
             constexpr ~Shader() {/*...*/}
-
-            //Result Initialize(MeshShaderInfo *shader_info, ShaderCodeType code_type);
-            //Result Initialize(PrimitiveShaderInfo *shader_info, ShaderCodeType code_type);
-            //Result Initialize(ComputeShaderInfo *shader_info, ShaderCodeType code_type);
 
             Result Initialize(vp::res::ResBnshShaderProgram *res_program);
             Result Initialize(vp::res::ResBfshaShaderProgram *program);

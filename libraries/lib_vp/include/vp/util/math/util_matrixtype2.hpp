@@ -14,19 +14,19 @@ namespace vp::util {
         static constexpr u32 cVectorizedColumnCount = (is_vectorized && cIsRowMajor) ? vp::util::AlignPow2(cColumnCount) : cColumnCount; \
         template <class Self> \
             requires (cIsRowMajor) \
-        constexpr auto &&operator[](this Self&& self, u32 row, u32 column) { \
+        constexpr ALWAYS_INLINE auto &&operator[](this Self&& self, u32 row, u32 column) { \
             const u32 index = column + row * cVectorizedColumnCount; \
             return std::forward<Self>(self).m[index]; \
         } \
         template <class Self> \
             requires (cIsColumnMajor && !(cIsVectorized && cRowCount == 4 && cColumnCount == 3)) \
-        constexpr auto &&operator[](this Self&& self, u32 row, u32 column) { \
+        constexpr ALWAYS_INLINE auto &&operator[](this Self&& self, u32 row, u32 column) { \
             const u32 index = row + column * cVectorizedRowCount; \
             return std::forward<Self>(self).m[index]; \
         } \
         template <class Self> \
             requires (cIsColumnMajor && (cIsVectorized && cRowCount == 4 && cColumnCount == 3)) \
-        constexpr auto &&operator[](this Self&& self, u32 row, u32 column) { \
+        constexpr ALWAYS_INLINE auto &&operator[](this Self&& self, u32 row, u32 column) { \
             return std::forward<Self>(self).m[column][row]; \
         }
 

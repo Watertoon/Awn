@@ -58,7 +58,7 @@ namespace awn::res {
     DECLARE_RESULT(NoLocalArchive,              38);
     DECLARE_RESULT(InvalidReferenceBinder,      39);
     DECLARE_RESULT(StillInReference,            40);
-    DECLARE_RESULT(FailedToPreFinalizeResource, 41);
+    DECLARE_RESULT(DecomposeNG,                 41);
     DECLARE_RESULT(FailedToLoadResource,        42);
     DECLARE_RESULT(MemoryAllocationFailure,     43);
     DECLARE_RESULT(NoExternalHeap,              44);

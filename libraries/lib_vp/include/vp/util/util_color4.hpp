@@ -17,14 +17,14 @@
 
 namespace vp::util {
 
-    constexpr float Unorm8ToFloat(u8 value) {
-        return static_cast<float>(value) / 255.0f;
-    }
-
     constexpr u8 FloatToUnorm8(float value) {
         const float clamp0 = Min(value, 1.0f);
         const float clamp1 = Max(clamp0, 0.0f);
         return static_cast<u8>(clamp1 * 255.0f);
+    }
+
+    constexpr float Unorm8ToFloat(u8 value) {
+        return static_cast<float>(value) / 255.0f;
     }
 
     constexpr u8 FloatToUnorm16(float value) {
@@ -33,27 +33,55 @@ namespace vp::util {
         return static_cast<u16>(clamp1 * 65535.0f);
     }
 
+    constexpr float Unorm16ToFloat(u16 value) {
+        const float base = static_cast<float>(value) / 65535.0f;
+        const float clamp0 = Min(base, 1.0f);
+        const float clamp1 = Max(clamp0, 0.0f);
+        return clamp1;
+    }
+
     constexpr u32 FloatToUnorm32(float value) {
         const float clamp0 = Min(value, 1.0f);
         const float clamp1 = Max(clamp0, 0.0f);
         return static_cast<u32>(static_cast<double>(clamp1) * 4'294'967'295.0);
     }
 
+    constexpr float Unorm32ToFloat(u32 value) {
+        const double base = static_cast<double>(value) / 4'294'967'295.0;
+        const double clamp0 = Min(base, 1.0);
+        const double clamp1 = Max(clamp0, 0.0);
+        return static_cast<float>(clamp1);
+    }
+
     constexpr s16 FloatToSnorm16(float value) {
         const s32 base = static_cast<s32>(value * 32767.0f);
-        const s32 clamp0 = Max(base, -32768);
+        const s32 clamp0 = Max(base, -32767);
         const s32 clamp1 = Min(clamp0, 32767);
         return static_cast<s16>(clamp1);
     }
 
-    constexpr s16 Snorm16ToFloat(s16 value) {
-        const float base = (value < 0) ? static_cast<float>(value) / 32768.0f : static_cast<float>(value) / 32767.0f;
-        const float clamp0 = Min(base, 1.0f);
-        const float clamp1 = Max(clamp0, -1.0f);
-        return static_cast<s16>(clamp1);
+    constexpr float Snorm16ToFloat(s16 value) {
+        const float base = static_cast<float>(value) / 32767.0f;
+        const float clamp0 = Max(base, -1.0f);
+        const float clamp1 = Min(clamp0, 1.0f);
+        return clamp1;
     }
 
-    struct Color4f;
+    constexpr s32 FloatToSnorm32(float value) {
+        const s32 base = static_cast<s32>(static_cast<double>(value) * 2147483647.0);
+        const s32 clamp0 = Max(base, -2147483647);
+        const s32 clamp1 = Min(clamp0, 2147483647);
+        return static_cast<s32>(clamp1);
+    }
+
+    constexpr float Snorm32ToFloat(s32 value) {
+        const double base = static_cast<double>(value) / 2147483647.0;
+        const double clamp0 = Max(base, -1.0);
+        const double clamp1 = Min(clamp0, 1.0);
+        return static_cast<float>(clamp1);
+    }
+
+    using Color4f = Float4;
 
     struct Color4u8 {
         union {
@@ -63,53 +91,60 @@ namespace vp::util {
                 u8 b;
                 u8 a;
             };
+            u8 array[4];
             u32 packed_color;
         };
+        //constexpr ALWAYS_INLINE Color4u8 &operator=(const Color4f &rhs);
 
-        constexpr ALWAYS_INLINE Color4u8 &operator=(const Color4f &rhs);
-    };
-
-    struct Color4f {
-        union {
-            struct {                
-                float r;
-                float g;
-                float b;
-                float a;
-            };
-            Float4 v;
-        };
-
-        constexpr ALWAYS_INLINE Color4f &operator=(const Color4u8 &rhs) {
-            r = Unorm8ToFloat(rhs.r);
-            g = Unorm8ToFloat(rhs.g);
-            b = Unorm8ToFloat(rhs.b);
-            a = Unorm8ToFloat(rhs.a);
-            return *this;
+        constexpr u8 &operator[](u32 id) {
+            return this->array[id];
+        }
+        constexpr const u8 &operator[](u32 id) const {
+            return this->array[id];
         }
     };
 
-    constexpr ALWAYS_INLINE Color4u8 &Color4u8::operator=(const Color4f &rhs) {
-        r = FloatToUnorm8(rhs.r);
-        g = FloatToUnorm8(rhs.g);
-        b = FloatToUnorm8(rhs.b);
-        a = FloatToUnorm8(rhs.a);
-        return *this;
-    }
+    //struct Color4f {
+    //    union {
+    //        struct {                
+    //            float r;
+    //            float g;
+    //            float b;
+    //            float a;
+    //        };
+    //        Float4 v;
+    //    };
+    //
+    //    constexpr ALWAYS_INLINE Color4f &operator=(const Color4u8 &rhs) {
+    //        r = Unorm8ToFloat(rhs.r);
+    //        g = Unorm8ToFloat(rhs.g);
+    //        b = Unorm8ToFloat(rhs.b);
+    //        a = Unorm8ToFloat(rhs.a);
+    //        return *this;
+    //    }
+    //};
+
+    //constexpr ALWAYS_INLINE Color4u8 &Color4u8::operator=(const Color4f &rhs) {
+    //    r = FloatToUnorm8(rhs.r);
+    //    g = FloatToUnorm8(rhs.g);
+    //    b = FloatToUnorm8(rhs.b);
+    //    a = FloatToUnorm8(rhs.a);
+    //    return *this;
+    //}
     constexpr ALWAYS_INLINE Color4f Color4u8ToColor4f(const Color4u8 &color) {
         Color4f ret;
-        ret.r = Unorm8ToFloat(color.r);
-        ret.g = Unorm8ToFloat(color.g);
-        ret.b = Unorm8ToFloat(color.b);
-        ret.a = Unorm8ToFloat(color.a);
+        ret[0] = Unorm8ToFloat(color[0]);
+        ret[1] = Unorm8ToFloat(color[1]);
+        ret[2] = Unorm8ToFloat(color[2]);
+        ret[3] = Unorm8ToFloat(color[3]);
         return ret;
     }
     constexpr ALWAYS_INLINE Color4u8 Color4fToColor4u8(const Color4f &color) {
         Color4u8 ret;
-        ret.r = FloatToUnorm8(color.r);
-        ret.g = FloatToUnorm8(color.g);
-        ret.b = FloatToUnorm8(color.b);
-        ret.a = FloatToUnorm8(color.a);
+        ret[0] = FloatToUnorm8(color[0]);
+        ret[1] = FloatToUnorm8(color[1]);
+        ret[2] = FloatToUnorm8(color[2]);
+        ret[3] = FloatToUnorm8(color[3]);
         return ret;
     }
 
@@ -135,20 +170,20 @@ namespace vp::util {
 
     constexpr ALWAYS_INLINE Color4f operator-(const Color4f &lhs, const Color4f &rhs) {
         const Color4f new_color = {
-            lhs.r - rhs.r,
-            lhs.g - rhs.g,
-            lhs.b - rhs.b,
-            lhs.a - rhs.a,
+            lhs[0] - rhs[0],
+            lhs[1] - rhs[1],
+            lhs[2] - rhs[2],
+            lhs[3] - rhs[3],
         };
         return new_color;
     }
 
     constexpr ALWAYS_INLINE Color4u8 operator*(const Color4u8 &lhs, const Color4u8 &rhs) {
         const Color4u8 new_color = {
-            static_cast<u8>(static_cast<u32>(lhs.r) * static_cast<u32>(rhs.r) / 0xffu),
-            static_cast<u8>(static_cast<u32>(lhs.g) * static_cast<u32>(rhs.g) / 0xffu),
-            static_cast<u8>(static_cast<u32>(lhs.b) * static_cast<u32>(rhs.b) / 0xffu),
-            static_cast<u8>(static_cast<u32>(lhs.a) * static_cast<u32>(rhs.a) / 0xffu),
+            static_cast<u8>(static_cast<u32>(lhs[0]) * static_cast<u32>(rhs[0]) / 0xffu),
+            static_cast<u8>(static_cast<u32>(lhs[1]) * static_cast<u32>(rhs[1]) / 0xffu),
+            static_cast<u8>(static_cast<u32>(lhs[2]) * static_cast<u32>(rhs[2]) / 0xffu),
+            static_cast<u8>(static_cast<u32>(lhs[3]) * static_cast<u32>(rhs[3]) / 0xffu),
         };
         return new_color;
     }

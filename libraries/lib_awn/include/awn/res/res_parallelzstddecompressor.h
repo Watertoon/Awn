@@ -49,7 +49,7 @@ namespace awn::res {
             ZSTD_DDict           *m_dic_array[cMaxDictionaryCount];
             DictionaryAllocator   m_dic_index_allocator;
         public:
-            VP_RTTI_DERIVED(ParallelZstdDecompressor, IParallelDecompressor);
+            VP_RTTI_DERIVED(ParallelZstdDecompressor);
         public:
             constexpr ParallelZstdDecompressor() : m_decompressor_thread(), m_work_memory(), m_dic_map(), m_dic_array{}, m_dic_index_allocator() {/*...*/}
             constexpr virtual ~ParallelZstdDecompressor() {/*...*/}

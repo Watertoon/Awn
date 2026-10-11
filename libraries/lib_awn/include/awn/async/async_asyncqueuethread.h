@@ -61,7 +61,7 @@ namespace awn::async {
             sys::Event  m_suspend_event;
             u64         m_message_array[8];
         public:
-            VP_RTTI_BASE(AsyncQueueThread);
+            VP_RTTI_DERIVED(AsyncQueueThread);
         public:
             constexpr AsyncQueueThread() : Thread(), m_status(), m_state(), m_requests_per_yield(), m_current_task(), m_queue(), m_execute_event(sys::SignalState::Signaled, sys::ResetMode::Manual), m_suspend_event(sys::SignalState::Signaled, sys::ResetMode::Manual), m_message_array{} {/*...*/}
             virtual ~AsyncQueueThread() override {/*...*/}

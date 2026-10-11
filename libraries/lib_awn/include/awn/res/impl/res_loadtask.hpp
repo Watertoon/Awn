@@ -23,14 +23,14 @@ namespace awn::res::impl {
         AsyncResourceLoadInfo *async_load_info;
     };
 
+    struct LoadUserData {
+        AsyncResourceLoadInfo  m_async_load_info;
+        ResourceBinder        *m_resource_binder;
+        ResourceBinder         m_archive_binder_ref;
+        MaxPathString          m_file_path;
+    };
+
 	class LoadTask : public async::AsyncTaskForAllocator {
-        public:
-            struct LoadUserData {
-                AsyncResourceLoadInfo  m_async_load_info;
-                ResourceBinder        *m_resource_binder;
-                ResourceBinder         m_archive_binder_ref;
-                MaxPathString          m_file_path;
-            };
 		private:
             LoadUserData m_load_user_data;
         public:

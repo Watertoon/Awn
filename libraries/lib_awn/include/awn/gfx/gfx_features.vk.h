@@ -63,6 +63,8 @@ namespace awn::gfx {
         SupportsBufferDeviceAddress,
 
         /* VkPhysicalDeviceFeatures13 features */
+        SupportsTerminateInvocation,
+        SupportsDemoteToHelper,
         SupportsSynchronization2,
         SupportsDynamicRendering,
         SupportsMaintenance4,
@@ -95,6 +97,9 @@ namespace awn::gfx {
 
         /* VK_KHR_device_address_commands */
         SupportsDeviceAddressCommands,
+
+        /* VK_EXT_conditional_rendering */
+        SupportsConditionalRendering,
     };
 
     static constexpr u32 cRequiredFeatureCount = vp::util::TEnumTraits<RequiredFeature>::cEnumCount;
@@ -105,6 +110,7 @@ namespace awn::gfx {
 
         /* VkPhysicalDevice features */
         SupportsAstcLdr,
+        SupportsMSAA,
 
         /* VK_KHR_shader_maximal_reconvergence */
         SupportsShaderMaximalReconvergence,
@@ -118,8 +124,20 @@ namespace awn::gfx {
         /* VK_EXT_mesh_shader */
         SupportsMeshShaders,
 
+        /* VK_KHR_fragment_shading_rate */
+        SupportsFragmentShadingRate,
+
+        /* VK_EXT_image_tiling_control */
+        SupportsImageTilingControl,
+
+        /* VK_EXT_image_compression_control */
+        SupportsImageCompressionControl,
+
+        /* LAZY_BIT */
+        SupportsLazyMemory,
+
         /* VK_NV_command_buffer_inheritance */
-        SupportsCommandBufferInheritance,
+        //SupportsCommandBufferInheritance,
 
         /* VK_NV_per_stage_descriptor_set */
         //SupportsPerStageDescriptorSets,

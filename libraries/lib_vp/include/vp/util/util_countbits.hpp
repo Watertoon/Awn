@@ -46,6 +46,35 @@ namespace vp::util {
         return CountOneBits64(value);
     }
 
+    constexpr ALWAYS_INLINE u32 CountZeroBits8(u8 value) {
+        return std::popcount(static_cast<u8>(~value));
+    }
+
+    constexpr ALWAYS_INLINE u32 CountZeroBits16(u16 value) {
+        return std::popcount(static_cast<u16>(~value));
+    }
+
+    constexpr ALWAYS_INLINE u32 CountZeroBits32(u32 value) {
+        return std::popcount(~value);
+    }
+
+    constexpr ALWAYS_INLINE u32 CountZeroBits64(u64 value) {
+        return std::popcount(~value);
+    }
+
+    template <typename T>
+        requires (std::is_integral_v<T> && std::is_unsigned_v<T>)
+    constexpr ALWAYS_INLINE u32 CountZeroBits(T value) {
+        if constexpr (sizeof(u8) == sizeof(T)) {
+            return CountZeroBits8(value);
+        } else if constexpr (sizeof(u16) == sizeof(T)) {
+            return CountZeroBits16(value);
+        } else if constexpr (sizeof(u32) == sizeof(T)) {
+            return CountZeroBits32(value);
+        }
+        return CountZeroBits64(value);
+    }
+
     constexpr ALWAYS_INLINE u8 CountRightOneBits8(u8 value) {
         return std::countr_one(value);
     }

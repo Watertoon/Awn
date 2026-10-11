@@ -26,7 +26,7 @@ namespace awn::para {
             u32                  m_is_allow_parent;
             u32                  m_typed_param_max;
         public:                 
-            VP_RTTI_DERIVED(TypedParamArrayBase, Composite);
+            VP_RTTI_DERIVED(TypedParamArrayBase);
         private:
             void FinalizeTypedParamImpl(u32 base, u32 count);
             bool InitializeTypedParam(mem::Heap *heap, Document *document, u32 index, u64 class_hash, bool is_no_inherit_previous_parent);
@@ -94,7 +94,7 @@ namespace awn::para {
 		requires (TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) == true)
 	class TypedParamArray : public TypedParamArrayBase {
         public:
-            VP_RTTI_DERIVED(TypedParamArray, Composite);
+            VP_RTTI_DERIVED(TypedParamArray);
         public:
             constexpr TypedParamArray() : TypedParamArrayBase() {/*...*/}
             virtual ~TypedParamArray() override {/*...*/}

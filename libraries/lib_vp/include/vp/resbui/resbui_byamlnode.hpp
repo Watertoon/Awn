@@ -65,7 +65,7 @@ namespace vp::resbui {
         private:
             ByamlBigDataNodeBase *m_big_data_node;
         public:
-            VP_RTTI_DERIVED(ByamlNodeBigData, ByamlNodeBase);
+            VP_RTTI_DERIVED(ByamlNodeBigData);
         public:
 			constexpr ByamlNodeBigData() : ByamlNodeBase(), m_big_data_node() {/*...*/}
 			constexpr ByamlNodeBigData(ByamlBigDataNodeBase *big_data_node) : ByamlNodeBase(), m_big_data_node(big_data_node) {/*...*/}
@@ -92,7 +92,7 @@ namespace vp::resbui {
         private:
             u32 m_value;
         public:
-            VP_RTTI_DERIVED(ByamlNodeU32, ByamlNodeBase);
+            VP_RTTI_DERIVED(ByamlNodeU32);
         public:
 			constexpr ByamlNodeU32() : ByamlNodeBase(), m_value() {/*...*/}
 			constexpr ByamlNodeU32(u32 value) : ByamlNodeBase(), m_value(value) {/*...*/}
@@ -111,7 +111,7 @@ namespace vp::resbui {
         private:
             s32 m_value;
         public:
-            VP_RTTI_DERIVED(ByamlNodeS32, ByamlNodeBase);
+            VP_RTTI_DERIVED(ByamlNodeS32);
         public:
 			constexpr ByamlNodeS32() : ByamlNodeBase(), m_value() {/*...*/}
 			constexpr ByamlNodeS32(s32 value) : ByamlNodeBase(), m_value(value) {/*...*/}
@@ -130,7 +130,7 @@ namespace vp::resbui {
         private:
             float m_value;
         public:
-            VP_RTTI_DERIVED(ByamlNodeF32, ByamlNodeBase);
+            VP_RTTI_DERIVED(ByamlNodeF32);
         public:
 			constexpr ByamlNodeF32() : ByamlNodeBase(), m_value() {/*...*/}
 			constexpr ByamlNodeF32(float value) : ByamlNodeBase(), m_value(value) {/*...*/}
@@ -149,7 +149,7 @@ namespace vp::resbui {
         private:
             bool m_value;
         public:
-            VP_RTTI_DERIVED(ByamlNodeBool, ByamlNodeBase);
+            VP_RTTI_DERIVED(ByamlNodeBool);
         public:
 			constexpr ByamlNodeBool() : ByamlNodeBase(), m_value() {/*...*/}
 			constexpr ByamlNodeBool(bool value) : ByamlNodeBase(), m_value(value) {/*...*/}
@@ -168,7 +168,7 @@ namespace vp::resbui {
         private:
             ByamlStringPoolString m_string;
         public:
-            VP_RTTI_DERIVED(ByamlNodeString, ByamlNodeBase);
+            VP_RTTI_DERIVED(ByamlNodeString);
         public:
 			constexpr ByamlNodeString() : ByamlNodeBase(), m_string("") {/*...*/}
 			constexpr ByamlNodeString(const char *value) : ByamlNodeBase(), m_string(value) {/*...*/}

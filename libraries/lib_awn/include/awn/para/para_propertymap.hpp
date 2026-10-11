@@ -19,7 +19,7 @@ namespace awn::para {
 
     class PropertyMapBase : public Composite {
         public:
-            VP_RTTI_DERIVED(PropertyMapBase, Composite);
+            VP_RTTI_DERIVED(PropertyMapBase);
         public:
             constexpr PropertyMapBase() {/*...*/}
             virtual constexpr ~PropertyMapBase() override {/*...*/}
@@ -40,7 +40,7 @@ namespace awn::para {
             u32             m_is_allow_parent;
             PropertyMap<T> *m_parent;
         public:
-            VP_RTTI_DERIVED(PropertyMap, PropertyMapBase);
+            VP_RTTI_DERIVED(PropertyMap);
         public:
             constexpr PropertyMap() : PropertyMapBase(), m_map(), m_is_allow_parent(), m_parent() {/*...*/}
             virtual constexpr ~PropertyMap() override {/*...*/}

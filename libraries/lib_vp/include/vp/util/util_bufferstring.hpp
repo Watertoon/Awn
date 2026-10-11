@@ -100,16 +100,18 @@ namespace vp::util {
                 template <typename T>
                     requires (IsStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(C))
                 constexpr s32 operator<=>(const T &rhs) const {
+                    /* Order by valid contents */
                     const UnderlyingCharType<T> *str;
                     u32 len;
                     GetUnderlyingString(std::addressof(str), std::addressof(len), std::addressof(rhs));
-                    const u32 m_len = vp::util::Min(m_length, len);
+                    const u32 length = m_length;
+                    const u32 m_len = vp::util::Min(length, len);
                     const s32 cmp = std::memcmp(m_string_array, str, m_len);
-                    if (cmp == 0 && m_length != len) {
-                        if (m_length < len) { return -1; }
-                        if (m_length > len) { return 1; }
-                    }
-                    return cmp;
+                    if (cmp != 0) { return cmp; }
+                    /* Order by length */
+                    if (length < len) { return -1; }
+                    if (length == len) { return 0; }
+                    return 1;
                 }
 
                 template <typename T>
@@ -404,16 +406,18 @@ namespace vp::util {
                 template <typename T>
                     requires (IsStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(C))
                 constexpr s32 operator<=>(const T &rhs) const {
+                    /* Order by valid contents */
                     const UnderlyingCharType<T> *str;
                     u32 len;
                     GetUnderlyingString(std::addressof(str), std::addressof(len), std::addressof(rhs));
-                    const u32 m_len = vp::util::Min(m_length, len);
+                    const u32 length = m_length;
+                    const u32 m_len = vp::util::Min(length, len);
                     const s32 cmp = std::memcmp(m_string_array, str, m_len);
-                    if (cmp == 0 && m_length != len) {
-                        if (m_length < len) { return -1; }
-                        if (m_length > len) { return 1; }
-                    }
-                    return cmp;
+                    if (cmp != 0) { return cmp; }
+                    /* Order by length */
+                    if (length < len) { return -1; }
+                    if (length == len) { return 0; }
+                    return 0;
                 }
 
                 template <typename T>
@@ -674,7 +678,7 @@ namespace vp::util {
             template <typename T>
                 requires (IsStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char)) || (IsCharEncodingConvertible<char,UnderlyingCharType<T>>))
             constexpr HeapString8(const T *string) : impl::HeapStringImpl<char>(string) {/*...*/}
-            constexpr ~HeapString8() {/*...*/}
+            constexpr ~HeapString8() = default;
 
             template <typename T>
                 requires (IsStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(char))
@@ -697,7 +701,7 @@ namespace vp::util {
             template <typename T>
                 requires (IsStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char16_t)) || (IsCharEncodingConvertible<char16_t,UnderlyingCharType<T>>))
             constexpr HeapString16(const T *string) : impl::HeapStringImpl<char16_t>(string) {/*...*/}
-            constexpr ~HeapString16() {/*...*/}
+            constexpr ~HeapString16() = default;
 
             template <typename T>
                 requires (IsStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(char16_t))
@@ -720,7 +724,7 @@ namespace vp::util {
             template <typename T>
                 requires (IsStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char32_t)) || (IsCharEncodingConvertible<char32_t,UnderlyingCharType<T>>))
             constexpr HeapString32(const T *string) : impl::HeapStringImpl<char32_t>(string) {/*...*/}
-            constexpr ~HeapString32() {/*...*/}
+            constexpr ~HeapString32() = default;
 
             template <typename T>
                 requires (IsStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(char32_t))
@@ -745,7 +749,7 @@ namespace vp::util {
             template <typename T>
                 requires (IsStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char)) || (IsCharEncodingConvertible<char,UnderlyingCharType<T>>))
             constexpr FixedString8(const T *string) : impl::FixedStringImpl<char,Len>(string) {/*...*/}
-            constexpr ~FixedString8() {/*...*/}
+            constexpr ~FixedString8() = default;
 
             template <typename T>
                 requires (IsStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(char))
@@ -770,7 +774,7 @@ namespace vp::util {
             template <typename T>
                 requires (IsStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char16_t)) || (IsCharEncodingConvertible<char16_t,UnderlyingCharType<T>>))
             constexpr FixedString16(const T *string) : impl::FixedStringImpl<char16_t,Len>(string) {/*...*/}
-            constexpr ~FixedString16() {/*...*/}
+            constexpr ~FixedString16() = default;
 
             template <typename T>
                 requires (IsStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(char16_t))
@@ -795,7 +799,7 @@ namespace vp::util {
             template <typename T>
                 requires (IsStringOrRaw<T>) && ((sizeof(UnderlyingCharType<T>) == sizeof(char32_t)) || (IsCharEncodingConvertible<char32_t,UnderlyingCharType<T>>))
             constexpr FixedString32(const T *string) : impl::FixedStringImpl<char32_t,Len>(string) {/*...*/}
-            constexpr ~FixedString32() {/*...*/}
+            constexpr ~FixedString32() = default;
 
             template <typename T>
                 requires (IsStringOrRaw<T>) && (sizeof(UnderlyingCharType<T>) == sizeof(char32_t))

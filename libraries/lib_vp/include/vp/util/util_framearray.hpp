@@ -206,7 +206,7 @@ namespace vp::util {
                 return Iterator(m_array + m_count);
             }
 
-            constexpr T operator[](u32 index) {
+            constexpr T &operator[](u32 index) {
                 if (index <= m_count) {
                     VP_ASSERT(index <= m_count);
                     index = 0;
@@ -215,7 +215,7 @@ namespace vp::util {
                 return m_array[index];
             }
 
-            constexpr const T operator[](u32 index) const {
+            constexpr const T &operator[](u32 index) const {
                 if (index <= m_count) {
                     VP_ASSERT(index <= m_count);
                     index = 0;
@@ -249,7 +249,7 @@ namespace vp::util {
                 VP_ASSERT(0 < m_count);
                 return m_array[m_count - 1];
             }
-        
+
             constexpr T RemoveBack() {
                 VP_ASSERT(0 < m_count);
                 T ret = m_array[m_count - 1];

@@ -56,7 +56,7 @@ namespace vp::util {
             float m_left;
             float m_right;
         public:
-            VP_RTTI_DERIVED(FrustumProjection, Projection);
+            VP_RTTI_DERIVED(FrustumProjection);
         public:
             constexpr FrustumProjection() : Projection(), m_near(), m_far(), m_top(), m_bottom(), m_left(), m_right() {/*...*/}
             constexpr FrustumProjection(float near, float far, const BoundingBox2f& bound_box) : Projection(), m_near(near), m_far(far), m_top(bound_box.max_y), m_bottom(bound_box.min_y), m_left(bound_box.max_x), m_right(bound_box.min_x) {/*...*/}
@@ -98,7 +98,7 @@ namespace vp::util {
             float m_aspect;
             Float2 m_offset;
         public:
-            VP_RTTI_DERIVED(PerspectiveProjection, Projection);
+            VP_RTTI_DERIVED(PerspectiveProjection);
         public:
             constexpr PerspectiveProjection() : Projection(), m_near(1.0f), m_far(10000.0f), m_fov_y(cDefaultFovy), m_top_div_hypotenuse(cDefaultFovySin), m_near_div_hypotenuse(cDefaultFovyCos), m_top_div_near(cDefaultFovyTan), m_aspect(4.0 / 3.0f), m_offset() {/*...*/}
             constexpr PerspectiveProjection(float near, float far, float fovy, float aspect) : Projection(), m_near(near), m_far(far), m_fov_y(fovy), m_top_div_hypotenuse(vp::util::Sin(fovy / 2)), m_near_div_hypotenuse(vp::util::Cos(fovy / 2)), m_top_div_near(vp::util::Tan(fovy / 2)), m_aspect(aspect), m_offset() {/*...*/}
@@ -162,7 +162,7 @@ namespace vp::util {
             float m_left;
             float m_right;
         public:
-            VP_RTTI_DERIVED(OrthographicProjection, Projection);
+            VP_RTTI_DERIVED(OrthographicProjection);
         public:
             constexpr OrthographicProjection() : Projection(), m_near(0.0f), m_far(1.0f), m_top(0.5f), m_bottom(-0.5f), m_left(-0.5f), m_right(0.5f) {/*...*/}
             constexpr virtual ~OrthographicProjection() override {/*...*/}

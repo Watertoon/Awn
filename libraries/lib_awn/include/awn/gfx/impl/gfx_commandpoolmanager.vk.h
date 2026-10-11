@@ -25,6 +25,10 @@ namespace awn::gfx::impl {
     using CommandPoolId = vp::util::MinUIntType<cMaxCommandBufferCount>;
     static constexpr CommandPoolId cInvalidCommandPoolId = static_cast<CommandPoolId>(0xffff'ffff'ffff'ffff);
 
+    struct CommandPoolManagerInfo {
+        u32 command_pool_count;
+    };
+
     class CommandPoolManager {
         public:
             struct CommandPoolUnit {
@@ -47,7 +51,7 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE  CommandPoolManager() : m_command_pool_cs(), m_handle_allocator(), m_unit_array() {/*...*/}
             constexpr ALWAYS_INLINE ~CommandPoolManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, u32 pool_count);
+            Result Initialize(mem::Heap *heap, const CommandPoolManagerInfo *info);
             void Finalize();
 
             Result CreateCommandPool(CommandPoolId *out_id, QueueType queue_type);

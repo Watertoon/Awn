@@ -56,7 +56,7 @@ namespace awn::res {
     
     class IParallelDecompressor : public IDecompressor {
         public:
-            VP_RTTI_DERIVED(IParallelDecompressor, IDecompressor);
+            VP_RTTI_DERIVED(IParallelDecompressor);
         public:
             constexpr IParallelDecompressor() : IDecompressor() {/*...*/}
             constexpr virtual ~IParallelDecompressor() {/*...*/}

@@ -72,7 +72,7 @@ namespace awn::sys {
 
     TlsSlot AllocateTlsSlot(TlsDestructor destructor) {
         TlsSlot slot = 0;
-        RESULT_ABORT_UNLESS(nn::os::AllocateTlsSlot(std::addressof(slot), destructor));
+        nn::os::AllocateTlsSlot(std::addressof(slot), destructor);
         return slot;
     }
 

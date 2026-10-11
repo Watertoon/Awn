@@ -37,22 +37,22 @@ namespace awn::res {
             this->Release();
         };
         ON_SCOPE_EXIT {
-            if (!this->IsReferenceBinder()) {            
+            if (!this->IsReferenceBinder()) {
                 this->HandleMemoryAllocationError();
             }
         };
 
-        /* Nothing to do if no resource unit */
+        /* No compose for no resource unit */
         if (m_resource_unit == nullptr) { finalize_on_error_guard.Cancel(); return; }
 
-        /* Try initialize resource */
-        if (!m_resource_unit->IsResourceInitialized()) {
+        /* Compose resource */
+        if (!m_resource_unit->IsComposed()) {
             const bool result = m_resource_unit->ComposeResource(compose_info);
             if (!result) { m_status = Status::ComposeNG; return; }
         }
         finalize_on_error_guard.Cancel();
 
-        /* Update status for initialization */
+        /* Transition to composed */
         if (m_status == Status::Pending) {
             m_status = Status::Composed;
         }
@@ -194,25 +194,25 @@ namespace awn::res {
          */
         switch (m_resource_unit->m_status) {
             case impl::ResourceUnit::Status::Uninitialized:
-            case impl::ResourceUnit::Status::InLoad:
+            case impl::ResourceUnit::Status::Loading:
             default:
                 compose_guard.Cancel();
                 finalize_error_guard.Cancel();
                 return false;
             case impl::ResourceUnit::Status::Loaded:
-            case impl::ResourceUnit::Status::InResourceInitialize:
-            case impl::ResourceUnit::Status::ResourcePreFinalized:
-            case impl::ResourceUnit::Status::ResourceInitialized:
+            case impl::ResourceUnit::Status::Composing:
+            case impl::ResourceUnit::Status::Composed:
+            case impl::ResourceUnit::Status::Decomposed:
                 this->ComposeResource(compose_info);
                 break;
             case impl::ResourceUnit::Status::Error:
                 this->HandleResourceUnitError();
                 break;
-            case impl::ResourceUnit::Status::FailedToInitializeResource:
-            case impl::ResourceUnit::Status::FailedToPostInitializeResource:
+            case impl::ResourceUnit::Status::ComposeNG:
+            case impl::ResourceUnit::Status::PostComposeNG:
                 exit_status = Status::ComposeNG;
                 return false;
-            case impl::ResourceUnit::Status::ResourcePostInitialized:
+            case impl::ResourceUnit::Status::PostComposed:
                 if (m_status == Status::Pending) {
                     m_status = Status::Composed;
                 }
@@ -236,23 +236,23 @@ namespace awn::res {
     }
 
     bool ResourceBinder::IsLoading() const {
-        /* Succeed if the watcher is pending */
+        /* We are still loading if the control task watcher is pending */
         if (m_watcher.IsPending()) { return true; }
-        /* Fail if we have not scheduled a load */
+        /* We are not loading if we have not scheduled a load */
         if (!m_load_guard) { return false; }
         vp::util::MemoryBarrierInnerRead();
         /* Fail if we do not have a resource unit, as the control task is pending or it failed */
         if (m_resource_unit == nullptr) { return false; }
-        /* Loading completed if we are the compose thread */
+        /* Loading completed if we are a compose thread */
         if (impl::AsyncResourceManager::GetInstance()->IsCurrentThreadComposeThread()) { return m_resource_unit->m_load_task.IsPending(); }
         /* Defer to the resource unit */
-        return m_resource_unit->IsInLoad();
+        return m_resource_unit->IsLoading();
     }
 
     bool ResourceBinder::IsLoaded() const {
-        /* Fail if we are not in load or already completed */
+        /* Fail if we are not in load or already composed */
         if ((m_state_mask & ((1 << 1) | (1 << 3))) != (1 << 1)) { return false; }
-        /* Fail if we are in load */
+        /* We are not loaded if we are still loading */
         return !this->IsLoading();
     }
 
@@ -264,7 +264,7 @@ namespace awn::res {
         /* Fail if no resource unit */
         if (m_resource_unit == nullptr) { return false; }
         /* Defer to the resource unit */
-        return m_resource_unit->IsResourceInitialized();
+        return m_resource_unit->IsComposed();
     }
 
     bool ResourceBinder::IsFailed() const {

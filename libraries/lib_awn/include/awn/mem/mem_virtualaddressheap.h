@@ -50,7 +50,7 @@ namespace awn::mem {
             SmallMemoryList m_filled_small_memory_list;
             LargeMemoryMap  m_large_memory_map;
         public:
-            VP_RTTI_DERIVED(VirtualAddressHeap, Heap);
+            VP_RTTI_DERIVED(VirtualAddressHeap);
         public:
             VirtualAddressHeap(const char *name, void *start, size_t size);
             virtual ~VirtualAddressHeap() override;

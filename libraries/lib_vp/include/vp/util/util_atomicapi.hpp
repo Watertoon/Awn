@@ -76,8 +76,7 @@ namespace vp::util {
         if (out_last != nullptr) { *out_last = comperand; }
         return result;
     }
-    
-    
+
     template <typename T>
     constexpr ALWAYS_INLINE bool InterlockedCompareExchangeWeak(T *out_last, T *write, T value, T comperand) {
         const bool result = __atomic_compare_exchange_n(write, std::addressof(comperand), value, true, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);

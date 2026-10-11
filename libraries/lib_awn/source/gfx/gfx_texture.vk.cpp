@@ -49,39 +49,39 @@ namespace awn::gfx {
         RESULT_RETURN_SUCCESS;
     }
 
-    Result Texture::Initialize(void *gpu_memory_address, const TextureInfo *texture_info) {
-
-        /* Create image by gpu memory address */
-        size_t offset;
-        MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_memory_address);
-        RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), memory_pool, offset, texture_info));
-
-        /* Transition to general */
-        const VkHostImageLayoutTransitionInfo trans_info = {
-            .sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
-            .image = m_vk_image,
-            .oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
-            .newLayout = VK_IMAGE_LAYOUT_GENERAL,
-            .subresourceRange = {
-                .aspectMask = this->GetVkAspectMask(),
-                .baseMipLevel = 0,
-                .levelCount = VK_REMAINING_MIP_LEVELS,
-                .baseArrayLayer = 0,
-                .layerCount = VK_REMAINING_ARRAY_LAYERS,
-            },
-        };
-        const VkResult vk_result = ::pfn_vkTransitionImageLayout(impl::Context::GetInstance()->GetVkDevice(), 1, std::addressof(trans_info));
-        if (vk_result != VK_SUCCESS) {
-            this->Finalize();
-            RESULT_RETURN(impl::ConvertVkResultToResult(vk_result));
-        }
-
-        /* Save texture meta data */
-        m_texture_info = *texture_info;
-        m_memory_offset = offset;
-
-        RESULT_RETURN_SUCCESS;
-    }
+    //Result Texture::Initialize(void *gpu_memory_address, const TextureInfo *texture_info) {
+    //
+    //    /* Create image by gpu memory address */
+    //    size_t offset;
+    //    MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_memory_address);
+    //    RESULT_TRY(gfx::impl::CreateVkImage(std::addressof(m_vk_image), memory_pool, offset, texture_info));
+    //
+    //    /* Transition to general */
+    //    const VkHostImageLayoutTransitionInfo trans_info = {
+    //        .sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
+    //        .image = m_vk_image,
+    //        .oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
+    //        .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+    //        .subresourceRange = {
+    //            .aspectMask = this->GetVkAspectMask(),
+    //            .baseMipLevel = 0,
+    //            .levelCount = VK_REMAINING_MIP_LEVELS,
+    //            .baseArrayLayer = 0,
+    //            .layerCount = VK_REMAINING_ARRAY_LAYERS,
+    //        },
+    //    };
+    //    const VkResult vk_result = ::pfn_vkTransitionImageLayout(impl::Context::GetInstance()->GetVkDevice(), 1, std::addressof(trans_info));
+    //    if (vk_result != VK_SUCCESS) {
+    //        this->Finalize();
+    //        RESULT_RETURN(impl::ConvertVkResultToResult(vk_result));
+    //    }
+    //
+    //    /* Save texture meta data */
+    //    m_texture_info = *texture_info;
+    //    m_memory_offset = offset;
+    //
+    //    RESULT_RETURN_SUCCESS;
+    //}
 
     Result Texture::InitializeForDedicatedAllocation(const TextureInfo *texture_info, VkImageUsageFlags vk_image_usage_flags, void *pnext) {
 

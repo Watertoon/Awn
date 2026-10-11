@@ -18,8 +18,9 @@
 namespace awn::gfx::impl {
 
     AWN_SINGLETON_TRAITS_IMPL(DescriptorMemoryManager);
-    void DescriptorMemoryManager::Initialize(mem::Heap *heap, const DescriptorMemoryManagerInfo *mgr_info) {
+    Result DescriptorMemoryManager::Initialize(mem::Heap *heap, const DescriptorMemoryManagerInfo *mgr_info) {
         VP_UNUSED(heap);
+        auto fail_guard = SCOPE_GUARD { this->Finalize(); };
 
         /* Calculate descriptor heap sizes */
         Context *context = Context::GetInstance();
@@ -54,8 +55,8 @@ namespace awn::gfx::impl {
             .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
             .flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT,
         };
-        RESULT_ABORT_UNLESS(m_descriptor_heap_memory_pool.InitializeImpl(std::addressof(pool_info), memory_requirements_2.memoryRequirements.memoryTypeBits, std::addressof(flags_info)));
-        RESULT_ABORT_UNLESS(gfx::impl::CreateVkBuffer(std::addressof(m_descriptor_heap_buffer), std::addressof(m_descriptor_heap_memory_pool), 0, VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT, memory_requirements_2.memoryRequirements.size));
+        RESULT_TRY(m_descriptor_heap_memory_pool.InitializeImpl(std::addressof(pool_info), memory_requirements_2.memoryRequirements.memoryTypeBits, std::addressof(flags_info)));
+        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_descriptor_heap_buffer), std::addressof(m_descriptor_heap_memory_pool), 0, VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT, memory_requirements_2.memoryRequirements.size));
         m_memory_texture = m_descriptor_heap_memory_pool.GetAddress();
         m_memory_image = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory_texture) + image_offset);
         m_memory_sampler = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_memory_texture) + sampler_heap_offset);
@@ -75,7 +76,8 @@ namespace awn::gfx::impl {
         m_bind_heap_info_sampler.reservedRangeOffset = m_sampler_size;
         m_bind_heap_info_sampler.reservedRangeSize = context->GetSamplerDescriptorHeapReservedRange();
 
-        return;
+        fail_guard.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void DescriptorMemoryManager::Finalize() {

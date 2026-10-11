@@ -35,7 +35,7 @@ namespace awn::mem {
             u32 m_used_count;
             u32 m_total_count;
         public:
-            VP_RTTI_DERIVED(SeparateHeap, Heap);
+            VP_RTTI_DERIVED(SeparateHeap);
         public:
             SeparateHeap(const char *name, void *address, size_t size, bool is_thread_safe) : Heap(name, nullptr, address, size, is_thread_safe), m_block_allocator(), m_block_list(), m_used_count(), m_total_count() {/*...*/}
             virtual ~SeparateHeap() override {/*...*/}

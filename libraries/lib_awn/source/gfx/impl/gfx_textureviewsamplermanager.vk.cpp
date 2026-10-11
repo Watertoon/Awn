@@ -43,21 +43,23 @@ namespace awn::gfx::impl {
 
     AWN_SINGLETON_TRAITS_IMPL(TextureViewSamplerManager);
 
-    void TextureViewSamplerManager::Initialize(mem::Heap *heap, const TextureViewSamplerManagerInfo *manager_info) {
+    Result TextureViewSamplerManager::Initialize(mem::Heap *heap, const TextureViewSamplerManagerInfo *manager_info) {
 
         /* Integrity check */
         VP_ASSERT(manager_info->max_texture_view_unit_count < Context::cTargetMaxTextureViewCount);
         VP_ASSERT(manager_info->max_sampler_unit_count < Context::cTargetMaxSamplerCount);
 
         /* Initialize texture unit array */
-        RESULT_ABORT_UNLESS(m_texture_view_unit_array.Initialize(heap, manager_info->max_texture_view_unit_count));
-        RESULT_ABORT_UNLESS(m_texture_slot_allocator.Initialize(heap, manager_info->max_texture_view_unit_count));
+        RESULT_TRY(m_texture_view_unit_array.Initialize(heap, manager_info->max_texture_view_unit_count));
+        auto fail_guard = SCOPE_GUARD { this->Finalize(); };
+        RESULT_TRY(m_texture_slot_allocator.Initialize(heap, manager_info->max_texture_view_unit_count));
 
         /* Initialize sampler unit array */
-        RESULT_ABORT_UNLESS(m_sampler_unit_array.Initialize(heap, manager_info->max_sampler_unit_count));
-        RESULT_ABORT_UNLESS(m_sampler_slot_allocator.Initialize(heap, manager_info->max_sampler_unit_count));
+        RESULT_TRY(m_sampler_unit_array.Initialize(heap, manager_info->max_sampler_unit_count));
+        RESULT_TRY(m_sampler_slot_allocator.Initialize(heap, manager_info->max_sampler_unit_count));
 
-        return;
+        fail_guard.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void TextureViewSamplerManager::Finalize() {
@@ -65,6 +67,7 @@ namespace awn::gfx::impl {
         m_sampler_unit_array.Finalize();
         m_texture_slot_allocator.Finalize();
         m_texture_view_unit_array.Finalize();
+        m_sampler_map.ForceReset();
     }
 
     Result TextureViewSamplerManager::RegisterTextureView(DescriptorSlot *out_texture_slot, const TextureViewInfo *texture_view_info) {

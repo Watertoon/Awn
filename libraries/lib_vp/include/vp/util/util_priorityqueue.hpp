@@ -342,7 +342,7 @@ namespace vp::util {
             constexpr  FixedPriorityQueue() : m_count(), m_queue{} {/*...*/}
             constexpr ~FixedPriorityQueue() {/*...*/}
             
-            void Insert(T *new_node) {
+            constexpr void Insert(T *new_node) {
 
                 /* Integrity check */
                 VP_ASSERT(new_node != nullptr);
@@ -363,7 +363,7 @@ namespace vp::util {
                 return m_queue[0];
             }
 
-            T *RemoveFront() {
+            constexpr T *RemoveFront() {
 
                 /* Intergrity check bounds */
                 VP_ASSERT(0 < m_count);
@@ -383,7 +383,7 @@ namespace vp::util {
                 return value;
             }
 
-            T **FindIterTo(T *node) {
+            constexpr T **FindIterTo(T *node) {
                 for (u32 i = 0; i < m_count; ++i) {
                     if (m_queue[i] == node) { return std::addressof(m_queue[i]); }
                 }
@@ -391,7 +391,7 @@ namespace vp::util {
                 return nullptr;
             }
 
-            void Remove(T **iter) {
+            constexpr void Remove(T **iter) {
 
                 /* Intergrity check bounds */
                 VP_ASSERT(m_queue <= iter && iter < m_queue + m_count);
@@ -412,7 +412,7 @@ namespace vp::util {
                 return;
             }
 
-            void Clear() {
+            constexpr void Clear() {
                 m_count = 0;
             }
 

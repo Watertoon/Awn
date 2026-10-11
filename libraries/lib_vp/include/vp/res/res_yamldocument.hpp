@@ -276,7 +276,7 @@ namespace vp::res {
         private:
             ValueType m_value;
         public:
-            VP_RTTI_DERIVED(YamlValue, YamlValueBase);
+            VP_RTTI_DERIVED(YamlValue);
         public:
             constexpr YamlValue() : m_value() {/*...*/}
             virtual ~YamlValue() override {/*...*/}
@@ -395,9 +395,8 @@ namespace vp::res {
     class YamlArray;
 
     class YamlContainerBase : public YamlValueBase {
-        private:
         public:
-            VP_RTTI_DERIVED(YamlValue, YamlValueBase);
+            VP_RTTI_DERIVED(YamlContainerBase);
         public:
             constexpr YamlContainerBase() : YamlValueBase() {/*...*/}
             constexpr ~YamlContainerBase() {/*...*/}
@@ -414,13 +413,13 @@ namespace vp::res {
             struct Key {
                 vp::util::HeapArray<u32> *key_array;
 
-                std::strong_ordering operator<=>(const Key &rhs) const {
+                s32 operator<=>(const Key &rhs) const {
                     VP_ASSERT(this->key_array->GetCount() == rhs.key_array->GetCount());
                     for (u32 i = this->key_array->GetCount()-1; i < this->key_array->GetCount(); --i) {
-                        if ((*this->key_array)[i] < (*rhs.key_array)[i]) { return std::strong_ordering::less; }
-                        if ((*this->key_array)[i] > (*rhs.key_array)[i]) { return std::strong_ordering::greater; }
+                        if ((*this->key_array)[i] < (*rhs.key_array)[i]) { return -1; }
+                        if ((*this->key_array)[i] > (*rhs.key_array)[i]) { return 1; }
                     }
-                    return std::strong_ordering::equal;
+                    return 0;
                 }
             };
             struct Node {                
@@ -441,7 +440,7 @@ namespace vp::res {
             u8 m_key_size;
             bool m_is_remap;
         public:
-            VP_RTTI_DERIVED(YamlHashArray, YamlContainerBase);
+            VP_RTTI_DERIVED(YamlHashArray);
         private:
             Result CreateNode(Node **out_node, vp::imem::IHeap *heap, const char *key, size_t len);
             void DeleteNode(Node *node);
@@ -524,7 +523,7 @@ namespace vp::res {
             vp::res::ByamlDataType m_mono_array_type;
             bool m_is_monotyped;
         public:
-            VP_RTTI_DERIVED(YamlArray, YamlContainerBase);
+            VP_RTTI_DERIVED(YamlArray);
         private:
             Result CreateNode(Node **out_node, vp::imem::IHeap *heap);
             void DeleteNode(Node *node);
@@ -565,11 +564,8 @@ namespace vp::res {
             struct Key {
                 vp::util::HeapString8 *key;
 
-                std::strong_ordering operator<=>(const Key &rhs) const {
-                    const s32 result = *this->key <=> *rhs.key;
-                    std::strong_ordering strong_order0 = (result < 0) ? std::strong_ordering::less : std::strong_ordering::equal;
-                    std::strong_ordering strong_order1 = (result > 0) ? std::strong_ordering::greater : strong_order0;
-                    return strong_order1;
+                s32 operator<=>(const Key &rhs) const {
+                    return *this->key <=> *rhs.key;
                 }
             };
             struct Node {
@@ -589,7 +585,7 @@ namespace vp::res {
             u32 m_count;
             bool m_is_remap;
         public:
-            VP_RTTI_DERIVED(YamlDictionary, YamlContainerBase);
+            VP_RTTI_DERIVED(YamlDictionary);
         private:
             Result CreateNode(Node **out_node, vp::imem::IHeap *heap, const char *key, size_t len);
             void DeleteNode(Node *node);

@@ -49,7 +49,7 @@ namespace awn::mem {
             u32 m_used_count;
             AllocationMode m_allocation_mode;
         public:
-            VP_RTTI_DERIVED(ExpHeap, Heap);
+            VP_RTTI_DERIVED(ExpHeap);
         protected:
             bool IsAddressAllocationUnsafe(const void *address) const;
 

@@ -29,7 +29,7 @@ namespace awn::sys {
 
     struct ThreadInfo {
         const char *name = "";
-        u64 exit_code = 0x7fff'ffff'ffff'ffff;
+        size_t exit_code = 0x7fff'ffff;
         ThreadRunMode run_mode = ThreadRunMode::WaitForMessage;
         u32 message_count = 8;
         size_t *message_memory = nullptr;
@@ -64,9 +64,9 @@ namespace awn::sys {
         protected:
             mem::Heap                   *m_thread_heap;
             mem::Heap                   *m_lookup_heap;
-            sys::MessageQueue            m_message_queue;
+            sys::MessageQueue<size_t>    m_message_queue;
             size_t                      *m_message_queue_memory;
-            u64                          m_exit_message;
+            size_t                       m_exit_message;
             size_t                       m_stack_size;
             u32                          m_priority;
             CoreMask                     m_core_mask;

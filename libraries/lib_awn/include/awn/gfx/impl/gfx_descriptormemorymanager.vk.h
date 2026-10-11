@@ -40,7 +40,7 @@ namespace awn::gfx::impl {
             constexpr DescriptorMemoryManager() : m_descriptor_heap_memory_pool(), m_descriptor_heap_buffer(), m_bind_heap_info_resource(), m_bind_heap_info_sampler(), m_memory_texture(), m_memory_image(), m_memory_sampler(), m_texture_size(), m_image_size(), m_sampler_size() {/*...*/}
             constexpr ~DescriptorMemoryManager() = default;
 
-            void Initialize(mem::Heap *heap, const DescriptorMemoryManagerInfo *mgr_info);
+            Result Initialize(mem::Heap *heap, const DescriptorMemoryManagerInfo *mgr_info);
             void Finalize();
         public:
             constexpr const VkBindHeapInfoEXT *GetVkBindHeapInfoResource() const {

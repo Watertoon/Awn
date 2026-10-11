@@ -24,6 +24,12 @@ binary_type  ?= debug
 #Valid graphics apis: vk, nvn, awn
 #Valid binary types:  release develop debug
 
+#Awn supported targets:
+# x86, win32, vk
+# x86, linux, vk
+# aarch64, linux, vk
+# aarch64, nx, nvn
+
 define VP_SUBMAKE
 $(MAKE) sub_make ARCHITECTURE=$(arch) PLATFORM=$(platform) GRAPHICS_API=$(graphics_api) BINARY_TYPE=$(binary_type) -C $(1)
 

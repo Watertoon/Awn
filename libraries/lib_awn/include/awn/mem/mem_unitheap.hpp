@@ -31,7 +31,7 @@ namespace awn::mem {
             u32 m_block_size;
             u32 m_block_count;
         public:
-            VP_RTTI_DERIVED(UnitHeap, Heap);
+            VP_RTTI_DERIVED(UnitHeap);
         public:
             UnitHeap(const char *name, mem::Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : Heap(name, parent_heap, start_address, size, is_thread_safe), m_free_list(), m_free_start(), m_free_size(), m_block_size(), m_block_count() {/*...*/}
             virtual ~UnitHeap() override {/*...*/}

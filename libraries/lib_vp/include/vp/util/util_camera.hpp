@@ -49,7 +49,7 @@ namespace vp::util {
             Vector3d  m_at;
             Vector3f  m_up;
         public:
-            VP_RTTI_DERIVED(LookAtCamera, Camera);
+            VP_RTTI_DERIVED(LookAtCamera);
         public:
             constexpr LookAtCamera() : Camera(), m_pos(Vector3d{0.0,0.0,10.0}), m_at(Vector3d{0.0,0.0,0.0}), m_up(Vector3f{0.0f,1.0f,0.0f}) {/*...*/}
             constexpr LookAtCamera(const Vector3d& pos, const Vector3d& at, const Vector3f& up) : Camera(), m_pos(pos), m_at(at), m_up(up) {/*...*/}
@@ -81,7 +81,7 @@ namespace vp::util {
 
     class OrthographicCamera : public LookAtCamera {
         public:
-            VP_RTTI_DERIVED(OrthographicCamera, LookAtCamera);
+            VP_RTTI_DERIVED(OrthographicCamera);
         public:
             constexpr OrthographicCamera() : LookAtCamera(Vector3d{0.0,0.0,0.0},Vector3d{0.0,0.0,-1.0},Vector3f{0.0f,1.0f,0.0f}) {/*...*/}
             constexpr OrthographicCamera(const OrthographicProjection &ortho_proj) : LookAtCamera(ortho_proj.GetOrthoCameraPosition(), ortho_proj.GetOrthoCameraAt(), VectorConstant<Vector3f>::cUnit[1]) {/*...*/}

@@ -27,7 +27,7 @@ namespace awn::async {
             AsyncTaskAllocator *m_task_allocator;
             AsyncTaskWatcher   *m_watcher;
         public:
-            VP_RTTI_DERIVED(AsyncTaskForAllocator, AsyncTask);
+            VP_RTTI_DERIVED(AsyncTaskForAllocator);
         protected:
             void SetWatcher(AsyncTaskWatcher *watcher, AsyncQueue *queue);
 

@@ -25,6 +25,7 @@ namespace vp::util {
                     T *m_array;
                 public:
                     constexpr ALWAYS_INLINE Iterator(T *array) : m_array(array) {/*...*/}
+                    constexpr ALWAYS_INLINE Iterator(const T *array) : m_array(const_cast<T*>(array)) {/*...*/}
 
                     constexpr ALWAYS_INLINE T &operator*() {
                         return *m_array;
@@ -97,6 +98,9 @@ namespace vp::util {
             }
         public:
             constexpr Iterator begin() {
+                return Iterator(m_array);
+            }
+            constexpr Iterator begin() const {
                 return Iterator(m_array);
             }
             constexpr Iterator end() {
@@ -249,8 +253,7 @@ namespace vp::util {
                 return is_valid ? iter : end;
             }
     };
-    
-    
+
     template <typename T, size_t Count>
     class FixedArray {
         public:

@@ -23,7 +23,7 @@ namespace awn::res {
             u32 m_max_compression_level;
             u32 m_compression_level;
         public:
-            VP_RTTI_DERIVED(ZstdCompressor, ICompressor);
+            VP_RTTI_DERIVED(ZstdCompressor);
         public:
             constexpr ZstdCompressor() : ICompressor(), m_work_memory(), m_out_memory(), m_out_size(), m_cctx_size(), m_max_compression_level(), m_compression_level() {/*...*/}
             constexpr ~ZstdCompressor() {/*...*/}

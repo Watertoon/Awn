@@ -17,7 +17,7 @@
 
 namespace vp {
 
-    namespace result {        
+    namespace result {
         static constexpr inline u32 cModuleBits         = 9;
         static constexpr inline u32 cModuleBitMask      = (~((~0) << cModuleBits));
         static constexpr inline u32 cDescriptionBits    = 13;
@@ -75,6 +75,11 @@ namespace vp {
     { \
         const ::vp::Result __result = (result_expression); \
         return __result; \
+    }
+
+    #define RESULT_RETURN_MUSTTAIL(result_expression)  \
+    { \
+        [[gnu::musttail]] return (result_expression); \
     }
 
     #define RESULT_TRY(result_expression)  \

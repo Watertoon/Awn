@@ -24,7 +24,7 @@ namespace awn::mem {
             uintptr_t m_iter;
             uintptr_t m_end;
         public:
-            VP_RTTI_DERIVED(FrameHeap, Heap);
+            VP_RTTI_DERIVED(FrameHeap);
         public:
             FrameHeap(const char *name, Heap *parent_heap, void *start_address, size_t size, bool is_thread_safe) : Heap(name, parent_heap, start_address, size, is_thread_safe), m_iter() {/*...*/}
             virtual ~FrameHeap() override {/*...*/}

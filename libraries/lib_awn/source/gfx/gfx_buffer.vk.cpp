@@ -33,23 +33,23 @@ namespace awn::gfx {
         RESULT_RETURN_SUCCESS;
     }
 
-    Result Buffer::Initialize(void *gpu_memory_address, const BufferInfo *buffer_info) {
-
-        /* Create vk buffer  */
-        size_t offset;
-        MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_memory_address);
-        RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), memory_pool, offset, buffer_info));
-
-        /* Set gpu address */
-        m_memory_pool = memory_pool;
-        m_address = gpu_memory_address;
-        m_memory_offset = offset;
-
-        /* Query VkDeviceAddress */
-        m_gpu_address = gfx::impl::GetGpuAddress(m_vk_buffer);
-
-        RESULT_RETURN_SUCCESS;
-    }
+    //Result Buffer::Initialize(void *gpu_memory_address, const BufferInfo *buffer_info) {
+    //
+    //    /* Create vk buffer  */
+    //    size_t offset;
+    //    MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_memory_address);
+    //    RESULT_TRY(gfx::impl::CreateVkBuffer(std::addressof(m_vk_buffer), memory_pool, offset, buffer_info));
+    //
+    //    /* Set gpu address */
+    //    m_memory_pool = memory_pool;
+    //    m_address = gpu_memory_address;
+    //    m_memory_offset = offset;
+    //
+    //    /* Query VkDeviceAddress */
+    //    m_gpu_address = gfx::impl::GetGpuAddress(m_vk_buffer);
+    //
+    //    RESULT_RETURN_SUCCESS;
+    //}
 
     void Buffer::Finalize() {
         if (m_vk_buffer != VK_NULL_HANDLE) {
@@ -64,13 +64,13 @@ namespace awn::gfx {
     }
 
     void Buffer::FlushMappedRange(size_t offset, size_t size) {
-        if (!m_memory_pool->IsCached()) { return; }
+        if (!m_memory_pool->IsCpuCached()) { return; }
         const size_t base_offset = reinterpret_cast<uintptr_t>(m_address) - reinterpret_cast<uintptr_t>(m_memory_pool->GetAddress());
         m_memory_pool->FlushMappedRange(base_offset + offset, size);
     }
 
     void Buffer::InvalidateMappedRange(size_t offset, size_t size) {
-        if (!m_memory_pool->IsCached()) { return; }
+        if (!m_memory_pool->IsCpuCached()) { return; }
         const size_t base_offset = reinterpret_cast<uintptr_t>(m_address) - reinterpret_cast<uintptr_t>(m_memory_pool->GetAddress());
         m_memory_pool->InvalidateMappedRange(base_offset + offset, size);
     }

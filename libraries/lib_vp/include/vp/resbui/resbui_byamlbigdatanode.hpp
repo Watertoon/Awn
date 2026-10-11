@@ -63,7 +63,7 @@ namespace vp::resbui {
             u32      m_node_count;
             NodeList m_node_list;
         public:
-            VP_RTTI_DERIVED(ByamlBigDataNodeContainerBase, ByamlBigDataNodeBase);
+            VP_RTTI_DERIVED(ByamlBigDataNodeContainerBase);
         public:
             constexpr  ByamlBigDataNodeContainerBase() : ByamlBigDataNodeBase(), m_node_count(), m_node_list() {/*...*/}
             virtual ~ByamlBigDataNodeContainerBase() override { this->Finalize(); }
@@ -94,7 +94,7 @@ namespace vp::resbui {
         protected:
             ByamlArrayDataTypeMode m_data_type_mode;
         public:
-            VP_RTTI_DERIVED(ByamlBigDataNodeArray, ByamlBigDataNodeContainerBase);
+            VP_RTTI_DERIVED(ByamlBigDataNodeArray);
         private:
             constexpr bool CheckMonoTyped() const {
                 if (m_data_type_mode != ByamlArrayDataTypeMode::Auto) { return (m_data_type_mode == ByamlArrayDataTypeMode::MonoTyped); }
@@ -124,7 +124,7 @@ namespace vp::resbui {
         private:
             bool m_is_index_remap;
         public:
-            VP_RTTI_DERIVED(ByamlBigDataNodeDictionary, ByamlBigDataNodeContainerBase);
+            VP_RTTI_DERIVED(ByamlBigDataNodeDictionary);
         private:
             constexpr u32 CalculateRemapSize() const {
                 if (m_is_index_remap == false) { return 0; }
@@ -153,7 +153,7 @@ namespace vp::resbui {
             bool m_is_index_remap;
             u32  m_key_size;
         public:
-            VP_RTTI_DERIVED(ByamlBigDataNodeHashArray, ByamlBigDataNodeContainerBase);
+            VP_RTTI_DERIVED(ByamlBigDataNodeHashArray);
         private:
             constexpr u32 CalculateRemapSize() const {
 
@@ -188,7 +188,7 @@ namespace vp::resbui {
         private:
             u64 m_value;
         public:
-            VP_RTTI_DERIVED(ByamlBigDataNodeU64, ByamlBigDataNodeBase);
+            VP_RTTI_DERIVED(ByamlBigDataNodeU64);
         public:
             constexpr ByamlBigDataNodeU64() : ByamlBigDataNodeBase(), m_value() {/*...*/}
             constexpr ByamlBigDataNodeU64(u64 value) : ByamlBigDataNodeBase(), m_value(value) {/*...*/}
@@ -207,7 +207,7 @@ namespace vp::resbui {
         private:
             s64 m_value;
         public:
-            VP_RTTI_DERIVED(ByamlBigDataNodeS64, ByamlBigDataNodeBase);
+            VP_RTTI_DERIVED(ByamlBigDataNodeS64);
         public:
             constexpr ByamlBigDataNodeS64() : ByamlBigDataNodeBase(), m_value() {/*...*/}
             constexpr ByamlBigDataNodeS64(s64 value) : ByamlBigDataNodeBase(), m_value(value) {/*...*/}
@@ -226,7 +226,7 @@ namespace vp::resbui {
         private:
             double m_value;
         public:
-            VP_RTTI_DERIVED(ByamlBigDataNodeF64, ByamlBigDataNodeBase);
+            VP_RTTI_DERIVED(ByamlBigDataNodeF64);
         public:
             constexpr ByamlBigDataNodeF64() : ByamlBigDataNodeBase(), m_value() {/*...*/}
             constexpr ByamlBigDataNodeF64(double value) : ByamlBigDataNodeBase(), m_value(value) {/*...*/}
@@ -249,7 +249,7 @@ namespace vp::resbui {
             u32   m_data_size;
             u32   m_data_alignment;
         public:
-            VP_RTTI_DERIVED(ByamlBigDataNodeBinary, ByamlBigDataNodeBase);
+            VP_RTTI_DERIVED(ByamlBigDataNodeBinary);
         public:
             constexpr ByamlBigDataNodeBinary() : ByamlBigDataNodeBase(), m_data(), m_data_size(0), m_data_alignment(cInvalidAlignment) {/*...*/}
             virtual ~ByamlBigDataNodeBinary() override {/*...*/}

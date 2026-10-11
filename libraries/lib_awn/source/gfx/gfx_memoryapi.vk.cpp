@@ -58,17 +58,17 @@ namespace awn::gfx {
         return impl::Context::GetInstance()->IsUnifiedMemory();
     }
 
-    void FlushCpuCache(void *gpu_address, size_t size) {
-        uintptr_t offset;
-        MemoryPool *pool = FindMemoryPool(std::addressof(offset), gpu_address);
-        if (pool == nullptr) { return; }
-        pool->FlushMappedRange(offset, size);
-    }
-
-    void InvalidateCpuCache(void *gpu_address, size_t size) {
-        uintptr_t offset;
-        MemoryPool *pool = FindMemoryPool(std::addressof(offset), gpu_address);
-        if (pool == nullptr) { return; }
-        pool->InvalidateMappedRange(offset, size);
-    }
+    //void FlushCpuCache(void *gpu_address, size_t size) {
+    //    uintptr_t offset;
+    //    MemoryPool *pool = FindMemoryPool(std::addressof(offset), gpu_address);
+    //    if (pool == nullptr) { return; }
+    //    pool->FlushMappedRange(offset, size);
+    //}
+    //
+    //void InvalidateCpuCache(void *gpu_address, size_t size) {
+    //    uintptr_t offset;
+    //    MemoryPool *pool = FindMemoryPool(std::addressof(offset), gpu_address);
+    //    if (pool == nullptr) { return; }
+    //    pool->InvalidateMappedRange(offset, size);
+    //}
 }

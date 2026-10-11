@@ -102,7 +102,7 @@ namespace awn::gfx::impl {
             ::pfn_vkGetPhysicalDeviceQueueFamilyProperties(vk_physical_device, std::addressof(queue_family_count), queue_properties);
 
             /* Clear family indices */
-            ::memset(out_index_array, 0xff, queue_count * sizeof(u32));
+            std::memset(out_index_array, 0xff, queue_count * sizeof(u32));
 
             /* Acquire queue family indices */
             for (u32 i = 0; i < queue_count; ++i) {
@@ -116,458 +116,6 @@ namespace awn::gfx::impl {
                     out_index_array[i] = j;
                 }
             }
-
-            return;
-        }
-
-        void FindMissingFeatures(MissingFeatures *missing_features, VkPhysicalDevice vk_physical_device, const ContextInfo *context_info) {
-
-            /* Query supported extensions */
-            u32 property_count = 0;
-            const VkResult result0 = ::pfn_vkEnumerateDeviceExtensionProperties(vk_physical_device, nullptr, std::addressof(property_count), nullptr);
-            VP_ASSERT(result0 == VK_SUCCESS || result0 == VK_INCOMPLETE);
-
-            VkExtensionProperties *property_array = reinterpret_cast<VkExtensionProperties*>(::malloc(sizeof(VkExtensionProperties) * property_count));
-            VP_ASSERT(property_array != nullptr);
-            ON_SCOPE_EXIT { ::free(property_array); };
-
-            const VkResult result1 = ::pfn_vkEnumerateDeviceExtensionProperties(vk_physical_device, nullptr, std::addressof(property_count), property_array);
-            RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
-
-            struct DeviceExtensionEntry {
-                const char *extension = "";
-                union {
-                    RequiredFeature required_feature;
-                    OptionalFeature optional_feature;
-                };
-                u32 min_revision = 0;
-                bool is_optional;
-            };
-            static constexpr const DeviceExtensionEntry cAllDeviceExtensionArray[] = {
-                {
-                    .extension = VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-#ifdef VP_TARGET_PLATFORM_win32
-                {
-                    .extension = VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-#elifdef VP_TARGET_PLATFORM_linux
-                {
-                    .extension = VK_EXT_PHYSICAL_DEVICE_DRM_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsExternalMemoryHost,
-                    .is_optional = false,
-                },
-#endif
-                {
-                    .extension = VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsShaderObject,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsDescriptorBuffer,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsNestedCommandBuffers,
-                    .is_optional = false,
-                },
-                {
-                    .extension = VK_KHR_SHADER_MAXIMAL_RECONVERGENCE_EXTENSION_NAME,
-                    .optional_feature = OptionalFeature::SupportsShaderMaximalReconvergence,
-                    .is_optional = true,
-                },
-                {
-                    .extension = VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-                    .optional_feature = OptionalFeature::SupportsRobustness2,
-                    .is_optional = true,
-                },
-                {
-                    .extension = VK_EXT_VERTEX_ATTRIBUTE_ROBUSTNESS_EXTENSION_NAME,
-                    .optional_feature = OptionalFeature::SupportsVertexAttributeRobustness,
-                    .is_optional = true,
-                },
-                {
-                    .extension = VK_EXT_MESH_SHADER_EXTENSION_NAME,
-                    .optional_feature = OptionalFeature::SupportsMeshShaders,
-                    .is_optional = true,
-                },
-                //{
-                //    .extension = VK_NV_PER_STAGE_DESCRIPTOR_SET_EXTENSION_NAME,
-                //    .optional_feature = OptionalFeature::SupportsPerStageDescriptorSets,
-                //    .is_optional = true,
-                //},
-                //{
-                //    .extension = VK_NV_COMMAND_BUFFER_INHERITANCE_EXTENSION_NAME,
-                //    .optional_feature = OptionalFeature::SupportsCommandBufferInheritance,
-                //    .is_optional = true,
-                //},
-                //{
-                //    .extension = VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
-                //    .optional_feature = OptionalFeature::SupportsNvBindlessTexture,
-                //    .is_optional = true,
-                //},
-#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
-                {
-                    .extension = VK_KHR_DEVICE_ADDRESS_COMMANDS_EXTENSION_NAME,
-                    .required_feature = RequiredFeature::SupportsDeviceAddressCommands,
-                    .is_optional = false,
-                },
-#endif
-            };
-            static constexpr const u32 cAllDeviceExtensionCount = sizeof(cAllDeviceExtensionArray) / sizeof(DeviceExtensionEntry);
-            for (u32 j = 0; j < cAllDeviceExtensionCount; ++j) {
-                const DeviceExtensionEntry *entry = std::addressof(cAllDeviceExtensionArray[j]);
-                bool is_fail = true;
-                for (u32 i = 0; i < property_count; ++i) {
-                    const char *extension = property_array[i].extensionName;
-                    if (!vp::util::StringCompare(extension, entry->extension)) { continue; }
-                    if (property_array[i].specVersion < entry->min_revision) { is_fail = true; }
-                    is_fail = false;
-                    break;
-                }
-                if (is_fail) {                    
-                    if (entry->is_optional) {
-                        missing_features->SetMissing(entry->optional_feature);
-                    } else {
-                        missing_features->SetMissing(entry->required_feature);
-                    }
-                }
-            }
-
-            /* Property structs */
-            void *prev_property = nullptr;
-            VkPhysicalDeviceMeshShaderPropertiesEXT mesh_shader_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
-                .pNext = prev_property,
-            };
-            prev_property = (missing_features->IsOptionalFeature(OptionalFeature::SupportsMeshShaders)) ? std::addressof(mesh_shader_properties) : prev_property;
-            VkPhysicalDeviceRobustness2PropertiesEXT robustness_2_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT,
-                .pNext = prev_property,
-            };
-            prev_property = (missing_features->IsOptionalFeature(OptionalFeature::SupportsRobustness2)) ? std::addressof(robustness_2_properties) : prev_property;
-#ifdef VP_TARGET_PLATFORM_linux
-            VkPhysicalDeviceDrmPropertiesEXT drm_props = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT,
-                .pNext = prev_property,
-            };
-            prev_property = std::addressof(drm_props);
-#endif
-            VkPhysicalDeviceNestedCommandBufferPropertiesEXT nested_command_buffer_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
-                .pNext = prev_property,
-            };
-            prev_property = std::addressof(nested_command_buffer_properties);
-            VkPhysicalDeviceDescriptorHeapPropertiesEXT descriptor_heap_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_PROPERTIES_EXT,
-                .pNext = prev_property,
-            };
-            prev_property = std::addressof(descriptor_heap_properties);
-            VkPhysicalDeviceShaderObjectPropertiesEXT shader_object_properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
-                .pNext = prev_property,
-            };
-            prev_property = std::addressof(shader_object_properties);
-            VkPhysicalDeviceVulkan14Properties properties_14 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
-                .pNext = prev_property,
-            };
-            prev_property = std::addressof(properties_14);
-            VkPhysicalDeviceVulkan13Properties properties_13 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
-                .pNext = prev_property,
-            };
-            prev_property = std::addressof(properties_13);
-            VkPhysicalDeviceVulkan12Properties properties_12 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
-                .pNext = prev_property,
-            };
-            prev_property = std::addressof(properties_12);
-            VkPhysicalDeviceVulkan11Properties properties_11 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
-                .pNext = prev_property,
-            };
-            prev_property = std::addressof(properties_11);
-            VkPhysicalDeviceProperties2 properties = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
-                .pNext = prev_property,
-            };
-
-            /* Feature structs */
-            void *prev_feature = nullptr;
-#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
-            VkPhysicalDeviceDeviceAddressCommandsFeaturesKHR device_address_commands_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_ADDRESS_COMMANDS_FEATURES_KHR,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(device_address_commands_features);
-#endif
-            //VkPhysicalDevicePerStageDescriptorSetFeaturesNV per_stage_descriptor_features = {
-            //    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
-            //    .pNext = prev_feature,
-            // };
-            //prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsPerStageDescriptorSets)) ? std::addressof(per_stage_descriptor_features) : prev_feature;
-            VkPhysicalDeviceCommandBufferInheritanceFeaturesNV command_buffer_inheritance_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
-                .pNext = prev_feature,
-            };
-            prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsCommandBufferInheritance)) ? std::addressof(command_buffer_inheritance_features) : prev_feature;
-            VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
-                .pNext = prev_feature,
-            };
-            prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsMeshShaders)) ? std::addressof(mesh_shader_features) : prev_feature;
-            VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT vertex_attribute_robustness_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
-                .pNext = prev_feature,
-            };
-            prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsVertexAttributeRobustness)) ? std::addressof(vertex_attribute_robustness_features) : prev_feature;
-            VkPhysicalDeviceRobustness2FeaturesEXT robustness_2_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
-                .pNext = prev_feature,
-            };
-            prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsRobustness2)) ? std::addressof(robustness_2_features) : prev_feature;
-
-            VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(nested_command_buffer_features);
-            VkPhysicalDeviceDescriptorHeapFeaturesEXT descriptor_heap_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(descriptor_heap_features);
-            VkPhysicalDeviceShaderObjectFeaturesEXT shader_object_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(shader_object_features);
-            VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(shader_maximal_reconvergence_features);
-            VkPhysicalDeviceVulkan14Features features_14 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(features_14);
-            VkPhysicalDeviceVulkan13Features features_13 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(features_13);
-            VkPhysicalDeviceVulkan12Features features_12 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(features_12);
-            VkPhysicalDeviceVulkan11Features features_11 = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-                .pNext = prev_feature,
-            };
-            prev_feature = std::addressof(features_11);
-            VkPhysicalDeviceFeatures2 features = {
-                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-                .pNext = prev_feature,
-            };
-
-            /* Query Physical Device */
-            ::pfn_vkGetPhysicalDeviceProperties2(vk_physical_device, std::addressof(properties));
-            //::pfn_vkGetPhysicalDeviceMemoryProperties(vk_physical_device, std::addressof(memory_properties));
-            ::pfn_vkGetPhysicalDeviceFeatures2(vk_physical_device, std::addressof(features));
-
-            /* GraphicsQueue checks */
-            {
-                const QueueType queue_type = QueueType::Graphics;
-                u32 graphics_queue_family_index = 0;
-                FindQueueFamilyIndices(vk_physical_device, std::addressof(queue_type), 1, std::addressof(graphics_queue_family_index));
-                if (graphics_queue_family_index == Context::cInvalidQueueFamilyIndex) { missing_features->SetMissing(RequiredFeature::GraphicsQueue); };
-            }
-
-            /* TargetApiVersion checks */
-            if (!(Context::cTargetMinimumApiVersion <= properties.properties.apiVersion)) { missing_features->SetMissing(RequiredFeature::TargetApiVersion); }
-
-            /* TargetUniformBufferSize checks */
-            if (properties.properties.limits.maxUniformBufferRange < Context::cTargetMaxUniformBufferSize) { missing_features->SetMissing(RequiredFeature::TargetUniformBufferSize); }
-
-            /* TargetMemoryMapAlignment checks */
-            {
-                const size_t vk_alignment = properties.properties.limits.minMemoryMapAlignment;
-                if (Context::cTargetMemoryPoolAlignment % vk_alignment != 0 || !(Context::cTargetMemoryPoolAlignment / vk_alignment > 0)) { missing_features->SetMissing(RequiredFeature::TargetMemoryMapAlignment); }
-            }
-
-            /* TargetUniformBufferAlignment checks */
-            {
-                const size_t vk_alignment = properties.properties.limits.minUniformBufferOffsetAlignment;
-                if (Context::cTargetUniformBufferAlignment % vk_alignment != 0 || !(Context::cTargetUniformBufferAlignment / vk_alignment > 0)) { missing_features->SetMissing(RequiredFeature::TargetUniformBufferAlignment); }
-            }
-
-            /* TargetStorageBufferAlignment checks */
-            {
-                const size_t vk_alignment = properties.properties.limits.minStorageBufferOffsetAlignment;
-                if (Context::cTargetStorageBufferAlignment % vk_alignment != 0 || !(Context::cTargetStorageBufferAlignment / vk_alignment > 0)) { missing_features->SetMissing(RequiredFeature::TargetStorageBufferAlignment); }
-            }
-
-            /* TargetMaxSamplerCount checks */
-            //const bool is_nv_bindless_texture = !missing_features->missing_optional_feature_mask.GetBit(static_cast<u32>(OptionalFeature::SupportsNvBindlessTexture));
-            const bool is_nv_bindless_texture = false;
-            if (properties.properties.limits.maxSamplerAllocationCount < context_info->sampler_descriptor_count) { missing_features->SetMissing(RequiredFeature::TargetMaxSamplerCount); }
-            if (!is_nv_bindless_texture && properties_12.maxDescriptorSetUpdateAfterBindSamplers < context_info->sampler_descriptor_count) { missing_features->SetMissing(RequiredFeature::TargetMaxSamplerCount); }
-            if (!is_nv_bindless_texture && properties_12.maxDescriptorSetUpdateAfterBindSampledImages < context_info->texture_view_descriptor_count) { missing_features->SetMissing(RequiredFeature::TargetMaxTextureViewCount); }
-
-            /* Base feature checks */
-            if (!features.features.fullDrawIndexUint32)                     { missing_features->SetMissing(RequiredFeature::SupportsFullDrawU32); }
-            if (!features.features.independentBlend)                        { missing_features->SetMissing(RequiredFeature::SupportsIndependentBlend); }
-            if (!features.features.geometryShader)                          { missing_features->SetMissing(RequiredFeature::SupportsGeometryShaders); }
-            if (!features.features.tessellationShader)                      { missing_features->SetMissing(RequiredFeature::SupportsTessellationShaders); }
-            if (!features.features.logicOp)                                 { missing_features->SetMissing(RequiredFeature::SupportsLogicOperation); }
-            if (!features.features.depthClamp)                              { missing_features->SetMissing(RequiredFeature::SupportsDepthClamp); }
-            if (!features.features.depthBiasClamp)                          { missing_features->SetMissing(RequiredFeature::SupportsDepthBiasClamp); }
-            if (!features.features.fillModeNonSolid)                        { missing_features->SetMissing(RequiredFeature::SupportsFillModeNonSolid); }
-            if (!features.features.wideLines)                               { missing_features->SetMissing(RequiredFeature::SupportsWideLines); }
-            if (!features.features.largePoints)                             { missing_features->SetMissing(RequiredFeature::SupportsLargePoints); }
-            if (!features.features.multiViewport)                           { missing_features->SetMissing(RequiredFeature::SupportsMultiViewport); }
-            if (!features.features.samplerAnisotropy)                       { missing_features->SetMissing(RequiredFeature::SupportsSamplerAnisotropy); }
-            if (!features.features.textureCompressionBC)                    { missing_features->SetMissing(RequiredFeature::SupportsBC); }
-            if (!features.features.textureCompressionASTC_LDR)              { missing_features->SetMissing(OptionalFeature::SupportsAstcLdr); }
-            if (!features.features.fragmentStoresAndAtomics)                { missing_features->SetMissing(RequiredFeature::SupportsFragmentStoresAndAtomics); }
-            if (!features.features.shaderStorageImageExtendedFormats)       { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageImageExtendedFormats); }
-            if (!features.features.shaderUniformBufferArrayDynamicIndexing) { missing_features->SetMissing(RequiredFeature::SupportsShaderUniformBufferArrayDynamicIndexing); }
-            if (!features.features.shaderSampledImageArrayDynamicIndexing)  { missing_features->SetMissing(RequiredFeature::SupportsShaderSampledImageArrayDynamicIndexing); }
-            if (!features.features.shaderStorageBufferArrayDynamicIndexing) { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageBufferArrayDynamicIndexing); }
-            if (!features.features.shaderStorageImageArrayDynamicIndexing)  { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageImageArrayDynamicIndexing); }
-            if (!features.features.shaderInt64)                             { missing_features->SetMissing(RequiredFeature::SupportsShaderInt64); }
-
-            /* 1.1 feature checks */
-            if (!features_11.storageBuffer16BitAccess)           { missing_features->SetMissing(RequiredFeature::SupportsStorageBuffer16BitAccess); }
-            if (!features_11.uniformAndStorageBuffer16BitAccess) { missing_features->SetMissing(RequiredFeature::SupportsUniformAndStorageBuffer16BitAccess); }
-            //if (!features_11.storageInputOutput16)               { missing_features->SetMissing(RequiredFeature::SupportsStorageInputOutput16); }
-            if (!features_11.variablePointersStorageBuffer)      { missing_features->SetMissing(RequiredFeature::SupportsVariablePointersStorageBuffer); }
-            if (!features_11.variablePointers)                   { missing_features->SetMissing(RequiredFeature::SupportsVariablePointers); }
-
-            /* 1.2 feature checks */
-            if (!features_12.shaderFloat16)                                 { missing_features->SetMissing(RequiredFeature::SupportsShaderFloat16); }
-            if (!features_12.descriptorIndexing)                            { missing_features->SetMissing(RequiredFeature::SupportsDescriptorIndexing); }
-            //if (!features_12.shaderInputAttachmentArrayDynamicIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderInputAttachmentArrayDynamicIndexing); }
-            if (!features_12.shaderUniformBufferArrayNonUniformIndexing)    { missing_features->SetMissing(RequiredFeature::SupportsShaderUniformBufferArrayNonUniformIndexing); }
-            if (!features_12.shaderSampledImageArrayNonUniformIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderSampledImageArrayNonUniformIndexing); }
-            if (!features_12.shaderStorageBufferArrayNonUniformIndexing)    { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageBufferArrayNonUniformIndexing); }
-            if (!features_12.shaderStorageImageArrayNonUniformIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageImageArrayNonUniformIndexing); }
-            if (!features_12.descriptorBindingUniformBufferUpdateAfterBind) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingUniformBufferArrayUpdateAfterBind); }
-            if (!features_12.descriptorBindingSampledImageUpdateAfterBind)  { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingSampledImageArrayUpdateAfterBind); }
-            if (!features_12.descriptorBindingStorageImageUpdateAfterBind)  { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingStorageBufferArrayUpdateAfterBind); }
-            if (!features_12.descriptorBindingStorageBufferUpdateAfterBind) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingStorageImageArrayUpdateAfterBind); }
-            if (!features_12.descriptorBindingUpdateUnusedWhilePending)     { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingUpdateUnusedWhilePending); }
-            if (!features_12.descriptorBindingPartiallyBound)               { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingPartiallyBound); }
-            if (!features_12.descriptorBindingVariableDescriptorCount)      { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingVariableDescriptorCount); }
-            if (!features_12.runtimeDescriptorArray)                        { missing_features->SetMissing(RequiredFeature::SupportsRuntimeDescriptorArray); }
-            if (!features_12.scalarBlockLayout)                             { missing_features->SetMissing(RequiredFeature::SupportsScalarBlockLayout); }
-            if (!features_12.uniformBufferStandardLayout)                   { missing_features->SetMissing(RequiredFeature::SupportsUniformBufferStandardLayout); }
-            if (!features_12.timelineSemaphore)                             { missing_features->SetMissing(RequiredFeature::SupportsTimelineSemaphore); }
-            if (!features_12.bufferDeviceAddress)                           { missing_features->SetMissing(RequiredFeature::SupportsBufferDeviceAddress); }
-
-            /* 1.3 feature checks */
-            if (!features_13.synchronization2) { missing_features->SetMissing(RequiredFeature::SupportsSynchronization2); }
-            if (!features_13.dynamicRendering) { missing_features->SetMissing(RequiredFeature::SupportsDynamicRendering); }
-            if (!features_13.maintenance4)     { missing_features->SetMissing(RequiredFeature::SupportsMaintenance4); }
-
-            /* 1.4 feature checks */
-            if (!features_14.vertexAttributeInstanceRateDivisor) { missing_features->SetMissing(RequiredFeature::SupportsVertexAttributeInstanceRateDivisor); }
-            if (!features_14.vertexAttributeInstanceRateZeroDivisor) { missing_features->SetMissing(RequiredFeature::SupportsVertexAttributeInstanceRateZeroDivisor); }
-            if (!features_14.indexTypeUint8)                         { missing_features->SetMissing(RequiredFeature::SupportsIndexTypeU8); }
-            if (!features_14.dynamicRenderingLocalRead)              { missing_features->SetMissing(RequiredFeature::SupportsDynamicRenderingLocalRead); }
-            if (!features_14.maintenance5)                           { missing_features->SetMissing(RequiredFeature::SupportsMaintenance5); }
-            if (!features_14.maintenance6)                           { missing_features->SetMissing(RequiredFeature::SupportsMaintenance6); }
-            if (!features_14.hostImageCopy)                          { missing_features->SetMissing(RequiredFeature::SupportsHostImageCopy); }
-
-            /* SupportsShaderObject checks */
-            if (!shader_object_features.shaderObject) { missing_features->SetMissing(RequiredFeature::SupportsShaderObject); }
-
-            /* SupportsDescriptorBuffer checks (heap) */
-            if (!descriptor_heap_features.descriptorHeap) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_heap_properties.imageDescriptorSize > Context::cTargetMaxSeparateTextureDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_heap_properties.imageDescriptorSize > Context::cTargetMaxImageDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-            if (descriptor_heap_properties.samplerDescriptorSize > Context::cTargetMaxSeparateSamplerDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
-
-            /* SupportsNestedCommandBuffers checks */
-            if (!nested_command_buffer_features.nestedCommandBuffer)                { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
-            if (!nested_command_buffer_features.nestedCommandBufferRendering)       { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
-            //if (!nested_command_buffer_features.nestedCommandBufferSimultaneousUse) { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
-
-            /* SupportsShaderMaximalReconvergence checks */
-            if (!shader_maximal_reconvergence_features.shaderMaximalReconvergence) { missing_features->SetMissing(OptionalFeature::SupportsShaderMaximalReconvergence); }
-
-            /* SupportsRobustness2 checks */
-            if (!features.features.robustBufferAccess) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (!properties_12.robustBufferAccessUpdateAfterBind) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (!features_13.robustImageAccess) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (!robustness_2_features.robustBufferAccess2) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (!robustness_2_features.robustImageAccess2)  { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (!robustness_2_features.nullDescriptor)      { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (robustness_2_properties.robustStorageBufferAccessSizeAlignment > Context::cTargetStorageBufferAlignment) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-            if (robustness_2_properties.robustUniformBufferAccessSizeAlignment > Context::cTargetUniformBufferAlignment) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
-
-            /* SupportsVertexAttributeRobustness checks */
-            if (!vertex_attribute_robustness_features.vertexAttributeRobustness) { missing_features->SetMissing(OptionalFeature::SupportsVertexAttributeRobustness); }
-
-            /* SupportsMeshShaders checks  */
-            if (!mesh_shader_features.taskShader) { missing_features->SetMissing(OptionalFeature::SupportsMeshShaders); }
-            if (!mesh_shader_features.meshShader) { missing_features->SetMissing(OptionalFeature::SupportsMeshShaders); }
-
-            /* SupportsPerStageDescriptorSets checks */
-            //if (!per_stage_descriptor_features.perStageDescriptorSet) { missing_features->SetMissing(OptionalFeature::SupportsPerStageDescriptorSets); missing_features->SetMissing(OptionalFeature::SupportsNvBindlessTexture); }
-            //if (!per_stage_descriptor_features.dynamicPipelineLayout) { missing_features->SetMissing(OptionalFeature::SupportsPerStageDescriptorSets); missing_features->SetMissing(OptionalFeature::SupportsNvBindlessTexture); }
-
-            /* SupportsCommandBufferInheritance checks */
-            if (!command_buffer_inheritance_features.commandBufferInheritance) { missing_features->SetMissing(OptionalFeature::SupportsCommandBufferInheritance); }
-
-#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
-            /* SupportsDeviceAddressCommands checks */
-            if (!device_address_commands_features.deviceAddressCommands) { missing_features->SetMissing(RequiredFeature::SupportsDeviceAddressCommands); }
-#endif
-
-#ifdef VP_TARGET_PLATFORM_linux
-            /* Ensure device is compatible with the underlying windowing system TODO; move to application defined IFunction filter */
-            if (!IsWaylandCompatibleVkPhysicalDevice(std::addressof(drm_props))) { missing_features->SetMissing(RequiredFeature::SupportsExternalMemoryHost); }
-#endif
 
             return;
         }
@@ -610,7 +158,7 @@ namespace awn::gfx::impl {
             for (u32 i = 0; i < vk_physical_device_count; ++i) {
                 MissingFeatures *feature = std::addressof(missing_features_array[i]);
                 std::construct_at(feature);
-                FindMissingFeatures(feature, vk_physical_device_array[i], context_info);
+                FindMissingFeatures(feature, vk_physical_device_array[i], std::addressof(context_info->features_info));
             }
 
             /* Select device with all required and most preferred features */
@@ -634,9 +182,475 @@ namespace awn::gfx::impl {
         }
     }
 
+    void FindMissingFeatures(MissingFeatures *missing_features, VkPhysicalDevice vk_physical_device, const FeaturesInfo *features_info) {
+
+        /* Query supported extensions */
+        u32 property_count = 0;
+        const VkResult result0 = ::pfn_vkEnumerateDeviceExtensionProperties(vk_physical_device, nullptr, std::addressof(property_count), nullptr);
+        VP_ASSERT(result0 == VK_SUCCESS || result0 == VK_INCOMPLETE);
+
+        VkExtensionProperties *property_array = reinterpret_cast<VkExtensionProperties*>(::malloc(sizeof(VkExtensionProperties) * property_count));
+        VP_ASSERT(property_array != nullptr);
+        ON_SCOPE_EXIT { ::free(property_array); };
+
+        const VkResult result1 = ::pfn_vkEnumerateDeviceExtensionProperties(vk_physical_device, nullptr, std::addressof(property_count), property_array);
+        RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
+
+        struct DeviceExtensionEntry {
+            const char *extension = "";
+            union {
+                RequiredFeature required_feature;
+                OptionalFeature optional_feature;
+            };
+            u32 min_revision = 0;
+            bool is_optional;
+        };
+        static constexpr const DeviceExtensionEntry cAllDeviceExtensionArray[] = {
+            {
+                .extension = VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+#ifdef VP_TARGET_PLATFORM_win32
+            {
+                .extension = VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+#elifdef VP_TARGET_PLATFORM_linux
+            {
+                .extension = VK_EXT_PHYSICAL_DEVICE_DRM_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsExternalMemoryHost,
+                .is_optional = false,
+            },
+#endif
+            {
+                .extension = VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsShaderObject,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsDescriptorBuffer,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsNestedCommandBuffers,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_KHR_SHADER_MAXIMAL_RECONVERGENCE_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsShaderMaximalReconvergence,
+                .is_optional = true,
+            },
+            {
+                .extension = VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsRobustness2,
+                .is_optional = true,
+            },
+            {
+                .extension = VK_EXT_VERTEX_ATTRIBUTE_ROBUSTNESS_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsVertexAttributeRobustness,
+                .is_optional = true,
+            },
+            {
+                .extension = VK_EXT_MESH_SHADER_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsMeshShaders,
+                .is_optional = true,
+            },
+            {
+                .extension = VK_KHR_DEVICE_ADDRESS_COMMANDS_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsDeviceAddressCommands,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
+                .required_feature = RequiredFeature::SupportsConditionalRendering,
+                .is_optional = false,
+            },
+            {
+                .extension = VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsFragmentShadingRate,
+                .is_optional = true,
+            },
+            {
+                .extension = VK_EXT_IMAGE_TILING_CONTROL_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsImageTilingControl,
+                .is_optional = true,
+            },
+            {
+                .extension = VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsImageCompressionControl,
+                .is_optional = true,
+            },
+        };
+        static constexpr const u32 cAllDeviceExtensionCount = sizeof(cAllDeviceExtensionArray) / sizeof(DeviceExtensionEntry);
+        for (u32 j = 0; j < cAllDeviceExtensionCount; ++j) {
+            const DeviceExtensionEntry *entry = std::addressof(cAllDeviceExtensionArray[j]);
+            bool is_fail = true;
+            for (u32 i = 0; i < property_count; ++i) {
+                const char *extension = property_array[i].extensionName;
+                if (!vp::util::StringCompare(extension, entry->extension)) { continue; }
+                if (property_array[i].specVersion < entry->min_revision) { is_fail = true; }
+                is_fail = false;
+                break;
+            }
+            if (is_fail) {                    
+                if (entry->is_optional) {
+                    missing_features->SetMissing(entry->optional_feature);
+                } else {
+                    missing_features->SetMissing(entry->required_feature);
+                }
+            }
+        }
+
+        /* Property structs */
+        void *prev_property = nullptr;
+        VkPhysicalDeviceMeshShaderPropertiesEXT mesh_shader_properties = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
+            .pNext = prev_property,
+        };
+        prev_property = (missing_features->IsOptionalFeature(OptionalFeature::SupportsMeshShaders)) ? std::addressof(mesh_shader_properties) : prev_property;
+        VkPhysicalDeviceRobustness2PropertiesEXT robustness_2_properties = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT,
+            .pNext = prev_property,
+        };
+        prev_property = (missing_features->IsOptionalFeature(OptionalFeature::SupportsRobustness2)) ? std::addressof(robustness_2_properties) : prev_property;
+#ifdef VP_TARGET_PLATFORM_linux
+        VkPhysicalDeviceDrmPropertiesEXT drm_props = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT,
+            .pNext = prev_property,
+        };
+        prev_property = std::addressof(drm_props);
+#endif
+        VkPhysicalDeviceNestedCommandBufferPropertiesEXT nested_command_buffer_properties = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
+            .pNext = prev_property,
+        };
+        prev_property = std::addressof(nested_command_buffer_properties);
+        VkPhysicalDeviceDescriptorHeapPropertiesEXT descriptor_heap_properties = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_PROPERTIES_EXT,
+            .pNext = prev_property,
+        };
+        prev_property = std::addressof(descriptor_heap_properties);
+        VkPhysicalDeviceShaderObjectPropertiesEXT shader_object_properties = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
+            .pNext = prev_property,
+        };
+        prev_property = std::addressof(shader_object_properties);
+        VkPhysicalDeviceVulkan14Properties properties_14 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
+            .pNext = prev_property,
+        };
+        prev_property = std::addressof(properties_14);
+        VkPhysicalDeviceVulkan13Properties properties_13 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
+            .pNext = prev_property,
+        };
+        prev_property = std::addressof(properties_13);
+        VkPhysicalDeviceVulkan12Properties properties_12 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
+            .pNext = prev_property,
+        };
+        prev_property = std::addressof(properties_12);
+        VkPhysicalDeviceVulkan11Properties properties_11 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
+            .pNext = prev_property,
+        };
+        prev_property = std::addressof(properties_11);
+        VkPhysicalDeviceProperties2 properties = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+            .pNext = prev_property,
+        };
+
+        /* Feature structs */
+        void *prev_feature = nullptr;
+        VkPhysicalDeviceConditionalRenderingFeaturesEXT conditional_rendering_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(conditional_rendering_features);
+        VkPhysicalDeviceFragmentShadingRateFeaturesKHR fragment_shading_rate_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+            .pNext = prev_feature,
+        };
+        prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsFragmentShadingRate)) ? std::addressof(fragment_shading_rate_features) : prev_feature;
+        VkPhysicalDeviceImageTilingControlFeaturesEXT image_tiling_control_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_TILING_CONTROL_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsImageTilingControl)) ? std::addressof(image_tiling_control_features) : prev_feature;
+        VkPhysicalDeviceImageCompressionControlFeaturesEXT image_compression_control_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsImageCompressionControl)) ? std::addressof(image_compression_control_features) : prev_feature;
+        VkPhysicalDeviceDeviceAddressCommandsFeaturesKHR device_address_commands_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_ADDRESS_COMMANDS_FEATURES_KHR,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(device_address_commands_features);
+        VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsMeshShaders)) ? std::addressof(mesh_shader_features) : prev_feature;
+        VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT vertex_attribute_robustness_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsVertexAttributeRobustness)) ? std::addressof(vertex_attribute_robustness_features) : prev_feature;
+        VkPhysicalDeviceRobustness2FeaturesEXT robustness_2_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = (missing_features->IsOptionalFeature(OptionalFeature::SupportsRobustness2)) ? std::addressof(robustness_2_features) : prev_feature;
+
+        VkPhysicalDeviceNestedCommandBufferFeaturesEXT nested_command_buffer_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(nested_command_buffer_features);
+        VkPhysicalDeviceDescriptorHeapFeaturesEXT descriptor_heap_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(descriptor_heap_features);
+        VkPhysicalDeviceShaderObjectFeaturesEXT shader_object_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(shader_object_features);
+        VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR shader_maximal_reconvergence_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(shader_maximal_reconvergence_features);
+        VkPhysicalDeviceVulkan14Features features_14 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(features_14);
+        VkPhysicalDeviceVulkan13Features features_13 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(features_13);
+        VkPhysicalDeviceVulkan12Features features_12 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(features_12);
+        VkPhysicalDeviceVulkan11Features features_11 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+            .pNext = prev_feature,
+        };
+        prev_feature = std::addressof(features_11);
+        VkPhysicalDeviceFeatures2 features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+            .pNext = prev_feature,
+        };
+
+        /* Query Physical Device */
+        ::pfn_vkGetPhysicalDeviceProperties2(vk_physical_device, std::addressof(properties));
+        //::pfn_vkGetPhysicalDeviceMemoryProperties(vk_physical_device, std::addressof(memory_properties));
+        ::pfn_vkGetPhysicalDeviceFeatures2(vk_physical_device, std::addressof(features));
+
+        /* GraphicsQueue checks */
+        {
+            const QueueType queue_type = QueueType::Graphics;
+            u32 graphics_queue_family_index = 0;
+            FindQueueFamilyIndices(vk_physical_device, std::addressof(queue_type), 1, std::addressof(graphics_queue_family_index));
+            if (graphics_queue_family_index == Context::cInvalidQueueFamilyIndex) { missing_features->SetMissing(RequiredFeature::GraphicsQueue); };
+        }
+
+        /* TargetApiVersion checks */
+        if (!(Context::cTargetMinimumApiVersion <= properties.properties.apiVersion)) { missing_features->SetMissing(RequiredFeature::TargetApiVersion); }
+
+        /* TargetUniformBufferSize checks */
+        if (properties.properties.limits.maxUniformBufferRange < Context::cTargetMaxUniformBufferSize) { missing_features->SetMissing(RequiredFeature::TargetUniformBufferSize); }
+
+        /* TargetMemoryMapAlignment checks */
+        {
+            const size_t vk_alignment = properties.properties.limits.minMemoryMapAlignment;
+            if (Context::cTargetMemoryPoolAlignment % vk_alignment != 0 || !(Context::cTargetMemoryPoolAlignment / vk_alignment > 0)) { missing_features->SetMissing(RequiredFeature::TargetMemoryMapAlignment); }
+        }
+
+        /* TargetUniformBufferAlignment checks */
+        {
+            const size_t vk_alignment = properties.properties.limits.minUniformBufferOffsetAlignment;
+            if (Context::cTargetUniformBufferAlignment % vk_alignment != 0 || !(Context::cTargetUniformBufferAlignment / vk_alignment > 0)) { missing_features->SetMissing(RequiredFeature::TargetUniformBufferAlignment); }
+        }
+
+        /* TargetStorageBufferAlignment checks */
+        {
+            const size_t vk_alignment = properties.properties.limits.minStorageBufferOffsetAlignment;
+            if (Context::cTargetStorageBufferAlignment % vk_alignment != 0 || !(Context::cTargetStorageBufferAlignment / vk_alignment > 0)) { missing_features->SetMissing(RequiredFeature::TargetStorageBufferAlignment); }
+        }
+
+        /* Base feature checks */
+        if (!features.features.fullDrawIndexUint32)                     { missing_features->SetMissing(RequiredFeature::SupportsFullDrawU32); }
+        if (!features.features.independentBlend)                        { missing_features->SetMissing(RequiredFeature::SupportsIndependentBlend); }
+        if (!features.features.geometryShader)                          { missing_features->SetMissing(RequiredFeature::SupportsGeometryShaders); }
+        if (!features.features.tessellationShader)                      { missing_features->SetMissing(RequiredFeature::SupportsTessellationShaders); }
+        if (!features.features.logicOp)                                 { missing_features->SetMissing(RequiredFeature::SupportsLogicOperation); }
+        if (!features.features.depthClamp)                              { missing_features->SetMissing(RequiredFeature::SupportsDepthClamp); }
+        if (!features.features.depthBiasClamp)                          { missing_features->SetMissing(RequiredFeature::SupportsDepthBiasClamp); }
+        if (!features.features.fillModeNonSolid)                        { missing_features->SetMissing(RequiredFeature::SupportsFillModeNonSolid); }
+        if (!features.features.wideLines)                               { missing_features->SetMissing(RequiredFeature::SupportsWideLines); }
+        if (!features.features.largePoints)                             { missing_features->SetMissing(RequiredFeature::SupportsLargePoints); }
+        if (!features.features.multiViewport)                           { missing_features->SetMissing(RequiredFeature::SupportsMultiViewport); }
+        if (!features.features.samplerAnisotropy)                       { missing_features->SetMissing(RequiredFeature::SupportsSamplerAnisotropy); }
+        if (!features.features.textureCompressionBC)                    { missing_features->SetMissing(RequiredFeature::SupportsBC); }
+        if (!features.features.textureCompressionASTC_LDR)              { missing_features->SetMissing(OptionalFeature::SupportsAstcLdr); }
+        if (!features.features.fragmentStoresAndAtomics)                { missing_features->SetMissing(RequiredFeature::SupportsFragmentStoresAndAtomics); }
+        if (!features.features.shaderStorageImageExtendedFormats)       { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageImageExtendedFormats); }
+        if (!features.features.shaderUniformBufferArrayDynamicIndexing) { missing_features->SetMissing(RequiredFeature::SupportsShaderUniformBufferArrayDynamicIndexing); }
+        if (!features.features.shaderSampledImageArrayDynamicIndexing)  { missing_features->SetMissing(RequiredFeature::SupportsShaderSampledImageArrayDynamicIndexing); }
+        if (!features.features.shaderStorageBufferArrayDynamicIndexing) { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageBufferArrayDynamicIndexing); }
+        if (!features.features.shaderStorageImageArrayDynamicIndexing)  { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageImageArrayDynamicIndexing); }
+        if (!features.features.shaderInt64)                             { missing_features->SetMissing(RequiredFeature::SupportsShaderInt64); }
+
+        /* 1.1 feature checks */
+        if (!features_11.storageBuffer16BitAccess)           { missing_features->SetMissing(RequiredFeature::SupportsStorageBuffer16BitAccess); }
+        if (!features_11.uniformAndStorageBuffer16BitAccess) { missing_features->SetMissing(RequiredFeature::SupportsUniformAndStorageBuffer16BitAccess); }
+        //if (!features_11.storageInputOutput16)               { missing_features->SetMissing(RequiredFeature::SupportsStorageInputOutput16); }
+        if (!features_11.variablePointersStorageBuffer)      { missing_features->SetMissing(RequiredFeature::SupportsVariablePointersStorageBuffer); }
+        if (!features_11.variablePointers)                   { missing_features->SetMissing(RequiredFeature::SupportsVariablePointers); }
+
+        /* 1.2 feature checks */
+        if (!features_12.shaderFloat16)                                 { missing_features->SetMissing(RequiredFeature::SupportsShaderFloat16); }
+        if (!features_12.descriptorIndexing)                            { missing_features->SetMissing(RequiredFeature::SupportsDescriptorIndexing); }
+        //if (!features_12.shaderInputAttachmentArrayDynamicIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderInputAttachmentArrayDynamicIndexing); }
+        if (!features_12.shaderUniformBufferArrayNonUniformIndexing)    { missing_features->SetMissing(RequiredFeature::SupportsShaderUniformBufferArrayNonUniformIndexing); }
+        if (!features_12.shaderSampledImageArrayNonUniformIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderSampledImageArrayNonUniformIndexing); }
+        if (!features_12.shaderStorageBufferArrayNonUniformIndexing)    { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageBufferArrayNonUniformIndexing); }
+        if (!features_12.shaderStorageImageArrayNonUniformIndexing)     { missing_features->SetMissing(RequiredFeature::SupportsShaderStorageImageArrayNonUniformIndexing); }
+        if (!features_12.descriptorBindingUniformBufferUpdateAfterBind) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingUniformBufferArrayUpdateAfterBind); }
+        if (!features_12.descriptorBindingSampledImageUpdateAfterBind)  { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingSampledImageArrayUpdateAfterBind); }
+        if (!features_12.descriptorBindingStorageImageUpdateAfterBind)  { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingStorageBufferArrayUpdateAfterBind); }
+        if (!features_12.descriptorBindingStorageBufferUpdateAfterBind) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingStorageImageArrayUpdateAfterBind); }
+        if (!features_12.descriptorBindingUpdateUnusedWhilePending)     { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingUpdateUnusedWhilePending); }
+        if (!features_12.descriptorBindingPartiallyBound)               { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingPartiallyBound); }
+        if (!features_12.descriptorBindingVariableDescriptorCount)      { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBindingVariableDescriptorCount); }
+        if (!features_12.runtimeDescriptorArray)                        { missing_features->SetMissing(RequiredFeature::SupportsRuntimeDescriptorArray); }
+        if (!features_12.scalarBlockLayout)                             { missing_features->SetMissing(RequiredFeature::SupportsScalarBlockLayout); }
+        if (!features_12.uniformBufferStandardLayout)                   { missing_features->SetMissing(RequiredFeature::SupportsUniformBufferStandardLayout); }
+        if (!features_12.timelineSemaphore)                             { missing_features->SetMissing(RequiredFeature::SupportsTimelineSemaphore); }
+        if (!features_12.bufferDeviceAddress)                           { missing_features->SetMissing(RequiredFeature::SupportsBufferDeviceAddress); }
+
+        /* 1.3 feature checks */
+        if (!features_13.shaderTerminateInvocation) { missing_features->SetMissing(RequiredFeature::SupportsTerminateInvocation); }
+        if (!features_13.shaderDemoteToHelperInvocation) { missing_features->SetMissing(RequiredFeature::SupportsDemoteToHelper); }
+        if (!features_13.synchronization2) { missing_features->SetMissing(RequiredFeature::SupportsSynchronization2); }
+        if (!features_13.dynamicRendering) { missing_features->SetMissing(RequiredFeature::SupportsDynamicRendering); }
+        if (!features_13.maintenance4)     { missing_features->SetMissing(RequiredFeature::SupportsMaintenance4); }
+
+        /* 1.4 feature checks */
+        if (!features_14.vertexAttributeInstanceRateDivisor) { missing_features->SetMissing(RequiredFeature::SupportsVertexAttributeInstanceRateDivisor); }
+        if (!features_14.vertexAttributeInstanceRateZeroDivisor) { missing_features->SetMissing(RequiredFeature::SupportsVertexAttributeInstanceRateZeroDivisor); }
+        if (!features_14.indexTypeUint8)                         { missing_features->SetMissing(RequiredFeature::SupportsIndexTypeU8); }
+        if (!features_14.dynamicRenderingLocalRead)              { missing_features->SetMissing(RequiredFeature::SupportsDynamicRenderingLocalRead); }
+        if (!features_14.maintenance5)                           { missing_features->SetMissing(RequiredFeature::SupportsMaintenance5); }
+        if (!features_14.maintenance6)                           { missing_features->SetMissing(RequiredFeature::SupportsMaintenance6); }
+        if (!features_14.hostImageCopy)                          { missing_features->SetMissing(RequiredFeature::SupportsHostImageCopy); }
+
+        /* SupportsShaderObject checks */
+        if (!shader_object_features.shaderObject) { missing_features->SetMissing(RequiredFeature::SupportsShaderObject); }
+
+        /* SupportsDescriptorBuffer checks (heap) */
+        if (!descriptor_heap_features.descriptorHeap) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+        if (descriptor_heap_properties.imageDescriptorSize > Context::cTargetMaxSeparateTextureDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+        if (descriptor_heap_properties.imageDescriptorSize > Context::cTargetMaxImageDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+        if (descriptor_heap_properties.samplerDescriptorSize > Context::cTargetMaxSeparateSamplerDescriptorSize) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+        const size_t max_sampler_desc = (descriptor_heap_properties.maxSamplerHeapSize - descriptor_heap_properties.minSamplerHeapReservedRange) / descriptor_heap_properties.samplerDescriptorSize;
+        if (max_sampler_desc < features_info->sampler_descriptor_count) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+        const size_t max_texture_view_desc = (descriptor_heap_properties.maxResourceHeapSize - descriptor_heap_properties.minResourceHeapReservedRange) / descriptor_heap_properties.imageDescriptorSize;
+        if (max_texture_view_desc < features_info->texture_view_descriptor_count) { missing_features->SetMissing(RequiredFeature::SupportsDescriptorBuffer); }
+
+        /* SupportsNestedCommandBuffers checks */
+        if (!nested_command_buffer_features.nestedCommandBuffer)                { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
+        if (!nested_command_buffer_features.nestedCommandBufferRendering)       { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
+        //if (!nested_command_buffer_features.nestedCommandBufferSimultaneousUse) { missing_features->SetMissing(RequiredFeature::SupportsNestedCommandBuffers); }
+
+        /* SupportsShaderMaximalReconvergence checks */
+        if (!shader_maximal_reconvergence_features.shaderMaximalReconvergence) { missing_features->SetMissing(OptionalFeature::SupportsShaderMaximalReconvergence); }
+
+        /* SupportsRobustness2 checks */
+        if (!features.features.robustBufferAccess) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+        if (!properties_12.robustBufferAccessUpdateAfterBind) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+        if (!features_13.robustImageAccess) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+        if (!robustness_2_features.robustBufferAccess2) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+        if (!robustness_2_features.robustImageAccess2)  { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+        if (!robustness_2_features.nullDescriptor)      { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+        if (robustness_2_properties.robustStorageBufferAccessSizeAlignment > Context::cTargetStorageBufferAlignment) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+        if (robustness_2_properties.robustUniformBufferAccessSizeAlignment > Context::cTargetUniformBufferAlignment) { missing_features->SetMissing(OptionalFeature::SupportsRobustness2); }
+
+        /* SupportsVertexAttributeRobustness checks */
+        if (!vertex_attribute_robustness_features.vertexAttributeRobustness) { missing_features->SetMissing(OptionalFeature::SupportsVertexAttributeRobustness); }
+
+        /* SupportsMeshShaders checks  */
+        if (!mesh_shader_features.taskShader) { missing_features->SetMissing(OptionalFeature::SupportsMeshShaders); }
+        if (!mesh_shader_features.meshShader) { missing_features->SetMissing(OptionalFeature::SupportsMeshShaders); }
+
+        /* SupportsDeviceAddressCommands checks */
+        if (!device_address_commands_features.deviceAddressCommands) { missing_features->SetMissing(RequiredFeature::SupportsDeviceAddressCommands); }
+
+        /* SupportsConditionalRendering checks */
+        if (!conditional_rendering_features.conditionalRendering) { missing_features->SetMissing(RequiredFeature::SupportsConditionalRendering); }
+        if (!conditional_rendering_features.inheritedConditionalRendering) { missing_features->SetMissing(RequiredFeature::SupportsConditionalRendering); }
+
+        /* SupportsFragmentShadingRate checks */
+        if (!fragment_shading_rate_features.attachmentFragmentShadingRate) { missing_features->SetMissing(OptionalFeature::SupportsFragmentShadingRate); }
+
+        /* SupportsImageCompressionControl checks */
+        if (!image_compression_control_features.imageCompressionControl) { missing_features->SetMissing(OptionalFeature::SupportsImageCompressionControl); }
+
+        /* SupportsImageTilingControl checks */
+        if (!image_tiling_control_features.imageTilingControl) { missing_features->SetMissing(OptionalFeature::SupportsImageTilingControl); }
+
+#ifdef VP_TARGET_PLATFORM_linux
+        /* Ensure device is compatible with the underlying windowing system TODO; move to application defined IFunction filter */
+        if (!IsWaylandCompatibleVkPhysicalDevice(std::addressof(drm_props))) { missing_features->SetMissing(RequiredFeature::SupportsExternalMemoryHost); }
+#endif
+
+        return;
+    }
+
 #ifdef AWN_VK_DEBUG
     void Context::ReportDeviceLostReason() {
-        
+
         sys::SleepThread(TimeSpan::FromMilliSeconds(1000));
         VkDeviceFaultCountsEXT fault_counts = {
             .sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT,
@@ -662,7 +676,7 @@ namespace awn::gfx::impl {
         RESULT_ABORT_UNLESS(impl::ConvertVkResultToResult(result1));
 
         ::puts(fault_info.description);
-        
+
         return;
     }
 #endif
@@ -744,10 +758,10 @@ namespace awn::gfx::impl {
         }
     }
 
-    void Context::SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, const ContextInfo *context_info) {
+    void Context::SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, const FeaturesInfo *features_info) {
 
         /* Get properties and features */
-        FindMissingFeatures(std::addressof(m_missing_features), vk_physical_device, context_info);
+        FindMissingFeatures(std::addressof(m_missing_features), vk_physical_device, features_info);
         ::pfn_vkGetPhysicalDeviceProperties2(vk_physical_device, std::addressof(m_vk_physical_device_properties));
         ::pfn_vkGetPhysicalDeviceMemoryProperties(vk_physical_device, std::addressof(m_vk_physical_device_memory_properties));
         m_is_unified_memory = (m_vk_physical_device_memory_properties.memoryHeapCount == 1);
@@ -848,10 +862,9 @@ namespace awn::gfx::impl {
 #endif
             VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
-#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
             VK_KHR_DEVICE_ADDRESS_COMMANDS_EXTENSION_NAME,
-#endif
             VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME,
+            VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
         };
         struct DeviceOptionalExtension {
             const char *extension = "";
@@ -875,19 +888,18 @@ namespace awn::gfx::impl {
                 .extension = VK_EXT_MESH_SHADER_EXTENSION_NAME,
                 .optional_feature = OptionalFeature::SupportsMeshShaders,
             },
-            //{
-            //    .extension = VK_NV_PER_STAGE_DESCRIPTOR_SET_EXTENSION_NAME,
-            //    .optional_feature = OptionalFeature::SupportsPerStageDescriptorSets,
-            //},
             {
-                .extension = VK_NV_COMMAND_BUFFER_INHERITANCE_EXTENSION_NAME,
-                .optional_feature = OptionalFeature::SupportsCommandBufferInheritance,
+                .extension = VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsFragmentShadingRate,
             },
-            //{
-            //    .extension = VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
-            //    .optional_feature = OptionalFeature::SupportsNvBindlessTexture,
-            //    .is_enable_by_default = false,
-            //},
+            {
+                .extension = VK_EXT_IMAGE_TILING_CONTROL_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsImageTilingControl,
+            },
+            {
+                .extension = VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME,
+                .optional_feature = OptionalFeature::SupportsImageCompressionControl,
+            },
         };
         static constexpr u32 cRequiredExtensionCount = sizeof(cRequiredExtensionArray) / sizeof(const char*);
         static constexpr u32 cOptionalExtensionCount = sizeof(cOptionalExtensionArray) / sizeof(DeviceOptionalExtension);
@@ -937,27 +949,43 @@ namespace awn::gfx::impl {
 
         /* VkDevice feature enables */
         void *prev_feature = nullptr;
-#ifdef AWN_ENABLE_VK_DEVICE_ADDRESS_COMMANDS
+        VkPhysicalDeviceConditionalRenderingFeaturesEXT conditional_rendering_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT,
+            .pNext = prev_feature,
+            .conditionalRendering = VK_TRUE,
+            .inheritedConditionalRendering = VK_TRUE,
+        };
+        prev_feature = std::addressof(conditional_rendering_features);
+        VkPhysicalDeviceFragmentShadingRateFeaturesKHR fragment_shading_rate_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+            .pNext = prev_feature,
+            .attachmentFragmentShadingRate = VK_TRUE,
+        };
+        prev_feature = (this->IsOptionalFeature(OptionalFeature::SupportsFragmentShadingRate)) ? std::addressof(fragment_shading_rate_features) : prev_feature;
+        VkPhysicalDeviceImageTilingControlFeaturesEXT image_tiling_control_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_TILING_CONTROL_FEATURES_EXT,
+            .pNext = prev_feature,
+            .imageTilingControl = VK_TRUE,
+        };
+        prev_feature = (this->IsOptionalFeature(OptionalFeature::SupportsImageTilingControl)) ? std::addressof(image_tiling_control_features) : prev_feature;
+        VkPhysicalDeviceImageCompressionControlFeaturesEXT image_compression_control_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT,
+            .pNext = prev_feature,
+            .imageCompressionControl = VK_TRUE,
+        };
+        prev_feature = (this->IsOptionalFeature(OptionalFeature::SupportsImageCompressionControl)) ? std::addressof(image_compression_control_features) : prev_feature;
         VkPhysicalDeviceDeviceAddressCommandsFeaturesKHR device_address_commands_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_ADDRESS_COMMANDS_FEATURES_KHR,
             .pNext = prev_feature,
             .deviceAddressCommands = VK_TRUE,
         };
         prev_feature = std::addressof(device_address_commands_features);
-#endif
-        const bool is_command_buffer_inheritance = this->IsOptionalFeature(OptionalFeature::SupportsCommandBufferInheritance);
-        VkPhysicalDeviceCommandBufferInheritanceFeaturesNV command_buffer_inheritance_features = {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
-            .pNext = prev_feature,
-            .commandBufferInheritance = true,
-        };
-        prev_feature = (is_command_buffer_inheritance) ? std::addressof(command_buffer_inheritance_features) : prev_feature;
         const bool is_mesh_shaders = this->IsOptionalFeature(OptionalFeature::SupportsMeshShaders);
         VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
             .pNext = prev_feature,
-            .taskShader = true,
-            .meshShader = true,
+            .taskShader = VK_TRUE,
+            .meshShader = VK_TRUE,
             //.multiviewMeshShader = is_mesh_shaders,
             //.primitiveFragmentShadingRateMeshShader = is_mesh_shaders,
             //.meshShaderQueries = is_mesh_shaders,
@@ -1031,6 +1059,8 @@ namespace awn::gfx::impl {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
             .pNext = prev_feature,
             .robustImageAccess = is_robustness2,
+            .shaderDemoteToHelperInvocation = VK_TRUE,
+            .shaderTerminateInvocation = VK_TRUE,
             .synchronization2 = VK_TRUE,
             .dynamicRendering = VK_TRUE,
             .maintenance4 = VK_TRUE,
@@ -1145,7 +1175,6 @@ namespace awn::gfx::impl {
     }
 
 	void Context::Initialize(const ContextInfo *context_info) {
-        VP_UNUSED(context_info);
 
         /* Load initial vulkan procs */
         ::LoadVkCProcsInitial();
@@ -1180,7 +1209,7 @@ namespace awn::gfx::impl {
         /* Find our default physical device */
         VkPhysicalDevice vk_physical_device = FindDefaultPhysicalDevice(m_vk_instance, context_info);
         VP_ASSERT(vk_physical_device != VK_NULL_HANDLE);
-        this->SetVkPhysicalDevice(vk_physical_device, context_info);
+        this->SetVkPhysicalDevice(vk_physical_device, std::addressof(context_info->features_info));
 
 		/* Initialize device */
         this->InitializeLogicalDevice(context_info);
@@ -1219,6 +1248,18 @@ namespace awn::gfx::impl {
         /* Finalize instance */
         this->FinalizeInstance();
 
+        return;
+    }
+
+    void Context::Import(const ContextImportInfo *import_info) {
+        m_vk_instance = import_info->vk_instance;
+        this->SetVkPhysicalDevice(import_info->vk_physical_device, std::addressof(import_info->features_info));
+        m_vk_device = import_info->vk_device;
+        m_optional_features = import_info->optional_feature_mask;
+        for (u32 i = 0; i < cTargetMaxQueueCount; ++i) {
+            if (m_queue_family_index_array_enum[i] == cInvalidQueueFamilyIndex) { continue; }
+            ::pfn_vkGetDeviceQueue(m_vk_device, m_queue_family_index_array_enum[i], 0, std::addressof(m_vk_queue_array_enum[i]));
+        }
         return;
     }
 

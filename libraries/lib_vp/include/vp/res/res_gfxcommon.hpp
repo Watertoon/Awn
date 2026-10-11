@@ -19,8 +19,8 @@ namespace vp::res {
 
     constexpr inline const size_t cMaxGfxMemoryPoolSize  = 0x120;
     constexpr inline const size_t cMaxGfxBufferSize      = 0x48;
-    constexpr inline const size_t cMaxGfxTextureSize     = 0xd8;
-    constexpr inline const size_t cMaxGfxTextureViewSize = 0x48;
+    constexpr inline const size_t cMaxGfxTextureSize     = 0x100;
+    constexpr inline const size_t cMaxGfxTextureViewSize = 0x100;
     constexpr inline const size_t cMaxGfxSamplerSize     = 0x78;
     constexpr inline const size_t cMaxGfxShaderSize      = 0xe8;
 
@@ -203,10 +203,29 @@ namespace vp::res {
         0x10, 0x02,
     };
 
+    constexpr bool IsCompressedFormat(GfxChannelFormat channel_format) {
+        u32 format = static_cast<u32>(channel_format);
+        return format - 0x1a < 0x21;
+    }
+
+    namespace {        
+        constexpr vp::util::UInt2 GetBlockSize(GfxChannelFormat channel_format) {
+            u32 format = static_cast<u32>(channel_format);
+            const u32 variable_format = format - 0x27;
+            u32 block_width  = 4;
+            u32 block_height = 4;
+            if (variable_format < 0x14) {
+                block_width  = cVariableBlockWidthTable[variable_format];
+                block_height = cVariableBlockHeightTable[variable_format];
+            }
+            return vp::util::UInt2 { block_width, block_height, };
+        }
+    }
+
     constexpr u32 CalculateGfxImageTexelSize(GfxChannelFormat channel_format) {
         u32 format = static_cast<u32>(channel_format);
-        u32 package_format = format - 0x1a;
         u32 texel_size = 0;
+        const u32 package_format = format - 0x1a;
         if (package_format < 0x22) {
             texel_size = cPackagedTextureTexelSizeTable[package_format];
         } else if (format < 0x3) {
@@ -227,7 +246,6 @@ namespace vp::res {
     }
 
     constexpr u32 CalculateGfxAttributeSize(GfxChannelFormat channel_format, u32 component_count) {
-
         u32 format = static_cast<u32>(channel_format);
         u32 attribute_size = 0;
         if (format < 0x3) {
@@ -244,65 +262,46 @@ namespace vp::res {
                 attribute_size = 16;
             }
         }
-
         return attribute_size * component_count;
     }
 
     constexpr u32 CalculateGfxImageSize(GfxChannelFormat channel_format, u32 width, u32 height, u32 depth) {
-        const u32 format = static_cast<u32>(channel_format);
-
-        /* Adjust width and height for compressed formats */
-        const u32 package_format = format - 0x1a;
-        if (package_format < 0x21) {
-            const u32 variable_format = format - 0x27;
-            u32 block_width  = 4;
-            u32 block_height = 4;
-            if (variable_format < 0x14) {
-                block_width  = cVariableBlockWidthTable[variable_format];
-                block_height = cVariableBlockHeightTable[variable_format];
-            }
-
-            width  = (block_width != 0)  ? (width  + block_width  - 1) / block_width  : 0;
-            height = (block_height != 0) ? (height + block_height - 1) / block_height : 0;
+        /* Align width and height for compressed formats */
+        if (IsCompressedFormat(channel_format)) {
+            const vp::util::UInt2 b_size = GetBlockSize(channel_format);
+            width = vp::util::AlignUp(width, b_size[0]);
+            height = vp::util::AlignUp(height, b_size[1]);
         }
-
         /* Calculate size */
         const u32 texel_size = CalculateGfxImageTexelSize(channel_format);
         return texel_size * width * height * depth;
     }
 
-    constexpr u32 CalculateLinearTextureStride(u32 width, vp::res::GfxChannelFormat channel_format) {
-        const u32 format = static_cast<u32>(channel_format);
-
+    constexpr u32 CalculateLinearTextureStride(GfxChannelFormat channel_format, u32 width) {
         /* Adjust width for linear format */
-        const u32 package_format = format - 0x1a;
-        if (package_format < 0x21) {
-            const u32 variable_format = format - 0x27;
-            const u32 block_width = (variable_format < 0x14) ? cVariableBlockWidthTable[variable_format] : 4;
-
-            width = (block_width != 0) ? (width + block_width - 1) / block_width : 0;
+        if (IsCompressedFormat(channel_format)) {
+            const vp::util::UInt2 b_size = GetBlockSize(channel_format);
+            width = vp::util::AlignUp(width, b_size[0]);
         }
-
         /* Calculate size */
         const u32 texel_size = CalculateGfxImageTexelSize(channel_format);
         return width * texel_size;
     }
 
     constexpr vp::util::Int2 CalculateGfxImageBlockSize(GfxChannelFormat channel_format) {
-        u32 format = static_cast<u32>(channel_format);
-        u32 block_width     = 1;
-        u32 block_height    = 1;
-        u32 package_format = format - 0x1a;
-        if (package_format < 0x21) {
-            u32 variable_format = format - 0x27;
-            block_width  = 4;
-            block_height = 4;
-            if (variable_format < 0x14) {
-                block_width  = cVariableBlockWidthTable[variable_format];
-                block_height = cVariableBlockHeightTable[variable_format];
-            }
+        vp::util::UInt2 b_size = (IsCompressedFormat(channel_format)) ? GetBlockSize(channel_format) : vp::util::UInt2{ 1u,1u, };
+        return { static_cast<s32>(b_size[0]), static_cast<s32>(b_size[1]), };
+    }
+
+    constexpr u32 CalculateRowStride(GfxChannelFormat channel_format, u32 row_length) {
+        const u32 texel_size = CalculateGfxImageTexelSize(channel_format);
+        u32 row_stride = texel_size * row_length;
+        if (IsCompressedFormat(channel_format)) {
+            const vp::util::UInt2 b_size = GetBlockSize(channel_format);
+            const u32 b_area = b_size[0] * b_size[1];
+            row_stride = (b_area != 0) ? row_stride / b_area : 0;
         }
-        return { static_cast<s32>(block_width), static_cast<s32>(block_height), };
+        return row_stride;
     }
 
     enum class GfxTypeFormat : u8 {

@@ -25,7 +25,7 @@ namespace awn::para {
                     const char *m_class_name;
                     bool m_is_yaml;
                 public:
-                    VP_RTTI_DERIVED(CreateInfo, res::IComposeInfo);
+                    VP_RTTI_DERIVED(CreateInfo);
                 public:
                     constexpr CreateInfo(const char *file_name, const char *class_name) : IComposeInfo(), m_file_name(file_name), m_class_name(class_name), m_is_yaml() {/*...*/}
                     virtual ~CreateInfo() override {/*...*/}
@@ -39,7 +39,7 @@ namespace awn::para {
             vp::res::YamlDocument *m_yaml_doc;
 #endif
         public:
-            VP_RTTI_DERIVED(ResourceDocument, res::Resource);
+            VP_RTTI_DERIVED(ResourceDocument);
         public:
             constexpr ResourceDocument() : Resource(), m_document(), m_resource_binder_bgyml(), m_yaml_doc() {/*...*/}
             virtual ~ResourceDocument() override {/*...*/}

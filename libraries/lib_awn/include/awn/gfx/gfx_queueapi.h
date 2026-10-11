@@ -27,6 +27,7 @@ namespace awn::gfx {
 	};
 
     struct CommandList;
+
     class Sync;
 
     void SubmitCommandList(CommandList command_list, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count);

@@ -24,7 +24,7 @@ ifneq ($(BUILD_DIR),$(notdir $(CURDIR)))
 # User program options (edit these)
 CXX_DEFINES  := -DVP_DEBUG
 CXX_FLAGS    := -std=gnu++26 -freflection -ffunction-sections -fdata-sections -fno-strict-aliasing -fwrapv -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector -fno-rtti -fno-exceptions -fconcepts-diagnostics-depth=4 $(CXX_DEFINES)
-CXX_WARNS    := -Wall -Wno-format-truncation -Wno-format-zero-length -Wno-stringop-truncation -Wno-invalid-offsetof -Wno-format-truncation -Wno-format-zero-length -Wno-stringop-truncation -Wextra -Werror -Wno-missing-field-initializers
+CXX_WARNS    := -Wall -Wno-format-truncation -Wno-format-zero-length -Wno-stringop-truncation -Wno-invalid-offsetof -Wextra -Werror -Wno-missing-field-initializers
 LIBRARY_DIRS := 
 
 export PROJECT_C_FLAGS      := 

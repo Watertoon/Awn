@@ -38,7 +38,7 @@ namespace awn::para {
             u32                     m_enum_count;
             u32                     m_resolve_type;
         public:
-            VP_RTTI_DERIVED(TypedParamEnumMapBase, Composite);
+            VP_RTTI_DERIVED(TypedParamEnumMapBase);
         public:
             void InitializeTypedParam(mem::Heap *heap, Document *document, u32 index, u64 hash);
         public:
@@ -74,7 +74,7 @@ namespace awn::para {
         public:
             using EnumTraits = vp::util::TEnumTraits<E>::Traits;
         public:
-            VP_RTTI_DERIVED(TypedParamEnumMap, TypedParamEnumMapBase);
+            VP_RTTI_DERIVED(TypedParamEnumMap);
         public:
             constexpr TypedParamEnumMap() : TypedParamEnumMapBase(EnumTraits::cIndexToStringArray, EnumTraits::cEnumCount) {/*...*/}
             virtual constexpr ~TypedParamEnumMap() {/*...*/}

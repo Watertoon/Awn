@@ -39,16 +39,16 @@ namespace awn::gfx::impl {
         float lod_clamp_max;
         float lod_bias;
     };
-    constexpr std::strong_ordering SamplerKeyCompare(const SamplerKey &rhs, const SamplerKey &lhs) {
-        if (lhs.packed_state > rhs.packed_state) { return std::strong_ordering::greater; }
-        if (lhs.packed_state < rhs.packed_state) { return std::strong_ordering::less; }
-        if (lhs.lod_clamp_min > rhs.lod_clamp_min) { return std::strong_ordering::greater; }
-        if (lhs.lod_clamp_min < rhs.lod_clamp_min) { return std::strong_ordering::less; }
-        if (lhs.lod_clamp_max > rhs.lod_clamp_max) { return std::strong_ordering::greater; }
-        if (lhs.lod_clamp_max < rhs.lod_clamp_max) { return std::strong_ordering::less; }
-        if (lhs.lod_bias > rhs.lod_bias) { return std::strong_ordering::greater; }
-        if (lhs.lod_bias < rhs.lod_bias) { return std::strong_ordering::less; }
-        return std::strong_ordering::equal;
+    constexpr s32 SamplerKeyCompare(const SamplerKey &rhs, const SamplerKey &lhs) {
+        if (lhs.packed_state > rhs.packed_state) { return 1; }
+        if (lhs.packed_state < rhs.packed_state) { return -1; }
+        if (lhs.lod_clamp_min > rhs.lod_clamp_min) { return 1; }
+        if (lhs.lod_clamp_min < rhs.lod_clamp_min) { return -1; }
+        if (lhs.lod_clamp_max > rhs.lod_clamp_max) { return 1; }
+        if (lhs.lod_clamp_max < rhs.lod_clamp_max) { return -1; }
+        if (lhs.lod_bias > rhs.lod_bias) { return 1; }
+        if (lhs.lod_bias < rhs.lod_bias) { return -1; }
+        return -1;
     }
     
     struct TextureViewKey {
@@ -83,6 +83,13 @@ namespace awn::gfx::impl {
             this->swizzle_z = info->swizzle_z;
             this->swizzle_w = info->swizzle_w;
             this->texture = info->texture;
+        }
+
+        constexpr ImageFormat GetImageFormat() const {
+            return static_cast<ImageFormat>(this->image_format);
+        }
+        constexpr TextureDepthStencilMode GetTextureDepthStencilMode() const {
+            return static_cast<TextureDepthStencilMode>(this->depth_stencil_mode);
         }
     };
     constexpr bool IsSameInfo(const TextureViewKey &key, const gfx::TextureViewInfo *info) {
@@ -189,7 +196,7 @@ namespace awn::gfx::impl {
             constexpr TextureViewSamplerManager() : m_texture_slot_allocator(), m_texture_view_unit_array(), m_sampler_map(), m_sampler_slot_allocator(), m_sampler_unit_array(), m_sampler_rwlock() {/*...*/}
             constexpr ~TextureViewSamplerManager() {/*...*/}
 
-            void Initialize(mem::Heap *heap, const TextureViewSamplerManagerInfo *manager_info);
+            Result Initialize(mem::Heap *heap, const TextureViewSamplerManagerInfo *manager_info);
             void Finalize();
 
             Result RegisterTextureView(DescriptorSlot *out_texture_slot, const TextureViewInfo *texture_view_info);

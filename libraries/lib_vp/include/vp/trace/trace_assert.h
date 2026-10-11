@@ -25,6 +25,14 @@ namespace vp::trace {
         #define VP_NOT_IMPLEMENTED() \
             vp::trace::AbortNotImplemented(__PRETTY_FUNCTION__, __FILE__, __LINE__)
 
+        #define VP_ABORT_UNLESS(expression) \
+        { \
+            const auto _temp_result = (expression); \
+            if (__builtin_expect((!_temp_result), 0)) { \
+                vp::trace::AbortAssert(__PRETTY_FUNCTION__, __FILE__, __LINE__, TOSTRING(expression)); \
+            } \
+        }
+
         #define VP_ASSERT(expression) \
         { \
             const auto _temp_result = (expression); \
@@ -44,26 +52,22 @@ namespace vp::trace {
     #else
 
         #define VP_UNEXPECTED_DEFAULT() \
-            vp::trace::AbortUnexpectedDefault("", "", 0)
+            vp::trace::AbortUnexpectedDefault()
 
         #define VP_NOT_IMPLEMENTED() \
-            vp::trace::AbortNotImplemented("", "", 0); \
+            vp::trace::AbortNotImplemented(); \
 
-        #define VP_ASSERT(expression) \
+        #define VP_ABORT_UNLESS(expression) \
         { \
             const auto _temp_result = (expression); \
             if (__builtin_expect((!_temp_result), 0)) { \
-                vp::trace::AbortAssert("", "", 0, ""); \
+                vp::trace::AbortAssert(); \
             } \
         }
 
-        #define VP_DETAILED_ASSERT(expression, format, ...) \
-        { \
-            const auto _temp_result = (expression); \
-            if (__builtin_expect((!_temp_result), 0)) { \
-                vp::trace::impl::AbortImpl("", "", "", 0, vp::trace::ResultAssertFailed, ""); \
-            } \
-        }
+        #define VP_ASSERT(expression) VP_UNUSED(expression);
+
+        #define VP_DETAILED_ASSERT(expression, format, ...)
 
     #endif
 }

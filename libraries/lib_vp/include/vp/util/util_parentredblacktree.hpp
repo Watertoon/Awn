@@ -619,7 +619,7 @@ namespace vp::util {
                 do {
                     node_iter       = next_node;
 
-                    const std::strong_ordering comp  = Compare(node_iter->m_key, insert->m_key);
+                    const s32 comp  = Compare(node_iter->m_key, insert->m_key);
                     if (comp == 0) { Collision(node_iter->m_owner, insert->m_owner); return; }
 
                     side            = comp < 0;
@@ -660,7 +660,7 @@ namespace vp::util {
                 /* Find removal location */
                 node_type  *remove_node = m_root;
                 node_type **right_node  = nullptr;
-                std::strong_ordering comp(std::strong_ordering::equal);
+                s32 comp = 0;
                 while (
                     (comp = Compare(remove_node->m_key, key)),
                     (right_node = std::addressof(remove_node->m_left), comp > 0) ||
@@ -688,7 +688,7 @@ namespace vp::util {
 
                 /* Binary iterate */
                 while (iter != nullptr) {
-                    const std::strong_ordering comp = Compare(iter->m_key, key);
+                    const s32 comp = Compare(iter->m_key, key);
                     if (comp == 0) { return iter; }
                     const bool side = comp < 0;
                     if (side) {
@@ -818,7 +818,7 @@ namespace vp::util {
     template<class RP, typename K, auto M>
     class ParentRedBlackTreeMemberTraits {
         public:
-            using ComparisonFunction = std::strong_ordering(*)(const K&, const K&);
+            using ComparisonFunction = s32(*)(const K&, const K&);
             using CollisionFunction  = void(*)(RP*,RP*);
         public:
 

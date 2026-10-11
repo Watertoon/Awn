@@ -81,7 +81,7 @@ namespace awn::res::impl {
         if (!m_state.GetBit(State_IsCacheUnload) 
             && !m_cache_unload_flags.GetBit(CacheUnloadFlag_IsValid)
             && !m_cache_unload_no_error_flags.GetBit(CacheUnloadNoErrorFlag_IsValid)
-            && (status = m_status, (status != Status::FailedToPostInitializeResource && status != Status::FailedToInitializeResource && status != Status::Error))) { return; }
+            && (status = m_status, (status != Status::PostComposeNG && status != Status::ComposeNG && status != Status::Error))) { return; }
         this->UnregisterFromResourceUnitManager();
         m_cache_unload_flags.ClearBit(CacheUnloadFlag_IsValid);
 
@@ -144,7 +144,7 @@ namespace awn::res::impl {
     Result ResourceUnit::FreeToResourceUnitAllocator(awn::async::TaskResultInvokeInfo *result_info) {
 
         /* Schedule clear cache if failed */
-        if (m_status == Status::FailedToPreFinalizeResource) { 
+        if (m_status == Status::DecomposeNG) { 
             if (result_info->is_cancelled == true) { RESULT_RETURN_SUCCESS; } 
             this->ScheduleClearCache(); 
             RESULT_RETURN(async::ResultRescheduled);
@@ -192,21 +192,21 @@ namespace awn::res::impl {
         m_compose_task.Wait();
     }
 
-    bool ResourceUnit::IsInLoad() const {
-        /* Check load task is pending */
+    bool ResourceUnit::IsLoading() const {
+        /* We are loading if our load task is pending */
         if (m_load_task.IsPending()) { return true; }
         /* Loading completed if the load task was cancelled */
         if (m_load_task.IsCancelled()) { return false; }
-        /* Loading is not complete if we are composing, not the compose thread, and the compose task is pending */
+        /* We are still loading if we are composing, not the compose thread, and the compose task is pending */
         if (m_compression_flags.GetBit(CompressionFlag_IsCompose)) { return m_compose_task.IsPending(); }
-        /* Loading is complete if the resource unit is not InLoad */
-        return m_status == Status::InLoad;
+        /* We are still loading if our status is Loading */
+        return m_status == Status::Loading;
     }
 
     bool ResourceUnit::IsUnloadable() const {
-        /* Ensure compose is complete */
+        /* We can unload as long as we are not waiting on a compose task */
         if (m_compose_task.IsComplete()) { return true; }
-        /* We are safe if we are the compose thread */
+        /* It is ok to unload when we are not composed if we are the compose task thread */
         if (m_compose_task.IsExecutingOnCurrentThread()) { return true; }
         return false;
     }
@@ -240,13 +240,13 @@ namespace awn::res::impl {
 
     void ResourceUnit::UpdateMemoryUsage() {
 
-        /* Track global */
+        /* Track all memory usage */
         if (!m_state.GetBit(State_IsTrackedMemoryGlobal)) {
             m_memory_manager->TrackMemoryUsageGlobal(m_resource_heap);
             m_state.SetBit(State_IsTrackedMemoryGlobal);
         }
 
-        /* Track active */
+        /* Track active memory usage */
         if (!m_state.GetBit(State_IsTrackedMemoryActive) && !m_state.GetBit(State_IsFreeableForMemoryManager)) {
             m_memory_manager->TrackMemoryUsageActive(m_resource_heap);
             m_state.SetBit(State_IsTrackedMemoryActive);
@@ -278,13 +278,13 @@ namespace awn::res::impl {
 
     Result ResourceUnit::HeapAdjust() {
 
-        /* Succeed if no heap  */
+        /* We don't need to heap adjust if we have no heap  */
         if (m_resource_heap == nullptr) { RESULT_RETURN_SUCCESS; }
 
-        /* Adjust resource heap */
+        /* Adjust resource heap to release memory unused in composition */
         m_resource_heap->AdjustHeap();
 
-        /* Update resource memory manager */
+        /* Track memory usage */
         this->UpdateMemoryUsage();
 
         RESULT_RETURN_SUCCESS;
@@ -427,14 +427,13 @@ namespace awn::res::impl {
         return prepare_result.resource_size;
     }
 
-
     Result ResourceUnit::LoadMemory() {
 
         /* Release if transient */
         this->ReleaseTransient();
 
         /* Set status to in load */
-        m_status = Status::InLoad;
+        m_status = Status::Loading;
 
         /* Setup resource size */
         const size_t size = this->PrepareResourceLoad();
@@ -450,7 +449,7 @@ namespace awn::res::impl {
 
         /* Fail if no size was returned */
         if (size == 0) {
-            m_state.SetBit(State_IsFileNotFound);
+            m_state.SetBit(State_IsNoFile);
             RESULT_RETURN(ResultFileNotFound);
         }
 
@@ -463,14 +462,14 @@ namespace awn::res::impl {
             /* Find memory manager  */
             ResourceMemoryManager *memory_manager = AsyncResourceManager::GetInstance()->GetMemoryManager(std::addressof(m_file_path));
             if (memory_manager == nullptr) {
-                m_state.SetBit(State_IsMemoryAllocationFailure);
+                m_state.SetBit(State_IsNoMemory);
                 RESULT_RETURN(ResultMemoryAllocationFailure);
             }
 
             /* Create resource heap */
             mem::Heap *heap = memory_manager->CreateResourceHeap(this, m_file_path.GetString(), size, static_cast<ResourceHeapType>(m_compression_flags.GetBit(CompressionFlag_IsFrameHeap)));
             if (heap == nullptr) {
-                m_state.SetBit(State_IsMemoryAllocationFailure);
+                m_state.SetBit(State_IsNoMemory);
                 RESULT_RETURN(ResultMemoryAllocationFailure);
             }
 
@@ -502,7 +501,7 @@ namespace awn::res::impl {
     Result ResourceUnit::LoadMemoryResult(async::TaskResultInvokeInfo *result_info) {
 
         /* Ensure in load */
-        if (m_resource_heap == nullptr || m_status != ResourceUnit::Status::InLoad) {
+        if (m_resource_heap == nullptr || m_status != ResourceUnit::Status::Loading) {
             /* Compose if we loaded from an archive */
             if (m_state.GetBit(State_IsAllowArchiveReference)) {                
                 this->RequestComposeForAfter();
@@ -539,9 +538,11 @@ namespace awn::res::impl {
         CompressionType compression_type = this->GetCompressionType();
         FormatPathWithCompressionExtension(std::addressof(path_with_compression), std::addressof(m_file_path), compression_type);
 
-        /* Setup file device */
+        /* Try to use our file device */
         FileDeviceBase *og_device = m_file_device;
+        /* If we have no file device, borrow the system's default */
         if (og_device == nullptr) { m_file_device = AsyncResourceManager::GetInstance()->GetDefaultArchiveFileDevice(); }
+        /* If we have an archive file device, set our archive resource to it */
         if (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device)) { reinterpret_cast<ArchiveFileDevice*>(m_file_device)->SetArchiveResource(m_archive_resource); }
 
         /* Try to load the file */
@@ -561,7 +562,7 @@ namespace awn::res::impl {
 
         /* Check if no resource or is not initializable */
         if (m_resource == nullptr || !m_resource->IsRequireCompose()) {
-            m_compression_flags.ClearBit(CompressionFlag_IsResourceInitializable);
+            m_compression_flags.ClearBit(CompressionFlag_IsComposable);
             if (m_resource == nullptr) {
                 m_status = Status::Error;
             } else {
@@ -576,7 +577,7 @@ namespace awn::res::impl {
         }
 
         /* Set resource as initializable */
-        m_compression_flags.SetBit(CompressionFlag_IsResourceInitializable);
+        m_compression_flags.SetBit(CompressionFlag_IsComposable);
         m_status = Status::Loaded;
         m_status_update_event.Clear();
 
@@ -587,21 +588,24 @@ namespace awn::res::impl {
 
     void ResourceUnit::RequestComposeForAfter() {
 
-        /* Ensure compose */
+        /* Release archive on failure */
         auto release_archive_exit = SCOPE_GUARD {
             m_archive_resource = nullptr;
             m_archive_binder.Release();
         };
+        /* No request for no compose requested */
         if (!m_compression_flags.GetBit(CompressionFlag_IsCompose)) { return; }
-        if (m_resource != nullptr && (!m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable) || !m_state.GetBit(State_IsRequireResourceInitialize))) { return; }
+        /* No request for resource no compose */
+        if (m_resource != nullptr && (!m_compression_flags.GetBit(CompressionFlag_IsComposable) || !m_state.GetBit(State_IsRequireCompose))) { return; }
+        /* No request for not loaded */
         if (m_status != Status::Loaded) { return; }
         release_archive_exit.Cancel();
 
-        /* Ensure we are not a compose thread */
+        /* We do not need a request if we are the compose thread */
         AsyncResourceManager *manager = AsyncResourceManager::GetInstance();
         if (manager->IsCurrentThreadComposeThread()) { return; }
 
-        /* Convert priority and schedule compose */
+        /* Convert load queue priority to compose queue */
         const u32 prev_priority = m_load_task.GetPriority();
         u8 conv_priority = 0;
         sys::ThreadBase *thread = sys::GetCurrentThread();
@@ -610,14 +614,15 @@ namespace awn::res::impl {
         } else if (manager->IsCurrentThreadComposeThread()) {
             conv_priority = (prev_priority < 5) ? prev_priority : 0;
         }
+        /* Schedule compose task */
         this->ScheduleCompose(conv_priority);
 
         return;
     }
 
     void ResourceUnit::ScheduleCompose(u32 priority) {
-        
-        /* Ensure compose */
+
+        /* No schedule for no compose requested */
         if (!m_compression_flags.GetBit(CompressionFlag_IsCompose)) { return; }
 
         /* Lock compose queue */
@@ -629,10 +634,10 @@ namespace awn::res::impl {
         s32 compose_count = vp::util::InterlockedFetchIncrement(std::addressof(m_compose_reference_count));
         if (compose_count != 0) { return; }
 
-        /* Ensure not unloadable */
+        /* No schedule for we already have a pending compose task */
         if (this->IsUnloadable()) { return; }
 
-        /* Push compose */
+        /* Push compose task */
         async::AsyncTaskPushInfo push_info = {
             .queue         = std::addressof(manager->m_queue_compose),
             .task_function = std::addressof(manager->m_compose_exe),
@@ -669,12 +674,16 @@ namespace awn::res::impl {
             auto uninitialized_guard = SCOPE_GUARD {
                 m_status = Status::Uninitialized;
             };
-
+            /* Cancel the load task if it's pending */
             m_load_task.CancelTask();
+            /* Release archive binder */
             m_archive_resource = nullptr;
             m_archive_binder.Release();
+            /* If the load might be complete */
             if (!m_load_task.IsCancelled()) {
+                /* Try to cancel the compose task */
                 const Result cancel_result = m_compose_task.TryCancelTask();
+                /* Mark as unloadable if compose failed to cancel */
                 if (cancel_result == async::ResultTaskExecuting) {
                     m_state.SetBit(State_IsFreeableForMemoryManager);
                     RESULT_RETURN(ResultFailedToCancelResource);
@@ -684,22 +693,22 @@ namespace awn::res::impl {
                     case Status::Loaded:
                     case Status::Error:
                         break;
-                    case Status::InResourceInitialize:
-                    case Status::ResourceInitialized:
+                    case Status::Composing:
+                    case Status::Composed:
                         /* Wait for resource to initialize */
                         m_status_update_event.Wait();
                         [[fallthrough]];
-                    case Status::FailedToPreFinalizeResource:
-                    case Status::ResourcePostInitialized:
-                    case Status::FailedToPostInitializeResource:
+                    case Status::DecomposeNG:
+                    case Status::PostComposed:
+                    case Status::PostComposeNG:
                         /* PreFinalize resource */
                         {
                             const bool is_finalized = this->PreFinalizeResource();
-                            if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                            if (!is_finalized) { RESULT_RETURN(ResultDecomposeNG); }
                             [[fallthrough]];
                         }
-                    case Status::ResourcePreFinalized:
-                    case Status::FailedToInitializeResource:
+                    case Status::Decomposed:
+                    case Status::ComposeNG:
                         /* Finalize resource */
                         this->FinalizeResource();
                         break;
@@ -728,54 +737,54 @@ namespace awn::res::impl {
                     if (!m_load_task.IsCancelled()) { break; }
                     break;
                 }
-                case Status::FailedToPreFinalizeResource:
+                case Status::DecomposeNG:
                 {
                     invalidate_cache_unload_no_error_guard.Cancel();
                     set_freeable_for_memory_mgr_guard.Cancel();
                     const bool is_finalized = this->PreFinalizeResource();
-                    if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                    if (!is_finalized) { RESULT_RETURN(ResultDecomposeNG); }
                     break;
                 }
                 case Status::Error:
                 {
                     break;
                 }
-                case Status::InResourceInitialize:
+                case Status::Composing:
                 {
                     m_status_update_event.Wait();
-                    if (m_status == Status::FailedToPostInitializeResource) {
+                    if (m_status == Status::PostComposeNG) {
                         
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                        if (!is_finalized) { RESULT_RETURN(ResultDecomposeNG); }
                         this->FinalizeResource();
                         
                         m_status = Status::Uninitialized;
                         break;
                     }
-                    if (m_status == Status::ResourcePostInitialized) {
+                    if (m_status == Status::PostComposed) {
                         invalidate_cache_unload_no_error_guard.Cancel();
                         const bool is_finalized = this->PreFinalizeResource();
                         if (!is_finalized) {
                             set_freeable_for_memory_mgr_guard.Cancel();
-                            RESULT_RETURN(ResultFailedToPreFinalizeResource);
+                            RESULT_RETURN(ResultDecomposeNG);
                         }
                         this->FinalizeResource();
                     }
                     break;
                 }
-                case Status::FailedToInitializeResource:
+                case Status::ComposeNG:
                 {
                     this->FinalizeResource();
                     m_status = Status::Uninitialized;
                     break;
                 }
-                case Status::ResourceInitialized:
+                case Status::Composed:
                 {
                     m_status_update_event.Wait();
-                    if (m_status == Status::FailedToPostInitializeResource) {
+                    if (m_status == Status::PostComposeNG) {
 
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (is_finalized == false) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                        if (is_finalized == false) { RESULT_RETURN(ResultDecomposeNG); }
                         this->FinalizeResource();
 
                         m_status = Status::Uninitialized;
@@ -783,27 +792,27 @@ namespace awn::res::impl {
                     }
                     invalidate_cache_unload_no_error_guard.Cancel();
                     set_freeable_for_memory_mgr_guard.Cancel();
-                    if (m_status == Status::ResourcePostInitialized) {
+                    if (m_status == Status::PostComposed) {
                         const bool is_finalized = this->PreFinalizeResource();
-                        if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }
+                        if (!is_finalized) { RESULT_RETURN(ResultDecomposeNG); }
                         this->FinalizeResource();
                     }
                     break;
                 }
-                case Status::ResourcePostInitialized:
+                case Status::PostComposed:
                 {
                     invalidate_cache_unload_no_error_guard.Cancel();
                     set_freeable_for_memory_mgr_guard.Cancel();
                     const bool is_finalized = this->PreFinalizeResource();
-                    if (!is_finalized) { RESULT_RETURN(ResultFailedToPreFinalizeResource); }                        
+                    if (!is_finalized) { RESULT_RETURN(ResultDecomposeNG); }                        
                     break;
                 }
-                case Status::FailedToPostInitializeResource:
+                case Status::PostComposeNG:
                 {
                     const bool is_finalized = this->PreFinalizeResource();
                     if (!is_finalized) {
                         set_freeable_for_memory_mgr_guard.Cancel();
-                        RESULT_RETURN(ResultFailedToPreFinalizeResource);
+                        RESULT_RETURN(ResultDecomposeNG);
                     }
                     this->FinalizeResource();
                     m_status = Status::Uninitialized;
@@ -867,6 +876,7 @@ namespace awn::res::impl {
         /* Setup resource load context */
         ResourceLoadContext load_context = {
             .file_load_context = {
+                /* If we are an archive file device, reference the file in the archive instead of allocating a copy */
                 .heap = (ArchiveFileDevice::CheckRuntimeTypeInfoStatic(m_file_device)) ? nullptr : m_resource_heap,
             },
             .file_device      = m_file_device,
@@ -926,6 +936,40 @@ namespace awn::res::impl {
         RESULT_ABORT_UNLESS(m_unload_task.PushTask(std::addressof(push_info)));
     }
 
+    bool ResourceUnit::RecoverFromCache(LoadUserData *load_info) {
+        /* Check cleanup for file not found and memory allocation error */
+        if (m_state.GetBit(State_IsNoFile) || m_state.GetBit(State_IsNoMemory)) { this->FinalizeIfOutOfReference(); return false; }
+        /* Check cleanup for finalization */
+        if (m_state.GetBit(State_IsFinalized)) { this->UnregisterFromResourceUnitManager(); return false; }
+        /* Check cleanup for uninitialized */
+        if (m_status == Status::Uninitialized) { this->FinalizeIfOutOfReference(); return false; }
+
+        /* Cancel unload as we want to reclaim the resource unit */
+        AsyncResourceManager *mgr = AsyncResourceManager::GetInstance();
+        this->CancelUnload(mgr);
+
+        /* Fail if resource unit became inactive */
+        if (m_finalize_async_res_mgr_list_node.IsLinked()) { this->UnregisterFromResourceUnitManager(); return false; }
+
+        /* Recover status from cache */
+        const Status status = m_status;
+        if      (status == Status::Finalizing) { m_status = Status::Decomposed; }
+        else if (status == Status::DecomposeNG) { m_status = Status::PostComposed; }
+        else if (status == Status::Decomposing) { m_status = Status::PostComposed; }
+
+        /* Increment ref count */
+        this->SetToBinder(load_info->m_resource_binder);
+
+        /* Update priority if it's increased */
+        const u32 priority = load_info->m_async_load_info.priority;
+        this->ChangeLoadPriority(std::addressof(mgr->m_queue_memory), std::addressof(mgr->m_queue_load), priority);
+
+        /* Reference unit */
+        load_info->m_resource_binder->m_status = (m_reference_count == 1) ? ResourceBinder::Status::FromCache : ResourceBinder::Status::Referenced;
+
+        return true;
+    }
+
     bool ResourceUnit::ComposeResource(IComposeInfo *info) {
 
         /* Guard resource initialize */
@@ -933,7 +977,7 @@ namespace awn::res::impl {
         if (0 < last_count) {
             m_status_update_event.Wait();
             const Status status = static_cast<Status>(m_status);
-            return status != Status::FailedToInitializeResource && status != Status::FailedToPostInitializeResource;
+            return status != Status::ComposeNG && status != Status::PostComposeNG;
         }
 
         /* Signal status update on exit */
@@ -943,12 +987,12 @@ namespace awn::res::impl {
 
         /* Fail if we don't have a resource */
         if (m_resource == nullptr) {
-            m_status = Status::FailedToInitializeResource;
+            m_status = Status::ComposeNG;
             return false;
         }
 
         /* Succeed if resource does not require initialization */
-        if (!m_state.GetBit(State_IsRequireResourceInitialize)) { return true; }
+        if (!m_state.GetBit(State_IsRequireCompose)) { return true; }
 
         /* Release managed reference and update status on exit */
         Status guard_status;
@@ -968,24 +1012,24 @@ namespace awn::res::impl {
 
         /* Initialize resource */
         if (m_status == Status::Loaded) {
-            m_status = Status::InResourceInitialize;
+            m_status = Status::Composing;
             const Result result = m_resource->Compose(m_resource_heap, info, m_resource->GetFile(), m_resource->GetFileSize());
-            guard_status = Status::FailedToInitializeResource;
+            guard_status = Status::ComposeNG;
             if (RESULT_FAILED(result)) { return false; }
         }
 
         /* Skip post initialization if in the course of resource initialization our resource was deleted */
-        guard_status = Status::ResourceInitialized;
-        m_status = Status::ResourceInitialized;
+        guard_status = Status::Composed;
+        m_status = Status::Composed;
         if (m_resource == nullptr) { return false; }
 
         /* Post initialize resource */
-        if (m_state.GetBit(State_IsRequireResourceInitialize) && m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) {
+        if (m_state.GetBit(State_IsRequireCompose) && m_compression_flags.GetBit(CompressionFlag_IsComposable)) {
             const Result result = m_resource->PostCompose(m_resource_heap, info, m_resource->GetFile(), m_resource->GetFileSize());
-            guard_status = Status::FailedToPostInitializeResource;
+            guard_status = Status::PostComposeNG;
             if (RESULT_FAILED(result)) { return false; }
         }
-        m_status = Status::ResourcePostInitialized;
+        m_status = Status::PostComposed;
 
         /* Cancel no resource guard since we succeeded */
         no_resource_exit_guard.Cancel();
@@ -996,14 +1040,14 @@ namespace awn::res::impl {
     bool ResourceUnit::PreFinalizeResource() {
 
         /* Check if prefinalization necessary*/
-        if ((m_status != Status::ResourcePostInitialized && m_status != Status::FailedToPostInitializeResource && m_status != Status::FailedToPreFinalizeResource) || m_resource == nullptr) { m_status = Status::ResourcePreFinalized; return false; }
+        if ((m_status != Status::PostComposed && m_status != Status::PostComposeNG && m_status != Status::DecomposeNG) || m_resource == nullptr) { m_status = Status::Decomposed; return false; }
 
         /* Prefinalize resource */
-        if (m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) {
-            m_status = Status::InResourcePreFinalize;
+        if (m_compression_flags.GetBit(CompressionFlag_IsComposable)) {
+            m_status = Status::Decomposing;
             const Result result = m_resource->PreFinalize();
             if (RESULT_FAILED(result)) { 
-                m_status = Status::FailedToPreFinalizeResource;
+                m_status = Status::DecomposeNG;
                 return false;
             }
         } 
@@ -1013,7 +1057,7 @@ namespace awn::res::impl {
         m_status_update_event.Clear();
 
         /* Update status */
-        m_status = Status::ResourcePreFinalized;
+        m_status = Status::Decomposed;
 
         return true;
     }
@@ -1021,13 +1065,13 @@ namespace awn::res::impl {
     void ResourceUnit::FinalizeResource() {
 
         /* Check unit is pre finalized and has resource */
-        if ((m_status != Status::ResourcePreFinalized && m_status != Status::FailedToInitializeResource) || m_resource == nullptr || !m_compression_flags.GetBit(CompressionFlag_IsResourceInitializable)) { m_status = Status::Loaded; return; }
+        if ((m_status != Status::Decomposed && m_status != Status::ComposeNG) || m_resource == nullptr || !m_compression_flags.GetBit(CompressionFlag_IsComposable)) { m_status = Status::Loaded; return; }
 
         /* Set current heap to resource heap */
         mem::ScopedCurrentThreadHeap l(m_resource_heap);
 
         /* Finalize resource */
-        m_status = Status::InResourceFinalize;
+        m_status = Status::Finalizing;
         m_resource->Finalize();
 
         /* Release guard */
@@ -1085,16 +1129,16 @@ namespace awn::res::impl {
 
         /* Finalize resource for not cancelled */
         switch (m_status) {
-            case Status::FailedToPreFinalizeResource:
-            case Status::ResourcePostInitialized:
-            case Status::FailedToPostInitializeResource:
+            case Status::DecomposeNG:
+            case Status::PostComposed:
+            case Status::PostComposeNG:
             {
                 const bool is_finalized = this->PreFinalizeResource();
                 if (!is_finalized) { return false; }
             }
             [[fallthrough]];
-            case Status::ResourcePreFinalized:
-            case Status::FailedToInitializeResource:
+            case Status::Decomposed:
+            case Status::ComposeNG:
             {
                 this->FinalizeResource();
             }
@@ -1165,7 +1209,7 @@ namespace awn::res::impl {
 
         /* Set flags */
         if (unit_info->is_initialize_resource) {
-            m_state.SetBit(State_IsRequireResourceInitialize);
+            m_state.SetBit(State_IsRequireCompose);
         }
         if (unit_info->is_boost_compose) {
             m_state.SetBit(State_IsBoostCompose);

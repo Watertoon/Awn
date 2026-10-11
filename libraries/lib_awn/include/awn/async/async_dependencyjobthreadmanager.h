@@ -39,7 +39,7 @@ namespace awn::async {
             DependencyJobThreadManager *m_thread_manager;
             u64 m_message_array[cMessageCount];
         public:
-            VP_RTTI_DERIVED(DependencyJobThread, sys::Thread);
+            VP_RTTI_DERIVED(DependencyJobThread);
         public:
             constexpr DependencyJobThread() : Thread(), m_thread_control(), m_finish_event(), m_queue(), m_thread_manager(), m_message_array{} {/*...*/}
             virtual ~DependencyJobThread() override {/*...*/}

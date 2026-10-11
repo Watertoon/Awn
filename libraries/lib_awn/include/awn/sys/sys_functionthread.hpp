@@ -23,7 +23,7 @@ namespace awn::sys {
         private:
             ThreadFunction *m_function;
         public:
-            VP_RTTI_DERIVED(FunctionThread, Thread);
+            VP_RTTI_DERIVED(FunctionThread);
         private:
             virtual void ThreadMain(u64 message) override {
                 m_function->Invoke(message);

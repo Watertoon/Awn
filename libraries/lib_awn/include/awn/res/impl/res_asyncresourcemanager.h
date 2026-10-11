@@ -157,7 +157,7 @@ namespace awn::res::impl {
 
             void FinalizeResourceUnitSync(ResourceUnit *resource_unit);
 
-            bool TryReferenceResourceUnit(ResourceUnit *resource_unit, LoadTask::LoadUserData *load_info);
+            bool TryReferenceResourceUnit(ResourceUnit *resource_unit, LoadUserData *load_info);
 
             void AddResourceUnitToFinalizeList(ResourceUnit *resource_unit);
             void RemoveResourceUnitFromFinalizeList(ResourceUnit *resource_unit);

@@ -194,7 +194,7 @@ namespace vp::util {
                 do {
                     node_iter       = next_node;
 
-                    const std::strong_ordering comp  = Compare(node_iter->m_key, insert->m_key);
+                    const s32 comp  = Compare(node_iter->m_key, insert->m_key);
                     if (comp == 0) { Collision(Traits::GetParent(node_iter), Traits::GetParent(insert)); return; }
 
                     side            = comp < 0;
@@ -226,7 +226,7 @@ namespace vp::util {
                 /* Find removal location */
                 node_type  *remove_node = reinterpret_cast<node_type*>(m_root);
                 node_type **right_node  = nullptr;
-                std::strong_ordering comp(std::strong_ordering::equal);
+                s32 comp = 0;
                 while (
                     (comp = Compare(remove_node->m_key, key)),
                     (right_node = reinterpret_cast<node_type**>(std::addressof(remove_node->m_left)), comp > 0) ||
@@ -254,7 +254,7 @@ namespace vp::util {
 
                 /* Binary iterate */
                 while (iter != nullptr) {
-                    const std::strong_ordering comp = Compare(iter->m_key, key);
+                    const s32 comp = Compare(iter->m_key, key);
                     if (comp == 0) { return iter; }
                     const bool side = comp < 0;
                     iter = reinterpret_cast<node_type*>(std::addressof(iter->m_left)[side]);
@@ -401,7 +401,7 @@ namespace vp::util {
         public:
             static constexpr uintptr_t cOffset = OffsetOf<M>();
         public:
-            using ComparisonFunction = std::strong_ordering(*)(const K&, const K&);
+            using ComparisonFunction = s32(*)(const K&, const K&);
             using CollisionFunction  = void(*)(RP*,RP*);
         public:
             static ALWAYS_INLINE RP *GetParent(IntrusiveRedBlackTreeNode<K> *node) {
@@ -427,12 +427,23 @@ namespace vp::util {
     };
 
     template <typename T>
-    constexpr ALWAYS_INLINE std::strong_ordering RedBlackTreeDefaultCompare(const T &rhs, const T &lhs) {
-        return (rhs <=> lhs);
+    constexpr ALWAYS_INLINE s32 StrongOrderingToS32(const T comp) {
+        if constexpr (std::is_same_v<s32,T>) {
+            return comp;
+        } else {            
+            static_assert(std::is_same_v<std::strong_ordering,T>);
+            if (comp < 0) { return -1; }
+            if (comp == 0) { return 0; }
+            return 1;
+        }
+    }
+
+    template <typename T>
+    constexpr ALWAYS_INLINE s32 RedBlackTreeDefaultCompare(const T &rhs, const T &lhs) {
+        return StrongOrderingToS32(rhs <=> lhs);
     }
     template <typename T>
     constexpr ALWAYS_INLINE void RedBlackTreeDefaultCollision([[maybe_unused]] T *r0, [[maybe_unused]] T *r1) {
-        if (std::is_constant_evaluated()) { return; }
         VP_UNEXPECTED_DEFAULT();
     }
 
@@ -446,15 +457,15 @@ namespace vp::util {
         //using ReverseTree        = IntrusiveRedBlackTree<ParentType<M>, K, Traits>;
     };
 
-    constexpr ALWAYS_INLINE std::strong_ordering ConvertComparisionToStrongOrdering(const s32 comp) {
-        const std::strong_ordering first  = (0 < comp) ? std::strong_ordering::greater : std::strong_ordering::equal;
-        const std::strong_ordering second = (comp < 0) ? std::strong_ordering::less : first;
-        return second;
-    }
+    //constexpr ALWAYS_INLINE std::strong_ordering ConvertComparisionToStrongOrdering(const s32 comp) {
+    //    const std::strong_ordering first  = (0 < comp) ? std::strong_ordering::greater : std::strong_ordering::equal;
+    //    const std::strong_ordering second = (comp < 0) ? std::strong_ordering::less : first;
+    //    return second;
+    //}
 
     template <typename T>
-    constexpr ALWAYS_INLINE std::strong_ordering RedBlackTreeDefaultStringCompare(const T &rhs, const T &lhs) {
-        return ConvertComparisionToStrongOrdering(::strcmp(lhs, rhs));
+    constexpr ALWAYS_INLINE s32 RedBlackTreeDefaultStringCompare(const T &rhs, const T &lhs) {
+        return std::strcmp(lhs, rhs);
     }
 
     template <class RP, auto M>
@@ -470,10 +481,10 @@ namespace vp::util {
     };
 
     template <typename T>
-    constexpr ALWAYS_INLINE std::strong_ordering RedBlackTreeDefaultHashStringCompare(const T &rhs, const T &lhs) {
-        if (lhs.hash > rhs.hash) { return std::strong_ordering::greater; }
-        if (lhs.hash < rhs.hash) { return std::strong_ordering::less; }
-        return ConvertComparisionToStrongOrdering(::strcmp(lhs.string, rhs.string));
+    constexpr ALWAYS_INLINE s32 RedBlackTreeDefaultHashStringCompare(const T &rhs, const T &lhs) {
+        if (lhs.hash > rhs.hash) { return 1; }
+        if (lhs.hash < rhs.hash) { return -1; }
+        return std::strcmp(lhs.string, rhs.string);
     }
 
     template <class RP, auto M>

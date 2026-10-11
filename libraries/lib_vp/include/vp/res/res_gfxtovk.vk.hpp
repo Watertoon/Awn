@@ -17,6 +17,61 @@
 
 namespace vp::res {
 
+    constexpr VkClearColorValue Color4fToVkClearColor(vp::util::Color4f color, GfxImageFormat image_format) {
+        const GfxTypeFormat type = GetGfxTypeFormat(image_format);
+        if (type == GfxTypeFormat::Unorm || type == GfxTypeFormat::SRGB) {
+            const VkClearColorValue valueui = {
+                .uint32 = {
+                    vp::util::FloatToUnorm32(color[0]),
+                    vp::util::FloatToUnorm32(color[1]),
+                    vp::util::FloatToUnorm32(color[2]),
+                    vp::util::FloatToUnorm32(color[3]),
+                },
+            };
+            return valueui;
+        } else if (type == GfxTypeFormat::Snorm) {
+            const VkClearColorValue valuesi = {
+                .int32 = {
+                    vp::util::FloatToSnorm32(color[0]),
+                    vp::util::FloatToSnorm32(color[1]),
+                    vp::util::FloatToSnorm32(color[2]),
+                    vp::util::FloatToSnorm32(color[3]),
+                },
+            };
+            return valuesi;
+        } else if (type == GfxTypeFormat::UInt) {
+            const VkClearColorValue valuesi = {
+                .uint32 = {
+                    static_cast<u32>(color[0]),
+                    static_cast<u32>(color[1]),
+                    static_cast<u32>(color[2]),
+                    static_cast<u32>(color[3]),
+                },
+            };
+            return valuesi;
+        } else if (type == GfxTypeFormat::SInt) {
+            const VkClearColorValue valuesi = {
+                .int32 = {
+                    static_cast<s32>(color[0]),
+                    static_cast<s32>(color[1]),
+                    static_cast<s32>(color[2]),
+                    static_cast<s32>(color[3]),
+                },
+            };
+            return valuesi;
+        } else {
+            const VkClearColorValue valuef = {
+                .float32 = {
+                    color[0],
+                    color[1],
+                    color[2],
+                    color[3],
+                },
+            };
+            return valuef;
+        }
+    }
+
     constexpr inline VkShaderCodeTypeEXT GfxShaderCodeTypeToVkShaderCodeType(GfxShaderCodeType shader_code_type) {
         switch (shader_code_type) {
             case GfxShaderCodeType::Binary:

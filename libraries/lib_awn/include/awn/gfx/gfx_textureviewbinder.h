@@ -44,11 +44,24 @@ namespace awn::gfx {
                 const impl::TextureViewKey *key = std::addressof(mgr->GetTextureViewUnit(m_texture_slot.index)->key);
                 return key;
             }
+#ifdef VP_TARGET_GRAPHICS_API_vk
             constexpr VkImageView GetVkImageView() const {
                 impl::TextureViewSamplerManager *mgr = impl::TextureViewSamplerManager::GetInstance();
                 if (!mgr->IsTextureViewSlotValid(m_texture_slot)) { return nullptr; }
                 const VkImageView view = mgr->GetTextureViewUnit(m_texture_slot.index)->vk_image_view;
                 return view;
             }
+#elifdef VP_TARGET_GRAPHICS_API_nvn
+            constexpr NVNtexture *GetNVNtexture() const {
+                impl::TextureViewSamplerManager *mgr = impl::TextureViewSamplerManager::GetInstance();
+                if (!mgr->IsTextureViewSlotValid(m_texture_slot)) { return nullptr; }
+                return mgr->GetTextureViewUnit(m_texture_slot.index)->GetNVNtexture();
+            }
+            constexpr NVNtextureView *GetNVNtextureView() const {
+                impl::TextureViewSamplerManager *mgr = impl::TextureViewSamplerManager::GetInstance();
+                if (!mgr->IsTextureViewSlotValid(m_texture_slot)) { return nullptr; }
+                return mgr->GetTextureViewUnit(m_texture_slot.index)->GetNVNtextureView();
+            }
+#endif
     };
 }

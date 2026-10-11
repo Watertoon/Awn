@@ -21,7 +21,7 @@ namespace awn::res {
         private:
             ArchiveResource *m_archive_resource;
         public:
-            VP_RTTI_DERIVED(ArchiveFileDevice, FileDeviceBase);
+            VP_RTTI_DERIVED(ArchiveFileDevice);
         protected:
             virtual Result OpenFileImpl(FileHandle *out_file_handle, const char *path, OpenMode open_mode) override;
             virtual Result CloseFileImpl(FileHandle *file_handle) override;

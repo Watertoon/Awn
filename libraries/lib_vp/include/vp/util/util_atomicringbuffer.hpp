@@ -22,6 +22,30 @@ namespace vp::util {
 	class AtomicRingBuffer {
 		public:
             static constexpr const u64 cCancelValue = 0xffff'ffff'ffff'ffff;
+		public:
+            class Iterator {
+                public:
+                    u32 m_offset;
+                    T m_value;
+                    const AtomicRingBuffer *m_rb;
+                public:
+                    constexpr Iterator(u32 offset, AtomicRingBuffer *rb) : m_offset(offset), m_rb(rb) {/*...*/}
+                    constexpr ~Iterator() {/*...*/}
+
+                    constexpr bool operator!=(const Iterator &rhs) const {
+                        return m_offset < rhs.m_rb->GetCounter();
+                    }
+                    constexpr T operator*() const {
+                        return m_value;
+                    }
+                    constexpr Iterator &operator++() {
+                         while (m_offset < m_rb->GetCounter()) {
+                            m_value = m_rb->GetValue(m_offset++);
+                            if (m_value != 0 && (IsCancellable && reinterpret_cast<u64>(m_value) != cCancelValue)) { break; }
+                        }
+                        return *this;
+                    }
+            };
 		private:
             u32  m_max_count;
 			u32  m_offset;
@@ -35,7 +59,7 @@ namespace vp::util {
 
                 /* Integrity checks */
                 RESULT_RETURN_UNLESS(queue_count != 0, ResultRangeNG);
-                RESULT_RETURN_UNLESS(queue_count < 0x8000'0000, ResultRangeNG);
+                RESULT_RETURN_UNLESS(queue_count <= 0x8000'0000, ResultRangeNG);
 
                 /* Align up count to nearest power of 2 */
                 const u32 count = vp::util::AlignPow2(queue_count);
@@ -58,10 +82,10 @@ namespace vp::util {
                 if (m_array != nullptr) {
                     delete [] m_array;
                     m_array = nullptr;
+                    m_max_count = 0;
+                    m_count     = 0;
+                    m_offset    = 0;
                 }
-                m_max_count = 0;
-                m_count     = 0;
-                m_offset    = 0;
             }
 
             constexpr void SetMemory(T *array, u32 count) {
@@ -71,6 +95,13 @@ namespace vp::util {
                 m_count = 0;
             }
         public:
+            constexpr Iterator begin() {
+                return Iterator(m_offset,this);
+            }
+            constexpr Iterator end() {
+                return Iterator(0,this);
+            }
+
             bool PushBack(T value) {
 
                 /* Integrity checks */
@@ -112,7 +143,7 @@ namespace vp::util {
                     /* Ensure value */
                     value = m_array[prev_offset & max_mask];
                     if (value == 0) {
-                        /* Reset offset and try again, for someone else took our value */
+                        /* Try again, the value has not arrived, or maybe someone else took our value */
                         vp::util::MemoryBarrierInnerReadWrite();
                         u32 reload_offset = m_offset;
                         if (reload_offset == prev_offset) { return static_cast<T>(0); }
@@ -147,7 +178,7 @@ namespace vp::util {
                     /* Pop next value */
                     const u32 index = offset & max_mask;
                     u64 value = m_array[index];
-                    /* Fail on zero (is only meant to happen when space has been reserved in PushBack, but the value has not yet been written) */
+                    /* Fail on zero if someone reserved space in PushBack, but their value has not yet been written */
                     if (value == 0) { return static_cast<T>(0); }
                     m_array[index] = 0;
                     ++offset;
@@ -192,6 +223,12 @@ namespace vp::util {
                 return;
             }
 
+            constexpr T GetValue(u32 id) const {
+                const u32 max = m_max_count;
+                const u32 max_mask = (max - 1);
+                return reinterpret_cast<T>(m_array[id & max_mask]);
+            }
+
             constexpr bool IsValid() const { return m_array != nullptr; }
             constexpr bool IsEmpty() const { return (this->GetUsedCount() < 1); }
             constexpr bool IsFull() const { return this->GetUsedCount() == this->GetMaxCount(); }
@@ -206,6 +243,30 @@ namespace vp::util {
 	class AtomicFixedRingBuffer {
 		public:
             static constexpr const u64 cCancelValue = 0xffff'ffff'ffff'ffff;
+		public:
+            class Iterator {
+                public:
+                    u32 m_offset;
+                    T m_value;
+                    const AtomicFixedRingBuffer *m_rb;
+                public:
+                    constexpr Iterator(u32 offset, AtomicFixedRingBuffer *rb) : m_offset(offset), m_rb(rb) {/*...*/}
+                    constexpr ~Iterator() {/*...*/}
+
+                    constexpr bool operator!=(const Iterator &rhs) const {
+                        return m_offset < rhs.m_rb->GetCounter();
+                    }
+                    constexpr T operator*() const {
+                        return m_value;
+                    }
+                    constexpr Iterator &operator++() {
+                         while (m_offset < m_rb->GetCounter()) {
+                            m_value = m_rb->GetValue(m_offset++);
+                            if (m_value != 0 && (IsCancellable && m_value != cCancelValue)) { break; }
+                        }
+                        return *this;
+                    }
+            };
 		private:
 			u32 m_offset;
 			u32 m_count;
@@ -213,6 +274,13 @@ namespace vp::util {
         public:
             constexpr AtomicFixedRingBuffer() : m_offset(), m_count(), m_array{} {/*...*/}
             constexpr ~AtomicFixedRingBuffer() {/*...*/}
+
+            constexpr Iterator begin() {
+                return Iterator(m_offset,this);
+            }
+            constexpr Iterator end() {
+                return Iterator(0,this);
+            }
 
             bool PushBack(T value) {
 
@@ -255,7 +323,7 @@ namespace vp::util {
                     /* Ensure value */
                     value = m_array[prev_offset & max_mask];
                     if (value == 0) {
-                        /* Reset offset and try again, for someone else took our value */
+                        /* Try again, the value has not arrived, or maybe someone else took our value */
                         vp::util::MemoryBarrierInnerReadWrite();
                         u32 reload_offset = m_offset;
                         if (reload_offset == prev_offset) { return static_cast<T>(0); }
@@ -333,6 +401,12 @@ namespace vp::util {
                     }
                 }
                 return;
+            }
+
+            constexpr T GetValue(u32 id) const {
+                const u32 max = Count;
+                const u32 max_mask = (max - 1);
+                return reinterpret_cast<T>(m_array[id & max_mask]);
             }
 
             constexpr bool IsEmpty() const { return (static_cast<s32>(this->GetUsedCount()) < 1); }

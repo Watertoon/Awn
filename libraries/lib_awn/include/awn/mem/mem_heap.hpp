@@ -45,7 +45,7 @@ namespace awn::mem {
             sys::Mutex m_heap_cs;
             bool m_is_thread_safe;
         public:
-            VP_RTTI_DERIVED(Heap, vp::imem::IHeap);
+            VP_RTTI_DERIVED(Heap);
         private:
             void AppendDisposer(IDisposer &disposer) {
                 ScopedHeapLock lock(this);

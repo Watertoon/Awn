@@ -31,7 +31,7 @@ namespace awn::res {
         public:
             static constexpr inline const u32 cInvalidEntryIndex = 0xffff'ffff;
         public:
-            VP_RTTI_DERIVED(ArchiveResource, Resource);
+            VP_RTTI_DERIVED(ArchiveResource);
         public:
             constexpr ArchiveResource() : Resource() {/*...*/}
             virtual ~ArchiveResource() override {/*...*/}

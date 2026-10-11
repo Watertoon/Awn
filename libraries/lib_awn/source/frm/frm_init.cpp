@@ -108,37 +108,36 @@ namespace awn::frm {
 #ifdef VP_TARGET_GRAPHICS_API_vk
         gfx::impl::Context *context = gfx::impl::Context::CreateInstance(awn_graphics_heap);
         gfx::impl::ContextInfo context_info = {
-            .texture_view_descriptor_count = graphics_info->max_texture_view_count,
-            .sampler_descriptor_count = graphics_info->max_sampler_count,
+            .features_info = {                
+                .texture_view_descriptor_count = graphics_info->max_texture_view_count,
+                .sampler_descriptor_count = graphics_info->max_sampler_count,
+            },
         };
         context->Initialize(std::addressof(context_info));
-#elif VP_TARGET_GRAPHICS_API_nvn
+#elifdef VP_TARGET_GRAPHICS_API_nvn
         gfx::impl::Context *context = gfx::impl::Context::CreateInstance(awn_graphics_heap);
         gfx::impl::ContextInfo context_info = {};
         context->Initialize(awn_graphics_heap, std::addressof(context_info));
 #endif
 
-#ifdef VP_TARGET_GRAPHICS_API_vk
         /* Initialize command pool manager */
+        gfx::impl::CommandPoolManagerInfo info = {
+            .command_pool_count = vp::util::Min(graphics_info->max_command_buffer_count, 0x200u),
+#ifdef VP_TARGET_GRAPHICS_API_nvn
+            .control_memory_size = vp::util::c256KB,
+            .command_memory_size = vp::util::c256KB,
+#endif
+        };
         gfx::impl::CommandPoolManager *cmd_pool_mgr = gfx::impl::CommandPoolManager::CreateInstance(awn_graphics_heap);
-        cmd_pool_mgr->Initialize(awn_graphics_heap, graphics_info->max_command_list_count);
+        RESULT_ABORT_UNLESS(cmd_pool_mgr->Initialize(awn_graphics_heap, std::addressof(info)));
 
         /* Initialize descriptor memory manager */
         const gfx::impl::DescriptorMemoryManagerInfo desc_mgr_info = {
-            //.max_command_buffer_count = graphics_info->max_command_buffer_count,
-            //.max_command_list_count = graphics_info->max_command_list_count,
-        #ifdef AWN_ENABLE_VK_DESCRIPTOR_HEAP
             .max_separate_texture_count = graphics_info->max_texture_view_count,
             .max_separate_sampler_count = graphics_info->max_sampler_count,
-        #else
-            .per_stage_max_allocation_count = 0x2000,
-            .per_stage_memory_size = graphics_info->per_stage_descriptor_memory_size,
-            .transient_descriptor_memory_size = vp::util::c1MB,
-        #endif
         };
         gfx::impl::DescriptorMemoryManager *desc_memory_mgr = gfx::impl::DescriptorMemoryManager::CreateInstance(awn_graphics_heap);
-        desc_memory_mgr->Initialize(awn_graphics_heap, std::addressof(desc_mgr_info));
-#endif
+        RESULT_ABORT_UNLESS(desc_memory_mgr->Initialize(awn_graphics_heap, std::addressof(desc_mgr_info)));
 
         /* Initialize texture view sampler manager */
         gfx::impl::TextureViewSamplerManager *tex_samp_mgr = gfx::impl::TextureViewSamplerManager::CreateInstance(awn_graphics_heap);
@@ -146,7 +145,7 @@ namespace awn::frm {
             .max_texture_view_unit_count = graphics_info->max_texture_view_count,
             .max_sampler_unit_count = graphics_info->max_sampler_count,
         };
-        tex_samp_mgr->Initialize(awn_graphics_heap, std::addressof(texture_sampler_mgr_info));
+        RESULT_ABORT_UNLESS(tex_samp_mgr->Initialize(awn_graphics_heap, std::addressof(texture_sampler_mgr_info)));
 
         awn_graphics_heap->AdjustHeap();
 

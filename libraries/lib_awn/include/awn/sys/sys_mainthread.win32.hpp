@@ -19,7 +19,7 @@ namespace awn::sys {
 
     class MainThread : public Thread {
         public:
-            VP_RTTI_DERIVED(MainThread, Thread);
+            VP_RTTI_DERIVED(MainThread);
         public:
             constexpr MainThread() : Thread() {/*...*/}
             virtual ~MainThread() override {/*...*/}

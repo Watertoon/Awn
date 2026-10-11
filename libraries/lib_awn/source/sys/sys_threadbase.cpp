@@ -51,10 +51,10 @@ namespace awn::sys {
         /* Allocate or set memory queue memory */
         if (info->message_memory == nullptr) {            
             m_message_queue_memory = nullptr;
-            m_message_queue.Initialize(thread_heap, info->message_count);
+            RESULT_ABORT_UNLESS(m_message_queue.Initialize(thread_heap, info->message_count));
         } else {
             m_message_queue_memory = info->message_memory;
-            m_message_queue.InitializeByReference(m_message_queue_memory, info->message_count);
+            m_message_queue.SetMemory(m_message_queue_memory, info->message_count);
         }
 
         /* Allocate or set memory */

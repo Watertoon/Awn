@@ -19,9 +19,12 @@ namespace awn::gfx::impl {
 
     AWN_SINGLETON_TRAITS_IMPL(CommandPoolManager);
 
-    void CommandPoolManager::Initialize(mem::Heap *heap, u32 pool_count) {
-        RESULT_ABORT_UNLESS(m_handle_allocator.Initialize(heap, pool_count));
-        RESULT_ABORT_UNLESS(m_unit_array.Initialize(heap, pool_count));
+    Result CommandPoolManager::Initialize(mem::Heap *heap, const CommandPoolManagerInfo *info) {
+        RESULT_TRY(m_handle_allocator.Initialize(heap, info->command_pool_count));
+        auto fail_guard = SCOPE_GUARD { this->Finalize(); };
+        RESULT_TRY(m_unit_array.Initialize(heap, info->command_pool_count));
+        fail_guard.Cancel();
+        RESULT_RETURN_SUCCESS;
     }
 
     void CommandPoolManager::Finalize() {
@@ -53,7 +56,7 @@ namespace awn::gfx::impl {
 
         /* Release ref */
         CommandPoolUnit *unit = std::addressof(m_unit_array[pool_id]);
-        const u32 count = vp::util::InterlockedDecrement(std::addressof(unit->ref_count));
+        const u32 count = vp::util::InterlockedDecrementRelaxed(std::addressof(unit->ref_count));
         if (count != 0) { return; }
 
         /* Release command pool */
@@ -70,7 +73,7 @@ namespace awn::gfx::impl {
         /* Reference command pool */
         VP_ASSERT(pool_id != cInvalidCommandPoolId);
         CommandPoolUnit *unit = std::addressof(m_unit_array[pool_id]);
-        vp::util::InterlockedIncrement(std::addressof(unit->ref_count));
+        vp::util::InterlockedIncrementRelaxed(std::addressof(unit->ref_count));
         const VkCommandPool vk_command_pool = unit->vk_command_pool;
 
         /* Allocate command buffer */

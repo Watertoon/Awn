@@ -19,20 +19,28 @@ namespace awn::gfx::impl {
 
     Result ConvertVkResultToResult(VkResult vk_result);
 
-    struct ContextInfo {
-        const char *app_name = "Default";
-        const char *engine_name = "Awn_001";
-        OptionalFeatureMask preferred_optional_feature_mask;
-        OptionalFeatureMask required_optional_feature_mask;
+    struct FeaturesInfo {
         size_t texture_view_descriptor_count;
         size_t sampler_descriptor_count;
+    };
+
+    struct ContextInfo {
+        const char *app_name = "Default";
+        const char *engine_name = "Awn_Desktop";
+        OptionalFeatureMask preferred_optional_feature_mask;
+        OptionalFeatureMask required_optional_feature_mask;
+        FeaturesInfo features_info;
     };
 
     struct ContextImportInfo {
         VkInstance vk_instance;
         VkPhysicalDevice vk_physical_device;
         VkDevice vk_device;
+        OptionalFeatureMask optional_feature_mask;
+        FeaturesInfo features_info;
     };
+
+    void FindMissingFeatures(MissingFeatures *missing_features, VkPhysicalDevice vk_physical_device, const FeaturesInfo *features_info);
 
 #ifdef VP_TARGET_PLATFORM_linux
     bool IsWaylandCompatibleVkPhysicalDevice(const VkPhysicalDeviceDrmPropertiesEXT *prop);
@@ -116,7 +124,7 @@ namespace awn::gfx::impl {
         private:
             void InitializeInstance(const ContextInfo *context_info);
             void FinalizeInstance();
-            void SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, const ContextInfo *context_info);
+            void SetVkPhysicalDevice(VkPhysicalDevice vk_physical_device, const FeaturesInfo *features_info);
             void InitializeLogicalDevice(const ContextInfo *context_info);
             void FinalizeLogicalDevice();
         private:
@@ -139,6 +147,7 @@ namespace awn::gfx::impl {
             VkPhysicalDeviceDescriptorHeapPropertiesEXT        m_vk_physical_device_descriptor_heap_properties;
             VkPhysicalDeviceNestedCommandBufferPropertiesEXT   m_vk_physical_device_nested_command_buffer_properties;
             VkPhysicalDeviceRobustness2PropertiesEXT           m_vk_physical_device_robustness_2_properties;
+            VkPhysicalDeviceFragmentShadingRatePropertiesKHR   m_vk_physical_device_fragment_shading_rate_properties;
             VkPhysicalDeviceMeshShaderPropertiesEXT            m_vk_physical_device_mesh_shader_properties;
 #ifdef VP_TARGET_PLATFORM_linux
             VkPhysicalDeviceDrmPropertiesEXT m_vk_physical_device_drm_properties;
@@ -227,6 +236,10 @@ namespace awn::gfx::impl {
             },
             m_vk_physical_device_robustness_2_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT,
+                .pNext = std::addressof(m_vk_physical_device_fragment_shading_rate_properties),
+            },
+            m_vk_physical_device_fragment_shading_rate_properties {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR,
                 .pNext = std::addressof(m_vk_physical_device_mesh_shader_properties),
             },
             m_vk_physical_device_mesh_shader_properties {
@@ -260,6 +273,7 @@ namespace awn::gfx::impl {
             constexpr ALWAYS_INLINE ~Context() {/*...*/}
 
             void Initialize(const ContextInfo *context_info);
+            void Import(const ContextImportInfo *import_info);
             void Finalize();
 
             void SubmitCommandList(CommandList command_list, Sync **wait_sync_array, u32 wait_sync_count, Sync **signal_sync_array, u32 signal_sync_count);

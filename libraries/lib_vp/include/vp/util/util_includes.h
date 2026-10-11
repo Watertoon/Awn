@@ -29,11 +29,14 @@
 #include <mutex>
 #include <array>
 #include <algorithm>
+#include <ranges>
 #include <meta>
 
 /* Architecture includes */
 #ifdef VP_TARGET_ARCHITECTURE_x86
     #include <immintrin.h>
+#elifdef VP_TARGET_ARCHITECTURE_aarch64
+    #include <arm_neon.h>
 #endif
 
 /* Platform includes */

@@ -36,10 +36,12 @@ namespace awn::sys {
 
             void Acquire() {
                 ::AcquireSRWLockExclusive(std::addressof(m_cs));
-                while (m_counter == 0) {
+                u32 count = m_counter;
+                while (count == 0) {
                     ::SleepConditionVariableSRW(std::addressof(m_cv), std::addressof(m_cs), INFINITE, 0);
+                    count = m_counter;
                 }
-                m_counter -= 1;
+                m_counter = count - 1;
                 ::ReleaseSRWLockExclusive(std::addressof(m_cs));
             }
 

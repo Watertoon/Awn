@@ -23,4 +23,5 @@ namespace awn::sys {
     DECLARE_RESULT(InvalidPriority,      3);
     DECLARE_RESULT(InvalidThreadName,    4);
     DECLARE_RESULT(InvalidCoreMask,      5);
+    DECLARE_RESULT(NoMemory,             6);
 }

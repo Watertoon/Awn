@@ -42,7 +42,7 @@ namespace awn::gfx {
             constexpr ALWAYS_INLINE ~Texture() {/*...*/}
 
             Result Initialize(MemoryPool *memory_pool, size_t memory_offset, const TextureInfo *texture_info);
-            Result Initialize(void *gpu_memory_address, const TextureInfo *texture_info);
+            //Result Initialize(void *gpu_memory_address, const TextureInfo *texture_info);
             void Finalize();
 
             void CopyMemoryToTexture(const void * const*memory_array, const TextureCopyRegion *copy_region_array, u32 copy_region_count, bool is_no_conversion = false);
@@ -114,15 +114,20 @@ namespace awn::gfx {
                 } else {
                     aspect_mask = 0;
                     if (is_depth) {                
-                        aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        aspect_mask |= VK_IMAGE_ASPECT_DEPTH_BIT;
                     }
                     if (is_stencil) {
-                        aspect_mask = VK_IMAGE_ASPECT_STENCIL_BIT;
+                        aspect_mask |= VK_IMAGE_ASPECT_STENCIL_BIT;
                     }
                 }
                 return aspect_mask;
             }
 
+            constexpr void ImportVkImage(VkImage image, const TextureInfo *texture_info) {
+                m_vk_image = image;
+                m_texture_info = *texture_info;
+                m_memory_offset = 0;
+            }
             Result InitializeForDedicatedAllocation(const TextureInfo *texture_info, VkImageUsageFlags vk_image_usage_flags, void *pnext = nullptr);
     };
     static_assert(sizeof(Texture) <= cMaxGfxTextureSize);

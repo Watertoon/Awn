@@ -38,20 +38,20 @@ namespace awn::gfx::impl {
         RESULT_RETURN_SUCCESS;
     }
 
-	Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, const BufferInfo *buffer_info) {
-        return CreateVkBuffer(out_buffer, gpu_address, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
-    }
-
-    Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, VkBufferUsageFlags usage_flags, size_t size) {
-
-        /* Ensure address */
-        size_t offset;
-        MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_address);
-        RESULT_RETURN_IF(memory_pool == nullptr, ResultInvalidMemoryPool);
-
-        /* Create VkBuffer */
-        return CreateVkBuffer(out_buffer, memory_pool, offset, usage_flags, size);
-    }
+	//Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, const BufferInfo *buffer_info) {
+    //    return CreateVkBuffer(out_buffer, gpu_address, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
+    //}
+    //
+    //Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, VkBufferUsageFlags usage_flags, size_t size) {
+    //
+    //    /* Ensure address */
+    //    size_t offset;
+    //    MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_address);
+    //    RESULT_RETURN_IF(memory_pool == nullptr, ResultInvalidMemoryPool);
+    //
+    //    /* Create VkBuffer */
+    //    return CreateVkBuffer(out_buffer, memory_pool, offset, usage_flags, size);
+    //}
 
 	Result CreateVkBuffer(VkBuffer *out_buffer, MemoryPool *memory_pool, size_t memory_offset, const BufferInfo *buffer_info) {
         return CreateVkBuffer(out_buffer, memory_pool, memory_offset, vp::res::GfxGpuAccessFlagsToVkBufferUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(buffer_info->gpu_access_flags)), buffer_info->size);
@@ -144,28 +144,28 @@ namespace awn::gfx::impl {
         RESULT_RETURN_SUCCESS;
     }
 
-	Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *texture_info) {
-        return CreateVkImage(out_image, gpu_address, texture_info, nullptr);
-    }
-
-	Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *texture_info, const void *pnext) {
-        const VkImageUsageFlags flags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT | vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags));
-        return CreateVkImage(out_image, gpu_address, flags, texture_info, pnext);
-    }
-
-    Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
-        return CreateVkImage(out_image, gpu_address, image_usage_flags, texture_info, nullptr);
-    }
-
-    Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext) {
-
-        /* Get handle by address */
-        size_t offset;
-        MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_address);
-
-        /* Create VkImage */
-        return CreateVkImage(out_image, memory_pool, offset, image_usage_flags, texture_info, pnext);
-    }
+	//Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *texture_info) {
+    //    return CreateVkImage(out_image, gpu_address, texture_info, nullptr);
+    //}
+    //
+	//Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *texture_info, const void *pnext) {
+    //    const VkImageUsageFlags flags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT | vp::res::GfxGpuAccessFlagsToVkImageUsageFlags(static_cast<vp::res::GfxGpuAccessFlags>(texture_info->gpu_access_flags));
+    //    return CreateVkImage(out_image, gpu_address, flags, texture_info, pnext);
+    //}
+    //
+    //Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info) {
+    //    return CreateVkImage(out_image, gpu_address, image_usage_flags, texture_info, nullptr);
+    //}
+    //
+    //Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext) {
+    //
+    //    /* Get handle by address */
+    //    size_t offset;
+    //    MemoryPool *memory_pool = gfx::FindMemoryPool(std::addressof(offset), gpu_address);
+    //
+    //    /* Create VkImage */
+    //    return CreateVkImage(out_image, memory_pool, offset, image_usage_flags, texture_info, pnext);
+    //}
 
 	Result CreateVkImage(VkImage *out_image, MemoryPool *memory_pool, size_t offset, const TextureInfo *texture_info) {
         return CreateVkImage(out_image, memory_pool, offset, texture_info, nullptr);
@@ -315,174 +315,4 @@ namespace awn::gfx::impl {
         };
         return { ::pfn_vkGetBufferDeviceAddress(Context::GetInstance()->GetVkDevice(), std::addressof(address_info)), };
     }
-
-#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-    void GetTextureSamplerDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot, gfx::DescriptorSlot sampler_slot) {
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler();
-        const u32              desc_size     = context->GetTextureSamplerDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseTextureSampler();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + desc_offset);
-
-        /* Cache descriptor */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        const VkImageView image_view = tex_samp_manager->GetVkImageView(texture_slot);
-        const VkSampler sampler = tex_samp_manager->GetVkSampler(sampler_slot);
-        const VkDescriptorImageInfo image_info = {
-            .sampler = sampler,
-            .imageView   = image_view,
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .data = {
-                .pCombinedImageSampler  = std::addressof(image_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-        return;
-    }
-
-    void GetImageDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot) {
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler();
-        const u32              desc_size     = context->GetImageDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseImage();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + desc_offset);
-
-        /* Cache descriptor */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        const VkImageView image_view = tex_samp_manager->GetVkImageView(texture_slot);
-        const VkDescriptorImageInfo image_info = {
-            .imageView   = image_view,
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-            .data = {
-                .pStorageImage  = std::addressof(image_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-        return;
-    }
-
-    void GetUniformBufferDescriptor(void *memory, u32 location, GpuAddress gpu_address, size_t size) {
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedBuffer();
-        const u32              desc_size     = context->GetUniformBufferDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseUniformBuffer();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + desc_offset);
-
-        /* Cache descriptor */
-        const VkDescriptorAddressInfoEXT address_info = {
-            .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT,
-            .address = gpu_address.vk_device_address,
-            .range   = size,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .data  = {
-                .pUniformBuffer = std::addressof(address_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-        return;
-    }
-
-    void GetStorageBufferDescriptor(void *memory, u32 location, GpuAddress gpu_address, size_t size) {
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedBuffer();
-        const u32              desc_size     = context->GetStorageBufferDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseStorageBuffer();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + desc_offset);
-
-        /* Cache descriptor */
-        const VkDescriptorAddressInfoEXT address_info = {
-            .sType   = VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT,
-            .address = gpu_address.vk_device_address,
-            .range   = size,
-        };
-        const VkDescriptorGetInfoEXT get_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT,
-            .type  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .data  = {
-                .pUniformBuffer = std::addressof(address_info),
-            },
-        };
-        ::pfn_vkGetDescriptorEXT(context->GetVkDevice(), std::addressof(get_info), desc_size, memory_offset);
-        return;
-    }
-
-    void GetSeparateTextureDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot) {
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler();
-        const u32              desc_size     = context->GetSeparateTextureDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseSeparateTexture();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + desc_offset);
-
-        /* Cache descriptor */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        VP_ASSERT(tex_samp_manager->IsTextureViewSlotValid(texture_slot));
-        const impl::TextureViewSamplerManager::TextureViewUnit *unit = tex_samp_manager->GetTextureViewUnit(texture_slot.index);
-        ::memcpy(memory_offset, unit->descriptor_memory, desc_size);
-
-        return;
-    }
-
-    void GetSeparateSamplerDescriptor(void *memory, u32 location, gfx::DescriptorSlot sampler_slot) {
-
-        /* Get descriptor memory offset */
-        impl::Context         *context       = impl::Context::GetInstance();
-        VkDevice               vk_device     = context->GetVkDevice();
-        VkDescriptorSetLayout  vk_set_layout = context->GetPerStageVkDescriptorSetLayoutCombinedTextureSampler();
-        const u32              desc_size     = context->GetSeparateSamplerDescriptorSize();
-        const u32              base_binding  = impl::Context::GetPerStageBindingBaseSeparateSampler();
-        const u32              binding       = base_binding + location;
-        VkDeviceSize           desc_offset   = 0;
-        ::pfn_vkGetDescriptorSetLayoutBindingOffsetEXT(vk_device, vk_set_layout, binding, std::addressof(desc_offset));
-        void *memory_offset = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory) + desc_offset);
-
-        /* Cache descriptor */
-        impl::TextureViewSamplerManager *tex_samp_manager = impl::TextureViewSamplerManager::GetInstance();
-        VP_ASSERT(tex_samp_manager->IsSamplerSlotValid(sampler_slot));
-        const impl::TextureViewSamplerManager::SamplerUnit *unit = tex_samp_manager->GetSamplerUnit(sampler_slot.index);
-        ::memcpy(memory_offset, unit->descriptor_memory, desc_size);
-
-        return;
-    }
-#endif
 }

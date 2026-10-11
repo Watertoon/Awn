@@ -34,7 +34,7 @@ namespace awn::para {
             PropertyArrayDefaultBase *m_default;
             PropertyArrayBase        *m_parent;
         public:
-            VP_RTTI_DERIVED(PropertyArrayBase, Composite);
+            VP_RTTI_DERIVED(PropertyArrayBase);
         public:
             constexpr PropertyArrayBase() : Composite(), m_default(), m_parent() {/*...*/}
             virtual constexpr ~PropertyArrayBase() override {/*...*/}
@@ -87,7 +87,7 @@ namespace awn::para {
             u32  m_max;
             u32  m_count;
         public:
-            VP_RTTI_DERIVED(PropertyArray, PropertyArrayBase);
+            VP_RTTI_DERIVED(PropertyArray);
         public:
             constexpr PropertyArray() : PropertyArrayBase(), m_array(), m_max(), m_count() {/*...*/}
             virtual constexpr ~PropertyArray() override {/*...*/}

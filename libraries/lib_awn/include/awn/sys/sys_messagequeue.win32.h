@@ -17,52 +17,92 @@
 
 namespace awn::sys {
 
+    template <typename T>
     class MessageQueue {
         private:
-            size_t              *m_message_buffer;
-            s32                  m_max;
-            s32                  m_count;
-            s32                  m_offset;
-            vp::util::BusyMutex  m_busy_mutex;
-            u32                  m_message_wait_value;
-            u32                  m_clear_wait_value;
+            using MessageRing = vp::util::RingBuffer<T>;
         private:
-            void WaitForMessage();
-            void WaitForMessageClear();
-            bool SendMessageImpl(u64 message);
-            bool RecieveMessageImpl(u64 *out_message);
-            bool JamMessageImpl(u64 message);
+            MessageRing         m_ring;
+            SRWLOCK             m_cs;
+            CONDITION_VARIABLE  m_recv_cv;
+            CONDITION_VARIABLE  m_send_cv;
         public:
-            constexpr  MessageQueue() : m_message_buffer(), m_max(), m_count(), m_offset(), m_busy_mutex{}, m_message_wait_value(), m_clear_wait_value() {/*...*/}
+            constexpr  MessageQueue() : m_ring(), m_cs(SRWLOCK_INIT), m_recv_cv(CONDITION_VARIABLE_INIT), m_send_cv(CONDITION_VARIABLE_INIT) {/*...*/}
             constexpr ~MessageQueue() {/*...*/}
 
-            void Initialize(vp::imem::IHeap *heap, s32 max_message_count);
-            void Initialize(mem::Heap *heap, s32 max_message_count);
-            constexpr void InitializeByReference(size_t *memory, s32 max_message_count);
-            void Finalize();
+            Result Initialize(mem::Heap *heap, s32 max_message_count) {
+                RESULT_RETURN(m_ring.Initialize(heap,max_message_count));
+            }
+            void Finalize() {
+                m_ring.Finalize();
+            }
 
-            void ReceiveMessage(size_t *out_message);
-            bool TryReceiveMessage(size_t *out_message);
-            bool TryPeekMessage(size_t *out_message);
+            constexpr void SetMemory(T *memory, s32 max_message_count) {
+                m_ring.SetMemory(memory, max_message_count);
+            }
+        public:
+            void ReceiveMessage(T *out_message) {
+                ::AcquireSRWLockExclusive(std::addressof(m_cs));
+                ON_SCOPE_EXIT { ::ReleaseSRWLockExclusive(std::addressof(m_cs)); };
+                while (m_ring.IsEmpty()) {
+                    ::SleepConditionVariableSRW(std::addressof(m_send_cv), std::addressof(m_cs), INFINITE, 0);
+                }
+                *out_message = m_ring.RemoveFront();
+                ::WakeAllConditionVariable(std::addressof(m_recv_cv));
+                return;
+            }
+            bool TryReceiveMessage(T *out_message) {
+                ::AcquireSRWLockExclusive(std::addressof(m_cs));
+                ON_SCOPE_EXIT { ::ReleaseSRWLockExclusive(std::addressof(m_cs)); };
+                if (m_ring.IsEmpty()) { return false; }
+                *out_message = m_ring.RemoveFront();
+                ::WakeAllConditionVariable(std::addressof(m_recv_cv));
+                return true;
+            }
+            bool TryPeekMessage(T *out_message) {
+                ::AcquireSRWLockExclusive(std::addressof(m_cs));
+                ON_SCOPE_EXIT { ::ReleaseSRWLockExclusive(std::addressof(m_cs)); };
+                if (m_ring.IsEmpty()) { return false; }
+                *out_message = m_ring.PeekFront();
+                return true;
+            }
 
-            void SendMessage(size_t message);
-            bool TrySendMessage(size_t message);
+            void SendMessage(T message) {
+                ::AcquireSRWLockExclusive(std::addressof(m_cs));
+                ON_SCOPE_EXIT { ::ReleaseSRWLockExclusive(std::addressof(m_cs)); };
+                while (m_ring.IsFull()) {
+                    ::SleepConditionVariableSRW(std::addressof(m_recv_cv), std::addressof(m_cs), INFINITE, 0);
+                }
+                m_ring.PushBack(message);
+                ::WakeAllConditionVariable(std::addressof(m_send_cv));
+                return;
+            }
+            bool TrySendMessage(T message) {
+                ::AcquireSRWLockExclusive(std::addressof(m_cs));
+                ON_SCOPE_EXIT { ::ReleaseSRWLockExclusive(std::addressof(m_cs)); };
+                if (m_ring.IsFull()) { return false; }
+                m_ring.PushBack(message);
+                ::WakeAllConditionVariable(std::addressof(m_send_cv));
+                return true;
+            }
 
-            void JamMessage(size_t message);
-            bool TryJamMessage(size_t message);
+            void JamMessage(T message) {
+                ::AcquireSRWLockExclusive(std::addressof(m_cs));
+                ON_SCOPE_EXIT { ::ReleaseSRWLockExclusive(std::addressof(m_cs)); };
+                while (m_ring.IsFull()) {
+                    ::SleepConditionVariableSRW(std::addressof(m_recv_cv), std::addressof(m_cs), INFINITE, 0);
+                }
+                m_ring.PushFront(message);
+                ::WakeAllConditionVariable(std::addressof(m_send_cv));
+                return;
+            }
+            bool TryJamMessage(T message) {
+                ::AcquireSRWLockExclusive(std::addressof(m_cs));
+                ON_SCOPE_EXIT { ::ReleaseSRWLockExclusive(std::addressof(m_cs)); };
+                if (m_ring.IsFull()) { return false; }
+                m_ring.PushBack(message);
+                ::WakeAllConditionVariable(std::addressof(m_send_cv));
+                return true;
+            }
     };
-
-    /* Constexpr impl */
-    constexpr void MessageQueue::InitializeByReference(size_t *memory, s32 max_message_count) {
-
-        /* Allocate message buffer */
-        m_message_buffer = memory;
-        VP_ASSERT(m_message_buffer != nullptr);
-
-        m_max = max_message_count;
-        m_count  = 0;
-        m_offset = 0;
-
-        return;
-    }
 }

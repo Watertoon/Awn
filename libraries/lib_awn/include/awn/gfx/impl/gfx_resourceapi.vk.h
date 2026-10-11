@@ -47,8 +47,8 @@ namespace awn::gfx::impl {
 
 	Result CreateVkBuffer(VkBuffer *out_buffer, const BufferInfo *buffer_info);
 	Result CreateVkBuffer(VkBuffer *out_buffer, VkBufferUsageFlags usage_flags, size_t size);
-	Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, const BufferInfo *buffer_info);
-	Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, VkBufferUsageFlags usage_flags, size_t size);
+	//Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, const BufferInfo *buffer_info);
+	//Result CreateVkBuffer(VkBuffer *out_buffer, void *gpu_address, VkBufferUsageFlags usage_flags, size_t size);
 	Result CreateVkBuffer(VkBuffer *out_buffer, MemoryPool *memory_pool, size_t memory_offset, const BufferInfo *buffer_info);
     Result CreateVkBuffer(VkBuffer *out_buffer, MemoryPool *memory_pool, size_t memory_offset, VkBufferUsageFlags usage_flags, size_t size);
 
@@ -57,10 +57,10 @@ namespace awn::gfx::impl {
 	Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
 	Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
 	Result CreateVkImage(VkImage *out_image, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext, bool is_preinit);
-	Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *buffer_info);
-	Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *buffer_info, const void *pnext);
-	Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
-	Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
+	//Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *buffer_info);
+	//Result CreateVkImage(VkImage *out_image, void *gpu_address, const TextureInfo *buffer_info, const void *pnext);
+	//Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
+	//Result CreateVkImage(VkImage *out_image, void *gpu_address, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info, const void *pnext);
 	Result CreateVkImage(VkImage *out_image, MemoryPool *memory_pool, size_t offset, const TextureInfo *buffer_info);
 	Result CreateVkImage(VkImage *out_image, MemoryPool *memory_pool, size_t offset, const TextureInfo *buffer_info, const void *pnext);
 	Result CreateVkImage(VkImage *out_image, MemoryPool *memory_pool, size_t offset, VkImageUsageFlags image_usage_flags, const gfx::TextureInfo *texture_info);
@@ -77,13 +77,4 @@ namespace awn::gfx::impl {
     void DestroyVkImageView(VkImageView vk_image_view);
 
     GpuAddress GetGpuAddress(VkBuffer vk_buffer);
-
-#ifndef AWN_ENABLE_VK_DESCRIPTOR_HEAP
-    void GetTextureSamplerDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot, gfx::DescriptorSlot sampler_slot);
-    void GetImageDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot);
-    void GetUniformBufferDescriptor(void *memory, u32 location, GpuAddress gpu_address, size_t size);
-    void GetStorageBufferDescriptor(void *memory, u32 location, GpuAddress gpu_address, size_t size);
-    void GetSeparateTextureDescriptor(void *memory, u32 location, gfx::DescriptorSlot texture_slot);
-    void GetSeparateSamplerDescriptor(void *memory, u32 location, gfx::DescriptorSlot sampler_slot);
-#endif
 }

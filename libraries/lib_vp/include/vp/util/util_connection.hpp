@@ -80,7 +80,7 @@ namespace vp::util {
             T *m_mask_array;
         public:
             constexpr Connection() : m_array_count(), m_bit_count(), m_mask_array{} {/*...*/}
-            constexpr ~Connection() {/*...*/}
+            constexpr ~Connection() = default;
 
             Result Initialize(vp::imem::IHeap *heap, u32 bit_count) {
 
@@ -88,7 +88,7 @@ namespace vp::util {
                 const u32 array_count = (bit_count / BITSIZEOF(T)) + ((bit_count % BITSIZEOF(T)) != 0);
                 T *array = new (heap, alignof(T)) T[bit_count];
                 RESULT_RETURN_UNLESS(array != nullptr, ResultNoMemory);
-                ::memset(array, 0, array_count * sizeof(T));
+                std::memset(array, 0, array_count * sizeof(T));
 
                 /* Set counts */
                 m_mask_array = array;
@@ -100,7 +100,7 @@ namespace vp::util {
 
             void Finalize() {
                 if (m_mask_array != nullptr) {
-                    delete m_mask_array;
+                    delete [] m_mask_array;
                     m_array_count = 0;
                     m_bit_count = 0;
                     m_mask_array = nullptr;
@@ -139,11 +139,11 @@ namespace vp::util {
 
             constexpr void Fill(bool is_set) {
                 const u32 value = (is_set) ? 0xffff'ffff : 0;
-                ::memset(m_mask_array, value, sizeof(T) * m_array_count);
+                std::memset(m_mask_array, value, sizeof(T) * m_array_count);
                 return;
             }
             constexpr void Clear() {
-                ::memset(m_mask_array, 0, sizeof(T) * m_array_count);
+                std::memset(m_mask_array, 0, sizeof(T) * m_array_count);
                 return;
             }
 
@@ -192,6 +192,25 @@ namespace vp::util {
                 return ret;
             }
 
+            constexpr T GetBits(u32 bit_index, u32 bit_count) const {
+                const u32 index = bit_index / BITSIZEOF(T);
+                const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
+                const T mask = m_mask_array[index];
+                const T bit_mask = ~((~static_cast<T>(0)) << bit_count);
+                return (mask >> shift) & bit_mask;
+            }
+            constexpr T ExchangeBits(u32 bit_index, u32 bit_count, T value) {
+                const u32 index = bit_index / BITSIZEOF(T);
+                const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
+                const T mask = m_mask_array[index];
+                const T set_mask = value << shift;
+                const T bit_mask = ~((~static_cast<T>(0)) << bit_count);
+                const T clear_mask = ~(bit_mask << shift);
+                m_mask_array[index] = (mask & (clear_mask)) | (set_mask);
+                const T ret = (mask >> shift) & bit_mask;
+                return ret;
+            }
+
             constexpr T GetBitMask(u32 mask_index) const {
                 return m_mask_array[mask_index];
             }
@@ -207,8 +226,15 @@ namespace vp::util {
                 const T next = (prev & (~clear_mask)) | set_mask;
                 m_mask_array[mask_index] = next;
             }
-    
+
             constexpr u32 CountOneBits() const {
+                u32 count = 0;
+                for (u32 i = 0; i < m_array_count; ++i) {
+                    count += vp::util::CountOneBits(m_mask_array[i]);
+                }
+                return count;
+            }
+            constexpr u32 CountZeroBits() const {
                 u32 count = 0;
                 for (u32 i = 0; i < m_array_count; ++i) {
                     count += vp::util::CountOneBits(m_mask_array[i]);
@@ -257,6 +283,22 @@ namespace vp::util {
                     if (mask != ~static_cast<T>(0)) { break; }
                     iter += 1;
                 } while (iter != end);
+                u32 index = (iter - start) * BITSIZEOF(T);
+                index += vp::util::CountRightOneBits(mask);
+                return index;
+            }
+            constexpr u32 GetIndexOfFirstZero(u32 base_index) const {
+                const T *start = m_mask_array;
+                const T *iter = start + (base_index / BITSIZEOF(T));
+                const T *end = start + m_array_count;
+                const T bit_mask = ((~static_cast<T>(0)) << base_index);
+                T mask = *iter | (~bit_mask);
+                for (;;) {
+                    if (mask != (~static_cast<T>(0))) { break; }
+                    ++iter;
+                    if (iter == end) { break; }
+                    mask = *iter;
+                }
                 u32 index = (iter - start) * BITSIZEOF(T);
                 index += vp::util::CountRightOneBits(mask);
                 return index;
@@ -369,6 +411,21 @@ namespace vp::util {
                 }
                 return;
             }
+        public:
+            constexpr u32 AllocateZeroBit() {
+                const u32 free_id = this->GetIndexOfFirstZero();
+                if (free_id != m_bit_count) {
+                    this->SetBit(free_id);
+                }
+                return free_id;
+            }
+            constexpr u32 AllocateZeroBitRange(u32 offset) {
+                const u32 free_id = this->GetIndexOfFirstZero(offset);
+                if (free_id != m_bit_count) {
+                    this->SetBit(free_id);
+                }
+                return free_id;
+            }
     };
     
     template <typename T, u32 BitCount>
@@ -427,7 +484,7 @@ namespace vp::util {
             T m_mask_array[cArrayCount];
         public:
             constexpr FixedConnection() : m_mask_array{} {/*...*/}
-            constexpr ~FixedConnection() {/*...*/}
+            constexpr ~FixedConnection() = default;
 
             constexpr Iterator begin() const {
                 u32 iter = 0;
@@ -447,9 +504,9 @@ namespace vp::util {
 
             constexpr void Fill(bool is_set) {
                 const u32 value = (is_set) ? 0xffff'ffff : 0;
-                ::memset(m_mask_array, value, sizeof(m_mask_array));
+                std::memset(m_mask_array, value, sizeof(m_mask_array));
             }
-            constexpr void Clear() { ::memset(m_mask_array, 0, sizeof(m_mask_array)); }
+            constexpr void Clear() { std::memset(m_mask_array, 0, sizeof(m_mask_array)); }
 
             constexpr bool GetBit(u32 bit_index) const {
                 const u32 index = bit_index / BITSIZEOF(T);
@@ -494,6 +551,25 @@ namespace vp::util {
                 return ret;
             }
 
+            constexpr T GetBits(u32 bit_index, u32 bit_count) const {
+                const u32 index = bit_index / BITSIZEOF(T);
+                const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
+                const T mask = m_mask_array[index];
+                const T bit_mask = ~((~static_cast<T>(0)) << bit_count);
+                return (mask >> shift) & bit_mask;
+            }
+            constexpr T ExchangeBits(u32 bit_index, u32 bit_count, T value) {
+                const u32 index = bit_index / BITSIZEOF(T);
+                const u32 shift = (bit_index & (BITSIZEOF(T) - 1));
+                const T mask = m_mask_array[index];
+                const T set_mask = value << shift;
+                const T bit_mask = ~((~static_cast<T>(0)) << bit_count);
+                const T clear_mask = ~(bit_mask << shift);
+                m_mask_array[index] = (mask & (clear_mask)) | (set_mask);
+                const T ret = (mask >> shift) & bit_mask;
+                return ret;
+            }
+
             constexpr T GetBitMask(u32 mask_index) const { return m_mask_array[mask_index]; }
             constexpr void SetBitMask(u32 mask_index, T mask) { m_mask_array[mask_index] = mask; }
             constexpr T *GetBitMaskArray() { return m_mask_array; }
@@ -508,6 +584,14 @@ namespace vp::util {
                 u32 count = 0;
                 for (u32 i = 0; i < cArrayCount; ++i) {
                     count += vp::util::CountOneBits(m_mask_array[i]);
+                }
+                return count;
+            }
+
+            constexpr u32 CountZeroBits() const {
+                u32 count = 0;
+                for (u32 i = 0; i < cArrayCount; ++i) {
+                    count += vp::util::CountZeroBits(m_mask_array[i]);
                 }
                 return count;
             }
@@ -557,6 +641,25 @@ namespace vp::util {
                 index += vp::util::CountRightOneBits(mask);
                 return index;
             }
+            constexpr u32 GetIndexOfFirstZero(u32 base_index) const {
+                const T *start = m_mask_array;
+                const T *iter = start + (base_index / BITSIZEOF(T));
+                const T *end = start + cArrayCount;
+                const T bit_mask = ((~static_cast<T>(0)) << base_index);
+                T mask = *iter | (~bit_mask);
+                for (;;) {
+                    if (mask != ~static_cast<T>(0)) { break; }
+                    ++iter;
+                    if (iter == end) { break; }
+                    mask = *iter;
+                }
+                u32 index = (iter - start) * BITSIZEOF(T);
+                index += vp::util::CountRightOneBits(mask);
+                return index;
+            }
+
+            static constexpr u32 GetBitCount() { return BitCount; }
+            static constexpr u32 GetArrayCount() { return vp::util::AlignUp(BitCount, BITSIZEOF(T)) / BITSIZEOF(T); }
         public:
             constexpr bool GetBitAcquire(u32 bit_index) const {
                 const u32 index = bit_index / BITSIZEOF(T);
@@ -639,6 +742,21 @@ namespace vp::util {
                     m_mask_array[i] = ~rhs.m_mask_array[i];
                 }
                 return;
+            }
+        public:
+            constexpr u32 AllocateZeroBit() {
+                const u32 free_id = this->GetIndexOfFirstZero();
+                if (free_id != BitCount) {
+                    this->SetBit(free_id);
+                }
+                return free_id;
+            }
+            constexpr u32 AllocateZeroBitRange(u32 offset) {
+                const u32 free_id = this->GetIndexOfFirstZero(offset);
+                if (free_id != BitCount) {
+                    this->SetBit(free_id);
+                }
+                return free_id;
             }
     };
 }

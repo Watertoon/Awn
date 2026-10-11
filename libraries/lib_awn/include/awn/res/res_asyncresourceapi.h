@@ -22,6 +22,19 @@ namespace awn::res {
         u32         core_number;
         u32         priority;
         size_t      stack_size;
+
+        constexpr void SetLoadThreadDefault() {
+            this->name        = "LoadThread";
+            this->core_number = 0;
+            this->priority    = awn::sys::cPriorityNormal;
+            this->stack_size  = 0x14000;
+        }
+        constexpr void SetComposeThreadDefault() {
+            this->name        = "ComposeThread";
+            this->core_number = 0;
+            this->priority    = awn::sys::cPriorityBelowNormal;
+            this->stack_size  = 0x14000;
+        }
     };
 
     using AsyncResourceThreadCreateFunction = vp::util::IFunction<async::AsyncQueueThread*(mem::Heap*, async::AsyncQueue*, AsyncResourceThreadInfo*)>;

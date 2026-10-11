@@ -32,7 +32,7 @@
             static constexpr inline u32 cLayoutCount = std::meta::nonstatic_data_members_of(^^LayoutType, std::meta::access_context::current()).size(); \
             static constexpr inline u32 cFieldCount = BaseType::cFieldCount + cLayoutCount; \
         public: \
-            VP_RTTI_DERIVED( class_name , base_type_name ); \
+            VP_RTTI_DERIVED( class_name ); \
         private: \
             LayoutType m_layout; \
             u8 m_is_non_default_array[cLayoutCount]; \
@@ -301,7 +301,7 @@ namespace awn::para {
             u16             m_parent_handle;
             u16             m_handle;
         public:
-            VP_RTTI_DERIVED(TypedParam, Composite);
+            VP_RTTI_DERIVED(TypedParam);
         protected:
             template <FieldNameString Name> 
             static consteval bool IsValidFieldName() { return false; }

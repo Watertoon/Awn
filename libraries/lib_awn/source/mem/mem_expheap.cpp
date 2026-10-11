@@ -19,12 +19,12 @@ namespace awn::mem {
 
      ExpHeapMemoryBlock *ExpHeap::GetBlock(void *address) {
         const uintptr_t *walkback = reinterpret_cast<const uintptr_t*>(reinterpret_cast<uintptr_t>(address) - sizeof(size_t));
-        ExpHeapMemoryBlock *ret = (*walkback & 1) ? reinterpret_cast<ExpHeapMemoryBlock*>(*walkback & (~1)) : reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
+        ExpHeapMemoryBlock *ret = (*walkback & 1ull) ? reinterpret_cast<ExpHeapMemoryBlock*>(*walkback & (~1ull)) : reinterpret_cast<ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
         return ret;
     }
     const ExpHeapMemoryBlock *ExpHeap::GetBlock(const void *address) {
         const uintptr_t *walkback = reinterpret_cast<const uintptr_t*>(reinterpret_cast<uintptr_t>(address) - sizeof(size_t));
-        const ExpHeapMemoryBlock *ret = (*walkback & 1) ? reinterpret_cast<const ExpHeapMemoryBlock*>(*walkback & (~1)) : reinterpret_cast<const ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
+        const ExpHeapMemoryBlock *ret = (*walkback & 1ull) ? reinterpret_cast<const ExpHeapMemoryBlock*>(*walkback & (~1ull)) : reinterpret_cast<const ExpHeapMemoryBlock*>(reinterpret_cast<uintptr_t>(address) - sizeof(ExpHeapMemoryBlock));
         return ret;
     }
 

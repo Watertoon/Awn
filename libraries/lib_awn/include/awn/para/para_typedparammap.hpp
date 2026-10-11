@@ -39,7 +39,7 @@ namespace awn::para {
             u32                m_resolve_type;
             TypedParamMapBase *m_parent;
         public:
-            VP_RTTI_DERIVED(TypedParamMapBase, Composite);
+            VP_RTTI_DERIVED(TypedParamMapBase);
         private:
             bool VerifyMap(vp::res::ByamlIterator iter);
             void AllocateMap(mem::Heap *heap, vp::res::ByamlIterator iter);
@@ -84,7 +84,7 @@ namespace awn::para {
 		requires (TypedParam::CheckRuntimeTypeInfoStatic(T::GetRuntimeTypeInfoStatic()) == true)
     class TypedParamMap : public TypedParamMapBase {
         public:
-            VP_RTTI_DERIVED(TypedParamMap, Composite);
+            VP_RTTI_DERIVED(TypedParamMap);
         public:
             constexpr TypedParamMap() : TypedParamMapBase() {/*...*/}
             virtual constexpr ~TypedParamMap() override {/*...*/}

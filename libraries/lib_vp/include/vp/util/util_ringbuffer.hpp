@@ -125,16 +125,15 @@ namespace vp::util {
                 /* Check count */
                 VP_ASSERT(!this->IsFull());
 
-                /* Increment count */
-                const u32 count = m_count;
-                m_count = count + 1;
-
                 /* Calculate offset */
+                const u32 count = m_count;
                 const u32 base_offset = m_offset + count;
                 const u32 wrap = (m_max_count <= base_offset) ? m_max_count : 0;
 
                 /* Placeback value */
                 m_array[base_offset - wrap] = value;
+                m_count = count + 1;
+                return;
             }
 
             constexpr void PushFront(T value) {
@@ -142,23 +141,24 @@ namespace vp::util {
                 /* Check count */
                 VP_ASSERT(!this->IsFull());
 
-                /* Increment count */
-                const u32 count = m_count;
-                m_count = count + 1;
-
                 /* Decrement offset */
-                const u32 offset = (m_offset != 0) ? m_offset - 1 : m_max_count - 1;
-                m_offset = offset;
+                const u32 wrap = (m_offset < 1) ? m_max_count : 0;
+                const u32 offset = (m_offset + wrap) - 1;
 
                 /* Place front value */
                 m_array[offset] = value;
+                m_count = m_count + 1;
+                m_offset = offset;
+                return;
             }
 
             constexpr bool DropFront() {
+                /* Ensure count */
                 const u32 count = m_count;
                 if (count == 0) { return false; }
-                const u32 offset = m_offset;
-                m_offset = (offset + 1 < m_max_count) ? (offset + 1) : 0;
+                /* Adjust offset */
+                const u32 n_offset = m_offset + 1;
+                m_offset = (n_offset < m_max_count) ? n_offset : 0;
                 m_count = count - 1;
                 return true;
             }
@@ -178,20 +178,17 @@ namespace vp::util {
 
             constexpr T RemoveFront() {
 
-                /* Check count */
+                /* Ensure count */
                 const u32 count = m_count;
                 if (count == 0) { return 0; }
 
-                /* Set size offset for wraparound */
-                const u32 max = m_max_count;
+                /* Read message */
                 const u32 offset = m_offset;
-                const u32 wrap = (max <= offset) ? max : 0;
-
-                /* Get pointer */
-                T ret = m_array[offset - wrap];
+                const T ret = m_array[offset];
 
                 /* Adjust offset */
-                m_offset = (offset + 1 < max) ? (offset + 1) : 0;
+                const u32 n_offset = offset + 1;
+                m_offset = (n_offset < m_max_count) ? n_offset : 0;
                 m_count = count - 1;
 
                 return ret;
@@ -253,13 +250,13 @@ namespace vp::util {
                     /* Shift values down by one, over our delete location, up to end of memory */
                     const bool is_wrap = (max_count < end_offset) && (offset <= wrap_i);
                     const u32 count_to_end = (is_wrap) ? (max_count - wrap_i - 1) : (end_offset - wrap_i - 1);
-                    ::memmove(del, del + 1, count_to_end * sizeof(T));
+                    std::memmove(del, del + 1, count_to_end * sizeof(T));
 
                     /* On wrap, shift first value to end, shift values down by one, over the first value, to end of used */
                     if (is_wrap) {
                         m_array[max_count - 1] = m_array[0];
                         const u32 count_from_start = end_offset - max_count - 1;
-                        ::memmove(m_array, m_array + 1, count_from_start * sizeof(T));
+                        std::memmove(m_array, m_array + 1, count_from_start * sizeof(T));
                     }
                     m_count = count - 1;
 
@@ -378,16 +375,15 @@ namespace vp::util {
                 /* Check count */
                 VP_ASSERT(!this->IsFull());
 
-                /* Increment count */
-                const u32 count = m_count;
-                m_count = count + 1;
-
                 /* Calculate offset */
+                const u32 count = m_count;
                 const u32 base_offset = m_offset + count;
                 const u32 wrap = (Size <= base_offset) ? Size : 0;
 
                 /* Placeback value */
                 m_array[base_offset - wrap] = value;
+                m_count = count + 1;
+                return;
             }
 
             constexpr void PushFront(T value) {
@@ -395,16 +391,15 @@ namespace vp::util {
                 /* Check count */
                 VP_ASSERT(!this->IsFull());
 
-                /* Increment count */
-                const u32 count = m_count;
-                m_count = count + 1;
-
                 /* Decrement offset */
-                const u32 offset = (m_offset != 0) ? m_offset - 1 : Size - 1;
-                m_offset = offset;
+                const u32 wrap = (m_offset < 1) ? Size : 0;
+                const u32 offset = (m_offset + wrap) - 1;
 
                 /* Place front value */
                 m_array[offset] = value;
+                m_count = m_count + 1;
+                m_offset = offset;
+                return;
             }
 
             constexpr T PeekFront() const {
@@ -435,12 +430,13 @@ namespace vp::util {
                 const u32 count = m_count;
                 if (count == 0) { return 0; }
 
-                /* Set size offset for wraparound */
+                /* Read message */
                 const u32 offset = m_offset;
-                T ret = m_array[offset];
+                const T ret = m_array[offset];
 
                 /* Adjust offset */
-                m_offset = (offset + 1 < Size) ? (offset + 1) : 0;
+                const u32 n_offset = offset + 1;
+                m_offset = (n_offset < Size) ? n_offset : 0;
                 m_count = count - 1;
 
                 return ret;
@@ -501,13 +497,13 @@ namespace vp::util {
                     /* Shift values down by one, over our delete location, up to end of memory */
                     const bool is_wrap = (max_count < end_offset) && (offset <= wrap_i);
                     const u32 count_to_end = (is_wrap) ? (max_count - wrap_i - 1) : (end_offset - wrap_i - 1);
-                    ::memmove(del, del + 1, count_to_end * sizeof(T));
+                    std::memmove(del, del + 1, count_to_end * sizeof(T));
 
                     /* On wrap, shift first value to end, shift values down by one, over the first value, to end of used */
                     if (is_wrap) {
                         m_array[max_count - 1] = m_array[0];
                         const u32 count_from_start = end_offset - max_count - 1;
-                        ::memmove(m_array, m_array + 1, count_from_start * sizeof(T));
+                        std::memmove(m_array, m_array + 1, count_from_start * sizeof(T));
                     }
                     m_count = count - 1;
 

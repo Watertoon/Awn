@@ -28,19 +28,35 @@ namespace vp::trace {
     }
 
     void AbortUnexpectedDefault(const char *func, const char *file, u32 line) {
-        impl::AbortImpl("Unexpected Default", func, file, line, vp::trace::ResultUnexpectedDefault, "");
+        impl::AbortImpl("Unexpected default.", func, file, line, vp::trace::ResultUnexpectedDefault, "");
     }
     void AbortNotImplemented(const char *func, const char *file, u32 line) {
-        impl::AbortImpl("Method Not Implemented", func, file, line, vp::trace::ResultNotImplemented, "");
+        impl::AbortImpl("Not implemented.", func, file, line, vp::trace::ResultNotImplemented, "");
     }
     void AbortAssert(const char *func, const char *file, u32 line, const char *expr) {
-        impl::AbortImpl("Assert failed!!!", func, file, line, vp::trace::ResultAssertFailed, "Expression: %s\n", expr);
+        impl::AbortImpl("Assert failed!", func, file, line, vp::trace::ResultAssertFailed, "Expression: %s\n", expr);
     }
     void AbortResult(const char *func, const char *file, u32 line, Result result, const char *expr) {
-        impl::AbortImpl("ResultSuccess", func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, result.GetModule(), result.GetDescription());
+        impl::AbortImpl("Expected ResultSuccess.", func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, result.GetModule(), result.GetDescription());
     }
     void AbortResultExpected(const char *expected_result, const char *func, const char *file, u32 line, Result result, const char *expr) {
         impl::AbortImpl(expected_result, func, file, line, result, "Expression: %s\n  Module: %d\n  Description %d\n", expr, result.GetModule(), result.GetDescription());
+    }
+
+    void AbortUnexpectedDefault() {
+        impl::AbortImpl("", "", "", 0, vp::trace::ResultUnexpectedDefault, "");
+    }
+    void AbortNotImplemented() {
+        impl::AbortImpl("", "", "", 0, vp::trace::ResultNotImplemented, "");
+    }
+    void AbortAssert() {
+        impl::AbortImpl("", "", "", 0, vp::trace::ResultAssertFailed, "");
+    }
+    void AbortResult(Result result) {
+        impl::AbortImpl("", "", "", 0, result, "");
+    }
+    void AbortResultExpected(Result result) {
+        impl::AbortImpl("", "", "", 0, result, "");
     }
 
     namespace impl {

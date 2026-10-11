@@ -239,42 +239,15 @@ namespace awn::res::impl {
         m_resource_unit_allocator.Free(resource_unit);
     }
 
-    bool AsyncResourceManager::TryReferenceResourceUnit(ResourceUnit *resource_unit, LoadTask::LoadUserData *load_info) {
-
+    bool AsyncResourceManager::TryReferenceResourceUnit(ResourceUnit *resource_unit, LoadUserData *load_info) {
         if (resource_unit == nullptr) { return false; }
-        /* Check cleanup for file not found and memory allocation error */
-        if (resource_unit->m_state.GetBit(ResourceUnit::State_IsFileNotFound) || resource_unit->m_state.GetBit(ResourceUnit::State_IsMemoryAllocationFailure)) { resource_unit->FinalizeIfOutOfReference(); return false; }
-        /* Check cleanup for finalization */
-        if (resource_unit->m_state.GetBit(ResourceUnit::State_IsFinalized)) { resource_unit->UnregisterFromResourceUnitManager(); return false; }
-        /* Check cleanup for uninitialized */
-        if (resource_unit->m_status == ResourceUnit::Status::Uninitialized) { resource_unit->FinalizeIfOutOfReference(); return false; }
-
-        /* Cancel unload as we want to reclaim the resource unit */
-        resource_unit->CancelUnload(this);
-
-        /* Fail if resource unit became inactive */
-        if (resource_unit->m_finalize_async_res_mgr_list_node.IsLinked()) { resource_unit->UnregisterFromResourceUnitManager(); return false; }
-
-        /* Update status */
-        resource_unit->UpdateStatusForReference();
-
-        /* Increment ref count */
-        resource_unit->SetToBinder(load_info->m_resource_binder);
-
-        /* Update priority if it's increased */
-        const u32 priority = load_info->m_async_load_info.priority;
-        resource_unit->ChangeLoadPriority(std::addressof(m_queue_memory), std::addressof(m_queue_load), priority);
-
-        /* Reference unit */
-        load_info->m_resource_binder->m_status = (resource_unit->m_reference_count == 1) ? ResourceBinder::Status::FromCache : ResourceBinder::Status::Referenced;
-
-        return true;
+        return resource_unit->RecoverFromCache(load_info);
     }
 
     void AsyncResourceManager::LoadControlExe(void *load_task_user_data_arg) {
 
         /* Get user data of load task */
-        LoadTask::LoadUserData *load_info = reinterpret_cast<LoadTask::LoadUserData*>(load_task_user_data_arg);
+        LoadUserData *load_info = reinterpret_cast<LoadUserData*>(load_task_user_data_arg);
 
         /* Process adjust ref and unload request queues */
         this->ProcessAdjustReference();
@@ -429,7 +402,7 @@ namespace awn::res::impl {
         }
 
         /* Rechedule unload if resource failed prefinalize */
-        if (resource_unit->m_status == ResourceUnit::Status::FailedToPreFinalizeResource) {
+        if (resource_unit->m_status == ResourceUnit::Status::DecomposeNG) {
             resource_unit->ScheduleUnload();
             return async::ResultRescheduled;
         }
@@ -1001,6 +974,7 @@ namespace awn::res::impl {
         }
 
         /* Finalize resource unit allocator */
+        //m_resource_unit_manager.Finalize();
         m_resource_unit_allocator.Finalize();
 
         /* Finalize thread local archive manager */
@@ -1416,10 +1390,10 @@ namespace awn::res::impl {
                 delete resource_unit.m_resource;
             }
         };
-        if (resource_unit.IsInLoad()) {
+        if (resource_unit.IsLoading()) {
             RESULT_TRY(resource_unit.LoadFile());
         }
-        if (!resource_unit.IsResourceInitialized()) {
+        if (!resource_unit.IsComposed()) {
             resource_unit.ComposeResource(nullptr);
         }
         *out_resource = resource_unit.m_resource;
